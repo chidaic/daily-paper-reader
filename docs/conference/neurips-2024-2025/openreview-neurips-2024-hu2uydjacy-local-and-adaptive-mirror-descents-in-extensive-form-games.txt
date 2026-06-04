@@ -1,0 +1,3849 @@
+Title: 3042_Local_and_Adaptive_Mirror.pdf
+
+URL Source: https://openreview.net/pdf?id=HU2uyDjAcy
+
+Number of Pages: 35
+
+Markdown Content:
+# Local and Adaptive Mirror Descents in Extensive-Form Games 
+
+Côme Fiegel 
+
+CREST - FairPlay, ENSAE Paris Palaiseau, France 
+
+come.fiege@normalesup.org 
+
+Pierre Ménard 
+
+ENS Lyon Lyon, France 
+
+Tadashi Kozuno 
+
+OMRON SINIC X Tokyo, Japan 
+
+Rémi Munos 
+
+Google DeepMind Paris, France 
+
+Vianney Perchet 
+
+CREST - FairPlay, ENSAE Paris, Criteo AI Lab Paris, France 
+
+Michal Valko 
+
+INRIA 
+
+## Abstract 
+
+We study how to learn ε-optimal strategies in zero-sum imperfect information games (IIG) with trajectory feedback . In this setting, players update their policies sequentially, based on their observations over a fixed number of episodes denoted by T . As noted by Steinberger et al. (2020) and McAleer et al. (2022), most existing procedures suffer from high variance due to the use of importance sampling over sequences of actions. To reduce this variance, we consider a fixed sampling 
+
+approach, where players still update their policies over time, but with observations obtained through a given fixed sampling policy. Our approach is based on an adaptive Online Mirror Descent (OMD) algorithm that applies OMD locally to each information set, using individually decreasing learning rates and a regularized loss . We show that this approach guarantees a convergence rate of ˜O(T −1/2) with high probability and has a near-optimal dependence on the game parameters when applied with the best theoretical choices of learning rates and sampling policies. To achieve these results, we generalize the notion of OMD stabilization, allowing for time-varying regularization with convex increments. 
+
+## 1 Introduction 
+
+The extensive-form representation of a game (Osborne & Rubinstein, 1994) can be depicted as a tree whose nodes correspond to the game states. At each state, the players choose some available actions and, based on these choices, the game transitions to the next state among the current state’s children. In imperfect information games (IIGs), players may only have access to partial information about the current game state upon taking action. Therefore, the state space is partitioned for each player into multiple information sets, which consist of indistinguishable states from the player’s perspective. With perfect recall (Kuhn, 1950), when players remember their previous moves, each space of information sets also has a tree structure. We focus more specifically on zero-sum IIGs represented in an extensive form under the perfect recall assumption, where the gains of one player, conventionally called the max-player, are equal to the losses of his opponent, the min-player. The primary goal is to design an algorithm learning ε-optimal strategies (von Neumann, 1928). To achieve this, one can use the self-play framework, where an agent controls both players for T episodes. At the beginning of each episode, the agent prescribes a strategy for each player. The agent then observes the play and updates the players’ strategies for the next episode based on the outcome of the game. After T episodes, this protocol returns a guess of 
+
+> 38th Conference on Neural Information Processing Systems (NeurIPS 2024).
+
+strategies with a small exploitability gap (Ponsen et al., 2011). In this learning framework, the agent has very limited feedback, only observing the rewards along each sampled trajectory, as opposed to richer feedback that would for example include all possible rewards and all transition probabilities, (Zinkevich et al., 2007; Hoda et al., 2010; Tammelin, 2014; Kroer et al., 2015; Burch et al., 2019) unrealistic in large games. To deal with this learning framework, a well-studied approach is to unilaterally minimize the regret of each player during the interactions with the game, i.e. the difference between the cumulative gain the player would have obtained had he played the best fixed a posteriori policy and the cumulative gain obtained by following the sequence of policies. The key observation is that by minimizing the regret of both players, the average policies over the sequence of policies generated during the process converge toward optimal strategies at the rate of order O(1 /√T ) (Cesa-Bianchi & Lugosi, 2006; Kozuno et al., 2021). Regret minimizers such as CFR -based algorithm or online mirror descent (OMD) (Hoda et al., 2010; Kroer et al., 2015) can be used, leading to optimal rates (with respect to the game size) with the latter option (Bai et al., 2022; Fiegel et al., 2023). Since the agent only observes trajectories of the game, an importance sampling estimate (Auer et al., 2003) of gain (or loss) is fed to the regret minimizer. However, the estimate of this loss usually suffers from high variance due to two reasons. First, the same sequence of policies is used to minimize the regret and to collect the trajectories, making the players strive to fulfill two competing goals: play a policy with small regret and play a policy leading to a small variance gain estimate. Second, importance sampling is applied to sequences of actions, that have in large games a very small probability of being played, leading to empirically large importance sampling weights and ultimately inflating the variance of the gain estimates. To mitigate this issue, regularization and biasing the estimates can help (Kozuno et al., 2021; Bai et al., 2020). However, the high variance of the gain estimates remains problematic with large games, for which the algorithms are generally coupled with function approximation (Steinberger et al., 2020; McAleer et al., 2022). For instance, neural networks are particularly susceptible to noise (Zhang et al., 2021). A natural question is thus whether it is possible to learn optimal strategies without relying on importance-sampling over the sequence of actions. To this aim, we consider a particular case of the self-play framework: the fixed policy sampling framework (Lanctot et al., 2009). In this setting, a fixed policy is used to collect the trajectories of the game. Precisely, at each round, one player, let’s say the min-player, follows the fixed sampling policy to play against the current policy of the max-player. The collected trajectory is then used to update the current policy of the min-player. In the next episode, the max-player will follow a sampling policy against the current policy of the min-player, and so on. The outcome sampling MCCFR algorithm adopts this framework to update the two players’ policy by regret minimization, feeding the CFR 
+
+algorithm with gain estimated via importance sampling (Lanctot et al., 2009; Bai et al., 2020; Farina et al., 2021b). Recently, McAleer et al. (2022) proposed the ESCHER algorithm that removes the need for importance sampling in this framework. In particular, as the CFR algorithm is invariant by re-scaling of the gains and the weights of the sampling policy are fixed, ESCHER can directly operate with the unweighted history cumulative gain (Bai et al., 2020). Unfortunately, it still requires access to an oracle that provides this history of cumulative gains at an arbitrary information set. Nonetheless, the insight of McAleer et al. (2022) cannot be used directly for OMD-based algorithms as they are not scale-invariant. Furthermore, the OMD-based algorithms generally work at the global game level whereas CFR -based algorithms work at the local level of the information set (Bai et al., 2020), making local adaptation to the problem easier. 
+
+Contributions We make the following main contributions: • We propose the LocalOMD algorithm, in the fixed policy sampling framework, that allows adaptive learning rates and does not require importance-sampling over the sequence of actions but only for the current action. We explain how it can simply be seen as a regret minimization procedure applied to a local loss on each information set, similarly to Farina et al. (2019b). 2• We prove that LocalOMD achieves, in this fixed sampling framework, a eO  1/ε 21 sample complex-ity with any choice of non-degenerate sampling policy, ignoring the game and policy-dependent parameters. • With an appropriate sampling policy and choice of learning rates, we prove that LocalOMD , recover the eO  H3(AX + BY )/ε 2 near-optimal sample complexity for learning ε-optimal strategies in a tabular setting, where H is the height of the tree, AX the total number of available actions for the min-player and BY the same quantity for the max-player. This sample complexity was also achieved in the fixed policy framework by BalancedCFR (Bai et al., 2022), but with a less generalizable procedure that updates the policy at one depth at a time. • We generalize the dual-stabilization technique introduced by Fang et al. (2020) to analyze OMD with a time-varying regularization as long as the increments of the regularization are convex. • Our tabular experiments reveal that our algorithm yields comparable results to existing baselines while demonstrating a reduced variance in loss estimation. 
+
+## 2 Settings and fixed sampling procedure 
+
+2.1 Extensive-form games and regret Game definition We consider a finite zero-sum IIG game (S, X , Y, A, B, p, ℓ ) with perfect recall. Given two behavioral policies μ = ( μ(·| x)) x∈X and ν = ( ν(·| y)) y∈Y , one episode of such game proceeds as follows: An initial game state s1 ∼ p(·| s0) is first sampled in the set of states S according to the transition function p, starting from the root s0 of the tree. At depth h, the min- and max-players respectively observe the information set xh and yh associated with the current state sh in the spaces of information sets X and Y (these spaces being two partitions of S), then simultaneously choose and execute actions ah ∼ μ(·| xh) and bh ∼ ν(·| yh) in the sets of legal actions A(xh) and 
+
+B(yh). As a result, the state transitions to a new state sh+1 ∼ p(·| sh, a h, b h) in S, with the min- and max- players getting respectively the losses ℓh ∼ ℓ(·| sh, a h, b h) in [0 , 1] and 1 − ℓh according to the loss distribution ℓ. This is repeated until a final state sH of a fixed depth H is reached, after which the episode finishes. 
+
+Policies and actions We will denote by Πmin and Πmax the set of behavioral policies of the min-and max- players. Because of the perfect recall assumption, such policies, with an independent stochastic choice of action for each information set, are enough to describe the entire set of strategies (Laraki et al., 2019). We will also denote by AX and BY the total number of actions for respectively the min- and max- players, i.e. AX := P 
+
+> x∈X
+
+|A (x)| and BY = P 
+
+> y∈Y
+
+|B (y)|.
+
+Regret and ε-optimal strategies We are interested in learning ε-optimal policies through self-play over multiple episodes. A useful notion for this objective is the regret as explained in the introduction. We first define the value V μ,ν = Eμ,ν [PHh=1 ℓh] as the expected sum of losses (for the min-player) with respect to a pair of policies (μ, ν ) ∈ Πmin × Πmax . Given a sequence (μt, ν t)t∈[T ]
+
+in Πmin × Πmax , the regrets of the min- and max- players are then defined by 
+
+RT 
+
+> min
+
+:= max 
+
+> μ†∈Πmin
+> T
+
+X
+
+> t=1
+
+(V μt,ν t
+
+− V μ†,ν t
+
+) and RT 
+
+> max
+
+:= max 
+
+> ν†∈Πmax
+> T
+
+X
+
+> t=1
+
+(V μt,ν †
+
+− V μt,ν t
+
+) .
+
+Minimizing the regret of both players leads to the computation of an ε-optimal profile (equivalent to an ε-Nash equilibrium for two players zero-sum games) through the computation of an average of the policies. The following theorem quantifies this statement under the perfect recall assumption. 
+
+Theorem 2.1. (Cesa-Bianchi & Lugosi, 2006; Kozuno et al., 2021) From a sequence (μt, ν t)t∈[T ] in 
+
+Πmin × Πmax a certain time-averaged profile (μ, ν ) is ε-optimal with ε =  RT 
+
+> min
+
++ RT
+
+> max
+
+ /T .
+
+It especially shows that both averaged strategies converge to the set of optimal strategies as long as the regret of both players is sub-linear. We now focus on the min-player point of view because of the symmetry of the game. Indeed, the following ideas will apply exactly the same way to the max-player, using the losses 1 − ℓh instead.           
+
+> 1For algorithms with a probability at least 1−δof a correct output, the symbol eOhides dependencies logarithmic in AX, B Yand δ
+
+3Algorithm 1 Learning procedures with fixed sampling policies for two players  
+
+> 1:
+
+Input: Fixed sampling policies μs and νs. Initial policies μ1 and ν1 and update procedure for each player  
+
+> 2:
+
+For t = 1 to T
+
+The min-player observes the full outcome of an episode with the policies (μs, ν t)
+
+The max-player observes the full outcome of an episode with the policies (μt, ν s)
+
+The min- and max-player respectively update μt+1 and νt+1 based on their past observations  
+
+> 3:
+
+Output: The time-averaged policies μ, ν of Theorem 2.1 
+
+Perfect recall and realization plan Under the perfect recall assumption, players do not forget their past observations and actions. We can then assume, for any information set x ∈ X and action 
+
+a ∈ A (x), the existence of a unique depth h ∈ [H] and history (x1, a 1, ..., x h, a h) such that xh = x
+
+and ah = a. Using this unique history, we define the realization plan μ1: ∈ RAX (von Stengel, 1996) associated to a policy μ ∈ Πmin with, for any x ∈ X and a ∈ A (x) by μ1: (x, a ) := Π hi=1 μ(ai|xi).It denotes the combined probability of choosing actions that lead to (x, a ). We will especially define 
+
+Qmax := {μ1: , μ ∈ Πmin } the treeplex, i.e. the set of all possible realization plans. 
+
+Loss and regret linearization For ν a max-player policy, the unique history also allows for the definition of adversarial transitions pν 
+
+> 1:
+
+∈ RX and adversarial losses ℓν ∈ RAX with: 
+
+pν
+
+> 1:
+
+(x) := p(x1|s0)
+
+> h
+
+Y
+
+> i=2
+
+pν (xi|xi−1, a i−1) and ℓν (x, a ) := pν
+
+> 1:
+
+(x)ℓνh(x, a )
+
+where p(x1|s0) is the probability that x1 is initially observed by the min-player, and, assuming that the max-player policy is set to ν, pν (·| (xi−1, a i−1)) denotes the probability of transitioning to xi
+
+when (xi−1, a i−1) is reached, and ℓνh the average loss ℓh associated to a when x is reached. Similarly to the realization plan, the adversarial transitions denote the combined probability of both Nature and max-player actions that lead to x, assuming that the min-player plays the actions (a1, ..., a h−1).Using a chain-rule argument, we get the relation V μ,ν = ⟨ℓν , μ 1: ⟩, given a pair of policies 
+
+(μ, ν ) ∈ Πmin × Πmax , where ⟨· , ·⟩ is the standard inner product of RAX , defined by ⟨z1, z 2⟩ := P
+
+> x∈X
+
+P 
+
+> a∈A (x)
+
+z1(x, a )z2(x, a ). The regret can then be rewritten 
+
+RT 
+
+> min
+
+= max 
+
+> μ†∈Πmin
+> T
+
+X
+
+> t=1
+
+D
+
+ℓt, μ t 
+
+> 1:
+
+− μ†
+
+> 1:
+
+E
+
+where ℓt := ℓνt
+
+, which effectively reduces the problem to a linear regret problem over the convex polytope Qmin of realization plans. Several techniques exist to sequentially choose policies (μt)t∈[T ] minimizing RT
+
+> min
+
+, assuming that the losses ℓt are observed after each round t (Hoda et al., 2010). However, in the trajectory feedback 
+
+setting, these losses are not observed, and can only be estimated from the observation of the trajectories 
+
+(xt
+
+> 1
+
+, a t
+
+> 1
+
+, ..., x tH , a tH ) and partial losses (ℓt
+
+> 1
+
+, ..., ℓ tH ) of each round. 
+
+2.2 Fixed sampling policy 
+
+In the fixed sampling framework (Lanctot et al., 2009), both players always use the same policy for the observations of the trajectory. However, the two observations can not be done simultaneously with such an approach, as the learning would then be quite naive. The solution, summarized in Algorithm 1, is for the two players to take turns between an observation phase, in which they play their fixed sampling policy μs or νs, and an interaction phase, in which they play their updated policy 
+
+μt or νt. The underlying idea is that the observation phase lets each player observe how the game unfolds against the opponent in its interaction phase, playing its updated policy. Given upper-bounds of the regrets RT 
+
+> min
+
+and RT 
+
+> max
+
+associated to the sequence (μt, ν t)t∈[T ], the previous Theorem 2.1 then characterizes the optimality of the outputted time-averaged profile (μ, ν ).While theoretically optimal algorithms already exist using simultaneous regret minimization pro-cedures (Bai et al., 2022; Fiegel et al., 2023), this framework allows for the removal of the global 4importance sampling term of the loss, which reduces the variance to make algorithms more suitable beyond the tabular setting (McAleer et al., 2022). Indeed, as the probability of choosing a sequence of action reaching a given information set is fixed, the average estimations of the losses do not need to be re-weighted based on the inverse of a changing probability. This re-weighting eventually leads to unstable function approximation, e.g. with neural networks, as this probability can be very small. Furthermore, the fixed sampling framework also allows aggressive policies more focused on exploita-tion, as the observation side is handled by the sampling strategy. The downside is that this sampling policy must be fixed in advance, which requires defining a good sampling policy beforehand. From now on, we again focus on the min-player for the same symmetry reasons. 
+
+Estimated regret Based on the min-player observations, we define ˆRT 
+
+> min
+
+the estimated regret by 
+
+ˆRT 
+
+> min
+
+:= max 
+
+> μ†∈Πmin
+> T
+
+X
+
+> t=1
+
+Dbℓt, μ t 
+
+> 1:
+
+− μ†
+
+> 1:
+
+E
+
+where the bℓt are the importance-sampling estimated loss vectors, defined for each information set x
+
+of depth h and action a ∈ A (x) by 
+
+bℓt(x, a ) := 
+
+I{x=xth,a =ath}
+
+μs
+
+> 1:
+
+(x, a ) ℓth
+
+with xth the visited information set, ath the chosen action and ℓth the loss at depth h of episode t.The following theorem states that upper-bounding this estimated regret is enough to upper-bound the actual regret, up to an additional additive term. Its proof is given in Appendix B and relies on Bernstein-type inequalities. 
+
+Theorem 2.2. Assume that the estimated losses are obtained with a fixed positive sampling policy μs
+
+as above. Then, for any sequence (μt)t∈[T ] of Πmin and any δ ∈ (0 , 1) , the following bound holds with a probability at least 1 − δ
+
+RT 
+
+> min
+
+≤ max 
+
+n ˆRT
+
+> min
+
+, 0
+
+o
+
++ 4 pιHκ (μs)T
+
+where ι := log   AX +1 
+
+> δ
+
+ and κ(μs) := max μ∈Πmin 
+
+P
+
+> x∈X
+
+P 
+
+> a∈A x
+> μ1: (x,a )
+> μs
+> 1: (x,a )
+
+.
+
+A similar proposition is proved by Farina et al. (2020). Our bound is specific to the importance-sampling loss estimator, but tighter by a factor pκ(μs)/H .
+
+Remark 2.3 . The quantity κ(μs) can be efficiently computed recursively for each of the sub-trees induced by an information set x ∈ X , and we will denote by κ(μs|x) the associated quantities. The same recursion shows that the balanced policy μ⋆, which plays proportionally to the total number of actions of each sub-tree, minimizes all these local quantities and satisfies κ(μ⋆) = AX . The related computations are provided in Appendix C. 
+
+## 3 Adaptive Mirror Descent 
+
+We shall now focus on the update procedure the min-player can use to minimize this estimated regret. Let us first define some important notions of convex optimization. 
+
+Definition 3.1. Let Ω ⊂ Rn be a non-empty open convex, and Ω be its closure. A function 
+
+Ψ : Ω −→ R is said to be Legendre if Ψ is strictly convex, continuously differentiable on Ω and 
+
+∀y ∈ Ω\Ω, lim x−→y ∥∇ Ψ( x)∥ = + ∞ . The Bregman divergence DΨ : Ω × Ω −→ R of a Legendre function Ψ is defined as DΨ(x, y ) := Ψ( x) − Ψ( y) − ⟨∇ Ψ( y), x − y⟩. The Fenchel conjugate 
+
+Ψ⋆ : Rn −→ R ∪ { +∞} of Ψ is defined by Ψ⋆(ξ) = sup x∈Ω ⟨ξ, x ⟩ − Ψ( x).
+
+3.1 Online Mirror Descent and dilated entropy 
+
+In an extensive-form game with perfect recall, algorithms based on the Online Mirror Descent (OMD) typically compute at each time step t the update 
+
+μt+1 = arg min 
+
+> μ∈Πmin
+
+Dbℓt, μ 1: 
+
+E
+
++ DΨ(μ1: , μ t
+
+> 1:
+
+) (OMD) 5where bℓt is the estimated loss and Ψ : Qmin −→ R a Legendre regularizer. 
+
+Dilated entropy A common choice of such regularizer is the dilated entropy (Hoda et al., 2010; Kroer et al., 2015). It requires for each x ∈ X a Legendre regularizer Ψx over a convex domain 
+
+Ωx ⊂ R|A (x)|≥0 that contains the simplex ∆A(x) := 
+
+n
+
+μ, P 
+
+> a∈A (x)
+
+μ(a) = 1 
+
+o
+
+. For a given list of positive weights α = ( α(x)) x∈X , the dilated entropy Ψdil  
+
+> α
+
+satisfies for any μ ∈ Πmin :
+
+Ψdil  
+
+> α
+
+(μ1: ) := X
+
+> x∈X
+
+α(x)μ1: (x)Ψ x (μ(·| x)) 
+
+where μ1: (x) := P 
+
+> a∈A (x)
+
+μ1: (x, a ). Using this dilated entropy as the regularizer, the OMD updates become 
+
+μt+1 = arg min 
+
+> μ∈Πmin
+
+Dbℓt, μ 1: 
+
+E
+
++ Ddil  
+
+> α
+
+(μ1: , μ t
+
+> 1:
+
+)
+
+where Ddil  
+
+> α
+
+(μ1: , μ t
+
+> 1:
+
+) := P 
+
+> x∈X
+
+α(x)μ1: (x)Dx(μ1: (·| x), μ t
+
+> 1:
+
+(·| x)) and (Dx)x∈X are the individual Bregman divergences of the (Ψ x)x∈X . The benefits of this regularization are that it efficiently suits the structure of the game and that the associated updates are easily computed recursively, starting from the final states. 
+
+3.2 Stabilized OMD algorithm 
+
+The regularizer Ψ sometimes needs to change over time. For example, when T is unknown, a regularizer of the form Ψt = Ψ /η t is usually considered, with ηt = t−1/2 the learning rate. Fiegel et al. (2023) gives another example of time-varying regularization, adapting the regularization to the game structure that is assumed to be initially unknown. The previous updates (OMD) do not however allow adaptive regularization in general. In fact, even the simple learning rate decrease ηt+1 = t−1/2
+
+can lead to a linear regret dependence with time (Orabona & Pál, 2018). In this part, we shall consider more generally a sequence of Legendre regularizers (Ψ t)t∈[T ] defined on a convex domain Ω ⊂ Rn, and that the player chooses a sequence of primal iterates (wt)t∈[T ]
+
+(respectively the updated realization plans (μt
+
+> 1:
+
+)t∈[T ] of our settings) in a closed convex set C
+
+(respectively the treeplex Qmin ) included in Ω, according to a sequence of dual increments (ξt)t∈[T ]
+
+in Rn (respectively the estimated losses (bℓt)t∈[T ]) observed sequentially. Fang et al. (2020) proposed in the presence of non-increasing learning rates, to use a technique called dual-stabilization to recover the classical OMD bounds. We noticed that their updates can be interpreted as 
+
+wt+1 = arg min 
+
+> w∈C
+
+ξt, w + DΨt
+
+ w, w t + DΨt+1 −Ψt
+
+ w, w 1 (GDS-OMD) with Ψt+1 − Ψt incremental functions assumed to be convex, generalizing their special case Ψt+1 =Ψ/η t+1 . The following theorem, proven in Appendix D shows that classical OMD guarantees can be recovered with these updates. 
+
+Theorem 3.2. Let (wt)t∈[T ] be a sequence of primal iterates generated by the updates (GDS-OMD) ,with convex incremental functions. Then for any w† ∈ Ω,
+
+> T
+
+X
+
+> t=1
+
+ξt, w t − w† ≤ DΨT (w†, w 1) + 
+
+> T
+
+X
+
+> t=1
+
+DΨt,⋆ 
+
+ ∇Ψt(wt) − ξt, ∇Ψt(wt)
+
+where the (Ψ t,⋆ )t∈[T ] are the respective Fenchel conjugates of the (Ψ t)t∈[T ].
+
+Compared to the guarantees obtained with previous adaptive procedures, such as Ada-MD (Joulani et al., 2017), the first term of the bound is stated with respect to w1 instead of the sequence (wt)t,which is important for some (Ψ t)t sequences (Orabona & Pál, 2018). 
+
+Remark 3.3 . AdaGrad for stochastic gradient descent (Duchi et al., 2011) is an interesting example of regularizatiom with convex increments (and not only through a decreasing learning rate). It uses the adaptive regularization Ψt+1 = ∥·∥ 2(Gt)1/2 , where Gt is a positive semi-definite matrix defined with the gradients gk by either Gt = Ptk=1 gkgTk or, more efficiently, by Gt = Diag 
+
+Ptk=1 gkgTk
+
+
+
+.6Algorithm 2 LocalOMD 
+
+1: Input: 
+
+Sampling policy μs ∈ Πmin and initial policy μ1 ∈ Πmin 
+
+Bregman divergences Dx for each information set x ∈ X 
+
+Sequences of (possibly adaptive) learning rates (ηt(x)) t,x for each round t and information set x.
+
+2: For t = 1 to T
+
+Observes the outcome of an episode using the fixed strategy μs
+
+qtH+1 ← 0
+
+For h = H to 1:
+
+eℓth ← I{a=ath}
+
+ ℓth + qth+1 
+
+.
+
+μs(ath|xth)
+
+μt+1 (·| x) ← arg min μ∈∆A(x) htx(μ)
+
+qth ← min μ∈∆A(x) htx(μ)
+
+where htx(μ) := 
+
+Deℓth, μ 
+
+E
+
++ 1 
+
+> ηt(xth)
+
+Dx (μ, μ t(·| xth))+ 
+
+ 1 
+
+> ηt+1 (xth)
+
+− 1
+
+> ηt′+1 (xth)
+
+
+
+Dx
+
+ μ, μ 1(·| xth)
+
+and t′ is the last round in which xth was visited For all non-visited x ∈ X :
+
+μt+1 (·| x) ← μt(·| x)
+
+3: Output: The time-averaged policy μ
+
+Adaptive dilatation In the extensive-form game setting based on the dilated entropy Ψdil  
+
+> α
+
+, this stabilization can be applied to have weights (αt(x)) x∈X ,t ∈[T ] that vary with times. The convexity assumption of Ψdil  
+
+> αt+1
+
+− Ψdil  
+
+> αt
+
+then rewrites to having locally non-decreasing weights for each x ∈ X .In this particular case, the updates are obtained with the formula 
+
+μt+1 = arg min 
+
+> μ∈Πmin
+
+Dbℓt, μ 1: 
+
+E
+
++ Ddil  
+
+> αt
+
+(μ, μ t) + Ddil  
+
+> αt+1 −αt
+
+(μ, μ 1) . (DDS-OMD) 
+
+## 4 LocalOMD algorithm 
+
+4.1 Algorithm 
+
+Let us now consider the fixed sampling framework introduced in Section 2.2. Given a sequence 
+
+(ηt(x)) t∈[T ] of locally non-increasing learning rates for each x ∈ X , we introduce the LocalOMD 
+
+algorithm described in Algorithm 2, that uses the updates (DDS-OMD) above with the adaptive weights αt(x) = 1 /(μs
+
+> 1:
+
+(x)ηt(x)) . Dividing the loss by the importance sampling term 1/μ s
+
+> 1:
+
+(x)
+
+through the learning rates lets it bypass the large variance that this rate can introduce. 
+
+Local loss This algorithm can be interpreted as one that locally applies the updates (GDS-OMD) using the local loss eℓth, a regularized version of the sum of subsequent losses. Even though this algorithm results from a global minimization procedure, the local loss only uses the probability 
+
+μs(a|x) of choosing the last action a ∈ A (x) in the important sampling, instead of the combined probability μs
+
+> 1:
+
+(x, a ) of the realization plan. A similar decomposition was observed by Farina et al. (2019a) for the non-stochastic settings, in which both players directly observe the gradient associated with their policies. For this reason, the local loss will consistently be at most of order O(HA ). Meanwhile, the loss used by Fiegel et al. (2023) can be of order O(AX ) (approximately AH in the worst case), even with IX exploration attempting to alleviate the importance sampling issue. This presents a challenge for potential applications involving function approximation, where AX becomes very large (McAleer et al., 2022). For instance, such high-variance estimates could lead to highly unstable training dynamics of a policy parametrized with a neural network. 
+
+Complexity At each iteration, the algorithm only needs to update the policy along the observed trajectory, so the time complexity per iteration is only H times the cost of a local update. If Dx is the Kullback-Leibler divergence, the local updates then simplify to some Exponential Weights updates 7and the total time complexity of an iteration becomes O(HA ), where A is an upper-bound on the local number of actions. 
+
+4.2 Theoretical analysis 
+
+The analysis of LocalOMD , detailed in Appendix E is derived from Theorem 3.2 that bounds the estimated regret. The results on the real regret are then obtained with Theorem 2.2. We now present two choices of regularization and their associated guarantees. 
+
+Adaptive rates As LocalOMD treats each information set x ∈ X as a separate problem through the local losses eℓth, an interesting choice is to consider the same adaptive rates that would be used in the 
+
+K-armed bandit problems. The following theorem provides an upper bound in this case. 
+
+Theorem 4.1. (Informal, exact statement in Appendix E) For a large class of regularizers (Ψ x)x∈X and learning rates (ηt(x)x∈X ,t ∈[T ]), the regret has a 
+
+O(pT log(1 /δ )) upper bound (hiding the game-dependent terms) with a probability at least 1 − δ.Such learning rates include, for all x ∈ X of depth h,
+
+ηt(x) = η
+
+,vuut tX
+
+> k=1
+
+I{x=xkh} , or the adaptive version ηt(x) = η
+
+,vuut tX
+
+> k=1
+
+I{x=xkh}
+
+eℓkh
+
+2
+
+.
+
+The adaptive learning rates mentioned for this theorem generally enjoy better performances in practice. Furthermore, they require no initial computation and are easily updated. 
+
+Optimal rates The following theorem uses a constant learning rate that locally depends on the 
+
+κ(μs|x) quantities of Remark 2.3, and on the A := max x∈X |A (x)| quantity that upper bounds the local number of available actions on the whole tree. 
+
+Theorem 4.2. Using LocalOMD with μ1 as the uniform policy, with the learning rates ηt(x) = 
+
+η/κ (μs|x) where η = plog( A)κ(μs)/(3 HT ), and with Ψx the Shannon entropy Ψx(μ) =P 
+
+> a∈A (x)
+
+μ(a) log( μ(a)) , we have with a probability at least 1 − δ and ι = log(2( AX + 1) /δ ),
+
+RT 
+
+> min
+
+≤
+
+
+
+4 + 2 √3
+
+
+
+H3/2plog( A)ικ (μs)T . 
+
+Note that these rates are not adaptive and thus do not require the stabilization introduced in Section 3.2. When using the balanced policy μ⋆ as the sampling policy, for which κ(μ⋆) = AX , we obtain with Theorem 2.1 the rate eO  H3/2√AX T , near-optimal up to the H dependency (Bai et al., 2022). 
+
+## 5 Experiments 
+
+We implemented LocalOMD , with the parameters of Theorem 4.1 and Theorem 4.2, then tested it against the theoretically optimal BalancedCFR (Bai et al., 2022) using the balanced policy as the sample policy, and BalancedFTRL (Fiegel et al., 2023). The algorithms were compared on three standard benchmark games: Kuhn poker (Kuhn, 1950), Leduc poker (Southey et al., 2005) and liars dice, using the version 1.4 of the OpenSpiel library (Lanctot et al., 2019) under the Apache 2.0 license. The learning rates (and the IX parameters for the relevant algorithms) were optimized independently for each algorithm using a grid search. The code is available at https: //github.com/anon5493/LocalOMD-experiments .The results are given with respect to the total number of episodes used for learning. This technically disadvantages the fixed sampling algorithms, as these require more than one episode at each round t
+
+while still performing a single update on the policy of each player. The exploitability gap, along with the variance across the different instances of the simulation, is plotted in Figure 1, top. Note that this variance across the instances is different from the variance of the estimated loss vector bℓt our method tries to reduce, which is plotted in the Figure 1, down. Focusing on the exploitability gap, we observe that the two versions of LocalOMD behave similarly and constantly beat BalancedCFR , mainly because the latter needs to update each depth with independent 8samples, thus needing H times more episodes overall. The results of BalancedFTRL are more comparable, exhibiting for example better performances on liars dice but worse on Leduc poker. In the second figure, we observe that the algorithms based on a fixed sampling procedure indeed get a smaller variance in their loss estimation as the sampling policy stays consistently balanced. 
+
+BalancedCFR again gets worse results compared to LocalOMD as the losses of each depth are only estimated every H iteration, which increases its variance. 10 3 10 4 10 5 10 6 10 7                       
+
+> 10 3
+> 10 2
+> 10 1
+> Exploitability
+> Average exp. in Kuhn poker
+> BalancedCFR
+> BalancedFTRL
+> LocalOMD Optimal
+> LocalOMD Adaptive
+> 10 310 410 510 610 7
+> 10 2
+> 10 1
+> Average exp. in Leduc poker
+> BalancedCFR
+> BalancedFTRL
+> LocalOMD Optimal
+> LocalOMD Adaptive
+> 10 310 410 510 610 7
+> 10 1
+> Average exp. in liars dice
+> BalancedCFR
+> BalancedFTRL
+> LocalOMD Optimal
+> LocalOMD Adaptive 10 410 510 610 7
+> Episode
+> 10 0
+> 10 1
+> 10 2
+> Empirical variance
+> BalancedCFR BalancedFTRL LocalOMD Optimal LocalOMD Adaptive
+> 10 410 510 610 7
+> Episode
+> 10 0
+> 10 1
+> BalancedCFR BalancedFTRL LocalOMD Optimal LocalOMD Adaptive
+> 10 410 510 610 7
+> Episode
+> 10 4
+> 2 × 10 4
+> 3 × 10 4
+> 4 × 10 4
+> 6 × 10 4
+> BalancedCFR BalancedFTRL LocalOMD Optimal LocalOMD Adaptive
+
+Figure 1: Performances over 5 simulations of various algorithms with respect to the total number of episodes. The vertical axis denotes the exploitability gap max (μ,ν )∈Πmin ×Πmax V μ,ν − V μ,ν (top) and the empirical variance of the bℓt vectors over time (bottom), with all rewards scaled between 0
+
+and 1. The total numbers of actions are AX = BY = 12 for Kuhn poker, AX = BY = 1092 for Leduc poker, and AX = BY = 24570 for Liars dice. 
+
+## 6 Conclusion 
+
+We studied the use of a fixed sampling OMD procedure for the computation of ε-optimal strategies. This approach relies, for each player, on an uncoupling between the observation policy and the interaction policy as described in Algorithm 1. This uncoupling is in direct contrast with the more restrictive semi-bandit setting usually considered for self-play, where these two policies must coincide by design. Notice that this is not the standard exploration/exploitation trade-off, as even in the expert setting (with full information), some kind of exploration is still required. While the balanced observation policy gets the optimal rates in the worst case, it may not always be the best one for a given game. An alternate choice is to instead use for the observations the current average policy (Gibson et al., 2012). This choice can be adapted to the fixed sampling framework, by restarting the algorithm after a certain number of episodes and using the computed average as the new sampling policy. The proposed algorithm LocalOMD also enjoys simultaneously two interpretations: one as a Mirror Descent type algorithm working at the global level, with a single update performed at each iteration over the whole tree; and one as regret minimizers working locally at each information set, which makes it very similar to a CFR algorithm despite a fundamentally different approach. 9We would like to conclude by providing the following interesting research directions. 
+
+Problem-dependent optimality For a given game structure and fixed sampling policy μs, is there a policy-dependent lower bound O(pκ(μs)T ) on the regret? We wonder if the κ(μs) quantity of Remark 2.3 denotes some sort of complexity related to the problem. 
+
+General sum game Using the same techniques as Bai et al. (2022), in a general sum game with potentially more than two players, LocalOMD can be shown to converge to an ε-approximate normal-form coarse correlated equilibrium. Are convergences to other forms of correlated equilibrium possible using this fixed sampling policy framework? 
+
+On-policy algorithms Is it also possible to remove the importance-sampling of the previous actions in the usual semi-bandit framework that observes with the current policy? The answer is not obvious since the current approach heavily relies on the fact that the sampling policy is fixed. 
+
+## 7 Acknowledgements 
+
+This research was supported in part by the French National Research Agency (ANR) in the framework of the PEPR IA FOUNDRY project (ANR-23-PEIA-0003) and through the grant DOOM ANR-23-CE23-0002. It was also funded by the European Union (ERC, Ocean, 101071601). Views and opinions expressed are however those of the author(s) only and do not necessarily reflect those of the European Union or the European Research Council Executive Agency. Neither the European Union nor the granting authority can be held responsible for them. 
+
+## References 
+
+Auer, P., Cesa-Bianchi, N., Freund, Y., and Schapire, R. E. The Nonstochastic Multiarmed Bandit Problem. SIAM Journal on Computing , 32(1):48–77, January 2003. ISSN 0097-5397. doi: 10.1137/S0097539701398375. Bai, Y., Jin, C., and Yu, T. Near-optimal reinforcement learning with self-play. In Larochelle, H., Ran-zato, M., Hadsell, R., Balcan, M., and Lin, H. (eds.), Advances in Neural Information Processing Systems , volume 33, pp. 2159–2170. Curran Associates, Inc., 2020. URL https://proceedings. neurips.cc/paper/2020/file/172ef5a94b4dd0aa120c6878fc29f70c-Paper.pdf .Bai, Y., Jin, C., Mei, S., and Yu, T. Near-optimal learning of extensive-form games with imperfect information. In International Conference on Machine Learning , 2022. Burch, N., Moravˇ cík, M., and Schmid, M. Revisiting CFR+ and Alternating Updates. Journal of Artificial Intelligence Research , 64:429–443, 2019. Cesa-Bianchi, N. and Lugosi, G. Prediction, Learning, and Games . Cambridge University Press, Cambridge, 2006. ISBN 978-0-521-84108-5. doi: 10.1017/CBO9780511546921. Daskalakis, C., Foster, D. J., and Golowich, N. Independent policy gradient methods for competitive reinforcement learning. In Larochelle, H., Ranzato, M., Hadsell, R., Balcan, M., and Lin, H. (eds.), Advances in Neural Information Processing Systems , volume 33, pp. 5527–5540. Cur-ran Associates, Inc., 2020. URL https://proceedings.neurips.cc/paper/2020/file/ 3b2acfe2e38102074656ed938abf4ac3-Paper.pdf .Duchi, J., Hazan, E., and Singer, Y. Adaptive subgradient methods for online learning and stochastic optimization. Journal of Machine Learning Research , 12(61):2121–2159, 2011. URL http: //jmlr.org/papers/v12/duchi11a.html .Fang, H., Harvey, N., Portella, V., and Friedlander, M. Online mirror descent and dual averaging: Keeping pace in the dynamic case. In Proceedings of the 37th International Conference on Machine Learning , pp. 3008–3017. PMLR, November 2020. Farina, G., Kroer, C., and Sandholm, T. Optimistic Regret Minimization for Extensive-Form Games via Dilated Distance-Generating Functions. In Advances in Neural Information Processing Systems ,2019a. 10 Farina, G., Kroer, C., and Sandholm, T. Regret circuits: Composability of regret minimizers. In Chaudhuri, K. and Salakhutdinov, R. (eds.), Proceedings of the 36th International Conference on Machine Learning, ICML 2019, 9-15 June 2019, Long Beach, California, USA , volume 97 of Proceedings of Machine Learning Research , pp. 1863–1872. PMLR, 2019b. URL http: //proceedings.mlr.press/v97/farina19b.html .Farina, G., Kroer, C., and Sandholm, T. Stochastic Regret Minimization in Extensive-Form Games. In International Conference on Machine Learning , 2020. Farina, G., Kroer, C., and Sandholm, T. Faster Game Solving via Predictive Blackwell Approach-ability: Connecting Regret Matching and Mirror Descent. In AAAI Conference on Artificial Intelligence , 2021a. URL https://arxiv.org/abs/2007.14358 .Farina, G., Kroer, C., and Sandholm, T. Bandit Linear Optimization for Sequential Decision Making and Extensive-Form Games. In AAAI Conference on Artificial Intelligence , 2021b. Fiegel, C., Ménard, P., Kozuno, T., Munos, R., Perchet, V., and Valko, M. Adapting to game trees in zero-sum imperfect information games, 2023. Gibson, R., Burch, N., Lanctot, M., and Szafron, D. Efficient monte carlo counterfactual regret minimization in games with many player actions. volume 3, 12 2012. Gordon, G. J. No-regret Algorithms for Online Convex Programs. In Advances in Neural Information Processing Systems , 2007. Hart, S. and Mas-Colell, A. A Simple Adaptive Procedure Leading to Correlated Equilibrium. 
+
+Econometrica , 68(5):1127–1150, 2000. Hoda, S., Gilpin, A., Peña, J., and Sandholm, T. Smoothing Techniques for Computing Nash Equilibria of Sequential Games. Mathematics of Operations Research , 2010. URL https: //kilthub.cmu.edu/ndownloader/files/12101699 .Johanson, M., Bard, N., Lanctot, M., Gibson, R., and Bowling, M. Efficient nash equilibrium approximation through monte carlo counterfactual regret minimization. In Proceedings of the 11th International Conference on Autonomous Agents and Multiagent Systems - Volume 2 , AAMAS ’12, pp. 837–846, Richland, SC, 2012. International Foundation for Autonomous Agents and Multiagent Systems. ISBN 0981738125. Joulani, P., György, A., and Szepesvari, C. A modular analysis of adaptive (non-)convex optimiza-tion: Optimism, composite objectives, and variational bounds. In International Conference on Algorithmic Learning Theory , 2017. URL https://api.semanticscholar.org/CorpusID: 28926102 .Koller, D., Megiddo, N., and Von Stengel, B. Efficient Computation of Equilibria for Extensive Two-Person Games. Games and Economic Behavior , 14(2):247–259, 1996. Kozuno, T., Ménard, P., Munos, R., and Valko, M. Learning in two-player zero-sum partially observable Markov games with perfect recall. In Neural Information Processing Systems , 2021. Kroer, C., Waugh, K., Kilinç-Karzan, F., and Sandholm, T. Faster first-order methods for extensive-form game solving. In Economics and Computation , 2015. ISBN 978-1-4503-3410-5. doi: 10.1145/2764468.2764476. Kroer, C., Farina, G., and Sandholm, T. Solving large sequential games with the excessive gap technique. In Neural Information Processing Systems , 2018. Kroer, C., Waugh, K., Kılınç-Karzan, F., and Sandholm, T. Faster algorithms for extensive-form game solving via improved smoothing functions. Mathematical Programming , 179(1):385–417, 2020. Kuhn, H. W. Extensive games. Proceedings of the National Academy of Sciences , 36(10):570–576, 1950. Kuhn, H. W. Extensive Games and the Problem of Information. Annals of Mathematics Studies , 28: 193–216, 1953. 11 Lanctot, M., Waugh, K., Zinkevich, M., and Bowling, M. Monte-Carlo sampling for regret minimiza-tion in extensive games. In Neural Information Processing Systems , 2009. Lanctot, M., Lockhart, E., Lespiau, J.-B., Zambaldi, V., Upadhyay, S., Pérolat, J., Srinivasan, S., Timbers, F., Tuyls, K., Omidshafiei, S., Hennes, D., Morrill, D., Muller, P., Ewalds, T., Faulkner, R., Kramár, J., De Vylder, B., Saeta, B., Bradbury, J., Ding, D., Borgeaud, S., Lai, M., Schrittwieser, J., Anthony, T., Hughes, E., Danihelka, I., and Ryan-Davis, J. Openspiel: A framework for reinforcement learning in games, 2019. URL https://arxiv.org/abs/1908.09453 .Laraki, R., Renault, J., and Sorin, S. Mathematical Foundations of Game Theory . Springer, October 2019. doi: 10.1007/978-3-030-26646-2. URL https://hal.science/hal-03070434 .Lattimore, T. and Szepesvári, C. Bandit Algorithms . Cambridge University Press, 2020. doi: 10.1017/9781108571401. Lee, C.-W., Kroer, C., and Luo, H. Last-iterate convergence in extensive-form games. In Neural Information Processing Systems , 2021. URL https://proceedings.neurips.cc/paper/ 2021/file/77bb14f6132ea06dea456584b7d5581e-Paper.pdf .Liu, Q., Yu, T., Bai, Y., and Jin, C. A sharp analysis of model-based reinforcement learning with self-play. In Meila, M. and Zhang, T. (eds.), Proceedings of the 38th International Conference on Machine Learning , volume 139 of Proceedings of Machine Learning Research , pp. 7001–7010. PMLR, 18–24 Jul 2021. URL https://proceedings.mlr.press/v139/liu21z.html .McAleer, S., Farina, G., Lanctot, M., and Sandholm, T. ESCHER: Eschewing importance sampling in games by computing a history value function to estimate regret. CoRR , abs/2206.04122, 2022. doi: 10.48550/arXiv.2206.04122. URL https://doi.org/10.48550/arXiv.2206.04122 .McMahan, H. A survey of algorithms and analysis for adaptive online learning. Journal of Machine Learning Research , 18:1–50, 08 2017. Munos, R., Pérolat, J., Lespiau, J.-B., Rowland, M., De Vylder, B., Lanctot, M., Timbers, F., Hennes, D., Omidshafiei, S., Gruslys, A., Azar, M. G., Lockhart, E., and Tuyls, K. Fast computation of nash equilibria in imperfect information games. In International Conference on Machine Learning ,2020. Nemirovski, A. Prox-Method with Rate of Convergence O(1 /t ) for Variational Inequalities with Lipschitz Continuous Monotone Operators and Smooth Convex-Concave Saddle Point Problems. 
+
+SIAM Journal on Optimization , 15(1):229–251, 2004. Nesterov, Y. Smooth minimization of non-smooth functions. Mathematical programming , 103(1): 127–152, 2005. Orabona, F. and Pál, D. Scale-free online learning. Theor. Comput. Sci. , 716:50–69, 2018. doi: 10.1016/j.tcs.2017.11.021. URL https://doi.org/10.1016/j.tcs.2017.11.021 .Osborne, M. J. and Rubinstein, A. A Course in Game Theory . The MIT Press, 1994. ISBN 0-262-65040-1. Ponsen, M., De Jong, S., and Lanctot, M. Computing Approximate Nash Equilibria and Robust Best-Responses Using Sampling. Journal of Artificial Intelligence Research , 42:575–605, 2011. Romanovsky, J. V. Reduction of a game with complete memory to a matricial game. Dokl. Akad. Nauk SSSR , 144:62–64, 1962. Schmid, M., Burch, N., Lanctot, M., Moravˇ cík, M., Kadlec, R., and Bowling, M. Variance reduction in monte carlo counterfactual regret minimization (VR-MCCFR) for extensive form games using baselines. CoRR , abs/1809.03057, 2018. URL http://arxiv.org/abs/1809.03057 .Sidford, A., Wang, M., Yang, L., and Ye, Y. Solving discounted stochastic two-player games with near-optimal time and sample complexity. In Chiappa, S. and Calandra, R. (eds.), The 23rd International Conference on Artificial Intelligence and Statistics, AISTATS 2020, 26-28 August 2020, Online [Palermo, Sicily, Italy] , volume 108 of Proceedings of Machine Learning Research , pp. 2992–3002. PMLR, 2020. URL http://proceedings.mlr.press/v108/sidford20a.html .12 Southey, F., Bowling, M., Larson, B., Piccione, C., Burch, N., Billings, D., and Rayner, C. Bayes’ bluff: Opponent modelling in poker. In Proceedings of the Twenty-First Conference on Uncertain-tyin Artificial Intelligence (UAI) , pp. 550–558, 2005. Steinberger, E., Lerer, A., and Brown, N. DREAM: deep regret minimization with advantage baselines and model-free learning. CoRR , abs/2006.10410, 2020. URL https://arxiv.org/abs/2006. 10410 .Strens, M. A Bayesian Framework for Reinforcement Learning. In International Conference on Machine Learning , 2000. Tammelin, O. Solving large imperfect information games using CFR+. arXiv preprint arXiv:1407.5042 , 2014. von Neumann, J. Zur Theorie der Gesellschaftsspiele. Mathematische Annalen , 100:295–320, 1928. ISSN 0025-5831; 1432-1807/e. von Stengel, B. Efficient computation of behavior strategies. Games and Economic Behavior , 14(2): 220–246, 1996. Waugh, K. and Bagnell, J. A. A unified view of large-scale zero-sum equilibrium computation. CoRR ,abs/1411.5007, 2014. URL http://arxiv.org/abs/1411.5007 .Wei, C., Lee, C., Zhang, M., and Luo, H. Last-iterate convergence of decentralized optimistic gradient descent/ascent in infinite-horizon competitive markov games. In Belkin, M. and Kpotufe, S. (eds.), Conference on Learning Theory, COLT 2021, 15-19 August 2021, Boulder, Colorado, USA , volume 134 of Proceedings of Machine Learning Research , pp. 4259–4299. PMLR, 2021. URL http://proceedings.mlr.press/v134/wei21a.html .Wei, C.-Y., Hong, Y.-T., and Lu, C.-J. Online reinforcement learning in stochastic games. In Guyon, I., Luxburg, U. V., Bengio, S., Wallach, H., Fergus, R., Vishwanathan, S., and Garnett, R. (eds.), Advances in Neural Information Processing Systems , volume 30. Cur-ran Associates, Inc., 2017. URL https://proceedings.neurips.cc/paper/2017/file/ 36e729ec173b94133d8fa552e4029f8b-Paper.pdf .Xie, Q., Chen, Y., Wang, Z., and Yang, Z. Learning zero-sum simultaneous-move markov games using function approximation and correlated equilibrium. In Abernethy, J. and Agar-wal, S. (eds.), Proceedings of Thirty Third Conference on Learning Theory , volume 125 of 
+
+Proceedings of Machine Learning Research , pp. 3674–3682. PMLR, 09–12 Jul 2020. URL 
+
+https://proceedings.mlr.press/v125/xie20a.html .Zhang, B. H. and Sandholm, T. Finding and Certifying (Near-) Optimal Strategies in Black-Box Extensive-Form Games. In AAAI Conference on Artificial Intelligence , 2021. Zhang, C., Bengio, S., Hardt, M., Recht, B., and Vinyals, O. Understanding deep learning (still) requires rethinking generalization. Commun. ACM , 64(3):107–115, feb 2021. ISSN 0001-0782. doi: 10.1145/3446776. URL https://doi.org/10.1145/3446776 .Zhang, K., Kakade, S., Basar, T., and Yang, L. Model-based multi-agent rl in zero-sum markov games with near-optimal sample complexity. In Larochelle, H., Ranzato, M., Hadsell, R., Balcan, M., and Lin, H. (eds.), Advances in Neural Information Processing Systems , volume 33, pp. 1166–1178. Curran Associates, Inc., 2020. URL https://proceedings.neurips.cc/paper/2020/file/ 0cc6ee01c82fc49c28706e0918f57e2d-Paper.pdf .Zhou, Y., Li, J., and Zhu, J. Posterior sampling for multi-agent reinforcement learning: solving exten-sive games with imperfect information. In International Conference on Learning Representations ,2020. URL https://openreview.net/pdf?id=Syg-ET4FPS .Zinkevich, M., Johanson, M., Bowling, M., and Piccione, C. Regret minimization in games with incomplete information. Neural Information Processing Systems , 2007. 13 Appendix and Checklist 
+
+## A Related works 
+
+In this section, we review previous works on learning an ε-optimal strategy in IIGs. 
+
+Full feedback When the game is known, that is the information set structure space, transitions probability, and reward function are provided, a first line of work recasts the setting through the sequence-form representation of a game as a linear program which can be solved efficiently (Ro-manovsky, 1962; von Stengel, 1996; Koller et al., 1996). A second line of work relies on first-order optimization methods for saddle point computation (Hoda et al., 2010; Kroer et al., 2015, 2018, 2020; Munos et al., 2020; Lee et al., 2021). In particular Hoda et al. (2010); Kroer et al. (2018) relies on the Nesterov smoothing technique Nesterov (2005) whereas Kroer et al. (2015, 2020) use the 
+
+MirrorProx algorithm (Nemirovski, 2004). These methods have a rate of convergence of order 
+
+eO(poly( H, A X , B Y )/ε ).A third approach, counterfactual regret minimization (Zinkevich et al., 2007), leverages local regret minimization, i.e. minimizing a type of regret at each information set. Popular algorithms are based on the regret-matching algorithm (Hart & Mas-Colell, 2000; Gordon, 2007) such as CFR algorithm (Zinkevich et al., 2007) or based on a close variant of regret-matching, e.g. CFR+ (Tammelin, 2014; Burch et al., 2019; Farina et al., 2021a). Note that other local regret minimizers could be used, see for example Waugh & Bagnell (2014); Farina et al. (2019b). These algorithms enjoy a guarantee of convergence of order eO(poly( H, A X , B Y )/ε 2).Nevertheless, all the methods described above need to explore the whole information set tree (or the whole state space) in order to compute one update. The cost of one traversal is of order O(X + Y ) if the transitions and the actions of the other player are sampled; see for example the external-sampling 
+
+MCCFR algorithm (Lanctot et al., 2009). 
+
+Trajectory feedback A way to tackle the aforementioned issues is to consider the agnostic setting where the agent has no prior knowledge of the game and only observes trajectories of the game .Precisely, the rewards and the transition probabilities are unknown. 
+
+Model-based A first method to deal with this limited feedback is to build a model of the game and then run any full feedback algorithm in this model. For example, Zhou et al. (2020) use posterior sampling (PS, Strens, 2000) to learn a model and then use the CFR algorithm in games sampled from the posterior. They obtain a convergence rate of order eO(poly( H, S, A, B )/ε 2) but only when the games are actually sampled according to the known prior. Instead, Zhang & Sandholm (2021) relies on the principle of optimism in the presence of uncertainty to incrementally build a model of the game. Then, the CFR algorithm is fed with optimistic estimates of the local regrets. They prove a high-probability sample complexity of order eO(poly( H, S, A, B )/ε 2).
+
+Model-free Another line of work (Lanctot et al., 2009; Johanson et al., 2012; Schmid et al., 2018; Farina et al., 2020) directly estimates the local regret via importance sampling that is then fed to the CFR algorithm. In particular, the outcome-sampling MCCFR (Lanctot et al., 2009; Farina et al., 2020) builds an importance sampling estimate of the counterfactual regret by playing according to a well-chosen balanced policy . Intuitively, this policy should ensure to explore all the information sets .Note that, depending on the structure of the information set space, playing uniformly over the actions at each information set is not necessarily a good choice. Instead, Farina et al. (2020) propose as a balanced policy to play action with probability proportional to the number of leaves in the sub-tree of possible next information sets. In particular, the outcome-sampling MCCFR algorithm requires the knowledge of the information set space structure to build its balanced policy. Nonetheless, in order to obtain ε-optimal strategies with high probability, MCCFR needs at most eO(H3(AX + BY )/ε 2)
+
+realizations of the game (Farina et al., 2020; Bai et al., 2022). Later, Kozuno et al. (2021) proposed to combine Online Mirror Descent ( OMD ) with dilated Shannon entropy as regularizer and importance sampling estimate of the losses of a player, see also Farina et al. (2021b). They prove a sample complexity, for the proposed algorithm, IXOMD , of order 14 eO(H2(XA X + Y B Y )/ε 2). Interestingly, they do not need to know in advance the structure of the information set space to obtain this bound. However, the sample complexity of IXOMD does not match the lower bound for this setting which is of order O(( AX + BY )/ε 2). Recently, Bai et al. (2022) proposed the Balanced OMD algorithm that enjoys also relies on OMD but with a dilated entropy weighted by the realization plans of balanced policies as regularizers. For this algorithm, they prove a sample complexity of order eO(H3(AX + BY )/ε 2).
+
+Perfect information Markov game Another line of work considers Markov game Kuhn (1953) with perfect information and limited feedback. However, it does not assume perfect recall. Sidford et al. (2020); Zhang et al. (2020); Daskalakis et al. (2020); Wei et al. (2021) consider the case where a generative model is available whereas Wei et al. (2017); Bai et al. (2020); Xie et al. (2020); Liu et al. (2021) deal with the trajectory feedback case. Although this setting is related to ours there is no direct comparison between the two. 
+
+## B Regret estimation 
+
+In this section, we aim to establish Theorem 2.2 of the main paper. We start by stating a Bernstein-type inequality that we will use multiple times. It can be found e.g. in Exercise 5.15 by Lattimore & Szepesvári (2020). We provide a short proof below as we did not find any for this precise statement. 
+
+Lemma B.1. Let (U t)t∈[T ] be a sequence of random variables with respect to a filtration F, and 
+
+γ > 0 be a fixed constant such that for all t, γU t ≤ 1. Then with a probability of at least 1 − δ′:
+
+> T
+
+X
+
+> t=1
+
+ U t − E U t Ft−1 ≤ γ
+
+> T
+
+X
+
+> t=1
+
+E (U t)2 Ft−1 + 1
+
+γ log( 1
+
+δ′ )
+
+Proof. For any t ∈ [T ], using the inequalities exp( x) ≤ 1 + x + x2 for all x ≤ 1 and 1 + x ≤ exp( x)
+
+for all x ∈ R, we have 
+
+E exp  γU t Ft−1 ≤ E 1 + γU t + γ2(U t)2 Ft−1
+
+= 1 + γE U t Ft−1 + γ2E (U t)2 Ft−1
+
+≤ exp  γE U t Ft−1 + γ2E (U t)2 Ft−1 .
+
+This implies that the random process (St)t∈[T ] defined by 
+
+St := exp 
+
+> t
+
+X
+
+> k=1
+
+γ  U k − E U k Fk−1 −
+
+> t
+
+X
+
+> k=1
+
+γ2E (U k)2 Fk−1!
+
+is a super-martingale, with S0 = 1 . Using the Markov inequality, we then get 
+
+P
+
+ 1
+
+γ log( ST ) > 1
+
+γ log 
+
+ 1
+
+δ′
+
+ 
+
+= P
+
+
+
+ST > 1
+
+δ′
+
+
+
+≤ δ′ E(ST ) ≤ δ′
+
+which immediately yields the stated inequality with probability at least 1 − δ′.This lemma is then used for Theorem 2.2. The filtration (Ft)t∈[T ] will be used, such that Ft is the sigma-algebra of all variables of the self-play algorithm up to the execution of episode t + 1 .
+
+Theorem B.2. Assume that the estimated losses are obtained with a fixed positive sampling policy 
+
+μs as above. Then, for any sequence (μt)t∈[T ] of Πmin and any δ ∈ (0 , 1) , the following bound holds with a probability at least 1 − δ
+
+RT 
+
+> min
+
+≤ max 
+
+n ˆRT
+
+> min
+
+, 0
+
+o
+
++ 4 pιHκ (μs)T
+
+where 
+
+ι := log 
+
+ AX + 1 
+
+δ
+
+
+
+and κ(μs) := max 
+
+> μ∈Πmin
+
+X
+
+> x∈X
+
+X
+
+> a∈A x
+
+μ1: (x, a )
+
+μs
+
+> 1:
+
+(x, a ) .
+
+15 Proof. We want to show that, with probability at least 1 − δ, that 
+
+> t
+
+X
+
+> t=1
+
+D
+
+ℓt − bℓt, μ t 
+
+> 1:
+
+− μ1: 
+
+E
+
+≤ 4pιHκ (μs)T
+
+holds for all μ ∈ Πmin . Then the property follows after re-organizing the inequality and maximizing over μ. In order to do so, we divide this term into two parts: 
+
+> T
+
+X
+
+> t=1
+
+D
+
+ℓt − bℓt, μ t 
+
+> 1:
+
+− μ1: 
+
+E
+
+=
+
+> T
+
+X
+
+> t=1
+
+Dbℓt − ℓt, μ 1: 
+
+E| {z }
+
+> EST I
+
++
+
+> T
+
+X
+
+> t=1
+
+D
+
+ℓt − bℓt, μ t
+
+> 1:
+
+E| {z }
+
+> EST II
+
+.
+
+We will furthermore assume that HT ≥ ικ (μs), as otherwise, 4pιHκ (μs)T ≤ 4HT and the property immediately follows from RT 
+
+> min
+
+≤ HT .
+
+Upper bound of EST I For all x ∈ X of depth h and a ∈ A (x), we apply Lemma B.1 to the random process 
+
+U tx,a = ℓthI{x=xth,a =ath}
+
+with δ′ = δ/ (AX + 1) and a fixed γ1 ∈ (0 , 1] we will specify later. This yields, with a probability at least 1 − δ′, that 
+
+> T
+
+X
+
+> t=1
+
+
+
+ℓthI{x=xth,a =ath} − E
+
+h
+
+ℓthI{x=xth,a =ath} Ft−1i 
+
+≤ γ1
+
+> T
+
+X
+
+> t=1
+
+E
+
+h ℓth
+
+2 I{x=xth,a =ath} Ft−1i
+
++ ιγ1
+
+≤ γ1
+
+> T
+
+X
+
+> t=1
+
+E
+
+h
+
+ℓthI{x=xth,a =ath} Ft−1i
+
++ ιγ1
+
+.
+
+By definition of the estimated loss, ℓthI{x=xth,a =ath}/μ s
+
+> 1:
+
+(x, a ) = bℓt(x, a ). We thus divide by 
+
+μs
+
+> 1:
+
+(x, a ) both sides of the inequality, and the unbiasedness of the loss estimator yields 
+
+> T
+
+X
+
+> t=1
+
+hbℓt(x, a ) − ℓt(x, a )
+
+i
+
+≤ γ1
+
+> T
+
+X
+
+> t=1
+
+ℓt(x, a ) + ιγ1μs 
+
+> 1
+
+: ( x, a ) .
+
+This inequality holds for all (x, a ) with a probability of at least 1 − δA X /(AX + 1) . Taking the scalar product with any μ ∈ Πmin then gives 
+
+> T
+
+X
+
+> t=1
+
+Dbℓt − ℓt, μ 1: 
+
+E
+
+≤ γ1
+
+> T
+
+X
+
+> t=1
+
+ℓt, μ 1: + 1
+
+γ1
+
+X
+
+> x∈X
+
+X
+
+> a∈A (x)
+
+μ1: (x, a )
+
+μs
+
+> 1:
+
+(x, a )
+
+≤ γ1HT + ιγ1
+
+κ(μs) .
+
+Using γ1 = pικ (μs)/(HT ) ≤ 1 (by assumption), finally yields EST I ≤ 2pιHκ (μs)T . 
+
+Upper bound of EST II For this upper bound, we apply Lemma B.1 directly to the sequence U t =D
+
+−bℓt, μ t
+
+> 1:
+
+E
+
+. We now choose γ2 ∈ R+ (no further assumption is needed on γ2 as the sequence is negative) and apply the lemma to get with probability at least 1 − δ/ (AX + 1) 
+
+16 TX
+
+> t=1
+
+D
+
+ℓt − bℓt, μ t
+
+> 1:
+
+E
+
+≤ γ2
+
+> T
+
+X
+
+> t=1
+
+E
+
+Dbℓt, μ t
+
+> 1:
+
+E2
+
+Ft−1
+
+
+
++ ιγ2
+
+= γ2
+
+> T
+
+X
+
+> t=1
+
+E
+
+
+
+> H
+
+X
+
+> h=1
+
+ ℓth
+
+ X 
+
+> x∈X
+
+X
+
+> a∈A (x)
+
+I{x=xth,a =ath}
+
+μt
+
+> 1:
+
+(x, a )
+
+μs
+
+> 1:
+
+(x, a )
+
+
+
+> 2
+
+Ft−1
+
+ + ιγ2
+
+(Cauchy-Schwarz) ≤ γ2H
+
+> T
+
+X
+
+> t=1
+
+E
+
+
+
+> H
+
+X
+
+> h=1
+
+ ℓth
+
+2 X
+
+> x∈X
+
+X
+
+> a∈A (x)
+
+I{x=xth,a =ath}
+
+μt
+
+> 1:
+
+(x, a )2
+
+μs
+
+> 1:
+
+(x, a )2 Ft−1
+
+ + ιγ2
+
+≤ γ2H
+
+> T
+
+X
+
+> t=1
+
+E
+
+
+
+> H
+
+X
+
+> h=1
+
+ℓth
+
+X
+
+> x∈X
+
+X
+
+> a∈A (x)
+
+I{x=xth,a =ath}
+
+μt
+
+> 1:
+
+(x, a )
+
+μs
+
+> 1:
+
+(x, a )2 Ft−1
+
+ + ιγ2
+
+= γ2H
+
+> T
+
+X
+
+> t=1
+
+E
+
+
+
+> H
+
+X
+
+> h=1
+
+X
+
+> x∈X
+
+X
+
+> a∈A (x)
+
+bℓt(x, a ) μt
+
+> 1:
+
+(x, a )
+
+μs
+
+> 1:
+
+(x, a ) Ft−1
+
+ + ιγ2
+
+= γ2H
+
+> T
+
+X
+
+> t=1
+
+X
+
+> x∈X
+
+X
+
+> a∈A (x)
+
+ℓt(x, a ) μt
+
+> 1:
+
+(x, a )
+
+μs
+
+> 1:
+
+(x, a ) + ιγ2
+
+(as ℓt(x, a ) ≤ 1) ≤ γ2H
+
+> T
+
+X
+
+> t=1
+
+X
+
+> x∈X
+
+X
+
+> a∈A (x)
+
+μt
+
+> 1:
+
+(x, a )
+
+μs
+
+> 1:
+
+(x, a ) + ιγ2
+
+≤ γ2Hκ (μs)T + ιγ2
+
+.
+
+Taking γ2 = q ιHκ (μs)T then leads to 
+
+> T
+
+X
+
+> t=1
+
+D
+
+ℓt − bℓt, μ t
+
+> 1:
+
+E
+
+≤ 2pιHκ (μs)T . 
+
+Summing the two inequalities yields the inequality of the theorem with a probability of at least 
+
+1 − δ.
+
+## C Balanced policy and κ
+
+This section deals with the κ(μs) and local κ(μs|x) of the main paper, and links it to the balanced policy μ⋆.
+
+Recursive κ computation Let μs be the positive sample policy. For any μ ∈ Πmin and x ∈ X of depth h, we define κμ(μs|x) the local sum of ratios against μ in the subtree induced by x, i.e. 
+
+κμ(μs|x) := X   
+
+> x′∈X ,x is in the history of x′
+
+X
+
+> a′∈A (x′)
+
+μh:(x′, a ′)
+
+μsh:(x′, a ′)
+
+where, if (x′
+
+> 1
+
+, a ′
+
+> 1
+
+..., x ′ 
+
+> h′
+
+, a ′) is the history of (x′, a ′),
+
+μh:(x′, a ′) := Π h′ 
+
+> i=h
+
+μ(a′
+
+> i
+
+|x′
+
+> i
+
+) .
+
+We then formally define κ(μs|x) as κ(μs|x) := max μ∈Πmin κμ(μs|x). For any μ ∈ Πmin , the following recursive formula stands 
+
+κμ(μs|x) = X
+
+> a∈A (x)
+
+μ(a|x)
+
+μs(a|x)
+
+1 + X   
+
+> x′∈X ,x ′directly follows (x,a )
+
+κμ(μs|x′)
+
+
+
+17 that follows from the definition of κμ(μs|x). The same kind of recursion can then be obtained for 
+
+κ(μs|x), because each appearance of μ in the previous equality can be maximized independently (depending on different information sets). This yields 
+
+κ(μs|x) = max 
+
+> μ∈∆A(x)
+
+X
+
+> a∈A (x)
+
+μ(a)
+
+μs(a|x)
+
+1 + X   
+
+> x′∈X ,x ′directly follows (x,a )
+
+κ(μs|x′)
+
+
+
+= max 
+
+> a∈A (x)
+
+1
+
+μs(a|x)
+
+1 + X   
+
+> x′∈X ,x ′directly follows (x,a )
+
+κ(μs|x′)
+
+ , (1) which allows for a simple recursive computation of κ(μs|x). Finally, once the whole recursive computation is done, κ(μs) itself can be computed by, defining X1 the information sets of depth 1,
+
+κ(μs) = X
+
+> x1∈X 1
+
+κ(μs|x1) .
+
+Balanced policy κ(μs|x) can also be minimized over μs ∈ Πmin recursively from the leaves using the tree structure. Indeed, for each x ∈ X , assuming that the minimizers of κ(μs|x′) are already known for subsequent x′, the policy μs ∈ ∆A(x) that minimizes the maximum along the actions 
+
+a ∈ A (x) can be computed from (1) . Furthermore, if we define Aτ (x, a ) and Aτ (x) the total number of actions in the subtrees respectively induced by (x, a ) and x, i.e. 
+
+Aτ (x, a ) := 1 + X   
+
+> x′∈X ,(x,a )is in the history of x′
+
+|A (x′)| and Aτ (x) := X
+
+> a∈A (x)
+
+Aτ (x, a ) ,
+
+we can show that min μs∈Πmin κ(μs|x) = Aτ (x), and that the minimum is attained by the balanced policy μ⋆ defined by 
+
+μ⋆(a|x) := Aτ (x, a )
+
+Aτ (x) .
+
+Indeed, if we assume in (1) that the previous property holds for the κ(μs|x′), then 
+
+κ(μs|x) = max 
+
+> a∈A (x)
+
+1
+
+μs(a|x)
+
+1 + X   
+
+> x′∈X ,x ′directly follows (x,a )
+
+Aτ (x′)
+
+ = max 
+
+> a∈A (x)
+
+Aτ (x, a )
+
+μs(a|x)
+
+and the previous equality is minimized when the μs(a|x) are proportional to the Aτ (x, a ), achieved by the balanced policy μ⋆. With this policy, the same equality gives κ(μ⋆|x) = Aτ (x), which concludes the induction. Finally, computing κ(μ⋆) yields 
+
+κ(μ⋆) = X
+
+> x1∈X 1
+
+κ(μ⋆|x1) = X
+
+> x1∈X 1
+
+Aτ (x1) = AX .
+
+## D Generalized dual stabilized online mirror descent 
+
+This section will establish the bound related to the updates (GDS-OMD) obtained with any Legendre function. 
+
+D.1 General Bregman divergence properties 
+
+We start this section by stating multiple properties of the Bregman divergence DΨ for Ψ a convex function, continuously differentiable on an open Ω and defined on Ω, proved by Cesa-Bianchi & Lugosi (2006). 
+
+Law of cosines : For any x ∈ Ω and w, z ∈ Ω, the following equality holds 
+
+DΨ(x, w ) = DΨ(x, z ) + DΨ(z, w ) − ⟨∇ Ψ( w) − ∇ Ψ( z), x − z⟩ .
+
+18 Algorithm 3 Generalized dual-stabilized online mirror descent 
+
+1: Input: 
+
+A sequence of dual increments ξt
+
+An open subset Ω ∈ Rn and a closed convex C of Ω
+
+A sequence of Legendre regularizers (Ψ t)t∈[T ] on Ω such that for all t ∈ [T ], Ψt+1 − Ψt is convex An initial primal iterate w1 ∈ C 
+
+2: Output: 
+
+A sequence (wt)t∈[T ] of primal iterates 
+
+3: Algorithm: 
+
+For t = 1 to Tzt = ∇Ψt(wt)
+
+yt+1 = zt − ξt + ∇Ψt+1 (w1) − ∇ Ψt(w1)ˆwt+1 = ∇Ψt+1 ,⋆ (yt+1 )
+
+wt+1 = Π Ψt+1  
+
+> C
+
+( ˆ wt+1 )
+
+Bregman projection : For C a closed convex of Ω, and Ψ strictly convex, we can define the Bregman projection ΠΨ 
+
+> C
+
+over Ω by 
+
+ΠΨ 
+
+> C
+
+(w) = arg min 
+
+> z∈C
+
+DΨ(z, w ) .
+
+This Bregman projection satisfies a generalized Pythagorean inequality, for w ∈ Ω and z ∈ C 
+
+DΨ(z, w ) ≥ DΨ(z, ΠΨ 
+
+> C
+
+(w)) + DΨ(Π Ψ 
+
+> C
+
+(w), w )
+
+Fenchel dual : We defined the Fenchel dual Ψ⋆ of a Legendre function Ψ for any ξ ∈ Rn by 
+
+Ψ⋆(ξ) = sup 
+
+> w∈Ω
+
+⟨ξ, w ⟩ − Ψ( w) .
+
+If we consider Ω⋆ := ∇Ψ(Ω) , it can be shown that ∇Ψ⋆ is the inverse function of ∇Ψ over Ω⋆, i.e. for any w ∈ Ω, ∇Ψ⋆(∇Ψ( w)) = w. Furthermore, for w, z ∈ Ω,
+
+DΨ(w, z ) = DΨ⋆ (∇Ψ⋆(z), ∇Ψ⋆(y)) .
+
+Strong convexity: Ψ is said to be 1-strongly convex with respect to a norm ∥·∥ if for all w, z ∈ ΩΨ( z) ≥ Ψ( w) + ⟨∇ Ψ( w), z − w⟩ + 12 ∥w − z∥2 .
+
+In this case, the Bregman divergence of the Fenchel dual Ψ⋆ satisfies for any ξ1, ξ 2 ∈ Ω⋆
+
+DΨ⋆ (ξ1, ξ 2) ≤ ∥ ξ1 − ξ2∥2
+
+> ⋆
+
+where ∥·∥ ⋆ is the dual norm of ∥·∥ .
+
+D.2 GDS-OMD Analysis 
+
+We will assume in the following parts that the updates of the following algorithm are properly defined, which happens when all vectors yt+1 belong to the Fenchel dual space Ωt+1 ,⋆ := ∇Ψt+1 (Ω) . We make the same assumption on the regular OMD iterates zt − ξt.We start by giving an equivalent formulation of the updates (GDS-OMD) through Algorithm 3. 
+
+Proposition D.1. Algorithm 3 computes the updates (GDS-OMD) if they are properly defined, i.e. computes the sequence of primal iterates defined by 
+
+wt+1 = arg min 
+
+> w∈C
+
+ξt, w + DΨt
+
+ w, w t + DΨt+1 −Ψt
+
+ w, w 1 .
+
+19 Proof. By definition of ˆwt+1 in Algorithm 3, we have for all iterations t ∈ [T ] and w ∈ C 
+
+DΨt+1 (w, ˆwt+1 ) = Ψ t+1 (w) − ∇Ψt+1 ( ˆ wt+1 ), w + C1
+
+= Ψ t(w) +  Ψt+1 (w) − Ψt(w) − yt+1 , w + C1
+
+= ξt, w +  Ψt(w) − ∇Ψt(wt), w  +
+
+ Ψt+1 (w) − Ψt(w) − ∇Ψt+1 (w1) − ∇ Ψt(w1), w  + C1
+
+= ξt, w + DΨt
+
+ w, w t + DΨt+1 −Ψt
+
+ w, w 1 + C2
+
+where C1 and C2 are constants independent of the choice of w (but not independent of the other variables). As wt+1 = arg min w∈C DΨt+1 (w, ˆwt+1 ), the updates of Algorithm 3 coincide with the updates (GDS-OMD) , as both minimize the same function at each iteration up to an additive constant. The updates of Algorithm 3 are then used to show Theorem 3.2 below. Compared to the ones of McMahan (2017) that also allow adaptive regularization, these updates do not suffer from the potential linear rates observed by Orabona & Pál (2018). 
+
+Theorem D.2. Let (wt)t∈[T ] be a sequence of primal iterates generated by the updates (GDS-OMD) ,with convex incremental functions. Then for any w† ∈ Ω,
+
+> T
+
+X
+
+> t=1
+
+ξt, w t − w† ≤ DΨT (w†, w 1) + 
+
+> T
+
+X
+
+> t=1
+
+DΨt,⋆ 
+
+ ∇Ψt(wt) − ξt, ∇Ψt(wt)
+
+Proof. We can assume, without any incidence on the (wt)t∈[T ] sequence, that ΨT +1 = Ψ T . We also define for all t ∈ [T ] the notations φt = Ψ t+1 − Ψt and 
+
+ˆqt = ξt, ˆwt+1 + DΨt ( ˆ wt+1 , w t) + Dφt ( ˆ wt+1 , w 1) .
+
+We then divide the sum into a stability and a penalty terms: 
+
+> T
+
+X
+
+> t=1
+
+ξt, w t − w† =
+
+> T
+
+X
+
+> t=1
+
+ ˆqt − ξt, w † | {z }
+
+> penalty
+
++
+
+> T
+
+X
+
+> t=1
+
+  ξt, w t − ˆqt| {z }
+
+> stability
+
+and we look at upper-bounding these two terms. 
+
+Penalty term : For all t ∈ [T ], using the law of cosines on the Bregman divergences of Ψt and φt, we have the two equalities: 
+
+DΨt (w†, w t) = DΨt (w†, ˆwt+1 ) + DΨt ( ˆ wt+1 , w t) − ∇Ψt(wt) − ∇ Ψt( ˆ wt+1 ), w † − ˆwt+1 
+
+and 
+
+Dφt (w†, w 1) = Dφt (w†, ˆwt+1 ) + Dφt ( ˆ wt+1 , w 1) − ∇φt(w1) − ∇ φt( ˆ wt+1 ), w † − ˆwt+1 .
+
+Summing these two equalities, we get 
+
+DΨt (w†, w t) + Dφt (w†, w 1)= DΨt+1 (w†, ˆwt+1 ) + DΨt ( ˆ wt+1 , w t) + Dφt ( ˆ wt+1 , w 1) − ξt, w † − ˆwt+1 
+
+= DΨt+1 (w†, ˆwt+1 ) + ˆ qt − ξt, w †
+
+as by definition of ˆwt+1 and yt+1 ,
+
+∇Ψt+1 ( ˆ wt+1 ) = yt+1 = −ξt + ∇Ψt(wt) + ∇φt(w1) .
+
+Furthermore, as wt+1 = Π t+1  
+
+> C
+
+( ˆ wt+1 ), the Pythagorean inequality for the Bregman divergence yields that 
+
+DΨt+1 (w†, ˆwt+1 ) ≥ DΨt+1 (w†, w t+1 ) + DΨt+1 (wt+1 , ˆwt+1 ) ≥ DΨt+1 (w†, w t+1 ) .
+
+20 Injecting this in the previous equality and telescoping leads to 
+
+> T
+
+X
+
+> t=1
+
+ ˆqt − ξt, w †  =
+
+> T
+
+X
+
+> t=1
+
+ DΨt (w†, w t) + Dφt (w†, w 1) − DΨt+1 (w†, ˆwt+1 )
+
+≤
+
+> T
+
+X
+
+> t=1
+
+ DΨt (w†, w t) + Dφt (w†, w 1) − DΨt+1 (w†, w t+1 )
+
+= DΨT +1 (w†, w 1) − DΨT +1 (w†, w t+1 )
+
+≤ DΨT (w†, w 1)
+
+as ΨT = Ψ T +1 by definition. 
+
+Stability term : We first notice, for all t ∈ [T ], that 
+
+ξt, w t − ˆqt = ξt, w t − ˆwt+1 − DΨt ( ˆ wt+1 , w t) − Dφt ( ˆ wt+1 , w 1)
+
+≤ ξt, w t − ˆwt+1 − DΨt ( ˆ wt+1 , w t)
+
+≤ ξt, w t − ˜wt+1 − DΨt ( ˜ wt+1 , w t)
+
+where 
+
+˜wt+1 := arg min 
+
+> ˜w∈Ω
+
+ ξt, ˜w + DΨt ( ˜ w, w t)
+
+is the ˜wt+1 iterate that would be obtained using a classical OMD step with Ψt, without the stabiliza-tion. By optimality, it verifies 
+
+∇Ψt( ˜ wt+1 ) = ∇Ψt(wt) − ξt
+
+and the law of cosines then yields 
+
+DΨt (wt, w t) = DΨt (wt, ˜wt+1 ) + DΨt ( ˜ wt+1 , w t) − ∇Ψt(wt) − ∇ Ψt( ˜ wt+1 ), w t − ˜wt+1 
+
+(0) = DΨt (wt, ˜wt+1 ) + DΨt ( ˜ wt+1 , w t) − ξt, w t − ˜wt+1 .
+
+Plugging this in the first inequality, we directly get 
+
+ξt, w t − ˆqt ≤ DΨt (wt, ˜wt+1 )
+
+and we conclude using 
+
+DΨt (wt, ˜wt+1 ) = DΨt,⋆ (∇Ψt( ˜ wt+1 ), ∇Ψt(wt)) = DΨt,⋆ (∇Ψt(wt) − ξt, ∇Ψt(wt)) .
+
+## E LocalOMD analysis 
+
+This section will focus on the dilated entropy approach to extensive-form games, and especially on the updates 
+
+μt+1 = arg min 
+
+> μ∈Πmin
+
+Dbℓt, μ 1: 
+
+E
+
++ Ddil  
+
+> αt
+
+(μ, μ t) + Ddil  
+
+> αt+1 −αt
+
+(μ, μ 1) (GDS-OMD dilated) that are used by LocalOMD .
+
+E.1 General analysis 
+
+The following proposition shows that each update of this form can be computed recursively starting from the leaves of the tree. It requires for any t ∈ [T ] the vector qt that satisfies for any x ∈ X of depth hqt(x) = min 
+
+> μ∈Πmin
+
+Dbℓt, →x, μ →xh:
+
+E
+
++ Ddil ,→x 
+
+> αt
+
+(μ, μ t) + Ddil ,→x 
+
+> αt+1 −αt
+
+(μ, μ 1)
+
+where → x means that the quantity is considered on the sub-tree induced by x rather than the full information set tree, and μh: is defined in Appendix C. 21 Proposition E.1. Consider the previous updates (GDS-OMD dilated) and the vectors (qt)t∈[T ]
+
+above. Both μt+1 and qt can be computed recursively starting from the leaves of the tree through 
+
+μt+1 = arg min 
+
+> μ∈∆A(x)
+
+htx(μ) and qt(x) = min 
+
+> μ∈∆A(x)
+
+htx(μ)
+
+where 
+
+htx(μ) = 
+
+Deℓt(x, ·), μ 
+
+E
+
++ (1 /α t(x)) Dx(μ, μ t(·| x)) +  1/α t+1 (x) − 1/α t(x) Dx(μ, μ 1(·| x)) 
+
+and the regularized loss eℓt(x, a ) is defined by 
+
+eℓt(x, a ) := bℓt(x, a ) + X  
+
+> x′∈X | x′directly follows (x,a )
+
+qt(x′) .
+
+Proof. First, note that μt+1 is the unique minimizer associated to each qt(x1) for x1 the information set of depth 1. Indeed, each of the sub-tree induced by the x1 can be considered as an independent problem. The idea will be to recursively minimize the qt(x), starting from the leaves (i.e. the final information sets xH ), and compute μt+1 (|x) as the associated minimizer at each information set. This minimization is done through, at each x ∈ X of depth h, with a decomposition of qt(x). Indeed, separating the induced tree by x between the root and the rest of the tree leads to 
+
+qt(x) = arg min 
+
+> μ∈Πmin
+
+Dbℓt(x, ·), μ (·| x)
+
+E
+
++ (1 /α t(x)) Dx(μ(·| x), μ t(·| x)) +  1/α t+1 (x) − 1/α t(x) Dx(μ(·| x), μ 1(·| x)) + X
+
+> a∈A (x)
+
+μ(a|x) X 
+
+> x′∈X | x’ directly follows (x,a )
+
+hD bℓt, →x′
+
+, μ →x′
+
+> h+1:
+
+E
+
++ Ddil ,→x′ 
+
+> αt
+
+(μ, μ t) + Ddil ,→x′ 
+
+> αt+1 −αt
+
+(μ, μ 1)
+
+i
+
+= arg min 
+
+> μ∈∆A(x)
+
+Dbℓt(x, ·), μ 
+
+E
+
++ (1 /α t(x)) Dx(μ, μ t(·| x)) +  1/α t+1 (x) − 1/α t(x) Dx(μ, μ 1(·| x)) + X
+
+> a∈A (x)
+
+μ(a) X 
+
+> x′∈X | x’ directly follows (x,a )
+
+qt(x′)= arg min 
+
+> μ∈∆A(x)
+
+Deℓt(x, ·), μ 
+
+E
+
++ (1 /α t(x)) Dx(μ, μ t(·| x)) +  1/α t+1 (x) − 1/α t(x) Dx(μ, μ 1(·| x)) = arg min 
+
+> μ∈∆A(x)
+
+hx(μ)
+
+as each minimization on μ ∈ Πmin is done on independent components. This justifies the recursive computation of both μt+1 and qt.This proposition directly provides the proof of correctness of LocalOMD , for which the regularized losses at time step t are non-null only on the trajectory with 
+
+eℓt(x, a ) = 
+
+I{x=xth,a =ath}
+
+μs
+
+> 1:
+
+(x) eℓth .
+
+We now want to upper(bound the regret associated with this sequence μt. The following lemma gives a valuable property that links the regularized loss and the estimated loss. 
+
+Lemma E.2. For any policy μ′ ∈ Πmin , we have 
+
+Deℓt, μ ′
+
+> 1:
+
+E
+
+− X
+
+> x∈X
+
+μ′
+
+> 1:
+
+(x)qt(x) = 
+
+Dbℓt, μ ′
+
+> 1:
+
+E
+
+− ˆqt
+
+where ˆqt = min μ∈Πmin 
+
+Dbℓt, μ 1: 
+
+E
+
++ Ddil  
+
+> αt
+
+(μ, μ t) + Ddil  
+
+> αt+1 −αt
+
+(μ, μ 1)
+
+22 Proof. By definition of eℓt we have, for any μ ∈ Πmin 
+
+Deℓt, μ ′
+
+> 1:
+
+E
+
+=
+
+Dbℓt, μ ′
+
+> 1:
+
+E
+
++ X
+
+> x∈X
+
+X
+
+> a∈A x
+
+μ′
+
+> 1:
+
+(x, a ) X
+
+> x′|(x,a )
+
+−→x′
+
+qt(x′)=
+
+Dbℓt, μ ′
+
+> 1:
+
+E
+
++ X
+
+> x∈X
+
+X
+
+> a∈A x
+
+X
+
+> x′|(x,a )
+
+−→x′
+
+μ′
+
+> 1:
+
+(x′)qt(x′)=
+
+Dbℓt, μ ′
+
+> 1:
+
+E
+
++ X
+
+> x′∈X \X 1
+
+μ′
+
+> 1:
+
+(x′)qt(x′)=
+
+Dbℓt, μ ′
+
+> 1:
+
+E
+
++ X
+
+> x′∈X
+
+μ′
+
+> 1:
+
+(x′)qt(x′) − X
+
+> x′∈X 1
+
+qt(x′)
+
+in which we identified the components of the second sum as the set of non-initial information sets. We then conclude using P 
+
+> x∈X 1
+
+qt(x) = ˆ qt by definition of the qt terms. This lemma is then used to upper bound the estimated regret of the sequence generated by the updates (GDS-OMD dilated) . Indeed, while we could apply Theorem 3.2, the associated stability term, which depends on the Fenchel dual of the dilated entropy, is not easy to upper bound. Nonetheless, the proof of the following theorem is mostly the same but with a slightly different definition of the stability and penalty terms. 
+
+Theorem E.3. Let (μt)t∈[T ] be the sequence of policies generated by the updates 
+
+(GDS-OMD dilated) . The following bound holds 
+
+ˆRT ≤ sup 
+
+> μ†∈Πmin
+
+Ddil  
+
+> αT
+
+(μ†
+
+> 1:
+
+, μ 11: )
+
+| {z }
+
+> penalty
+
++
+
+> T
+
+X
+
+> t=1
+
+X
+
+> x∈X
+
+αt(x)μt
+
+> 1:
+
+(x)D⋆x
+
+
+
+∇Ψx(μt
+
+> 1:
+
+(·| x)) − 1
+
+αt(x) eℓt(x, ·), ∇Ψx(μt
+
+> 1:
+
+(·| x)) 
+
+| {z }
+
+> stability
+
+.
+
+Proof. The separation between the stability and the penalty terms is the same as in Theorem 3.2, but with ˆqt (of Lemma E.2) defined after the projection rather than before. This leads to the decomposition 
+
+ˆRT = max 
+
+> μ†∈Πmin
+> T
+
+X
+
+> t=1
+
+
+
+ˆqt −
+
+Dbℓt, μ †
+
+> 1:
+
+E | {z }
+
+> penalty
+
++
+
+> T
+
+X
+
+> t=1
+
+D bℓt, μ t
+
+> 1:
+
+E
+
+− ˆqt| {z }
+
+> stability
+
+.
+
+Penalty term: This part is similar to the general theorem. The optimality of μt+1 leads to, for any 
+
+t ∈ [T ],
+
+∇Ψt+1 (μt+1 1: ) = −bℓt − gt + ∇Ψt(μt
+
+> 1:
+
+) + ∇φt(μ11: ) .
+
+where gt ∈ Q⊥ 
+
+> max
+
+and φt = Ψ t+1 − Ψt. We use the same two law of cosines as in Theorem 3.2 
+
+DΨt (μ†
+
+> 1:
+
+, μ t
+
+> 1:
+
+) = DΨt (μ†
+
+> 1:
+
+, μ t+1 1: ) + DΨt (μt+1 1: , μ t
+
+> 1:
+
+) −
+
+D
+
+∇Ψt(μt
+
+> 1:
+
+) − ∇ Ψt(μt+1 1: ), μ † 
+
+> 1:
+
+− μt+1 1: 
+
+E
+
+Dφt (μ†
+
+> 1:
+
+, μ 11: ) = Dφt (μ†
+
+> 1:
+
+, μ t+1 1: ) + Dφt (μt+1 1: , μ 11: ) −
+
+D
+
+∇φt(μ11: ) − ∇ φt(μt+1 1: ), μ † 
+
+> 1:
+
+− μt+1 1: 
+
+E
+
+which yields by summing 
+
+DΨt (μ†
+
+> 1:
+
+, μ t
+
+> 1:
+
+) + Dφt (μ†
+
+> 1:
+
+, μ 11: )= DΨt+1 (μ†
+
+> 1:
+
+, μ t+1 1: ) + DΨt (μt+1 1: , μ t
+
+> 1:
+
+) + Dφ(μt+1 1: , μ 11: ) −
+
+Dbℓt + gt, μ † 
+
+> 1:
+
+− μt+1 1: 
+
+E
+
+= DΨt+1 (μ†
+
+> 1:
+
+, μ t+1 1: ) + ˆ qt −
+
+Dbℓt, μ †
+
+> 1:
+
+E
+
+23 where we used 
+
+D
+
+gt, μ † 
+
+> 1:
+
+− μt+1 1: 
+
+E
+
+= 0 from the orthogonality. Summing over t ∈ [T ] then gives, by telescoping similarly to the general theorem, 
+
+> T
+
+X
+
+> t=1
+
+
+
+ˆqt −
+
+Dbℓt, μ †
+
+> 1:
+
+E 
+
+=
+
+> T
+
+X
+
+> t=1
+
+
+
+DΨt (μ†
+
+> 1:
+
+, μ t
+
+> 1:
+
+) + Dφt (μ†
+
+> 1:
+
+, μ 11: ) − DΨt+1 (μ†
+
+> 1:
+
+, μ t+1 1: )
+
+
+
+= DΨT +1 (μ†
+
+> 1:
+
+, μ 11: ) − DΨT +1 (μ†
+
+> 1:
+
+, μ t+1 1: )
+
+≤ DΨT (μ†
+
+> 1:
+
+, μ 11: )
+
+Stability term: From Lemma E.2 used with μ′ = μt, we get an alternative expression of the stability term Dbℓt, μ t
+
+> 1:
+
+E
+
+− ˆqt =
+
+Deℓt, μ t
+
+> 1:
+
+E
+
+− X
+
+> x∈X
+
+μt
+
+> 1:
+
+(x)qt(x)
+
+This shows the stability term can be decomposed in a positive linear combination 
+
+Dbℓt, μ t
+
+> 1:
+
+E
+
+− ˆqt = X
+
+> x∈X
+
+μt
+
+> 1:
+
+(x)
+
+hD eℓt(x, ·), μ t(·| x)
+
+E
+
+− qt(x)
+
+i
+
+and we will individually upperbound each of the terms of the combination. The method is again similar to the general theorem, but locally with the regularized loss. Defining Ψtx := αt(x)Ψ x and 
+
+φtx := Ψ t+1  
+
+> x
+
+− Ψtx, we have 
+
+Deℓt(x, ·), μ t(·| x)
+
+E
+
+− qt(x)=
+
+Deℓt(x, ·), μ t(·| x) − μt+1 (·| x)
+
+E
+
+− DΨtx (μt+1 (·| x), μ t(·| x)) − Dφtx (μt+1 (·| x), μ 1(·| x)) 
+
+≤
+
+Deℓt(x, ·), μ t(·| x) − μt+1 (·| x)
+
+E
+
+− DΨtx (μt+1 (·| x), μ t(·| x)) 
+
+≤
+
+Deℓt(x, ·), μ t(·| x) − ˜μt+1 (·| x)
+
+E
+
+− DΨtx (˜ μt+1 (·| x), μ t(·| x)) 
+
+where 
+
+˜μt+1 (·| x) := arg min 
+
+> ˜μ∈Ωx
+
+hD eℓt(x, ·), ˜μ
+
+E
+
++ DΨtx (˜ μ, μ t(·| x)) 
+
+i
+
+By optimality, ˜μt+1 (·| x) verifies 
+
+∇Ψtx(˜ μt+1 (·| x)) = ∇Ψtx(μt(·| x)) − eℓt(x, ·)
+
+and the law of cosines yields 
+
+0 = DΨtx (μt(·| x), μ t(·| x)) = DΨtx (μt(·| x), ˜μt+1 (·| x)) + DΨtx (˜ μt+1 (·| x), μ t(·| x)) −
+
+∇Ψtx(μt(·| x)) − ∇ Ψtx(˜ μt+1 (·| x)) , μ t(·| x) − ˜μt+1 (·| x)
+
+= DΨtx (μt(·| x), ˜μt+1 (·| x)) + DΨtx (˜ μt+1 (·| x), μ t(·| x)) −
+
+Deℓt(x, ·), μ t(·| x) − ˜μt+1 (·| x)
+
+E
+
+Plugging this in the first inequality, we directly get 
+
+Deℓt(x, ·), μ t(·| x)
+
+E
+
+− qt(x) ≤ DΨtx (μt(·| x), ˜μt+1 (·| x)) 
+
+and we get the individual upper bounds with 
+
+DΨtx (μt(·| x), ˜μt+1 (·[x)) = αt(x)DΨx (μt(·| x), ˜μt+1 (·[x)) = αt(x)DΨ⋆x (∇Ψx(˜ μt+1 (·[x)) , ∇Ψx(μt(·| x))) = αt(x)DΨ⋆x
+
+
+
+∇Ψx(μt(·| x)) − 1
+
+αt(x) eℓt(x, ·), ∇Ψx(μt(·| x)) 
+
+
+
+This upper bound on the estimated regret is then used with the learning rates considered in the main article. 24 E.2 Optimal rates analysis 
+
+We first consider the optimal rates of the main paper. 
+
+Theorem E.4. Using LocalOMD with μ1 as the uniform policy, with the learning rates ηt(x) = 
+
+η/κ (μs|x) where η = plog( A)κ(μs)/(3 HT ), and with Ψx the Shannon entropy Ψx(μ) =P 
+
+> a∈A (x)
+
+μ(a) log( μ(a)) , the regret is bounded with a probability at least 1 − δ by 
+
+RT 
+
+> min
+
+≤
+
+
+
+4 + 2 √3
+
+
+
+H3/2plog( A)ικ (μs)T where ι = log(2( AX + 1) /δ ) .
+
+Proof. We apply Theorem E.3, using the relations αt(x) = 1 /(μs
+
+> 1:
+
+(x)ηt(x)) and I{x=xth}eℓth =
+
+μs
+
+> 1:
+
+(x)eℓt(x, ·). We again separately bound the penalty and stability terms. 
+
+Penalty term : We will denote by PEN this term defined by 
+
+PEN := sup 
+
+> μ†∈Πmin
+
+Ddil  
+
+> αT
+
+(μ†
+
+> 1:
+
+, μ 11: ) .
+
+By definition of the dilated entropy, we have, using that μ1 is the uniform policy and that the Bregman divergence of the Shannon entropy is the Kullback-Leibler divergence, 
+
+PEN = sup 
+
+> μ†∈Πmin
+
+X
+
+> x∈X
+
+μ†
+
+> 1:
+
+(x)κ(μs|x)
+
+ημ s
+
+> 1:
+
+(x) DΨ(μ†(·| x), μ 1(·| x)) = 1
+
+η sup 
+
+> μ†∈Πmin
+
+X
+
+> x∈X
+
+μ†
+
+> 1:
+
+(x)κ(μs|x)
+
+μs
+
+> 1:
+
+(x)
+
+X
+
+> a∈A (x)
+
+μ†(a|x) log( μ†(a|x)/μ 1(a|x)) 
+
+≤ 1
+
+η sup 
+
+> μ†∈Πmin
+
+X
+
+> x∈X
+
+μ†
+
+> 1:
+
+(x)κ(μs|x)
+
+μs
+
+> 1:
+
+(x)
+
+X
+
+> a∈A (x)
+
+μ†(a|x) log(1 /μ 1(a|x)) 
+
+≤ log( A)
+
+η sup 
+
+> μ†∈Πmin
+
+X
+
+> x∈X
+
+μ†
+
+> 1:
+
+(x)
+
+μs
+
+> 1:
+
+(x) κ(μs|x)= log( A)
+
+η sup 
+
+> μ†∈Πmin
+> H
+
+X
+
+> h=1
+
+X
+
+> x∈X h
+
+μ†
+
+> 1:
+
+(x)
+
+μs
+
+> 1:
+
+(x) sup 
+
+> μ′∈Πmin
+
+X  
+
+> x′∈X | xis in the history of x′
+
+X
+
+> a′∈A (x′)
+
+μ′
+
+> h:
+
+(x′, a ′)
+
+μsh:(x′, a ′)
+
+≤ log( A)
+
+η
+
+> H
+
+X
+
+> h=1
+
+sup 
+
+> μ†∈Πmin
+
+X
+
+> x∈X h
+
+μ†
+
+> 1:
+
+(x)
+
+μs
+
+> 1:
+
+(x) sup 
+
+> μ′∈Πmin
+
+X  
+
+> x′∈X | xis in the history of x′
+
+X
+
+> a′∈A (x′)
+
+μ′
+
+> h:
+
+(x′, a ′)
+
+μsh:(x′, a ′)(by independance ) = log( A)
+
+η
+
+> H
+
+X
+
+> h=1
+
+sup 
+
+> μ†∈Πmin
+
+X
+
+> x∈X h
+
+μ†
+
+> 1:
+
+(x)
+
+μs
+
+> 1:
+
+(x)
+
+X  
+
+> x′∈X | xis in the history of x′
+
+X
+
+> a′∈A (x′)
+
+μ†
+
+> h:
+
+(x′, a ′)
+
+μsh:(x′, a ′)= log( A)
+
+η
+
+> H
+
+X
+
+> h=1
+
+sup 
+
+> μ†∈Πmin
+
+X
+
+> x∈X h
+
+X  
+
+> x′∈X | xis in the history of x′
+
+X
+
+> a′∈A (x′)
+
+μ†
+
+> 1:
+
+(x′, a ′)
+
+μs
+
+> 1:
+
+(x′, a ′)= log( A)
+
+η
+
+> H
+
+X
+
+> h=1
+
+sup 
+
+> μ†∈Πmin
+
+X
+
+> x′∈X
+
+X
+
+> a′∈A (x′)
+
+μ†
+
+> 1:
+
+(x′, a ′)
+
+μs
+
+> 1:
+
+(x′, a ′)= log( A)
+
+η Hκ (μs)
+
+where Xh is the set of information sets of depth h, the two sums being later merged on the basis of perfect recall. We now look at the stability term. 
+
+Stability term : We will denote by STA this term defined by 
+
+STA := 
+
+> T
+
+X
+
+> t=1
+
+X
+
+> x∈X
+
+αt(x)μt
+
+> 1:
+
+(x)D⋆x
+
+
+
+∇Ψx(μt
+
+> 1:
+
+(·| x)) − 1
+
+αt(x) eℓt(x, ·), ∇Ψx(μt
+
+> 1:
+
+(·| x)) 
+
+
+
+25 We first look at an upper-bound of D⋆x
+
+
+
+∇Ψx(μt
+
+> 1:
+
+(·| x)) − 1 
+
+> αt(x)
+
+eℓt(x, ·), ∇Ψx(μt
+
+> 1:
+
+(·| x)) 
+
+
+
+. In or-der to do so, we upper-bound (in the symmetric matrix sense) the Hessian of Ψ⋆x on I := n
+
+∇Ψx(μt
+
+> 1:
+
+(·| x)) − γαt(x) eℓt(x, ·) γ ∈ [0 , 1] 
+
+o
+
+.Because Ψx(μ) = P 
+
+> a∈A (x)
+
+μ(a) log( μ(a)) is the Shannon entropy, 
+
+∇Ψx(μ)( a) = log( μ(a)) + 1 and thus ∇2Ψx(μ) = Diag {(1 /μ (a)) }a∈A (x)
+
+and the Hessian of Ψ⋆x is given by 
+
+∇2Ψ⋆(y) = ∇2Ψx(y)−1 = Diag {y(a)}a∈A (x) .
+
+In particular, it is upper bounded on I by the matrix Dμ defined by 
+
+Dμ := Diag {μ(a)}a∈A (x)
+
+This yields that 
+
+D⋆x
+
+
+
+∇Ψx(μt
+
+> 1:
+
+(·| x)) − 1
+
+αt(x) eℓt(x, ·), ∇Ψx(μt
+
+> 1:
+
+(·| x)) 
+
+
+
+≤ 12 ∥ 1
+
+αt(x) eℓt(x, ·)∥2
+
+> Dtμ(·| x)
+
+= 12αt(x)2
+
+X
+
+> a∈A (x)
+
+μt(a|x)eℓt(x, a )2
+
+which leads to 
+
+STA ≤
+
+> T
+
+X
+
+> t=1
+
+X
+
+> x∈X
+
+μt
+
+> 1:
+
+(x)2αt(x)
+
+X
+
+> a∈A (x)
+
+μt(a|x)eℓt(x, a )2
+
+= η
+
+2
+
+> T
+
+X
+
+> t=1
+
+X
+
+> x∈X
+
+I{x=xth}
+
+μt
+
+> 1:
+
+(x)
+
+μs
+
+> 1:
+
+(x)1
+
+κ(μs|x)
+
+X
+
+> a∈A (x)
+
+I{a=ath}μt(a|x)eℓth(a)2 .
+
+We can first notice from recursively comparing the minimizer μt+1 (·| xth) with μt(·| xth) that the regularized loss eℓth(ath), satisfies 
+
+eℓth(ath) ≤
+
+Dbℓt, →x, μ t, →xh+1: 
+
+E
+
+,
+
+re-using the notation at the beginning of the section, because the regularization does not evolve with time. The difficulty is now to upper bound STA with high probability. In order to do so, we use the Lemma B.1 on the sequence (U t)t∈[T ] defined by 
+
+U t := X
+
+> x∈X
+
+I{x=xth}
+
+μt
+
+> 1:
+
+(x)
+
+μs
+
+> 1:
+
+(x)1
+
+κ(μs|x)
+
+X
+
+> a∈A (x)
+
+I{a=ath}μt(a|x)eℓth(a)2
+
+with γ′ = γ ∈ (0 , 1/(H2κ(μs))] and δ′ = δ/ 2. This yields with probability at least 1 − δ/ 2
+
+> T
+
+X
+
+> t=1
+
+U t ≤
+
+> T
+
+X
+
+> t=1
+
+E U t Ft−1 + γ
+
+> T
+
+X
+
+> t=1
+
+E (U t)2 Ft−1 + ι/γ . 
+
+On the one hand, we have, using bℓth(ath) ≤ κ(μs|x) and the previous inequality that 
+
+E U t Ft−1 ≤ X
+
+> x∈X
+
+pt(x)μt(x) X
+
+> a∈A (x)
+
+ℓt, →x, μ t, →xh:
+
+≤ X
+
+> x∈X
+
+pt(x)μt(x)H
+
+≤ H2 .
+
+26 On the other hand, using the same inequality, 
+
+E (U t)2 Ft−1 = E
+
+ X
+
+> x∈X
+
+I{x=xth}
+
+μt
+
+> 1:
+
+(x)
+
+μs
+
+> 1:
+
+(x)
+
+X
+
+> a∈A (x)
+
+I{a=ath}
+
+Dbℓth(a), μ t(a|x)
+
+E
+
+> 2
+
+Ft−1
+
+
+
+≤ HE
+
+ X
+
+> x∈X
+
+I{x=xth}
+
+μt
+
+> 1:
+
+(x)2
+
+μs
+
+> 1:
+
+(x)2
+
+X
+
+> a∈A (x)
+
+I{a=ath}
+
+Dbℓth(a)2, μ t(a|x)2E
+
+Ft−1
+
+
+
+≤ Hκ (μs)E
+
+ X
+
+> x∈X
+
+I{x=xth}
+
+μt
+
+> 1:
+
+(x)
+
+μs
+
+> 1:
+
+(x)
+
+X
+
+> a∈A (x)
+
+I{a=ath}
+
+Dbℓth(a), μ t(a|x)
+
+E
+
+Ft−1
+
+
+
+≤ Hκ (μs) X
+
+> x∈X
+
+pt(x)μt(x) X
+
+> a∈A (x)
+
+ℓt, →x, μ t, →xh:
+
+≤ Hκ (μs) X
+
+> x∈X
+
+pt(x)μt(x)H
+
+≤ H3κ(μs) .
+
+The following upper bound on the stability term thus holds 
+
+STA ≤ η
+
+
+
+H2T + γH 3κ(μs)T + ιγ
+
+
+
+.
+
+Taking γ = 1 /(H2κ(μs)) , we obtain 
+
+STA ≤ η  2H2T + H2ικ (μs)
+
+As the bound of the theorem trivially holds if T < ικ (μs) (the regret being bounded by T anyway), we even have assuming T ≥ ικ (μs)STA ≤ 3ηH 2T . 
+
+Conclusion: Combining all the previous bounds, the estimated regret is bounded, with a probability of at least 1 − δ/ 2 by 
+
+ˆRT ≤ log( A)
+
+η Hκ (μs) + 3 ηH 2T . 
+
+Taking η = plog( A)κ(μs)/(3 HT ), we obtain 
+
+ˆRT ≤ 2√3 H3/2plog( A)ικ (μs)T . 
+
+We finally conclude by combining this bound with Theorem 2.2 for the true regret, using δ′ = δ/ 2,such that the two inequalities hold with a probability at least 1 − δ.
+
+E.3 Adaptive rates analysis 
+
+We end this appendix by considering the adaptive setting. We will assume that all regularizers Ψx are 1-strongly convex with respect to some norms ∥·∥ x, and we will define 
+
+CΨ : = sup  
+
+> x∈X ,μ ∈∆Ax
+
+Dx(μ, μ 1(·| x)) 
+
+C⋆ 
+
+> Ψ
+
+: = sup  
+
+> x∈X ,a ∈A x
+
+∥I{x,a }∥⋆x
+
+where μ1 is the initial policy considered in the algorithm and I{x,a } is the loss vector ℓ(x, ·) equal to 1 for a ∈ A (x) and 0 for a′ ∈ A (x)\ { a}. The following theorem is the formal statement of Theorem 4.1 in the main article. While being quite general, the upper bound is unsurprisingly not as tight as the previous one. 27 Theorem E.5. With such regularizers, assume that the learning rates are locally decreasing and let 
+
+λ1, λ 2 ∈ R>0 be two constants such that for all information set x ∈ X ,
+
+max  
+
+> t∈[T−1]
+
+ 1
+
+ηt+1 (x) − 1
+
+ηt(x)
+
+
+
+≤ λ1 and 1/η T (x) + 
+
+> T
+
+X
+
+> t=1
+
+ηt(x)I{x=xth} ≤ λ2
+
+√T
+
+Then with a probability at least 1 − δ, the regret of Algorithm 2 is upper-bounded by 
+
+RT 
+
+> max
+
+≤
+
+h
+
+2 [(1 + λ1) CΨC⋆
+
+> Ψ
+
+κ(μs)] 2 λ2|X | + 4 pHκ (μs)ι
+
+i √T
+
+where ι = log(( AX + 1) /δ ).
+
+The proof of this theorem will be based on the following lemma that bounds the regularized loss using the λ1 constant above. 
+
+Lemma E.6. For all t ∈ [T ] and h ∈ [H],
+
+eℓth(ath) ≤ (1 + λ1CΨ)κ(μs|xth) .
+
+Proof. The proof is done recursively on h, starting from the leaves. Indeed, for h = H, the property is immediate as eℓth(ath) ≤ 1/μ s(atH |xtH ) ≤ κ(μs|xtH ). If we assume that the property holds for a depth h > 1, then 
+
+qth = min 
+
+> μ∈∆A(xth)
+
+Deℓth, μ 
+
+E
+
++ 1
+
+ηt(xth) Dx
+
+ μ, μ t(·| xth) +
+
+ 1
+
+ηt+1 (xth) − 1
+
+ηt(xth)
+
+
+
+Dx
+
+ μ, μ 1(·| xth)
+
+≤
+
+Deℓth, μ t(·| xth)
+
+E
+
++
+
+ 1
+
+ηt+1 (xth) − 1
+
+ηt(xth)
+
+
+
+Dx
+
+ μt(·| xth), μ 1(·| xth)
+
+≤ eℓth(ath) + λ1CΨ .
+
+Then 
+
+eℓth−1(ath−1) = ( ℓth−1 + qth)/μ s(ath−1|xth−1)
+
+≤ (1 + λ1CΨ + eℓth(ath)) /μ s(ath−1|xth−1)
+
+≤ (1 + λ1CΨ)(1 + κ(μs|xth)) /μ s(ath−1|xth−1)
+
+≤ (1 + λ1CΨ)κ(μs|xth−1)
+
+which concludes the induction. 
+
+Proof. We now prove the theorem. We start with the estimated regret, that we decompose between the penalty term and the stability term using theorem E.3. 
+
+Penalty term: The penalty term PEN is bounded by 
+
+PEN ≤ sup 
+
+> μ†∈Πmin
+
+Ddil  
+
+> αT
+
+(μ†
+
+> 1:
+
+, μ 11: )
+
+≤ sup 
+
+> μ†∈Πmin
+
+X
+
+> x∈X
+
+1
+
+ηT (x)
+
+μ†
+
+> 1:
+
+(x)
+
+μs
+
+> 1:
+
+(x) Dx(μ†(·| x), μ 1(·| x)) 
+
+≤ CΨλ2
+
+√T sup 
+
+> μ†∈Πmin
+
+X
+
+> x∈X
+
+μ†
+
+> 1:
+
+(x)
+
+μs
+
+> 1:
+
+(x)
+
+≤ CΨλ2κ(μs)√T . 
+
+Stability term: For the stability term STA , we rely on Lemma E.6 and the 1-strong convexity of Ψx
+
+with respect to ∥·∥ x (see Appendix D.1) and get 28 STA = 
+
+> T
+
+X
+
+> t=1
+
+X
+
+> x∈X
+
+αt(x)μt
+
+> 1:
+
+(x)D⋆x
+
+
+
+∇Ψx(μt
+
+> 1:
+
+(·| x)) − 1
+
+αt(x) eℓt(x, ·), ∇Ψx(μt
+
+> 1:
+
+(·| x)) 
+
+
+
+≤
+
+> T
+
+X
+
+> t=1
+
+X
+
+> x∈X
+
+μt
+
+> 1:
+
+(x)
+
+αt(x) ∥eℓt(x, ·)∥⋆2
+
+> x
+
+≤
+
+> T
+
+X
+
+> t=1
+
+X
+
+> x∈X
+
+ηt(x)I{x=xth}
+
+μt
+
+> 1:
+
+(x)
+
+μs
+
+> 1:
+
+(x) ∥eℓth∥⋆2
+
+> x
+
+≤ [C⋆
+
+> Ψ
+
+]2
+
+> T
+
+X
+
+> t=1
+
+X
+
+> x∈X
+
+ηt(x)I{x=xth}
+
+μt
+
+> 1:
+
+(x)
+
+μs
+
+> 1:
+
+(x)
+
+eℓth(ath)
+
+2
+
+≤ [(1 + λ1) CΨC⋆
+
+> Ψ
+
+]2
+
+> T
+
+X
+
+> t=1
+
+X
+
+> x∈X
+
+ηt(x)I{x=xth}
+
+μt
+
+> 1:
+
+(x)
+
+μs
+
+> 1:
+
+(x) κ(μs|x)2
+
+≤ [(1 + λ1) CΨC⋆
+
+> Ψ
+
+]2 κ(μs)
+
+> T
+
+X
+
+> t=1
+
+X
+
+> x∈X
+
+ηt(x)I{x=xth}
+
+1
+
+μs
+
+> 1:
+
+(x) κ(μs|x)
+
+≤ [(1 + λ1) CΨC⋆
+
+> Ψ
+
+κ(μs)] 2
+
+> T
+
+X
+
+> t=1
+
+X
+
+> x∈X
+
+ηt(x)I{x=xth}≤ [(1 + λ1) CΨC⋆
+
+> Ψ
+
+κ(μs)] 2 λ2|X | √T . 
+
+Conclusion: By summing these two upper bounds we get 
+
+ˆRT ≤
+
+h
+
+CΨλ2κ(μs) + [(1 + λ1) CΨC⋆
+
+> Ψ
+
+κ(μs)] 2 λ2|X | 
+
+i √T
+
+≤ 2 [(1 + λ1) CΨC⋆
+
+> Ψ
+
+κ(μs)] 2 λ2|X | √T . 
+
+The bound is finally obtained using the Theorem 2.2 that holds with a probability of at least 1 − δ
+
+and links the estimated regret to the true regret. 
+
+## NeurIPS Paper Checklist 
+
+1. Claims 
+
+Question: Do the main claims made in the abstract and introduction accurately reflect the paper’s contributions and scope? Answer: [Yes] Justification: The main claims are proven in the theorems or observed in the experiments. Guidelines: • The answer NA means that the abstract and introduction do not include the claims made in the paper. • The abstract and/or introduction should clearly state the claims made, including the contributions made in the paper and important assumptions and limitations. A No or NA answer to this question will not be perceived well by the reviewers. • The claims made should match theoretical and experimental results, and reflect how much the results can be expected to generalize to other settings. • It is fine to include aspirational goals as motivation as long as it is clear that these goals are not attained by the paper. 2. Limitations 
+
+Question: Does the paper discuss the limitations of the work performed by the authors? 29 Answer: [Yes] Justification: Some limitations and possible improvements are mentioned in the conclusion. Guidelines: • The answer NA means that the paper has no limitation while the answer No means that the paper has limitations, but those are not discussed in the paper. • The authors are encouraged to create a separate "Limitations" section in their paper. • The paper should point out any strong assumptions and how robust the results are to violations of these assumptions (e.g., independence assumptions, noiseless settings, model well-specification, asymptotic approximations only holding locally). The authors should reflect on how these assumptions might be violated in practice and what the implications would be. • The authors should reflect on the scope of the claims made, e.g., if the approach was only tested on a few datasets or with a few runs. In general, empirical results often depend on implicit assumptions, which should be articulated. • The authors should reflect on the factors that influence the performance of the approach. For example, a facial recognition algorithm may perform poorly when image resolution is low or images are taken in low lighting. Or a speech-to-text system might not be used reliably to provide closed captions for online lectures because it fails to handle technical jargon. • The authors should discuss the computational efficiency of the proposed algorithms and how they scale with dataset size. • If applicable, the authors should discuss possible limitations of their approach to address problems of privacy and fairness. • While the authors might fear that complete honesty about limitations might be used by reviewers as grounds for rejection, a worse outcome might be that reviewers discover limitations that aren’t acknowledged in the paper. The authors should use their best judgment and recognize that individual actions in favor of transparency play an impor-tant role in developing norms that preserve the integrity of the community. Reviewers will be specifically instructed to not penalize honesty concerning limitations. 3. Theory Assumptions and Proofs 
+
+Question: For each theoretical result, does the paper provide the full set of assumptions and a complete (and correct) proof? Answer: [Yes] Justification: The proofs of the theorem (and the exact statement of Theorem 4.1) are provided in the Appendix. Guidelines: • The answer NA means that the paper does not include theoretical results. • All the theorems, formulas, and proofs in the paper should be numbered and cross-referenced. • All assumptions should be clearly stated or referenced in the statement of any theorems. • The proofs can either appear in the main paper or the supplemental material, but if they appear in the supplemental material, the authors are encouraged to provide a short proof sketch to provide intuition. • Inversely, any informal proof provided in the core of the paper should be complemented by formal proofs provided in appendix or supplemental material. • Theorems and Lemmas that the proof relies upon should be properly referenced. 4. Experimental Result Reproducibility 
+
+Question: Does the paper fully disclose all the information needed to reproduce the main ex-perimental results of the paper to the extent that it affects the main claims and/or conclusions of the paper (regardless of whether the code and data are provided or not)? Answer: [Yes] Justification: All implemented algorithms are fully specified. An open-access library (OpenSpiel) is used for an implementation of the games. 30 Guidelines: • The answer NA means that the paper does not include experiments. • If the paper includes experiments, a No answer to this question will not be perceived well by the reviewers: Making the paper reproducible is important, regardless of whether the code and data are provided or not. • If the contribution is a dataset and/or model, the authors should describe the steps taken to make their results reproducible or verifiable. • Depending on the contribution, reproducibility can be accomplished in various ways. For example, if the contribution is a novel architecture, describing the architecture fully might suffice, or if the contribution is a specific model and empirical evaluation, it may be necessary to either make it possible for others to replicate the model with the same dataset, or provide access to the model. In general. releasing code and data is often one good way to accomplish this, but reproducibility can also be provided via detailed instructions for how to replicate the results, access to a hosted model (e.g., in the case of a large language model), releasing of a model checkpoint, or other means that are appropriate to the research performed. • While NeurIPS does not require releasing code, the conference does require all submis-sions to provide some reasonable avenue for reproducibility, which may depend on the nature of the contribution. For example (a) If the contribution is primarily a new algorithm, the paper should make it clear how to reproduce that algorithm. (b) If the contribution is primarily a new model architecture, the paper should describe the architecture clearly and fully. (c) If the contribution is a new model (e.g., a large language model), then there should either be a way to access this model for reproducing the results or a way to reproduce the model (e.g., with an open-source dataset or instructions for how to construct the dataset). (d) We recognize that reproducibility may be tricky in some cases, in which case authors are welcome to describe the particular way they provide for reproducibility. In the case of closed-source models, it may be that access to the model is limited in some way (e.g., to registered users), but it should be possible for other researchers to have some path to reproducing or verifying the results. 5. Open access to data and code 
+
+Question: Does the paper provide open access to the data and code, with sufficient instruc-tions to faithfully reproduce the main experimental results, as described in supplemental material? Answer: [Yes] Justification: A link to an anonymous repository with instructions to run the code is provided. Guidelines: • The answer NA means that paper does not include experiments requiring code. • Please see the NeurIPS code and data submission guidelines ( https://nips.cc/ public/guides/CodeSubmissionPolicy ) for more details. • While we encourage the release of code and data, we understand that this might not be possible, so “No” is an acceptable answer. Papers cannot be rejected simply for not including code, unless this is central to the contribution (e.g., for a new open-source benchmark). • The instructions should contain the exact command and environment needed to run to reproduce the results. See the NeurIPS code and data submission guidelines ( https: //nips.cc/public/guides/CodeSubmissionPolicy ) for more details. • The authors should provide instructions on data access and preparation, including how to access the raw data, preprocessed data, intermediate data, and generated data, etc. • The authors should provide scripts to reproduce all experimental results for the new proposed method and baselines. If only a subset of experiments are reproducible, they should state which ones are omitted from the script and why. 31 • At submission time, to preserve anonymity, the authors should release anonymized versions (if applicable). • Providing as much information as possible in supplemental material (appended to the paper) is recommended, but including URLs to data and code is permitted. 6. Experimental Setting/Details 
+
+Question: Does the paper specify all the training and test details (e.g., data splits, hyper-parameters, how they were chosen, type of optimizer, etc.) necessary to understand the results? Answer: [Yes] Justification: The few details necessary to redo the experiments are provided. Guidelines: • The answer NA means that the paper does not include experiments. • The experimental setting should be presented in the core of the paper to a level of detail that is necessary to appreciate the results and make sense of them. • The full details can be provided either with the code, in appendix, or as supplemental material. 7. Experiment Statistical Significance 
+
+Question: Does the paper report error bars suitably and correctly defined or other appropriate information about the statistical significance of the experiments? Answer: [Yes] Justification: The variance over the multiple simulation is visible on the figures. Guidelines: • The answer NA means that the paper does not include experiments. • The authors should answer "Yes" if the results are accompanied by error bars, confi-dence intervals, or statistical significance tests, at least for the experiments that support the main claims of the paper. • The factors of variability that the error bars are capturing should be clearly stated (for example, train/test split, initialization, random drawing of some parameter, or overall run with given experimental conditions). • The method for calculating the error bars should be explained (closed form formula, call to a library function, bootstrap, etc.) • The assumptions made should be given (e.g., Normally distributed errors). • It should be clear whether the error bar is the standard deviation or the standard error of the mean. • It is OK to report 1-sigma error bars, but one should state it. The authors should preferably report a 2-sigma error bar than state that they have a 96% CI, if the hypothesis of Normality of errors is not verified. • For asymmetric distributions, the authors should be careful not to show in tables or figures symmetric error bars that would yield results that are out of range (e.g. negative error rates). • If error bars are reported in tables or plots, The authors should explain in the text how they were calculated and reference the corresponding figures or tables in the text. 8. Experiments Compute Resources 
+
+Question: For each experiment, does the paper provide sufficient information on the com-puter resources (type of compute workers, memory, time of execution) needed to reproduce the experiments? Answer: [NA] Justification: The experiments were run on a personal computer as they do not require heavy computations. Guidelines: • The answer NA means that the paper does not include experiments. 32 • The paper should indicate the type of compute workers CPU or GPU, internal cluster, or cloud provider, including relevant memory and storage. • The paper should provide the amount of compute required for each of the individual experimental runs as well as estimate the total compute. • The paper should disclose whether the full research project required more compute than the experiments reported in the paper (e.g., preliminary or failed experiments that didn’t make it into the paper). 9. Code Of Ethics 
+
+Question: Does the research conducted in the paper conform, in every respect, with the NeurIPS Code of Ethics https://neurips.cc/public/EthicsGuidelines ?Answer: [Yes] Justification: the research conducted in the paper fully conforms with the NeurIPS Code of Ethics. Guidelines: • The answer NA means that the authors have not reviewed the NeurIPS Code of Ethics. • If the authors answer No, they should explain the special circumstances that require a deviation from the Code of Ethics. • The authors should make sure to preserve anonymity (e.g., if there is a special consid-eration due to laws or regulations in their jurisdiction). 10. Broader Impacts 
+
+Question: Does the paper discuss both potential positive societal impacts and negative societal impacts of the work performed? Answer: [NA] Justification: This work is mostly theoretical and we are not aware of any societal impact. Guidelines: • The answer NA means that there is no societal impact of the work performed. • If the authors answer NA or No, they should explain why their work has no societal impact or why the paper does not address societal impact. • Examples of negative societal impacts include potential malicious or unintended uses (e.g., disinformation, generating fake profiles, surveillance), fairness considerations (e.g., deployment of technologies that could make decisions that unfairly impact specific groups), privacy considerations, and security considerations. • The conference expects that many papers will be foundational research and not tied to particular applications, let alone deployments. However, if there is a direct path to any negative applications, the authors should point it out. For example, it is legitimate to point out that an improvement in the quality of generative models could be used to generate deepfakes for disinformation. On the other hand, it is not needed to point out that a generic algorithm for optimizing neural networks could enable people to train models that generate Deepfakes faster. • The authors should consider possible harms that could arise when the technology is being used as intended and functioning correctly, harms that could arise when the technology is being used as intended but gives incorrect results, and harms following from (intentional or unintentional) misuse of the technology. • If there are negative societal impacts, the authors could also discuss possible mitigation strategies (e.g., gated release of models, providing defenses in addition to attacks, mechanisms for monitoring misuse, mechanisms to monitor how a system learns from feedback over time, improving the efficiency and accessibility of ML). 11. Safeguards 
+
+Question: Does the paper describe safeguards that have been put in place for responsible release of data or models that have a high risk for misuse (e.g., pretrained language models, image generators, or scraped datasets)? Answer: [NA] 33 Justification: This work presents no risk of misuse. Guidelines: • The answer NA means that the paper poses no such risks. • Released models that have a high risk for misuse or dual-use should be released with necessary safeguards to allow for controlled use of the model, for example by requiring that users adhere to usage guidelines or restrictions to access the model or implementing safety filters. • Datasets that have been scraped from the Internet could pose safety risks. The authors should describe how they avoided releasing unsafe images. • We recognize that providing effective safeguards is challenging, and many papers do not require this, but we encourage authors to take this into account and make a best faith effort. 12. Licenses for existing assets 
+
+Question: Are the creators or original owners of assets (e.g., code, data, models), used in the paper, properly credited and are the license and terms of use explicitly mentioned and properly respected? Answer: [Yes] Justification: The original paper behind OpenSpiel is cited. The version used and the license are specified. Guidelines: • The answer NA means that the paper does not use existing assets. • The authors should cite the original paper that produced the code package or dataset. • The authors should state which version of the asset is used and, if possible, include a URL. • The name of the license (e.g., CC-BY 4.0) should be included for each asset. • For scraped data from a particular source (e.g., website), the copyright and terms of service of that source should be provided. • If assets are released, the license, copyright information, and terms of use in the package should be provided. For popular datasets, paperswithcode.com/datasets 
+
+has curated licenses for some datasets. Their licensing guide can help determine the license of a dataset. • For existing datasets that are re-packaged, both the original license and the license of the derived asset (if it has changed) should be provided. • If this information is not available online, the authors are encouraged to reach out to the asset’s creators. 13. New Assets 
+
+Question: Are new assets introduced in the paper well documented and is the documentation provided alongside the assets? Answer: [NA] Justification: The paper does not release new assets. Guidelines: • The answer NA means that the paper does not release new assets. • Researchers should communicate the details of the dataset/code/model as part of their submissions via structured templates. This includes details about training, license, limitations, etc. • The paper should discuss whether and how consent was obtained from people whose asset is used. • At submission time, remember to anonymize your assets (if applicable). You can either create an anonymized URL or include an anonymized zip file. 14. Crowdsourcing and Research with Human Subjects 
+
+34 Question: For crowdsourcing experiments and research with human subjects, does the paper include the full text of instructions given to participants and screenshots, if applicable, as well as details about compensation (if any)? Answer: [NA] Justification: The paper does not involve crowdsourcing nor research with human subjects Guidelines: • The answer NA means that the paper does not involve crowdsourcing nor research with human subjects. • Including this information in the supplemental material is fine, but if the main contribu-tion of the paper involves human subjects, then as much detail as possible should be included in the main paper. • According to the NeurIPS Code of Ethics, workers involved in data collection, curation, or other labor should be paid at least the minimum wage in the country of the data collector. 15. Institutional Review Board (IRB) Approvals or Equivalent for Research with Human Subjects 
+
+Question: Does the paper describe potential risks incurred by study participants, whether such risks were disclosed to the subjects, and whether Institutional Review Board (IRB) approvals (or an equivalent approval/review based on the requirements of your country or institution) were obtained? Answer: [NA] Justification: The paper does not involve crowdsourcing nor research with human subjects. Guidelines: • The answer NA means that the paper does not involve crowdsourcing nor research with human subjects. • Depending on the country in which research is conducted, IRB approval (or equivalent) may be required for any human subjects research. If you obtained IRB approval, you should clearly state this in the paper. • We recognize that the procedures for this may vary significantly between institutions and locations, and we expect authors to adhere to the NeurIPS Code of Ethics and the guidelines for their institution. • For initial submissions, do not include any information that would break anonymity (if applicable), such as the institution conducting the review. 35
