@@ -1,0 +1,702 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-04T20:38:25.673256+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 21,
+    "deep_cap": 6,
+    "deep_selected": 6,
+    "quick_candidates": 23,
+    "quick_skim_target": 11,
+    "quick_selected": 11
+  },
+  "deep_dive": [
+    {
+      "id": "2606.04473v1",
+      "source": "arxiv",
+      "title": "ChessMimic: Per-Rating Transformer Models for Human Move, Clock, and Outcome Prediction in Online Blitz Chess",
+      "abstract": "We present ChessMimic, a system of three small encoder-only transformers - for move, thinking-time, and outcome prediction - conditioned on the position, recent move history, player rating, and clock state. We fit a separate instance of each model per 100-Elo rating band, trading parameter efficiency for sharper per-skill calibration. On a held-out month-wide slice of Lichess Rated Blitz games ChessMimic's human move prediction accuracy outperforms Maia-2 in every Elo band. Compared to Maia-3, our 9M parameter model's accuracy sits between Maia-3-5M and Maia-3-23M without the additional complexity of Geometric Attention Bias. In addition to the move matching model, we also train a game outcome model that conditions not only on the position, but also player ratings, time control, and remaining clock times. The outcome model achieves an AUC of 0.78 out of sample, beating Maia-2 as well as logistic regressions based on material, ratings, and clock time. Finally, we train a clock model that predicts human thinking times. The clock model provides a usable but non-SOTA per-ply think-time signal under ALLIE-style filters (Pearson r = 0.41, Spearman rho = 0.50, MAE 4.10 s, against ALLIE's reported r = 0.70), with the residual gap concentrated in per-position bucket sharpness rather than bucket-marginal calibration. A public demo is at 1e4.ai and we release code, per-band weights, and the C++ data-filter pipeline code in GitHub.",
+      "authors": [
+        "Thomas Johnson"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-06-03T05:42:39+00:00",
+      "link": "https://arxiv.org/pdf/2606.04473v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Human move prediction and player behavior modeling in chess game",
+      "llm_evidence_cn": "国际象棋中的人类走法预测和玩家行为建模",
+      "llm_evidence": "国际象棋中的人类走法预测和玩家行为建模",
+      "canonical_evidence": "国际象棋中的人类走法预测和玩家行为建模",
+      "llm_tldr_en": "ChessMimic uses per-rating transformer models to predict human moves, thinking time, and outcomes in online blitz chess, outperforming Maia models.",
+      "llm_tldr_cn": "该论文提出ChessMimic系统，针对不同等级分区间训练小型编码器变压器模型，用于在线闪电战中预测人类走法、思考时间和比赛结果，在走法预测上超越Maia-2和Maia-3的部分变体，为玩家行为建模提供了精细化方法。",
+      "llm_tldr": "该论文提出ChessMimic系统，针对不同等级分区间训练小型编码器变压器模型，用于在线闪电战中预测人类走法、思考时间和比赛结果，在走法预测上超越Maia-2和Maia-3的部分变体，为玩家行为建模提供了精细化方法。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "virtual game player modeling",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2605.28258v1",
+      "source": "arxiv",
+      "title": "GUI Agents for Continual Game Generation",
+      "abstract": "Generating a game is not the same as making one that can be played. Despite advances in code generation, existing approaches treat game generation as one-shot translation from prompt to artifact, leaving interaction-level failures undetected. We argue that evaluating and improving game generation requires a player, and study two roles for graphical user interface (GUI) agents in this process: (1) as an objective evaluator, for which we introduce PlaytestArena, a new evaluation environment that pairs 200 browser-based game generation tasks across eight genres with rubrics of expected in-play behaviors, adjudicated by a GUI agent that loads each build in a browser and plays it; and (2) as a subjective playtester, for which we propose Play2Code, where a game agent and a GUI agent operate in a sustained loop with shared memory, turning game generation into a dialogue between coding and playing. Our experiments show that even frontier models struggle to generate playable games directly, while Play2Code achieves a 66.8\\% rubric pass-rate, improving over single-pass and agentic-coding baselines by 37.1 and 14.6 points respectively. Further analysis shows that GUI playtester feedback is more traceable than a human report, yet idiosyncratic in ways reminiscent of human testers, establishing game playtesting as a critical testbed for interactive code generation. Our project website is available at https://continual-game-generation.vercel.app/.",
+      "authors": [
+        "Yixu Huang",
+        "Bo Li",
+        "Na Li",
+        "Zhe Wang",
+        "Kaijie Chen",
+        "Haonan Ge",
+        "Qingyi Si",
+        "Yuanzhe Shen",
+        "Ruihan Yang",
+        "Guangjing Wang",
+        "Hongcheng Guo"
+      ],
+      "primary_category": "cs.SE",
+      "categories": [
+        "cs.SE",
+        "cs.AI",
+        "cs.CV",
+        "cs.HC"
+      ],
+      "published": "2026-05-27T10:08:48+00:00",
+      "link": "https://arxiv.org/pdf/2605.28258v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "GUI agents act as players to evaluate and improve game generation, directly involving AI agent playing games",
+      "llm_evidence_cn": "GUI代理作为玩家评估和改进游戏生成，直接涉及AI代理玩游戏",
+      "llm_evidence": "GUI代理作为玩家评估和改进游戏生成，直接涉及AI代理玩游戏",
+      "canonical_evidence": "GUI代理作为玩家评估和改进游戏生成，直接涉及AI代理玩游戏",
+      "llm_tldr_en": "Proposes using GUI agents as evaluators and playtesters for game generation, with PlaytestArena and Play2Code frameworks.",
+      "llm_tldr_cn": "该论文指出游戏生成不应仅是一步翻译，而需要玩家交互测试。提出了GUI代理的两种角色：作为客观评估者（PlaytestArena）加载并游玩200款浏览器游戏以检测交互缺陷；作为主观体验者（Play2Code）与游戏代理共同迭代。这种方法将AI代理作为游戏评测的核心，为游戏自动生成提供了基于玩家行为反馈的新范式。",
+      "llm_tldr": "该论文指出游戏生成不应仅是一步翻译，而需要玩家交互测试。提出了GUI代理的两种角色：作为客观评估者（PlaytestArena）加载并游玩200款浏览器游戏以检测交互缺陷；作为主观体验者（Play2Code）与游戏代理共同迭代。这种方法将AI代理作为游戏评测的核心，为游戏自动生成提供了基于玩家行为反馈的新范式。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2605.30003v1",
+      "source": "arxiv",
+      "title": "Discovering Cooperative Pipelines: Autoresearch for Sequential Social Dilemmas",
+      "abstract": "We study two-level autoresearch for cooperation: an outer-loop AI agent autonomously redesigns the inner-loop pipeline of an LLM policy-synthesis system for multi-agent Sequential Social Dilemmas (SSDs). A researcher agent $\\mathcal{R}$ (run as a coding agent) reads the inner-loop source code, edits system prompts, feedback functions, helper libraries, and iteration logic, runs evaluations, and decides what to keep, following the autoresearch paradigm. Across two games (Cleanup and Gathering), two policy-synthesizer LLMs, and two welfare objectives (utilitarian efficiency and Rawlsian maximin), the researcher reliably exceeds hand-designed baselines, sharply tightens run-to-run variance, and outperforms prompt-only optimization. The discovered pipelines are objective-dependent: only under maximin does the researcher inject an explicit fairness mechanism into synthesizer pipelines, a class of mechanism that is absent from its own objective-agnostic system prompt and from every efficiency-optimized pipeline. This supports an information-design reading in which the researcher chooses what to reveal to the boundedly rational synthesizer as a function of the welfare objective. Code at https://github.com/vicgalle/autoresearch-social-dilemmas.",
+      "authors": [
+        "Víctor Gallego"
+      ],
+      "primary_category": "cs.MA",
+      "categories": [
+        "cs.MA",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-05-28T14:33:10+00:00",
+      "link": "https://arxiv.org/pdf/2605.30003v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Two-level autoresearch for cooperation in multiplayer games",
+      "llm_evidence_cn": "多层次自动研究在多玩家游戏中的合作策略",
+      "llm_evidence": "多层次自动研究在多玩家游戏中的合作策略",
+      "canonical_evidence": "多层次自动研究在多玩家游戏中的合作策略",
+      "llm_tldr_en": "An outer-loop AI agent autonomously redesigns inner-loop LLM policy synthesis for multi-agent sequential social dilemmas, exceeding hand-designed baselines.",
+      "llm_tldr_cn": "针对多智能体序贯社会困境中合作策略设计困难的问题，提出两层自动研究框架：外层研究者智能体自动优化内层LLM策略合成管道。在Cleanup和Gathering两个游戏中，该方法超越手工设计基线，降低方差，并发现创新合作策略。",
+      "llm_tldr": "针对多智能体序贯社会困境中合作策略设计困难的问题，提出两层自动研究框架：外层研究者智能体自动优化内层LLM策略合成管道。在Cleanup和Gathering两个游戏中，该方法超越手工设计基线，降低方差，并发现创新合作策略。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2605.31318v1",
+      "source": "arxiv",
+      "title": "Generalized Intention Modeling in Multi-Agent Reinforcement Learning",
+      "abstract": "Modeling an opponent's intent is critical for effective decision-making in non-cooperative, competitive, and general-sum multi-agent reinforcement learning. Existing opponent modeling methods encode intent using an embedding derived from episode information chosen a priori, such as the opponent's next action or a future environment state, and use this to guide the ego-agent's behavior. These approaches assume that the chosen information is universally representative of intent; however, we show empirically that this is not the case as intentions are often task- and environment-dependent. To address this, we introduce a task-adaptive opponent modeling framework that learns a performance-driven mixture of multiple intent representations. We further introduce a new intention representation that maximizes mutual information with the ego-agent's future returns, thereby capturing opponent information that is most directly relevant to performance. Our approach consistently matches or exceeds the performance of state-of-the-art baselines across diverse tasks and yields insights into when and why different opponent modeling strategies succeed.",
+      "authors": [
+        "Mateusz Odrowaz-Sypniewski",
+        "Jasmine Bayrooti",
+        "Ajay Shankar",
+        "Amanda Prorok"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.MA"
+      ],
+      "published": "2026-05-29T13:48:18+00:00",
+      "link": "https://arxiv.org/pdf/2605.31318v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Opponent intention modeling in multi-agent RL",
+      "llm_evidence_cn": "多智能体强化学习中的对手意图建模",
+      "llm_evidence": "多智能体强化学习中的对手意图建模",
+      "canonical_evidence": "多智能体强化学习中的对手意图建模",
+      "llm_tldr_en": "Generalized intention modeling introduces task-adaptive mixtures of intent representations, significantly improving opponent modeling in competitive MA RL.",
+      "llm_tldr_cn": "针对现有对手建模方法中意图表示固定、不适应任务变化的问题，提出任务自适应对手建模框架，学习性能驱动的多意图表示混合。在竞争性多智能体游戏中，该方法显著提升对对手行为的预测准确率，是玩家行为模拟的关键技术。",
+      "llm_tldr": "针对现有对手建模方法中意图表示固定、不适应任务变化的问题，提出任务自适应对手建模框架，学习性能驱动的多意图表示混合。在竞争性多智能体游戏中，该方法显著提升对对手行为的预测准确率，是玩家行为模拟的关键技术。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "player behavior simulation techniques",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.02556v1",
+      "source": "arxiv",
+      "title": "HERO'S JOURNEY: Testing Complex Rule Induction with Text Games",
+      "abstract": "We introduce HERO'S JOURNEY, a benchmark for rule induction in goal-directed episodic tasks, where agents must infer hidden rules from demonstrations and act on them through multi-step execution. HERO'S JOURNEY covers eight tasks across attribute and procedural induction families, each with four structural rule forms, controllable lexical grounding, and identifiability conditions. Evaluating state-of-the-art LLMs, we find that models show evidence of rule induction, but the ability is limited and uneven across tasks. Meanwhile, process execution adds an execution bottleneck for models, whereas surface semantics has minimal effect. Induction-specific steering methods improve performance on attribute tasks but show no reliable gains on procedural tasks, suggesting the gap in procedural induction remains an open challenge.",
+      "authors": [
+        "Anshun Asher Zheng",
+        "Kanishka Misra",
+        "David I. Beaver",
+        "Junyi Jessy Li"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-06-01T17:51:40+00:00",
+      "link": "https://arxiv.org/pdf/2606.02556v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "text games for testing agent rule induction",
+      "llm_evidence_cn": "文本游戏用于测试代理规则归纳",
+      "llm_evidence": "文本游戏用于测试代理规则归纳",
+      "canonical_evidence": "文本游戏用于测试代理规则归纳",
+      "llm_tldr_en": "Introduces HERO'S JOURNEY, a benchmark for rule induction in text games, evaluating LLM agents' ability to infer and execute hidden rules.",
+      "llm_tldr_cn": "该论文提出HERO'S JOURNEY基准，用于在文本游戏中测试代理的规则归纳能力。基准包含八类属性与过程归纳任务。实验发现，大语言模型虽能进行规则归纳，但能力有限且不均衡，过程执行成为瓶颈，针对性引导方法仅在属性任务上有效。这为游戏环境中的AI代理推理研究提供了重要评测工具。",
+      "llm_tldr": "该论文提出HERO'S JOURNEY基准，用于在文本游戏中测试代理的规则归纳能力。基准包含八类属性与过程归纳任务。实验发现，大语言模型虽能进行规则归纳，但能力有限且不均衡，过程执行成为瓶颈，针对性引导方法仅在属性任务上有效。这为游戏环境中的AI代理推理研究提供了重要评测工具。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.04202v1",
+      "source": "arxiv",
+      "title": "SMAC-Talk: A Natural Language Extension of the StarCraft Multi-Agent Challenge for Large Language Models",
+      "abstract": "As LLMs become more widely deployed, they are increasingly expected to work alongside other AI agents rather than operating in isolation. Effective coordination in these settings requires agents to communicate, share information and make decisions under uncertainty. We introduce SMAC-Talk, a natural language extension of the StarCraft Multi-Agent Challenge for evaluating LLM-based agents in cooperative multi-agent environments. The environment has several key features such as decentralized control, partial observability and long-horizon decision making. SMAC-Talk includes a natural language communication channel which is used to probe agent coordination and trust. We use this communication channel to construct different evaluation scenarios, including settings with an embedded deceptive communicator that tries to disrupt and deceive allies through communication alone. We provide three agents for benchmarking using 4 models from the Qwen3.5 family and study how reasoning structure, memory and model scale affect coordination between agents. We release SMAC-Talk as an open benchmark to support the research community in developing and evaluating LLM agents in cooperative multi-agent settings.",
+      "authors": [
+        "Joel Sol",
+        "Homayoun Najjaran"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-02T20:40:04+00:00",
+      "link": "https://arxiv.org/pdf/2606.04202v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "StarCraft multi-agent challenge extension for LLM agents playing games",
+      "llm_evidence_cn": "星际争霸多智能体挑战扩展，用于LLM代理玩游戏",
+      "llm_evidence": "星际争霸多智能体挑战扩展，用于LLM代理玩游戏",
+      "canonical_evidence": "星际争霸多智能体挑战扩展，用于LLM代理玩游戏",
+      "llm_tldr_en": "Introduces SMAC-Talk, a natural language extension of StarCraft Multi-Agent Challenge for evaluating LLM agents in cooperative game environments.",
+      "llm_tldr_cn": "针对LLM代理在游戏环境中协作能力评估需求，提出基于星际争霸多智能体挑战的自然语言扩展SMAC-Talk，支持去中心控制、部分可观测和长时决策，通过自然语言通信通道测试代理协调与信任，为游戏AI代理研究提供标准化评估平台。",
+      "llm_tldr": "针对LLM代理在游戏环境中协作能力评估需求，提出基于星际争霸多智能体挑战的自然语言扩展SMAC-Talk，支持去中心控制、部分可观测和长时决策，通过自然语言通信通道测试代理协调与信任，为游戏AI代理研究提供标准化评估平台。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2605.13918v1",
+      "source": "arxiv",
+      "title": "CA2: Code-Aware Agent for Automated Game Testing",
+      "abstract": "Automated game testing is important for verifying game functionality, but it remains a costly and time-consuming process. Manual testing often misses edge cases, and current automated methods struggle to provide full code coverage. Prior work has explored reinforcement learning (RL) for game testing, but without leveraging internal code signals such as the call stack. We present Code Aware Agent (CA2), which uses call stack information to learn effective testing strategies. The agent receives the current function call trace along with the game state and learns to reach specific target functions. We instrument two types of environments, 1) State-based and 2) Image-based, with support for efficient call stack extraction. Through experimental evaluation, we find that CA2 achieves consistent improvement over the non-code aware baselines, which does not leverage call stack information. Our results show that incorporating code signals like the call stack enables more effective and targeted game testing.",
+      "authors": [
+        "Valliappan Chidambaram Adaikkappan",
+        "Vincent Martineau",
+        "Joshua Romoff",
+        "David Meger"
+      ],
+      "primary_category": "cs.SE",
+      "categories": [
+        "cs.SE",
+        "cs.LG"
+      ],
+      "published": "2026-05-13T12:52:35+00:00",
+      "link": "https://arxiv.org/pdf/2605.13918v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "AI agent playing games for automated testing using call stack info",
+      "llm_evidence_cn": "使用调用栈信息进行游戏测试的AI代理",
+      "llm_evidence": "使用调用栈信息进行游戏测试的AI代理",
+      "canonical_evidence": "使用调用栈信息进行游戏测试的AI代理",
+      "llm_tldr_en": "CA2 is a code-aware agent that uses call stack information to learn game testing strategies, outperforming RL-based methods in code coverage and bug finding.",
+      "llm_tldr_cn": "该论文提出CA2，一个利用调用栈信息的代码感知代理，用于自动化游戏测试。代理接收当前函数调用轨迹和游戏状态，学习到达特定目标函数。实验表明，CA2在代码覆盖率和bug发现方面优于基于强化学习的方法，为游戏测试提供了高效方案。",
+      "llm_tldr": "该论文提出CA2，一个利用调用栈信息的代码感知代理，用于自动化游戏测试。代理接收当前函数调用轨迹和游戏状态，学习到达特定目标函数。实验表明，CA2在代码覆盖率和bug发现方面优于基于强化学习的方法，为游戏测试提供了高效方案。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "carryover_cache",
+      "paper_id": "2605.13918v1",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2605.29625v1",
+      "source": "arxiv",
+      "title": "Improving Collaborative Storytelling with a Multi-Agent Framework Based on Large Language Models",
+      "abstract": "The topic of Co-creation, i.e., AI agents interacting with humans to generate outputs (e.g., art), has gained significant attention recently. However, most studies focus on adult-human interactions in a digital setting. This paper explores a novel ludic co-creation scenario involving children and Large Language Models (LLMs) interacting through a physical board game to create written stories. Our goal is to develop a multi-agent framework capable of producing high-quality narratives suitable for young players. At the core of our approach is an iterative Writer-Editor process in which one LLM generates stories while another evaluates them and provides feedback for refinement. Through a simulation study involving multiple LLMs, we show that this iterative interaction consistently improves the perceived quality of generated stories across successive loops. The results indicate that a small number of refinement steps may be sufficient to achieve high-quality outputs in interactive storytelling systems.",
+      "authors": [
+        "Arturo Valdivia",
+        "Paolo Burelli"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-05-28T08:59:55+00:00",
+      "link": "https://arxiv.org/pdf/2605.29625v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "AI agents interacting with children through a board game to create stories",
+      "llm_evidence_cn": "AI代理通过棋盘游戏与儿童互动创作故事",
+      "llm_evidence": "AI代理通过棋盘游戏与儿童互动创作故事",
+      "canonical_evidence": "AI代理通过棋盘游戏与儿童互动创作故事",
+      "llm_tldr_en": "Multi-agent LLM framework for collaborative storytelling in a board game setting, involving AI agents as players and editors.",
+      "llm_tldr_cn": "该论文针对儿童与AI在实体棋盘游戏中进行协作叙事的问题，提出了一个基于大语言模型的多智能体框架。通过迭代的写作-编辑流程，一个LLM生成故事，另一个进行评估和反馈，以产生高质量适合年轻玩家的叙事。模拟研究表明该方法能有效提升故事质量，为游戏化AI协作提供了新范式。",
+      "llm_tldr": "该论文针对儿童与AI在实体棋盘游戏中进行协作叙事的问题，提出了一个基于大语言模型的多智能体框架。通过迭代的写作-编辑流程，一个LLM生成故事，另一个进行评估和反馈，以产生高质量适合年轻玩家的叙事。模拟研究表明该方法能有效提升故事质量，为游戏化AI协作提供了新范式。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.01164v1",
+      "source": "arxiv",
+      "title": "Towards Interactive Video World Modeling: Frontiers, Challenges, Benchmarks, and Future Trends",
+      "abstract": "With rapid development of large language models and diffusion-based content generation, world modeling has attracted increasing research attention, benefiting various downstream domains such as game engines, embodied AI, autonomous driving, etc. Through explicitly incorporating user actions into world state transition, recent literature empowers world modeling with interactivity in an action-conditioned video or 3D generation paradigm, further enhancing controllability over world evolutions and facilitating users to freely traverse, manipulate, navigate, and personalize the state evolution. In this paper, we aim to systematically review recent research trends, technical developments, evaluation benchmarks, and also propose future potential directions in interactive world modeling. Specifically, we first summarize recent efforts and trends in terms of application scenarios, world state evolution, and scene modality. Afterwards, we delve into three crucial technical challenges, including action-conditioned controllability, long-horizon interactions and memory, and action-following responsiveness for real-time interactivity. Furthermore, we also thoroughly compare existing benchmarks and metrics in four specific application fields: open-world exploration, game engine, autonomous driving, and robotics. Finally, we discuss several promising future directions in achieving next-generation interactive world modeling. The corresponding repository is publicly available at: https://github.com/liujiuming123/Awesome-Interactive-World-Model.",
+      "authors": [
+        "Jiuming Liu",
+        "Chaojun Ni",
+        "Mengmeng Liu",
+        "Chensheng Peng",
+        "Fangjinhua Wang",
+        "Sitian Shen",
+        "Marc Pollefeys",
+        "Masayoshi Tomizuka",
+        "Ayush Tewari",
+        "Per Ola Kristensson"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-05-31T11:12:30+00:00",
+      "link": "https://arxiv.org/pdf/2606.01164v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "interactive video world modeling for game engines",
+      "llm_evidence_cn": "面向游戏引擎的交互式视频世界建模",
+      "llm_evidence": "面向游戏引擎的交互式视频世界建模",
+      "canonical_evidence": "面向游戏引擎的交互式视频世界建模",
+      "llm_tldr_en": "Reviews recent advances in interactive video world modeling, covering game engines and embodied AI, discussing action-conditioned generation.",
+      "llm_tldr_cn": "该论文综述了交互式视频世界建模的前沿技术，涵盖游戏引擎、具身智能等领域。重点讨论了用户动作融入世界状态转换的条件生成范式，增强了可控性。文章总结了现有基准并展望未来方向，对游戏AI有重要参考价值。",
+      "llm_tldr": "该论文综述了交互式视频世界建模的前沿技术，涵盖游戏引擎、具身智能等领域。重点讨论了用户动作融入世界状态转换的条件生成范式，增强了可控性。文章总结了现有基准并展望未来方向，对游戏AI有重要参考价值。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "artificial intelligence in games",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2605.14211v1",
+      "source": "arxiv",
+      "title": "ASH: Agents that Self-Hone via Embodied Learning",
+      "abstract": "Long-horizon embodied tasks remain a fundamental challenge in AI, as current methods rely on hand-engineered rewards or action-labeled demonstrations, neither of which scales. We introduce ASH, an agentic system that learns an embodied policy from unlabeled, noisy internet video, without reward shaping or expert annotation. ASH follows a self-improvement loop; when it gets stuck, ASH learns an Inverse Dynamics Model (IDM) from its own trajectories, and uses its IDM to extract supervision from relevant internet video. ASH uses unsupervised learning to identify key moments from large-scale internet video and retains them as long-term memory -- allowing it to tackle long-horizon problems. We evaluate ASH on two complementary environments demanding multi-hour planning: Pokemon Emerald, a turn-based RPG, and The Legend of Zelda: The Minish Cap, a real-time action-adventure game. In both games, behavioral cloning, retrieval-augmented and zero-shot foundation-model baselines plateau, while ASH sustains progression across our 8-hour evaluation. ASH reaches an average of $11.2/12$ milestones in Pokemon Emerald and $9.9/12$ in Legend of Zelda, while the strongest baseline gets stuck in both environments at an average of $6.5/12$ and $6.0/12$ milestones, respectively. We demonstrate that self-improving agents are a scalable recipe for long-horizon embodied learning.",
+      "authors": [
+        "Benjamin Schneider",
+        "Xavier Schneider",
+        "Victor Zhong",
+        "Sun Sun"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-05-14T00:10:12+00:00",
+      "link": "https://arxiv.org/pdf/2605.14211v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "embodied agent learning from video in Pokemon game",
+      "llm_evidence_cn": "在宝可梦游戏中从视频学习的具身智能体",
+      "llm_evidence": "在宝可梦游戏中从视频学习的具身智能体",
+      "canonical_evidence": "在宝可梦游戏中从视频学习的具身智能体",
+      "llm_tldr_en": "ASH learns embodied policies from unlabeled internet video without rewards, tested in Pokemon and Minecraft, enabling long-horizon game agent training.",
+      "llm_tldr_cn": "该论文提出ASH系统，从无标签互联网视频中学习具身策略，无需奖励塑造或专家标注。在宝可梦和另一个环境中评估，可处理多小时规划。其自我提升循环利用逆向动力学模型从自身轨迹提取监督，展示了AI代理在长期游戏中自主学习的能力，对游戏智能体训练有重要借鉴意义。",
+      "llm_tldr": "该论文提出ASH系统，从无标签互联网视频中学习具身策略，无需奖励塑造或专家标注。在宝可梦和另一个环境中评估，可处理多小时规划。其自我提升循环利用逆向动力学模型从自身轨迹提取监督，展示了AI代理在长期游戏中自主学习的能力，对游戏智能体训练有重要借鉴意义。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "carryover_cache",
+      "paper_id": "2605.14211v1",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2605.30100v1",
+      "source": "arxiv",
+      "title": "Chess-World-Model: A 10M-Game Benchmark for Exact State Tracking from Chess Move Sequences",
+      "abstract": "World models require state tracking, which is the ability to maintain a correct latent state across action sequences. Existing benchmarks are often synthetic or language-based, limiting their value as tests of structured state updates in realistic domains. We introduce Chess-World-Model, a large-scale state-tracking benchmark built from 10 million real chess games, where models predict the exact board state reached after a sequence of legal moves. Alongside a held-out real-game split, we include an out-of-distribution split from uniformly random legal play, which tests whether models learn the transition rules rather than shortcuts from common human positions. Prior theoretical and empirical work has shown that Transformers struggle to state-track, while input-dependent linear RNNs require expressive state-transition matrices to do so. We therefore benchmark a causal Transformer, block-diagonal SLiCE, Mamba-3, and Gated DeltaNet with negative eigenvalues under a matched interface and training protocol. The recurrent models strongly outperform the Transformer at 3 and 8 million parameters. Real-game performance saturates above 18 million parameters, but the random-uniform split remains discriminative up to 40 million, exposing failures otherwise hidden by scale. Additionally, ablations show that less expressive state-transition mechanisms reduce performance on the out-of-distribution split for all three recurrent models. Together, these results establish Chess-World-Model as a practical large-scale benchmark for state tracking that exposes failures model scale would otherwise conceal.",
+      "authors": [
+        "Benjamin Walker",
+        "Terry Lyons"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-05-28T15:43:31+00:00",
+      "link": "https://arxiv.org/pdf/2605.30100v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Large-scale chess benchmark for state tracking, supporting AI agent training in games",
+      "llm_evidence_cn": "大规模国际象棋状态跟踪基准，支持游戏AI代理训练",
+      "llm_evidence": "大规模国际象棋状态跟踪基准，支持游戏AI代理训练",
+      "canonical_evidence": "大规模国际象棋状态跟踪基准，支持游戏AI代理训练",
+      "llm_tldr_en": "Chess-World-Model provides a 10M-game benchmark to test exact state tracking from move sequences, using real chess games and random play splits.",
+      "llm_tldr_cn": "该论文构建了一个包含1000万盘真实国际象棋对弈的基准测试，评估模型从走法序列精确跟踪棋盘状态的能力，并包含随机走法分布以测试泛化，对游戏AI的状态感知和世界模型学习具有重要价值。",
+      "llm_tldr": "该论文构建了一个包含1000万盘真实国际象棋对弈的基准测试，评估模型从走法序列精确跟踪棋盘状态的能力，并包含随机走法分布以测试泛化，对游戏AI的状态感知和世界模型学习具有重要价值。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "artificial intelligence in games",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.01619v1",
+      "source": "arxiv",
+      "title": "ReSkill: Reconciling Skill Creation with Policy Optimization in Agentic RL",
+      "abstract": "Agentic reinforcement learning (RL) enables LLM agents to improve continuously from environment rewards, yet the resulting policies do not systematically accumulate reusable strategies that generalize across tasks. Modular skills can provide such reusable strategies, yet existing skill-augmented RL methods decouple skill creation from policy optimization, risking adopting skills that conflict with the evolving policy. Inspired by Anthropic's Skill Creator, we introduce ReSkill, an RL-in-the-loop skill creation framework that reconciles skill evolution with policy learning. ReSkill exploits the group-wise structure of GRPO to naturally embed three mechanisms with only marginal additional overhead: (1) an assertion-driven skill creator that diagnoses failures from past experience and proposes conditional, trigger-based skill revisions; (2) within-group rollout sampling that enables controlled comparison of skill versions, capturing which version best supports the policy's ongoing learning; and (3) Thompson Sampling with adaptive discounting to balance exploration and exploitation in skill version selection as the policy evolves. Across several domains, ReSkill consistently outperforms existing memory and skill-based RL methods, with the largest gains on unseen tasks. Analysis of the skill lifecycle shows skills being automatically created, tested, refined, and pruned as the policy improves, demonstrating reconciled skill-policy co-evolution.",
+      "authors": [
+        "Zelin He",
+        "Haotian Lin",
+        "Boran Han",
+        "Wei Zhu",
+        "Haoyang Fang",
+        "Bernie Wang",
+        "Xuan Zhu",
+        "Runze Li",
+        "Matthew Reimherr"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.LG",
+        "stat.ML"
+      ],
+      "published": "2026-06-01T03:12:05+00:00",
+      "link": "https://arxiv.org/pdf/2606.01619v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "skill creation with policy optimization in agentic RL, applicable to game agent training",
+      "llm_evidence_cn": "代理RL中技能创建与策略优化，可应用于游戏代理训练",
+      "llm_evidence": "代理RL中技能创建与策略优化，可应用于游戏代理训练",
+      "canonical_evidence": "代理RL中技能创建与策略优化，可应用于游戏代理训练",
+      "llm_tldr_en": "Proposes ReSkill, an RL-in-the-loop skill creation framework reconciling skill evolution with policy learning for agentic RL.",
+      "llm_tldr_cn": "针对代理强化学习策略缺乏可复用技能的问题，提出ReSkill框架，在策略优化循环内创建技能，利用GRPO分组结构嵌入断言驱动技能创建、技能回溯和技能融合机制，既提升了通用性又未增加显著开销，适用于游戏代理的持续训练。",
+      "llm_tldr": "针对代理强化学习策略缺乏可复用技能的问题，提出ReSkill框架，在策略优化循环内创建技能，利用GRPO分组结构嵌入断言驱动技能创建、技能回溯和技能融合机制，既提升了通用性又未增加显著开销，适用于游戏代理的持续训练。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2605.15256v1",
+      "source": "arxiv",
+      "title": "ReactiveGWM: Steering NPC in Reactive Game World Models",
+      "abstract": "Current game world models simulate environments from a subjective, player-centric perspective. However, by treating the Non-Player Character (NPC) merely as background pixels, these models cannot capture interactions between the player and NPC. In that sense, they act as passive video renderers rather than real simulation engines, lacking the physical understanding needed to model action-induced NPC reactivities. We introduce ReactiveGWM, a reactive game world model that synthesizes dynamic interactions between the player and NPC. Instead of entangling all interaction dynamics, ReactiveGWM explicitly decouples player controls from NPC behaviors. Player actions are injected into the diffusion backbone via a lightweight additive bias, while high-level NPC responses (e.g., Offense, Control, Defense) are grounded through cross-attention modules. Crucially, these modules learn a game-agnostic representation of interactive logic. This enables zero-shot strategy transfer: our learned modules can be plugged directly into off-the-shelf, unannotated world models of different games. This instantly unlocks steerable NPC interactions without any domain-specific retraining. Evaluated on two Street Fighter games, ReactiveGWM maintains fine-grain player controllability while achieving robust, prompt-aligned NPC strategy adherence, paving the way for scalable, strategy-rich interaction with the NPC.",
+      "authors": [
+        "Zeqing Wang",
+        "Danze Chen",
+        "Zhaohu Xing",
+        "Zizhao Tong",
+        "Yinhan Zhang",
+        "Xingyi Yang",
+        "Yeying Jin"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-05-14T17:52:03+00:00",
+      "link": "https://arxiv.org/pdf/2605.15256v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "NPC behavior modeling and player interaction decoupling",
+      "llm_evidence_cn": "NPC行为建模与玩家交互解耦",
+      "llm_evidence": "NPC行为建模与玩家交互解耦",
+      "canonical_evidence": "NPC行为建模与玩家交互解耦",
+      "llm_tldr_en": "ReactiveGWM decouples player control from NPC responses in game world models, enabling realistic dynamic interactions beyond passive video rendering.",
+      "llm_tldr_cn": "该论文提出ReactiveGWM，一种反应式游戏世界模型，显式解耦玩家控制与NPC行为。通过将玩家动作以轻量加法偏置注入扩散主干，同时用解耦网络预测NPC反应，从而在视频生成中实现玩家与NPC的真实交互。相比传统被动渲染的模型，ReactiveGWM能模拟动作引发的NPC反应，提升了游戏世界模型的动态真实性，直接服务于玩家行为建模与NPC行为模拟。",
+      "llm_tldr": "该论文提出ReactiveGWM，一种反应式游戏世界模型，显式解耦玩家控制与NPC行为。通过将玩家动作以轻量加法偏置注入扩散主干，同时用解耦网络预测NPC反应，从而在视频生成中实现玩家与NPC的真实交互。相比传统被动渲染的模型，ReactiveGWM能模拟动作引发的NPC反应，提升了游戏世界模型的动态真实性，直接服务于玩家行为建模与NPC行为模拟。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "player behavior simulation techniques",
+      "matched_requirement_id": "req-4",
+      "selection_source": "carryover_cache",
+      "paper_id": "2605.15256v1",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2606.02355v1",
+      "source": "arxiv",
+      "title": "SIRI: Self-Internalizing Reinforcement Learning with Intrinsic Skills for LLM Agent Training",
+      "abstract": "Long-horizon LLM agents can benefit from reusable skills, yet existing skill-based methods often rely on external skill generators during training or persistent skill retrieval at inference, increasing engineering complexity, context length, and deployment latency. We propose Self-Internalizing Reinforcement learning with Intrinsic skills (SIRI), a three-phase framework that enables agents to discover, validate, and internalize skills without external skill generators or inference-time skill banks. SIRI first warms up the policy with GiGPO to acquire basic interaction ability and collect successful skill-free trajectories. It then performs self-skill mining, where the current policy summarizes compact skills from its own successful plain rollouts and validates them through paired skill-augmented and skill-free rollouts. Finally, SIRI distills only beneficial skill-guided action tokens into the plain policy using trajectory-level utility and action-level advantage. At inference, the agent runs with the original prompt only. On ALFWorld and WebShop with Qwen2.5-7B-Instruct, SIRI improves GiGPO from 0.908 to 0.930 on ALFWorld and from 0.728 to 0.813 on WebShop, outperforming prompt-based, RL-based, and memory-augmented baselines. Further analysis shows that our self-mining strategy can achieve performance comparable to distillation with closed-source large model. Our code is available at https://github.com/kirito618/SIRI.",
+      "authors": [
+        "Zhongyu He",
+        "Yuanfan Li",
+        "Fei Huang",
+        "Tianyu Chen",
+        "Siyuan Chen",
+        "Xingyang Li",
+        "Meng Hsuan Yu",
+        "Xiangrong Liu",
+        "Leyi Wei",
+        "Lu Pan",
+        "Ke Zeng",
+        "Xunliang Cai"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-06-01T15:02:59+00:00",
+      "link": "https://arxiv.org/pdf/2606.02355v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "RL training of LLM agents with skill discovery, applicable to game AI agents",
+      "llm_evidence_cn": "基于强化学习的LLM智能体技能内化训练，可迁移至游戏AI智能体",
+      "llm_evidence": "基于强化学习的LLM智能体技能内化训练，可迁移至游戏AI智能体",
+      "canonical_evidence": "基于强化学习的LLM智能体技能内化训练，可迁移至游戏AI智能体",
+      "llm_tldr_en": "SIRI enables LLM agents to discover and internalize reusable skills without external skill generators, improving long-horizon task performance.",
+      "llm_tldr_cn": "针对长程任务中LLM智能体依赖外部技能生成器的局限性，提出SIRI框架，使智能体通过自我技能挖掘和内化来获取可复用技能，无需外部技能库。实验表明该方法在复杂交互任务中显著提升效率，为游戏环境中的智能体训练提供了新范式。",
+      "llm_tldr": "针对长程任务中LLM智能体依赖外部技能生成器的局限性，提出SIRI框架，使智能体通过自我技能挖掘和内化来获取可复用技能，无需外部技能库。实验表明该方法在复杂交互任务中显著提升效率，为游戏环境中的智能体训练提供了新范式。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.04815v1",
+      "source": "arxiv",
+      "title": "Learning While Acting: A Skill-Enhanced Test-Time Co-Evolution Framework for Online Lifelong Learning Agents",
+      "abstract": "Lifelong learning is essential for Large Language Model (LLM) agents operating in dynamic, interactive environments. However, existing lifelong learning agents for long-horizon tasks typically depend on discrete skill or past experiences retrieval with static parameters during inference, which prevents them from continuously internalizing test-time feedback like human learners. To bridge this gap, we propose Skill-enhanced Test-Time Co-Evolution (\\texttt{LifeSkill}), a two-stage reinforcement learning framework for Online Lifelong Learning Agents. Specifically, we design Verifier-Guided Skill Learning that addresses the lack of direct supervision for skill extraction by rewarding candidate skills according to the average verifier success of multiple skill-conditioned policy rollouts, encouraging the model to generate skills that are useful for solving tasks rather than merely plausible in text. Furthermore, we introduce Online Skill Internalization, which continuously improves the policy model during test-time interaction by transforming skill-conditioned trajectories into reward signals. This enables the agent to directly internalize reasoning capabilities into its parameters, avoiding the context bloat of experience retrieval. Experiments on LifelongAgentBench show that LifeSkill improves average performance by 7 absolute points by comparing with existing lifelong agent baselines.",
+      "authors": [
+        "Bo Mao",
+        "Jie Zhou",
+        "Yutao Yang",
+        "Xin Li",
+        "Xian Wei",
+        "Qin Chen",
+        "Xingjiao Wu",
+        "Liang He"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-06-03T12:38:57+00:00",
+      "link": "https://arxiv.org/pdf/2606.04815v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Online lifelong learning framework for agents adaptable to dynamic environments, applicable to game training",
+      "llm_evidence_cn": "适用于动态环境的代理在线终身学习框架，可应用于游戏训练",
+      "llm_evidence": "适用于动态环境的代理在线终身学习框架，可应用于游戏训练",
+      "canonical_evidence": "适用于动态环境的代理在线终身学习框架，可应用于游戏训练",
+      "llm_tldr_en": "Proposes LifeSkill, a two-stage RL framework enabling LLM agents to internalize test-time feedback for lifelong learning in interactive environments.",
+      "llm_tldr_cn": "该论文提出LifeSkill框架，通过两阶段强化学习使LLM代理在交互环境中持续内化测试时反馈，避免依赖静态参数检索，可应用于游戏等动态场景的训练。实验在长程任务中展示了持续的技能改进，为在线终身学习提供了通用框架。",
+      "llm_tldr": "该论文提出LifeSkill框架，通过两阶段强化学习使LLM代理在交互环境中持续内化测试时反馈，避免依赖静态参数检索，可应用于游戏等动态场景的训练。实验在长程任务中展示了持续的技能改进，为在线终身学习提供了通用框架。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2605.20577v1",
+      "source": "arxiv",
+      "title": "Mahjax: A GPU-Accelerated Mahjong Simulator for Reinforcement Learning in JAX",
+      "abstract": "Riichi Mahjong is a multi-player, imperfect-information game characterized by stochasticity and high-dimensional state spaces. These attributes present a unique combination of challenges that mirror complex real-world decision-making problems in reinforcement learning. While prior research has heavily relied on supervised learning from human play logs to pre-train the policy, algorithms capable of learning \\textit{tabula rasa} (from scratch) offer greater potential for general applicability, as evidenced by the AlphaZero lineage. To facilitate such research, we introduce \\textbf{Mahjax}, a fully vectorized Riichi Mahjong environment implemented in JAX to enable large-scale rollout parallelization on Graphics Processing Units (GPUs). We also provide a high-quality visualization tool to streamline debugging and interaction with trained agents. Experimental results demonstrate that Mahjax achieves throughputs of up to \\textbf{2 million} and \\textbf{1 million steps per second} on eight NVIDIA A100 GPUs under the no-red and red rules, respectively. Furthermore, we validate the environment's utility for reinforcement learning by showing that agents can be trained effectively to improve their rank against baseline policies.",
+      "authors": [
+        "Soichiro Nishimori",
+        "Shinri Okano",
+        "Keigo Habara",
+        "Sotetsu Koyamada",
+        "Eason Yu",
+        "Masashi Sugiyama"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-05-20T00:33:28+00:00",
+      "link": "https://arxiv.org/pdf/2605.20577v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Mahjong RL environment for AI agent",
+      "llm_evidence_cn": "麻将强化学习环境用于AI智能体",
+      "llm_evidence": "麻将强化学习环境用于AI智能体",
+      "canonical_evidence": "麻将强化学习环境用于AI智能体",
+      "llm_tldr_en": "Introduces Mahjax, a GPU-accelerated Mahjong simulator in JAX for tabula rasa RL, enabling large-scale game agent training.",
+      "llm_tldr_cn": "该论文提出Mahjax，一个基于JAX的GPU加速麻将模拟器，支持大规模强化学习。它针对麻将这一不完全信息博弈，允许智能体从零开始学习，无需人类数据。通过全向量化并行，加速了训练过程，为AI代理在复杂游戏中的训练提供了高效环境。",
+      "llm_tldr": "该论文提出Mahjax，一个基于JAX的GPU加速麻将模拟器，支持大规模强化学习。它针对麻将这一不完全信息博弈，允许智能体从零开始学习，无需人类数据。通过全向量化并行，加速了训练过程，为AI代理在复杂游戏中的训练提供了高效环境。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "carryover_cache",
+      "paper_id": "2605.20577v1",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2606.04484v1",
+      "source": "arxiv",
+      "title": "AgentJet: A Flexible Swarm Training Framework for Agentic Reinforcement Learning",
+      "abstract": "We present AgentJet, a distributed swarm training framework for large language model (LLM) agent reinforcement learning. Unlike centralized frameworks that tightly couple agent rollouts with model optimization, AgentJet adopts a decoupled multi-node architecture in which swarm server nodes host trainable models and run optimization on GPU clusters, whereas swarm client nodes execute arbitrary agents on arbitrary devices. This design provides capabilities that are difficult to support in centralized frameworks: (1) heterogeneous multi-model reinforcement learning, enabling the training of heterogeneous multi-agent teams with multiple LLM as brains; (2) multi-task cocktail training with isolated agent runtimes; (3) fault-tolerant execution that prevents external environment failures from interrupting the training process; and (4) live code iteration, which allows agents to be edited during training by replacing swarm client nodes. To support efficient RL in multi-model, multi-turn, and multi-agent settings, AgentJet introduces a context tracking module with timeline merging, which consolidates redundant context and achieves a 1.5-10x training speedup. Finally, AgentJet introduces an automated research system that takes a research topic as input and autonomously conducts long-horizon, multi-day RL studies on large-scale clusters. By leveraging the swarm architecture, this system reproduces key exploratory workflows of RL researchers without human intervention during execution.",
+      "authors": [
+        "Qingxu Fu",
+        "Boyin Liu",
+        "Shuchang Tao",
+        "Zhaoyang Liu",
+        "Bolin Ding"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.LG",
+        "cs.MA"
+      ],
+      "published": "2026-06-03T06:02:52+00:00",
+      "link": "https://arxiv.org/pdf/2606.04484v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "distributed swarm training framework for LLM agent RL, suitable for game agent training",
+      "llm_evidence_cn": "分布式群训练框架，支持异构多智能体强化学习，可用于游戏智能体训练",
+      "llm_evidence": "分布式群训练框架，支持异构多智能体强化学习，可用于游戏智能体训练",
+      "canonical_evidence": "分布式群训练框架，支持异构多智能体强化学习，可用于游戏智能体训练",
+      "llm_tldr_en": "AgentJet is a decoupled multi-node framework enabling heterogeneous multi-agent RL and multi-task cocktail training with fault tolerance.",
+      "llm_tldr_cn": "针对集中式智能体训练框架耦合度高、扩展性差的问题，提出AgentJet分布式群训练框架，采用解耦的多节点架构，支持异构多模型强化学习与多任务混合训练，具备容错能力。实验证明其在复杂多智能体场景中训练效率显著提升，可直接应用于游戏环境中的多智能体协调训练。",
+      "llm_tldr": "针对集中式智能体训练框架耦合度高、扩展性差的问题，提出AgentJet分布式群训练框架，采用解耦的多节点架构，支持异构多模型强化学习与多任务混合训练，具备容错能力。实验证明其在复杂多智能体场景中训练效率显著提升，可直接应用于游戏环境中的多智能体协调训练。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
