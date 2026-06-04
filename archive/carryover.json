@@ -1,6 +1,300 @@
 {
-  "generated_at": "2026-06-03T21:46:55.654674+00:00",
-  "updated_date": "20260603",
+  "generated_at": "2026-06-04T14:04:19.599040+00:00",
+  "updated_date": "20260506-20260604",
   "carryover_days": 9,
-  "tag_states": {}
+  "tag_states": {
+    "player-ai": {
+      "updated_date": "20260506-20260604",
+      "carryover_days": 9,
+      "items": [
+        {
+          "id": "2605.31361v1",
+          "source": "arxiv",
+          "title": "Dreaming Of Others: Latent Teammate Modeling In World Models For Multi-Agent Reinforcement Learning",
+          "abstract": "In cooperative multi-agent reinforcement learning (MARL), agents must coordinate with partners whose internal policies and intentions are not directly observable. While world models such as Dreamer have demonstrated strong generalization and sample efficiency in single-agent settings, their application to MARL remains limited by an inability to handle teammate-induced uncertainty. We propose a new perspective: treat teammates as structured, learnable components within the agent's world model. We introduce an architecture that factorizes the latent state of a Dreamer-style recurrent state-space model (RSSM) into environment and teammate components, and learns an auxiliary Theory-of-Mind (ToM) head to infer latent embeddings of partner behavior such as character, intent, and predicted actions from partial trajectories. These teammate latents condition the actor and critic, enabling the agent to imagine and adapt to diverse collaborators. We outline how this approach can support zero-shot and few-shot coordination in partially observable settings and propose a set of benchmarks and evaluation protocols to assess its impact. This work positions world models as not only predictors of environmental dynamics, but as simulators of social behavior, opening new directions for generalizable, human-compatible AI.",
+          "authors": [
+            "Tomas Leroy-Stone"
+          ],
+          "primary_category": "cs.MA",
+          "categories": [
+            "cs.MA",
+            "cs.AI",
+            "cs.LG"
+          ],
+          "published": "2026-05-29T14:34:50+00:00",
+          "link": "https://arxiv.org/pdf/2605.31361v1",
+          "tags": [
+            "keyword:player-ai",
+            "query:player-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "Teammate modeling in MARL world models",
+          "llm_evidence_cn": "多智能体强化学习中世界模型内的队友建模",
+          "llm_evidence": "多智能体强化学习中世界模型内的队友建模",
+          "canonical_evidence": "多智能体强化学习中世界模型内的队友建模",
+          "llm_tldr_en": "Factorizes RSSM latent state into environment and teammate components with a Theory-of-Mind head to infer teammate embeddings, enabling cooperative MARL.",
+          "llm_tldr_cn": "在多智能体合作环境中，智能体需要推断不可观察的队友策略。论文提出将Dreamer风格的世界模型潜状态分解为环境和队友两部分，并学习辅助的心智理论头来推断队友潜嵌入。该方法在合作任务中提升了协调能力，为在MARL中整合玩家建模提供了新思路。",
+          "llm_tldr": "在多智能体合作环境中，智能体需要推断不可观察的队友策略。论文提出将Dreamer风格的世界模型潜状态分解为环境和队友两部分，并学习辅助的心智理论头来推断队友潜嵌入。该方法在合作任务中提升了协调能力，为在MARL中整合玩家建模提供了新思路。",
+          "llm_tags": [
+            "query:player-ai"
+          ],
+          "matched_query_tag": "query:player-ai",
+          "matched_query_text": "virtual game player modeling",
+          "matched_requirement_id": "req-1",
+          "selection_source": "carryover_cache",
+          "paper_id": "2605.31361v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2605.31318v1",
+          "source": "arxiv",
+          "title": "Generalized Intention Modeling in Multi-Agent Reinforcement Learning",
+          "abstract": "Modeling an opponent's intent is critical for effective decision-making in non-cooperative, competitive, and general-sum multi-agent reinforcement learning. Existing opponent modeling methods encode intent using an embedding derived from episode information chosen a priori, such as the opponent's next action or a future environment state, and use this to guide the ego-agent's behavior. These approaches assume that the chosen information is universally representative of intent; however, we show empirically that this is not the case as intentions are often task- and environment-dependent. To address this, we introduce a task-adaptive opponent modeling framework that learns a performance-driven mixture of multiple intent representations. We further introduce a new intention representation that maximizes mutual information with the ego-agent's future returns, thereby capturing opponent information that is most directly relevant to performance. Our approach consistently matches or exceeds the performance of state-of-the-art baselines across diverse tasks and yields insights into when and why different opponent modeling strategies succeed.",
+          "authors": [
+            "Mateusz Odrowaz-Sypniewski",
+            "Jasmine Bayrooti",
+            "Ajay Shankar",
+            "Amanda Prorok"
+          ],
+          "primary_category": "cs.LG",
+          "categories": [
+            "cs.LG",
+            "cs.MA"
+          ],
+          "published": "2026-05-29T13:48:18+00:00",
+          "link": "https://arxiv.org/pdf/2605.31318v1",
+          "tags": [
+            "keyword:player-ai",
+            "query:player-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "Generalized intention modeling for opponent behavior",
+          "llm_evidence_cn": "对手意图通用建模方法",
+          "llm_evidence": "对手意图通用建模方法",
+          "canonical_evidence": "对手意图通用建模方法",
+          "llm_tldr_en": "Proposes a task-adaptive opponent modeling framework that learns a performance-driven mixture of multiple intent representations, improving decision-making in competitive MARL.",
+          "llm_tldr_cn": "在非合作多智能体强化学习中，对手意图建模至关重要。现有方法使用预选信息（如下一步动作）作为意图嵌入，但忽略了意图的任务依赖性。本文提出任务自适应对手建模框架，通过性能驱动的多意图表示混合，让智能体自适应选择最优意图来源。实验表明该方法在竞争性场景中提升了决策质量。",
+          "llm_tldr": "在非合作多智能体强化学习中，对手意图建模至关重要。现有方法使用预选信息（如下一步动作）作为意图嵌入，但忽略了意图的任务依赖性。本文提出任务自适应对手建模框架，通过性能驱动的多意图表示混合，让智能体自适应选择最优意图来源。实验表明该方法在竞争性场景中提升了决策质量。",
+          "llm_tags": [
+            "query:player-ai"
+          ],
+          "matched_query_tag": "query:player-ai",
+          "matched_query_text": "player behavior simulation techniques",
+          "matched_requirement_id": "req-4",
+          "selection_source": "carryover_cache",
+          "paper_id": "2605.31318v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2605.13918v1",
+          "source": "arxiv",
+          "title": "CA2: Code-Aware Agent for Automated Game Testing",
+          "abstract": "Automated game testing is important for verifying game functionality, but it remains a costly and time-consuming process. Manual testing often misses edge cases, and current automated methods struggle to provide full code coverage. Prior work has explored reinforcement learning (RL) for game testing, but without leveraging internal code signals such as the call stack. We present Code Aware Agent (CA2), which uses call stack information to learn effective testing strategies. The agent receives the current function call trace along with the game state and learns to reach specific target functions. We instrument two types of environments, 1) State-based and 2) Image-based, with support for efficient call stack extraction. Through experimental evaluation, we find that CA2 achieves consistent improvement over the non-code aware baselines, which does not leverage call stack information. Our results show that incorporating code signals like the call stack enables more effective and targeted game testing.",
+          "authors": [
+            "Valliappan Chidambaram Adaikkappan",
+            "Vincent Martineau",
+            "Joshua Romoff",
+            "David Meger"
+          ],
+          "primary_category": "cs.SE",
+          "categories": [
+            "cs.SE",
+            "cs.LG"
+          ],
+          "published": "2026-05-13T12:52:35+00:00",
+          "link": "https://arxiv.org/pdf/2605.13918v1",
+          "tags": [
+            "keyword:player-ai",
+            "query:player-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "AI agent playing games for automated testing using call stack info",
+          "llm_evidence_cn": "使用调用栈信息进行游戏测试的AI代理",
+          "llm_evidence": "使用调用栈信息进行游戏测试的AI代理",
+          "canonical_evidence": "使用调用栈信息进行游戏测试的AI代理",
+          "llm_tldr_en": "CA2 is a code-aware agent that uses call stack information to learn game testing strategies, outperforming RL-based methods in code coverage and bug finding.",
+          "llm_tldr_cn": "该论文提出CA2，一个利用调用栈信息的代码感知代理，用于自动化游戏测试。代理接收当前函数调用轨迹和游戏状态，学习到达特定目标函数。实验表明，CA2在代码覆盖率和bug发现方面优于基于强化学习的方法，为游戏测试提供了高效方案。",
+          "llm_tldr": "该论文提出CA2，一个利用调用栈信息的代码感知代理，用于自动化游戏测试。代理接收当前函数调用轨迹和游戏状态，学习到达特定目标函数。实验表明，CA2在代码覆盖率和bug发现方面优于基于强化学习的方法，为游戏测试提供了高效方案。",
+          "llm_tags": [
+            "query:player-ai"
+          ],
+          "matched_query_tag": "query:player-ai",
+          "matched_query_text": "AI agent playing games",
+          "matched_requirement_id": "req-2",
+          "selection_source": "carryover_cache",
+          "paper_id": "2605.13918v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2605.15256v1",
+          "source": "arxiv",
+          "title": "ReactiveGWM: Steering NPC in Reactive Game World Models",
+          "abstract": "Current game world models simulate environments from a subjective, player-centric perspective. However, by treating the Non-Player Character (NPC) merely as background pixels, these models cannot capture interactions between the player and NPC. In that sense, they act as passive video renderers rather than real simulation engines, lacking the physical understanding needed to model action-induced NPC reactivities. We introduce ReactiveGWM, a reactive game world model that synthesizes dynamic interactions between the player and NPC. Instead of entangling all interaction dynamics, ReactiveGWM explicitly decouples player controls from NPC behaviors. Player actions are injected into the diffusion backbone via a lightweight additive bias, while high-level NPC responses (e.g., Offense, Control, Defense) are grounded through cross-attention modules. Crucially, these modules learn a game-agnostic representation of interactive logic. This enables zero-shot strategy transfer: our learned modules can be plugged directly into off-the-shelf, unannotated world models of different games. This instantly unlocks steerable NPC interactions without any domain-specific retraining. Evaluated on two Street Fighter games, ReactiveGWM maintains fine-grain player controllability while achieving robust, prompt-aligned NPC strategy adherence, paving the way for scalable, strategy-rich interaction with the NPC.",
+          "authors": [
+            "Zeqing Wang",
+            "Danze Chen",
+            "Zhaohu Xing",
+            "Zizhao Tong",
+            "Yinhan Zhang",
+            "Xingyi Yang",
+            "Yeying Jin"
+          ],
+          "primary_category": "cs.CV",
+          "categories": [
+            "cs.CV"
+          ],
+          "published": "2026-05-14T17:52:03+00:00",
+          "link": "https://arxiv.org/pdf/2605.15256v1",
+          "tags": [
+            "keyword:player-ai",
+            "query:player-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "NPC behavior modeling and player interaction decoupling",
+          "llm_evidence_cn": "NPC行为建模与玩家交互解耦",
+          "llm_evidence": "NPC行为建模与玩家交互解耦",
+          "canonical_evidence": "NPC行为建模与玩家交互解耦",
+          "llm_tldr_en": "ReactiveGWM decouples player control from NPC responses in game world models, enabling realistic dynamic interactions beyond passive video rendering.",
+          "llm_tldr_cn": "该论文提出ReactiveGWM，一种反应式游戏世界模型，显式解耦玩家控制与NPC行为。通过将玩家动作以轻量加法偏置注入扩散主干，同时用解耦网络预测NPC反应，从而在视频生成中实现玩家与NPC的真实交互。相比传统被动渲染的模型，ReactiveGWM能模拟动作引发的NPC反应，提升了游戏世界模型的动态真实性，直接服务于玩家行为建模与NPC行为模拟。",
+          "llm_tldr": "该论文提出ReactiveGWM，一种反应式游戏世界模型，显式解耦玩家控制与NPC行为。通过将玩家动作以轻量加法偏置注入扩散主干，同时用解耦网络预测NPC反应，从而在视频生成中实现玩家与NPC的真实交互。相比传统被动渲染的模型，ReactiveGWM能模拟动作引发的NPC反应，提升了游戏世界模型的动态真实性，直接服务于玩家行为建模与NPC行为模拟。",
+          "llm_tags": [
+            "query:player-ai"
+          ],
+          "matched_query_tag": "query:player-ai",
+          "matched_query_text": "player behavior simulation techniques",
+          "matched_requirement_id": "req-4",
+          "selection_source": "carryover_cache",
+          "paper_id": "2605.15256v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2605.20577v1",
+          "source": "arxiv",
+          "title": "Mahjax: A GPU-Accelerated Mahjong Simulator for Reinforcement Learning in JAX",
+          "abstract": "Riichi Mahjong is a multi-player, imperfect-information game characterized by stochasticity and high-dimensional state spaces. These attributes present a unique combination of challenges that mirror complex real-world decision-making problems in reinforcement learning. While prior research has heavily relied on supervised learning from human play logs to pre-train the policy, algorithms capable of learning \\textit{tabula rasa} (from scratch) offer greater potential for general applicability, as evidenced by the AlphaZero lineage. To facilitate such research, we introduce \\textbf{Mahjax}, a fully vectorized Riichi Mahjong environment implemented in JAX to enable large-scale rollout parallelization on Graphics Processing Units (GPUs). We also provide a high-quality visualization tool to streamline debugging and interaction with trained agents. Experimental results demonstrate that Mahjax achieves throughputs of up to \\textbf{2 million} and \\textbf{1 million steps per second} on eight NVIDIA A100 GPUs under the no-red and red rules, respectively. Furthermore, we validate the environment's utility for reinforcement learning by showing that agents can be trained effectively to improve their rank against baseline policies.",
+          "authors": [
+            "Soichiro Nishimori",
+            "Shinri Okano",
+            "Keigo Habara",
+            "Sotetsu Koyamada",
+            "Eason Yu",
+            "Masashi Sugiyama"
+          ],
+          "primary_category": "cs.AI",
+          "categories": [
+            "cs.AI",
+            "cs.LG"
+          ],
+          "published": "2026-05-20T00:33:28+00:00",
+          "link": "https://arxiv.org/pdf/2605.20577v1",
+          "tags": [
+            "keyword:player-ai",
+            "query:player-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "Mahjong RL environment for AI agent",
+          "llm_evidence_cn": "麻将强化学习环境用于AI智能体",
+          "llm_evidence": "麻将强化学习环境用于AI智能体",
+          "canonical_evidence": "麻将强化学习环境用于AI智能体",
+          "llm_tldr_en": "Introduces Mahjax, a GPU-accelerated Mahjong simulator in JAX for tabula rasa RL, enabling large-scale game agent training.",
+          "llm_tldr_cn": "该论文提出Mahjax，一个基于JAX的GPU加速麻将模拟器，支持大规模强化学习。它针对麻将这一不完全信息博弈，允许智能体从零开始学习，无需人类数据。通过全向量化并行，加速了训练过程，为AI代理在复杂游戏中的训练提供了高效环境。",
+          "llm_tldr": "该论文提出Mahjax，一个基于JAX的GPU加速麻将模拟器，支持大规模强化学习。它针对麻将这一不完全信息博弈，允许智能体从零开始学习，无需人类数据。通过全向量化并行，加速了训练过程，为AI代理在复杂游戏中的训练提供了高效环境。",
+          "llm_tags": [
+            "query:player-ai"
+          ],
+          "matched_query_tag": "query:player-ai",
+          "matched_query_text": "AI agent playing games",
+          "matched_requirement_id": "req-2",
+          "selection_source": "carryover_cache",
+          "paper_id": "2605.20577v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2605.14211v1",
+          "source": "arxiv",
+          "title": "ASH: Agents that Self-Hone via Embodied Learning",
+          "abstract": "Long-horizon embodied tasks remain a fundamental challenge in AI, as current methods rely on hand-engineered rewards or action-labeled demonstrations, neither of which scales. We introduce ASH, an agentic system that learns an embodied policy from unlabeled, noisy internet video, without reward shaping or expert annotation. ASH follows a self-improvement loop; when it gets stuck, ASH learns an Inverse Dynamics Model (IDM) from its own trajectories, and uses its IDM to extract supervision from relevant internet video. ASH uses unsupervised learning to identify key moments from large-scale internet video and retains them as long-term memory -- allowing it to tackle long-horizon problems. We evaluate ASH on two complementary environments demanding multi-hour planning: Pokemon Emerald, a turn-based RPG, and The Legend of Zelda: The Minish Cap, a real-time action-adventure game. In both games, behavioral cloning, retrieval-augmented and zero-shot foundation-model baselines plateau, while ASH sustains progression across our 8-hour evaluation. ASH reaches an average of $11.2/12$ milestones in Pokemon Emerald and $9.9/12$ in Legend of Zelda, while the strongest baseline gets stuck in both environments at an average of $6.5/12$ and $6.0/12$ milestones, respectively. We demonstrate that self-improving agents are a scalable recipe for long-horizon embodied learning.",
+          "authors": [
+            "Benjamin Schneider",
+            "Xavier Schneider",
+            "Victor Zhong",
+            "Sun Sun"
+          ],
+          "primary_category": "cs.AI",
+          "categories": [
+            "cs.AI",
+            "cs.LG"
+          ],
+          "published": "2026-05-14T00:10:12+00:00",
+          "link": "https://arxiv.org/pdf/2605.14211v1",
+          "tags": [
+            "keyword:player-ai",
+            "query:player-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "embodied agent learning from video in Pokemon game",
+          "llm_evidence_cn": "在宝可梦游戏中从视频学习的具身智能体",
+          "llm_evidence": "在宝可梦游戏中从视频学习的具身智能体",
+          "canonical_evidence": "在宝可梦游戏中从视频学习的具身智能体",
+          "llm_tldr_en": "ASH learns embodied policies from unlabeled internet video without rewards, tested in Pokemon and Minecraft, enabling long-horizon game agent training.",
+          "llm_tldr_cn": "该论文提出ASH系统，从无标签互联网视频中学习具身策略，无需奖励塑造或专家标注。在宝可梦和另一个环境中评估，可处理多小时规划。其自我提升循环利用逆向动力学模型从自身轨迹提取监督，展示了AI代理在长期游戏中自主学习的能力，对游戏智能体训练有重要借鉴意义。",
+          "llm_tldr": "该论文提出ASH系统，从无标签互联网视频中学习具身策略，无需奖励塑造或专家标注。在宝可梦和另一个环境中评估，可处理多小时规划。其自我提升循环利用逆向动力学模型从自身轨迹提取监督，展示了AI代理在长期游戏中自主学习的能力，对游戏智能体训练有重要借鉴意义。",
+          "llm_tags": [
+            "query:player-ai"
+          ],
+          "matched_query_tag": "query:player-ai",
+          "matched_query_text": "AI agent playing games",
+          "matched_requirement_id": "req-2",
+          "selection_source": "carryover_cache",
+          "paper_id": "2605.14211v1",
+          "carry_days": 1
+        },
+        {
+          "id": "2605.28816v1",
+          "source": "arxiv",
+          "title": "Gamma-World: Generative Multi-Agent World Modeling Beyond Two Players",
+          "abstract": "World models for interactive video generation have largely focused on single-agent settings, where future observations are generated from a single control signal. However, many generated environments require multi-agent interaction: multiple players, robots, or embodied agents act simultaneously within a shared space. Scaling world models to such settings requires a principled multi-agent design: agents should remain independently controllable, permutation-symmetric, and support efficient inference while maintaining consistency across time and perspectives. In this paper, we present our generative multi-agent world model for interactive simulation. It introduces Simplex Rotary Agent Encoding, a parameter-free extension of 3D RoPE that represents agents as vertices of a regular simplex in rotary angle space. This gives each agent a distinct phase while making all agents permutation-equivalent, enabling scalable agent identity without learned per-slot identities or a fixed agent ordering. To avoid dense all-to-all attention across agents, we further propose Sparse Hub Attention, where learnable hub tokens mediate token interaction across agents, reducing cross-agent attention cost from quadratic to linear in the number of agents. For real-time rollout, we distill a full-context diffusion teacher into a causal student that generates temporal blocks sequentially with KV caching, enabling action-responsive generation at 24 FPS. Experiments in multiplayer virtual environments show that our model improves video fidelity, action controllability, and inter-agent consistency over slot-based and dense-attention baselines, while generalizing from two to four players without additional training.",
+          "authors": [
+            "Fangfu Liu",
+            "Kai He",
+            "Tianchang Shen",
+            "Tianshi Cao",
+            "Sanja Fidler",
+            "Yueqi Duan",
+            "Jun Gao",
+            "Igor Gilitschenski",
+            "Zian Wang",
+            "Xuanchi Ren"
+          ],
+          "primary_category": "cs.CV",
+          "categories": [
+            "cs.CV"
+          ],
+          "published": "2026-05-27T17:59:31+00:00",
+          "link": "https://arxiv.org/pdf/2605.28816v1",
+          "tags": [
+            "keyword:player-ai",
+            "query:player-ai"
+          ],
+          "llm_score": 8.0,
+          "llm_evidence_en": "generative multi-agent world model for interactive simulation",
+          "llm_evidence_cn": "生成式多智能体世界模型，用于交互式模拟",
+          "llm_evidence": "生成式多智能体世界模型，用于交互式模拟",
+          "canonical_evidence": "生成式多智能体世界模型，用于交互式模拟",
+          "llm_tldr_en": "Gamma-World presents a generative multi-agent world model for interactive video generation, with simplex rotary agent encoding for independent control and consistency.",
+          "llm_tldr_cn": "现有视频生成世界模型大多基于单智能体，难以处理多玩家同时交互的场景。本文提出Gamma-World，一种生成式多智能体世界模型，引入了Simplex旋转智能体编码，支持独立控制、置换对称和高效推理，同时保持时空一致性。该模型可用于模拟游戏等多智能体环境，为训练AI智能体提供可交互的虚拟世界。",
+          "llm_tldr": "现有视频生成世界模型大多基于单智能体，难以处理多玩家同时交互的场景。本文提出Gamma-World，一种生成式多智能体世界模型，引入了Simplex旋转智能体编码，支持独立控制、置换对称和高效推理，同时保持时空一致性。该模型可用于模拟游戏等多智能体环境，为训练AI智能体提供可交互的虚拟世界。",
+          "llm_tags": [
+            "query:player-ai"
+          ],
+          "matched_query_tag": "query:player-ai",
+          "matched_query_text": "Search for AI agent training in game environments",
+          "matched_requirement_id": "req-6",
+          "selection_source": "carryover_cache",
+          "paper_id": "2605.28816v1",
+          "carry_days": 1
+        }
+      ]
+    }
+  }
 }

@@ -1,0 +1,191 @@
+Title: Toward Modeling Player-Specific Chess Behaviors
+
+URL Source: https://arxiv.org/pdf/2605.11893v1
+
+Published Time: Wed, 13 May 2026 01:18:03 GMT
+
+Number of Pages: 5
+
+Markdown Content:
+# Toward Modeling Player-Specific Chess Behaviors 
+
+Loris Sogliuzzo 
+
+ICTEAM, UCLouvain 
+
+Louvain-la-Neuve, Belgium 
+
+Aloïs Rautureau 
+
+ICTEAM, UCLouvain 
+
+Louvain-la-Neuve, Belgium 
+
+Eric Piette 
+
+ICTEAM, UCLouvain 
+
+Louvain-la-Neuve, Belgium 
+
+Abstract —While artificial intelligence has achieved superhu-man performance in chess, developing models that accurately emulate the individualized decision-making styles of human players remains a significant challenge. Existing human-like chess models capture general population behaviors based on skill levels but fail to reproduce the behavioral characteristics of specific historical champions. Furthermore, the standard evaluation metric, move accuracy, inherently penalizes natural human variance and ignores long-term behavioral consistency, leading to an incomplete assessment of stylistic fidelity. To address these limitations, an architecture is proposed that adapts the unified Maia-2 model to champion-specific embeddings, further enhanced by the integration of a limited Monte Carlo Tree Search (MCTS) process to enrich tactical exploration during move selection. To robustly evaluate this approach, a novel behavioral metric based on the Jensen-Shannon divergence is introduced. By compressing high-dimensional board representations into a latent space using an AutoEncoder and Uniform Manifold Approximation and Projection (UMAP), move distributions are discretized on a common grid to compare behavioral similarities. Results across 16 historical world champions indicate that while integrating MCTS decreases standard move accuracy, it improves stylistic alignment according to the proposed metric, substantially reducing the average Jensen-Shannon divergence. Ultimately, the proposed metric successfully discriminates between individual players and provides promising evidence toward more compre-hensive evaluations of behavioral alignment between players and AI models. 
+
+Index Terms —Human-Like AI, Behavioral Modeling, Chess, Player Modeling, Monte Carlo Tree Search 
+
+I. I NTRODUCTION 
+
+Historically, chess has been used as a sandbox for de-veloping powerful AI systems. More recently, research has shifted toward modeling human-like play by reproducing char-acteristic behaviors, mistakes, and decision-making patterns. Maia [1] and Maia-2 [2] successfully capture population-level behaviors associated with different Elo ranges, but modeling the individualized behaviors of specific historical champions remains an open challenge. More broadly, this work aligns with one of the central research directions of the COST Action GameTable [3], namely the modeling of human behavioral patterns and player-specific decision-making in complex game environments. Related efforts in this direction have also re-cently explored human-like modeling in broader general game-playing settings [4]. The objective of this ongoing research is to develop agents capable of reproducing player-specific chess behaviors. To this end, Maia-2 is adapted through champion-specific embed-dings, and a behavioral evaluation framework based on the Jensen-Shannon divergence is introduced to compare player and model board-transition distributions. II. R ELATED WORK 
+
+The attempt to model human chess play was significantly advanced by Maia, an agent based on the AlphaZero [5] architecture but trained strictly on human games without the use of Monte Carlo Tree Search (MCTS) [6]. This work was built upon by Maia-2, which introduced a skill-aware attention mechanism to capture the skill level of players based on their Elo ratings. Crucially, rather than training separate models, Maia-2 dynamically adapts to different skill levels within a single unified model by using categorical population embeddings. However, Maia and Maia-2 were not designed to capture the playstyle of specific players, but rather to capture the general playstyle of populations partitioned based on skill level. To address this limitation and move toward true individual-ization, Maia4All [7] extends this architecture by generalizing population embeddings into individual embeddings. It attempts to model specific individuals through a two-stage framework. It first enriches the base model using a pool of prototype players (requiring around 2,500 games per prototype). Subse-quently, it initializes a new embedding for a target player using a Prototype Matching Network (PMN) that learns to match the unseen player to the prototypes. Finally, this initialized embedding is fine-tuned to capture the target player’s specific playstyle using as few as 20 games. Current evaluations of human-like chess agents primarily rely on move accuracy, a deterministic metric that fails to capture the natural variability of human decision-making. Alternative behavioral metrics are thus needed to evaluate stylistic alignment more robustly. III. M ETHODS 
+
+The proposed approach consists of two complementary components: a behavior generation pipeline, which adapts Maia-2 to individual champions and enhances move selection with Monte Carlo Tree Search (MCTS), and a style evaluation pipeline, which compares player and model behaviors through projected board-transition distributions. An overview of the complete pipeline is shown in Fig. 1. 
+
+A. Data Preparation 
+
+This work focuses on 16 chess champions from the 20th century to ensure sufficient game availability for training and     
+
+> arXiv:2605.11893v1 [cs.AI] 12 May 2026 Champion PGN games
+> State-action pairs
+> Champion-specific Maia-2 embeddings
+> MCTS-enhanced move selection
+> Board-transition distributions
+> AE 128-D latent
+> UMAP 2-D projection
+> 15 ×15
+> grid
+> Jensen-Shannon distance
+> Behavior generation Style evaluation
+> Figure 1. Overview of the proposed pipeline. Champion games are used to fine-tune player-specific Maia-2 embeddings and optionally guide MCTS move selection. Player and model board transitions are then projected, discretized, and compared using the Jensen-Shannon distance.
+
+evaluation according to the data requirements identified by Maia4All [7]. Games were collected from Chessgames.com and converted into state-action pairs. Because the selected players span different historical eras, part of the measured stylistic differences may also reflect broader evolutions in chess theory and opening preparation. 
+
+B. Model Architecture 
+
+To capture the specific playstyle of each champion, the embedding matrix of Maia-2 is extended by creating one new embedding per player in our set based on the ‘ > 2000 ’Elo embedding of Maia-2, the highest Elo embedding that it possesses. During training, the entire Maia-2 model is frozen to preserve the general chess knowledge it has acquired, and only these new embeddings are fine-tuned to fit the specific playstyle of each champion. This approach allows us to leverage the general chess knowledge of Maia-2 while adapting it to capture the unique style of each champion. The new embeddings were fine-tuned for 100 epochs using the Adam optimizer with a learning rate of 5 × 10 −4, a batch size of 2048, and a Cross-Entropy loss function. These parameters were determined empirically by monitoring convergence to ensure stable learning. To enrich tactical exploration, a Monte Carlo Tree Search (MCTS) is implemented at the output of the fine-tuned Maia-2 model. The MCTS is guided by a Predictor Upper Confidence bound applied to Trees (PUCT), which explores the action a
+
+in state s that maximizes (1): 
+
+P U CT (s, a ) = Q(s, a ) + c · P (s, a )
+
+pN (s)1 + N (s, a ) (1) where Q(s, a ) is the expected reward for action a from state 
+
+s, P (s, a ) is the prior probability of selecting action a as predicted by the policy head of the Maia-2 model, N (s, a ) is the visit count of the state-action pair, N (s) is the total visit count of the parent node, and c is a hyperparameter controlling the degree of exploration. The expected reward Q(s, a ) is calculated using the value of each expanded state, which is given by the value head of Maia-2 if it is not a terminal state, and is set to 1, -1, or 0 depending on a win, loss, or draw. To prevent excessive exploration from distorting player-specific behaviors, a pruning mechanism removes nodes whose prior probability falls below a fixed threshold η. Additionally, the number of simulations is limited to reduce the influence of search on the final decision process. 
+
+C. Evaluation Metrics 
+
+The main objective of this research is to develop an agent capable of reproducing the behavioral characteristics of a specific chess champion. In this work, style is operationalized as the similarity between the state-transition distributions induced by a player and those generated by the model. Unlike standard move accuracy, which evaluates discrete decisions, the proposed approach compares behavioral distributions in order to better capture the variability of human decision-making. To compare these distributions, the Jensen-Shannon di-vergence (JSD) [8] is utilized. Unlike the Kullback-Leibler divergence (KL) [9], the JSD is symmetric and bounded between 0 and 1, making it easier to interpret. A value of 0 indicates identical distributions and therefore perfect stylistic alignment. Additionally, the square root of the JSD defines a metric space, enabling meaningful distance comparisons between behavioral distributions. Formally, let P and Q denote the empirical distributions of board transitions induced by the player and the model over a set of sampled positions, respectively. The JSD is defined as: 
+
+JSD (P ∥ Q) = 12 DKL (P ∥ M ) + 12 DKL (Q ∥ M ) (2) where M = 12 (P + Q) is the average distribution, and DKL 
+
+is the KL divergence. The resulting distance metric is given by: 
+
+dJS (P, Q ) = pJSD (P ∥ Q) (3) Implementing this metric directly in the raw input space of the model is not feasible due to the high dimensionality and sparsity of the data. The input representation is an 8 × 8 ×
+
+18 tensor encoding board occupancy, side-to-move, castling rights, and en passant status. By concatenating the flattened board states before and after each move, sparse transition vectors of 2304 dimensions are obtained. Direct divergence estimation in this high-dimensional sparse space is statistically unreliable. Moreover, the evaluated models do not necessarily expose directly comparable calibrated probability distributions across configurations, particularly after integrating search. To address this issue, a dimensionality reduction pipeline is employed. A fully connected AutoEncoder (AE) [10] with symmetric architecture ( 2304 → 1024 → 512 → 256 → 128 )is trained to project board transitions into a compact 128-dimensional latent space. The AE is optimized using Adam with a learning rate of 10 −3 for 10 epochs and a batch size of 1024. Since this representation remains too high-dimensional for efficient distribution estimation using the JSD, Uniform Manifold Approximation and Projection (UMAP) [11] is sub-sequently applied to obtain a 2D manifold preserving both local and global structure. Finally, calculating the JSD over continuous 2D coordi-nates requires computationally expensive density estimation procedures. To simplify this process, the projected manifold is discretized into a regular 15 × 15 grid bounded by the minimum and maximum projected coordinates. This resolution was empirically selected to balance descriptive power and statistical density while avoiding excessive sparsity in the bins. The JSD is then computed over these discrete bin distributions. Although this metric provides promising results for dis-tinguishing player-specific behaviors, it should be noted that part of the measured similarity may also reflect distributional smoothing effects introduced by the search procedure and dimensionality reduction pipeline, rather than stylistic fidelity alone. IV. R ESULTS AND DISCUSSION 
+
+The experimental results discussed in this section were obtained using a dedicated codebase, which is freely available at https://github.com/SogliuzzoL/ Toward-Modeling-Player-Specific-Chess-Behaviors.git. All corresponding tests and model evaluations were performed on a cluster node featuring an Nvidia RTX 6000 ADA GPU with 48 GB of GDDR6 memory, a 32 core CPU based on the AMD EPYC Genoa architecture, and 128 GB of system RAM. 
+
+A. Move Accuracy Evaluation 
+
+To establish a baseline, the performance of the original Maia-2 model with the ‘ > 2000 ’ Elo rating, the fine-tuned Maia-2 model (Maia-2 FT), and the fine-tuned Maia-2 model with MCTS (Maia-2 FT + MCTS) is evaluated in terms of move accuracy. For the MCTS configuration, 100 simulations are utilized, and parameters are set to c = 1 .5 and η = 0 .01 .Evaluation is performed independently for each player on a held-out test split representing 20% of the games. For move-accuracy evaluation, Maia-2 and Maia-2 FT select the highest-probability policy action, whereas Maia-2 FT + MCTS selects the most visited action. The results, presented in Table I, indicate that the fine-tuning process leads to an improvement of 0.5% in mean accuracy compared to the original Maia-2 model. The introduction of MCTS significantly reduces this measure by 18 .7% on aver-age, likely due to the broader exploration induced by MCTS which increases behavioral diversity. This further highlights the limitation of move accuracy for evaluating style-oriented agents. 
+
+B. Jensen-Shannon Divergence Evaluation 
+
+To validate the relevance of the new metric based on the Jensen-Shannon divergence, the divergence between the training set and the test set of each player was first computed. As shown in Fig. 2, the divergence between a player’s training set and test set is very low for each player compared to the divergence between the training set of one player and the test set of another, with a maximum divergence of 0.069 for the same player and a minimum of 0.101 for different players. These results indicate that the proposed metric consistently discriminates between player-specific behavioral distributions. 
+
+Table I MOVE -ACCURACY OF THE DIFFERENT MODELS ON THE TEST SET . V ALUES FOLLOWING THE ± INDICATE THE STANDARD DEVIATION .                                                                                                                            
+
+> Player Maia-2 Maia-2 FT Maia-2 FT + MCTS
+> Alekhine 45 .8% ±0.2% 47.2% ±0.2% 27.0% ±0.2%
+> Anand 45 .3% ±0.1% 46.4% ±0.1% 26.7% ±0.1%
+> Andersson 44 .4% ±0.2% 44.6% ±0.2% 26.8% ±0.2%
+> Beliavsky 44 .0% ±0.2% 44.6% ±0.2% 25.3% ±0.1%
+> Capablanca 48 .6% ±0.3% 48.5% ±0.3% 28.7% ±0.2%
+> Fischer 48 .5% ±0.3% 49.3% ±0.3% 28.2% ±0.2%
+> Ivanchuk 44 .3% ±0.1% 44.5% ±0.1% 25.3% ±0.1%
+> Karpov 44 .2% ±0.1% 45.0% ±0.1% 25.7% ±0.1%
+> Kasparov 45 .2% ±0.2% 45.3% ±0.2% 26.3% ±0.2%
+> Korchnoi 44 .3% ±0.1% 44.2% ±0.1% 25.3% ±0.1%
+> Larsen 43 .8% ±0.2% 43.5% ±0.2% 25.0% ±0.1%
+> Petrosian 43 .3% ±0.2% 43.4% ±0.2% 25.9% ±0.2%
+> Portisch 43 .6% ±0.2% 44.3% ±0.2% 25.6% ±0.1%
+> Short 44 .2% ±0.2% 44.7% ±0.2% 25.6% ±0.1%
+> Tal 46 .3% ±0.2% 46.6% ±0.2% 27.1% ±0.2%
+> Timman 44 .6% ±0.1% 45.0% ±0.1% 25.7% ±0.1%
+> Average 45 .0% ±0.2% 45 .5% ±0.2% 26 .3% ±0.2%
+
+Some player pairs exhibit lower divergences than others, suggesting partial similarities in their induced behavioral dis-tributions. For instance, Timman and Ivanchuk appear rela-tively close, whereas Portisch and Fischer remain substantially separated. Clusters of relatively low divergence appear be-tween several players from similar competitive eras, suggest-ing that the proposed metric may capture broader behavioral regularities beyond individual identity. Alekhine 
+
+> Anand
+> Andersson
+> Beliavsky
+> Capablanca
+> Fischer
+> Ivanchuk
+> Karpov
+> Kasparov
+> Korchnoi
+> Larsen
+> Petrosian
+> Portisch
+> Short
+> Tal
+> Timman
+> Test Set Players
+> Alekhine
+> Anand
+> Andersson
+> Beliavsky
+> Capablanca
+> Fischer
+> Ivanchuk
+> Karpov
+> Kasparov
+> Korchnoi
+> Larsen
+> Petrosian
+> Portisch
+> Short
+> Tal
+> Timman
+> Train Set Players
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> Jensen-Shannon Divergence
+
+Figure 2. Heatmap representing the Jensen-Shannon divergence between the train and test sets for each player. 
+
+C. Stylistic Alignment Results 
+
+Finally, the Jensen-Shannon divergence is applied to eval-uate the stylistic alignment of the different models with the training set of each player. For each position contained in the test split, a single move is generated by the evaluated model. For Maia-2 and Maia-2 FT, the selected move corresponds to the action with the highest probability predicted by the policy network. For MCTS, the selected move corresponds to the most visited action at the end of the search procedure. The re-sulting board transitions induced by these generated moves are then projected into the latent evaluation space, discretized, and compared to the corresponding player transition distributions using the proposed JSD-based metric. The results, shown in Table II, indicate that the original Maia-2 model has a relatively high divergence compared to the training set of each player, with an average of 0.159 .This is expected because Maia-2 was not specifically trained to reproduce the behaviors of the champions included in this dataset. Similarly to the move accuracy evaluation, the fine-tuning process leads to an improvement in stylistic alignment, reducing the average divergence to 0.141 . The introduction of MCTS further improves stylistic alignment, with an average divergence of 0.101 , corresponding to an additional decrease of 0.04 compared to Maia-2 FT. These results contrast with the move accuracy evaluation, where the introduction of MCTS led to a significant decrease in deterministic performance. One possible explanation is that the search process biases move selection toward board transitions that are behaviorally closer to those observed in the target player’s games, even when the exact played move differs from the ground truth. This observation highlights the limitation of move accuracy for evaluating style-oriented agents. While these results provide promising evidence that the proposed Jensen-Shannon metric captures meaningful behav-ioral similarities between players and models, this approach should still be considered an initial exploration. In particular, part of the observed improvement may reflect distributional smoothing effects introduced by search and dimensionality re-duction rather than stylistic fidelity alone. Further comparisons with additional behavioral metrics and qualitative analyses are therefore necessary to fully validate the robustness of this evaluation framework. V. C ONCLUSION 
+
+This work proposes a pipeline combining individualized Maia-2 embeddings, MCTS-enhanced move generation, and a behavioral metric based on the Jensen-Shannon divergence to model player-specific chess behaviors. Results suggest that move accuracy alone is insufficient for evaluating stylistic alignment and that distribution-based metrics provide a more informative alternative. Several promising directions remain for future work. First, the proposed JSD-based metric should be validated against additional behavioral indicators such as opening preferences, blunder rates, or other stylistic descriptors to further assess its robustness. Extending the evaluation to amateur players and other strategic games would also help verify the generaliz-ability of the approach. Finally, future work could leverage 
+
+Table II JENSEN -S HANNON DIVERGENCE COMPARED TO THE TRAINING SET FOR EACH PLAYER AND EACH MODEL . V ALUES FOLLOWING THE ± INDICATE THE STANDARD DEVIATION .                                                                                                                                                                                                                
+
+> Player Test Maia-2 Maia-2 FT Maia-2 FT + MCTS Alekhine 0.051 ±0.002 0.175 ±0.002 0.129 ±0.002 0.100 ±0.002
+> Anand 0.036 ±0.001 0.148 ±0.001 0.094 ±0.002 0.093 ±0.002
+> Andersson 0.048 ±0.002 0.150 ±0.002 0.149 ±0.002 0.110 ±0.002
+> Beliavsky 0.042 ±0.001 0.170 ±0.001 0.137 ±0.002 0.107 ±0.002
+> Capablanca 0.065 ±0.002 0.172 ±0.002 0.167 ±0.003 0.099 ±0.003
+> Fischer 0.069 ±0.002 0.174 ±0.003 0.176 ±0.003 0.140 ±0.003
+> Ivanchuk 0.037 ±0.001 0.150 ±0.001 0.129 ±0.001 0.082 ±0.002
+> Karpov 0.037 ±0.001 0.161 ±0.001 0.134 ±0.001 0.104 ±0.002
+> Kasparov 0.048 ±0.002 0.163 ±0.002 0.149 ±0.002 0.092 ±0.002
+> Korchnoi 0.042 ±0.001 0.156 ±0.001 0.132 ±0.001 0.096 ±0.001
+> Larsen 0.044 ±0.001 0.129 ±0.002 0.128 ±0.002 0.077 ±0.002
+> Petrosian 0.054 ±0.002 0.164 ±0.002 0.153 ±0.002 0.105 ±0.002
+> Portisch 0.041 ±0.001 0.167 ±0.002 0.139 ±0.002 0.106 ±0.002
+> Short 0.042 ±0.001 0.159 ±0.002 0.154 ±0.002 0.109 ±0.002
+> Tal 0.046 ±0.002 0.148 ±0.002 0.146 ±0.002 0.096 ±0.002
+> Timman 0.036 ±0.001 0.152 ±0.001 0.137 ±0.001 0.093 ±0.002
+> Average 0.046 ±0.002 0.159 ±0.002 0.141 ±0.002 0.101 ±0.002
+
+the proposed framework to analyze the historical evolution of chess behaviors across different eras and player populations. ACKNOWLEDGMENT 
+
+This article is based upon work from COST Action CA22145 - GameTable, supported by COST (European Coop-eration in Science and Technology). The Ludus ex Machina project is supported by Schmidt Sciences (grant number 25-70261). Computational resources have been provided by the Consortium des Equipements de Calcul Intensif (CECI), funded by the Fonds de la Recherche Scientifique de Belgique (F.R.S.-FNRS) under Grant No. 2.5020.11 and by the Walloon Region. REFERENCES [1] R. McIlroy-Young, S. Sen, J. Kleinberg, and A. Anderson, “Aligning superhuman ai with human behavior: Chess as a model system,” in 
+
+Proc. ACM SIGKDD Int. Conf. Knowl. Discovery Data Mining (KDD) ,2020, pp. 1677–1687. [2] Z. Tang, D. Jiao, R. McIlroy-Young, J. Kleinberg, S. Sen, and A. Ander-son, “Maia-2: A unified model for human-ai alignment in chess,” arXiv preprint arXiv:2409.20553 , 2024. [3] E. Piette et al. , “Gametable cost action: Kickoff report,” ICGA Journal ,vol. 46, pp. 11–27, 2024. [4] A. Rautureau and E. Piette, “Cogniplay: A work-in-progress human-like model for general game playing,” CoRR , vol. abs/2507.05868, 2025. [5] D. Silver et al. , “Mastering chess and shogi by self-play with a general reinforcement learning algorithm,” arXiv preprint arXiv:1712.01815 ,2017. [6] R. Coulom, “Efficient selectivity and backup operators in monte-carlo tree search,” in Computers and Games , 2007, pp. 72–83. [7] Z. Tang, D. Jiao, E. Xue, R. McIlroy-Young, J. Kleinberg, S. Sen, and A. Anderson, “Learning to imitate with less: Efficient individual behavior modeling in chess,” arXiv preprint arXiv:2507.21488 , 2025. [8] J. Lin, “Divergence measures based on the shannon entropy,” IEEE Trans. Inf. Theory , vol. 37, no. 1, pp. 145–151, 1991. [9] S. Kullback and R. A. Leibler, “On information and sufficiency,” Ann. Math. Statist. , vol. 22, no. 1, pp. 79–86, 1951. [10] G. E. Hinton and R. R. Salakhutdinov, “Reducing the dimensionality of data with neural networks,” Science , vol. 313, no. 5786, pp. 504–507, 2006. [11] L. McInnes, J. Healy, and J. Melville, “UMAP: Uniform manifold approximation and projection for dimension reduction,” arXiv preprint arXiv:1802.03426 , 2020.
