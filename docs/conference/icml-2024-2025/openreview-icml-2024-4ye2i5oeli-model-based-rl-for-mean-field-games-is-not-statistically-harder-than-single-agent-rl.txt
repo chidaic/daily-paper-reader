@@ -1,0 +1,8506 @@
+Title: Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL
+
+URL Source: https://openreview.net/pdf?id=4ye2I5OelI
+
+Number of Pages: 55
+
+Markdown Content:
+# Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+Jiawei Huang 1 Niao He 1 Andreas Krause 1
+
+## Abstract 
+
+We study the sample complexity of reinforcement learning (RL) in Mean-Field Games (MFGs) with model-based function approximation that requires strategic exploration to find a Nash Equilibrium policy. We introduce the Partial Model-Based Eluder Dimension (P-MBED), a more effective notion to characterize the model class complexity. Notably, P-MBED measures the complexity of the single-agent model class converted from the given mean-field model class, and potentially, can be exponentially lower than the MBED proposed by Huang et al. (2023). We contribute a model elimination algorithm featuring anovel exploration strategy and establish sample complexity results polynomial w.r.t. P-MBED. Crucially, our results reveal that, under the basic realizability and Lipschitz continuity assump-tions, learning Nash Equilibrium in MFGs is no more statistically challenging than solving a logarithmic number of single-agent RL problems .We further extend our results to Multi-Type MFGs, generalizing from conventional MFGs and involving multiple types of agents. This ex-tension implies statistical tractability of a broader class of Markov Games through the efficacy of mean-field approximation. Finally, inspired by our theoretical algorithm, we present a heuristic approach with improved computational efficiency and empirically demonstrate its effectiveness. 
+
+## 1. Introduction 
+
+Multi-Agent Reinforcement Learning (MARL) has excelled in modeling cooperative and competitive interactions among agents in unknown environments. However, the well-known “curse of multi-agency” poses a challenge in equilibrium     
+
+> 1Department of Computer Science, ETH Zurich. Correspon-dence to: Jiawei Huang <jiawei.huang@inf.ethz.ch >.
+> Proceedings of the 41 st International Conference on Machine Learning , Vienna, Austria. PMLR 235, 2024. Copyright 2024 by the author(s).
+
+solving for MARL systems with large populations. Yet, for MARL systems with symmetric agents, such as hu-man crowds or road traffic, one can leverage such special structure by employing mean-field approximation, leading to the RL for Mean-Field Games (MFGs) setting (Huang et al., 2006; Lasry & Lions, 2007). Notably, MFGs offer a promising framework where the complexity of learning Nash Equilibrium (NE) needs not depend on the number of agents (Lauri `ere et al., 2022). It has found successful applications in various domains, including financial mar-kets (Cardaliaguet & Lehalle, 2018), economics (Gomes & Pimentel) and energy management (Djehiche et al., 2016). Similar to single-agent RL (Jiang et al., 2017; Jin et al., 2018), for MFGs, one of the most important questions is to understand how many samples are required to explore the unknown environment and solve the equilibrium, a.k.a. the 
+
+sample complexity . Given the complex dynamics of mean-field systems and high cost of generating samples from large population, designing strategic exploration methods for sample-efficient learning becomes imperative. Existing works on learning MFGs primarily focus on model-free approaches such as Q-learning (Anahtarci et al., 2023; Guo et al., 2019), policy gradient (Subramanian & Mahajan, 2019; Yardim et al., 2022), fictitious play (Perrin et al., 2020; Xie et al., 2021), etc. Several recent works further extend these model-free approaches with value function approxi-mation to handle large state-action space (Mao et al., 2022; Zhang et al., 2023). However, their sample complexity re-sults ubiquitously rely on strong structural assumptions such as contractivity (Guo et al., 2019) or monotonicity (Perolat et al., 2021). Their methods, moreover, are usually special-ized and lack generalizability, leaving an open challenge of efficiently exploring mean-field systems without those structural assumptions .To address this gap, Huang et al. (2023) establish general sample complexity results for model-based RL in MFGs 1.They introduce a complexity measure known as Model-Based Eluder Dimension (MBED) to characterize the com-
+
+> 1Model-based RL has also been explored in Mean-Field Con-trol (MFC) setting, where all the agents are cooperative (Huang et al., 2023; Pasztor et al., 2021).
+
+1Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+plexity of the model function class. Their algorithm, under basic realizability and Lipschitz continuity assumptions, achieves a sample complexity upper bound polynomial w.r.t. MBED. However, as we will show in Prop. 3.4, even for the tabular setting, MBED can be exponential in the number of states in the worst case. This observation, coupled with the tractability of tabular MFGs under additional structural assumptions (Guo et al., 2019; Perolat et al., 2021), prompts a fundamental question: 
+
+Is learning MFGs statistically harder than single-agent RL in general? 
+
+In this paper, we provide a definitive answer to this question. Our main contributions are summarized as follows: • In Sec. 3, we introduce a novel complexity measure for any given mean-field model class M, called Partial Model-Based Eluder Dimension (P-MBED) . P-MBED represents the complexity of the single-agent model class derived from M after (adversarially) fixing the state den-sity for the transition functions in M. We show that P-MBED can be significantly lower than MBED (Huang et al., 2023). For example, in the tabular setting, P-MBED is always bounded by the number of states and actions, yielding an exponential improvement over MBED. • In Sec. 4, we propose a model elimination algorithm ca-pable of exploring the mean-field system and returning an approximate NE policy with sample complexity polyno-mial w.r.t. P-MBED. From the algorithmic perspective, our results indicate that under the basic realizability and Lipschitz assumptions, learning MFGs is no more sta-tistically challenging than solving log |M| single-agent RL problems . As a direct implication, the sample com-plexity of tabular MFGs only polynomially depends on the number of states, actions, horizon and log |M| . This is the first result indicating that learning tabular MFGs is provably sample-efficient in general, even without the contractivity or monotonicity assumptions. • In Sec 6, we design a heuristic algorithm with improved computational efficiency building upon our insights in theory. We evaluate it in a synthetic linear MFGs setting and validate its effectiveness. As a substantial extension, we further examine the sample complexity of more general MFGs with heterogeneous pop-ulation, specifically Multi-Type MFGs (MT-MFGs) (Ghosh & Aggarwal, 2020; Perolat et al., 2021; Subramanian et al., 2020). MT-MFGs comprise multiple types of agents with distinct transition models, reward functions or even state-action spaces. MT-MFGs have stronger capacity in model-ing the diversity of agents, while being more tractable than general Markov Games 2. However, the fundamental sample complexity in the setting remains largely unexplored. Our additional contribution includes: • In Sec. 5, we show that finding the NE in an MT-MFG is equivalent to finding the NE in a lifted MFG with con-straints on policies. Building on this insight, we establish the first sample complexity upper bound for learning MT-MFGs. Our results identify statistical tractability of a broad class of MARL systems, potentially offering new insights to the sample complexity analysis for solving NE in general Markov Games. 
+
+1.1. Related Work 
+
+Within the abundant literature on single-agent RL and MFGs, below we focus primarily on sample complexity re-sults for solving these problems in unknown environments. We defer additional related works to Appx. B. 
+
+Single-Agent RL When the number of states and actions is extremely large, sample complexity bounds derived for tabular RL (Auer et al., 2008; Azar et al., 2017; Jin et al., 2018) become vacuous. Instead, function approximation is usually considered, where a model or value function class containing the true model or optimal value functions is available, and the sample complexity is governed by the complexity of the function classes (Agarwal et al., 2020; Du et al., 2021; Foster et al., 2021; Jiang et al., 2017; Jin et al., 2020; 2021a; Sun et al., 2019). Compared with single-agent RL, the main challenge in MFGs is the additional dependence on density in transition and reward functions, especially that the density space is continuous. Although our P-MBED is inspired by the eluder dimension in the single-agent setting (Levy et al., 2022; Osband & Van Roy, 2014; Russo & Van Roy, 2013), it is a novel complexity notion in characterizing the sample efficiency of RL in MFGs. 
+
+Mean-Field Games Most existing results for learning MFGs primarily focus on tabular setting and model-free ap-proaches (Cui & Koeppl, 2021; Elie et al., 2020; Guo et al., 2019; Xie et al., 2021), where strong structural assumptions, such as contractivity (Guo et al., 2019), monotonicity and density independent transition (Perrin et al., 2020), or non-vanishing regularization (Yardim et al., 2022) are usually required. In contrast, we focus on addressing the fundamen-tal exploration challenge for general MFGs. Mishra et al. (2020) study non-stationary MFG without strong structural  
+
+> 2The general Markov Games (MGs) framework considers in-dividually distinct agents. However, this generality comes with challenges. Existing results in MGs are restricted in learning (Coarse) Correlated Equilibria (Bai et al., 2020; Daskalakis et al., 2023; Jin et al., 2021b) and the sample complexity in function approximation setting may still depend on the number of agents (Cui et al., 2023; Wang et al., 2023). MT-MFGs can be regarded an intermediary between standard MFGs and general MGs.
+
+2Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+assumptions, but their algorithm is inefficient and no sam-ple complexity results were provided. Beyond the tabular setting, Huang et al. (2023) is the most related to us. How-ever, as implied by our results in this paper, their sample complexity bound are suboptimal. 
+
+Multi-Type Mean-Field Games Subramanian et al. (2020) study more general multi-type cases, but they con-sider the transition model depending on action density in-stead of state density. Besides, the multi-type setting has been investigated in special cases, such as LQR (Moon & Ba s¸ ar, 2018; uz Zaman et al., 2023), and leader-follower structures (Vasal & Berry, 2022). Ghosh & Aggarwal (2020) is the most related to us. However, they consider the dis-counted stationary setting and assume the state density is fixed, while ours is more challenging since we need to keep tracking the evolution of state density. Perolat et al. (2021) also consider the multi-type setting, but they require the monotonicity assumption. Moreover, they only provide asymptotic rates without sample complexity guarantees. 
+
+## 2. Background 
+
+Notations Throughout the paper, we will use standard big-oh notations O(·), Ω( ·), Θ( ·), and notations such as eO(·) to (partially) suppress logarithmic factors. In Appx. A, we list all the frequently used notations in this paper. 
+
+2.1. Mean-Field Games Mean-Field Markov Decision Process We consider the finite-horizon non-stationary Mean-Field MDP (MF-MDP) 
+
+M := ( μ1, S, A, H, PM , r ), where μ1 is the known ini-tial state distribution; S = (S1 = ... = SH ) and 
+
+A = ( A1 = ... = AH ) are the state and action spaces, which are discrete but can be arbitrarily large; PM := 
+
+{PM,h }h∈[H] with PM,h : Sh × A h × ∆( Sh) → ∆( Sh+1 )
+
+is the transition function and r := {rh}h∈[H] with rh :
+
+Sh × A h × ∆( Sh) → [0 , 1 
+
+> H
+
+] is the deterministic reward function, where ∆( X ) denotes the probability measure over 
+
+X . We use Π := {π := {πh}h∈[H]|πh : Sh → ∆( Ah)}
+
+to denote the policy class including all non-stationary Markovian policies, and we only focus on policies in 
+
+Π. Given π ∈ Π and initial density μπM, 1 := μ1, the state density μπM := {μπM,h }h∈[H] evolves according to 
+
+μπM,h +1 = Γ πM,h (μπM,h ), h ∈ [H] where ΓπM,h (μh)( ·) := P 
+
+> sh,a h
+
+μh(sh)π(ah|sh)PM,h (·| sh, a h, μ h).Given any π, eπ ∈ Π, we use Eeπ,M (π)[·] to de-note the expectation over trajectories generated by ex-ecuting policy eπ while fixing the transitions and re-wards to PM,h (·|· , ·, μ πM,h ), rh(·, ·, μ πM,h ). These tra-jectories can be interpreted as the observations of a deviated agent taking eπ while all the others take 
+
+π. Besides, we define V eπM,h (·; μπM ) := Eeπ,M (π)[
+
+PHh′=h rh′ (sh′ , a h′ , μ πM,h ′ )|sh = ·] to be the value function at step h if the agent deploys policy eπ in model M condition-ing on π, and define JM (eπ; π) := Es1∼μ1 [V eπM, 1(s1; μπM )] 
+
+to be the total return of policy eπ conditioning on π. The Nash Equilibrium (NE) πNE  
+
+> M
+
+of model M is defined to be the policy s.t. no agent tends to deviate, i.e., ∀eπ ∈
+
+Π, J M (eπ; πNE  
+
+> M
+
+) ≤ JM (πNE  
+
+> M
+
+; πNE  
+
+> M
+
+). We denote ENE  
+
+> M
+
+(π) := max eπ ∆M (eπ, π ) to be the NE-Gap, where ∆M (eπ, π ) := 
+
+JM (eπ; π) − JM (π; π).
+
+Model-Based Setting In our model-based setting, the learner can get access to a transition function class M ⊂ {{ PM,h }h∈[H]|∀ h, PM,h : Sh ×A h ×∆( Sh) → ∆( Sh+1 )}
+
+to approximate the true model M ∗. We assume the reward function r is known. In Appx. C, we provide informal dis-cussion about how to extend our results to the setting when r
+
+is unknown. Our main objective is to find an ε-approximate NE bπNE   
+
+> M∗
+
+, satisfying ENE   
+
+> M∗
+
+(bπNE   
+
+> M∗
+
+) ≤ ε. Same as Huang et al. (2023), we only make two basic assumptions about the func-tion class M: realizability and Lipschitz continuity. 
+
+Assumption A (Realizability) . M ∗ ∈ M .
+
+Assumption B (Lipschitz Continuity) . For any M ∈ M ,and arbitrary policies π, eπ ∈ Π, ∀h, s h, a h, we have: 
+
+∥PM,h (·| sh, a h, μ πM,h ) − PM,h (·| sh, a h, μ eπM,h )∥1
+
+≤ LT ∥μπM,h − μeπM,h ∥1,
+
+|rh(sh, a h, μ πM,h ) − rh(sh, a h, μ eπM,h )∥1
+
+≤ Lr ∥μπM,h − μeπM,h ∥1.
+
+Note that our Assump. B only requires Lipschitz continuity on feasible densities. In contrast, contractivity assumes Lr
+
+and LT are sufficiently small (Guo et al., 2019; Yardim et al., 2022), and prior works considering monotonicity (Perolat et al., 2021; Zhang et al., 2023) usually assume the transition is independent w.r.t. density, i.e., LT = 0 .We consider the same trajectory sampling model as Huang et al. (2023), which is much weaker than the generative model assumptions requiring trajectories conditioning on arbitrary state densities in most MFGs literatures (Anahtarci et al., 2023; Guo et al., 2019; Perrin et al., 2020). 
+
+Definition 2.1. The sampling model can be queried with arbitrary eπ, π ∈ Π, and return a trajectory by execut-ing eπ while transition and reward functions are fixed to 
+
+PM ∗,h (·|· , ·, μ πM ∗,h ) and rh(·, ·, μ πM ∗,h ) for all h.
+
+MFGs and N -Player Symmetric Anonymous Games 
+
+MFGs can be regarded as the limit of Symmetric Anony-mous Games (SAGs) when the number of agents N ap-proaches infinity (Guo et al., 2019; Yardim et al., 2022). As explained in (Huang et al., 2023), the sampling model (Def. 2.1) is reasonable for N -player SAGs with central controllers, which can manipulate all the agents’ policies. 3Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+Given a SAG, it is known that the NE of its MFG approxima-tion is a O(N −1/2)-approximate NE for the SAG (Yardim et al., 2024), if all the agents execute that same NE policy. In this way, one may interpret our setting as centralized training with decentralized execution. 
+
+2.2. Multi-Type Mean-Field Games Multi-Type Mean-Field MDP A finite horizon non-stationary Multi-Type (or Multi-Group) MF-MDP M with 
+
+W types of agents can be described by a collection of tuples M := {(μw 
+
+> 1
+
+, Sw, Aw, H, Pw 
+
+> M
+
+, r w)w∈[W ]}, where we use w in superscription to distinguish the initial state distribution, state-action spaces, the transition and reward functions in different groups. Besides, for any w, the transition and reward functions depend on densities in all types. More concretely, we have Pw 
+
+> M
+
+:= {Pw 
+
+> M,h
+
+}h∈[H] with 
+
+Pw  
+
+> M,h
+
+: Swh × A wh × ∆( S1
+
+> h
+
+) × ... × ∆( SWh ) → ∆( Swh+1 )
+
+and rw := {rwh }h∈[H] with rwh : Swh × A wh × ∆( S1
+
+> h
+
+) × ... ×
+
+∆( SWh ) → [0 , 1 
+
+> H
+
+]. For each type of agents, we consider the Markovian policies Πw := {πw := {πwh }h∈[H]|∀ h, π wh :
+
+Swh → ∆( Awh )}, and use Π := {π := {πw}w∈[W ]|∀ w ∈
+
+[W ], π w ∈ Πw} to denote the collection of policies for all types. For the function approximation setting, we assume W function classes M1, ..., MW are available, where ∀w ∈ [W ], Mw ⊂ {{ Pwh }h∈[H]|∀ h ∈ [H], Pwh :
+
+Swh × A wh × ∆( S1
+
+> h
+
+) × ... × ∆( SWh ) → ∆( Swh )} is used to approximate the transition function for the w-th group. The MT-MFG function class M is then defined by M ←{M := M 1 × ... × M W |∀ w ∈ [W ], M w ∈ M w}, which we use to approximate the true model M ∗.For the lack of space, we defer the definitions of value functions, Nash Equilibrium, and other related details to Appx. G.1. For the assumptions in MT-MFG setting, we defer to Appx. G.3. 
+
+## 3. Partial Model-Based Eluder Dimension 
+
+In the function approximation setting, the exploration chal-lenge is related to the complexity of the function classes. In this section, we introduce new notions to characterize the complexity of model function class for MFGs and its exten-sion to Multi-Type MFGs setting. The proofs and additional discussions can be found in Appx. D. Inspired by the Eluder dimension of single-agent value func-tion classes (Jin et al., 2021a; Russo & Van Roy, 2013) and mean-field model function classes (Huang et al., 2023), similarly, we use the length of independent sequences to characterize the complexity of function classes. In Def. 3.1, we first introduce the definition of standard ε-independence in previous Eluder dimension literature, to highlight the difference from our partial ε-independence. Although we only consider the l1-distance here, similar discussion can be generalized to other distances, e.g., the Hellinger distance. 
+
+Definition 3.1 (ε-Independence; (Huang et al., 2023)) .
+
+Given M and a data sequence {(sih, a ih, μ ih)}ni=1 ⊂ S h ×Ah × ∆( Sh), we say (sh, a h, μ h) is ε-independent of 
+
+{(sih, a ih, μ ih)}ni=1 w.r.t. M if there exists M, fM ∈ M such that Pni=1 ∥PM,h (·| sih, a ih, μ ih) − PfM ,h (·| sih, a ih, μ ih)∥21 ≤
+
+ε2 but ∥PM,h (·| sh, a h, μ h) − PfM ,h (·| sh, a h, μ h)∥1 > ε .We call {(sih, a ih, μ ih)}ni=1 an ε-independent sequence w.r.t. 
+
+M (at step h) if for any i ∈ [n], (sih, a ih, μ ih) is ε-independent w.r.t. {(sth, a th, μ th)}i−1
+
+> t=1
+
+.
+
+Definition 3.2 (Partial ε-Independence) . Given M, a map-ping νh : M → ∆( Sh), and a data sequence {(sih, a ih)}ni=1 
+
+⊂ S h × A h, we say (sh, a h) is partially ε-independent of 
+
+{(sih, a ih)}ni=1 ⊂ S h × A h w.r.t. M and νh, if there ex-ists M, fM ∈ M , s.t. Pni=1 ∥PM,h (·| sih, a ih, ν h(M )) −
+
+PfM ,h (·| sih, a ih, ν h( fM )) ∥21 ≤ ε2 but ∥PM,h (·| sh, a h,νh(M )) − PfM ,h (·| sh, a h, ν h( fM )) ∥1 > ε. We call 
+
+{(sih, a ih)}ni=1 a partially ε-independent sequence w.r.t. M
+
+and νh (at step h) if for any i ∈ [n], (sih, a ih) is partially 
+
+ε-independent on {(sth, a th)}i−1
+
+> t=1
+
+.Intuitively, a partially ε-independent sequence of M is an independent sequence w.r.t. the function class converted from M by using some mapping νh to “partially” fix the input (the density part) for each function in M. We use 
+
+dim E|νh (M, ε ) to denote the length of the longest partially 
+
+ε-independent sequence w.r.t. M and νh (at step h). Now, we are ready to define the Partial-MBED. 
+
+Definition 3.3 (Partial MBED) . Given a model class M,and a policy π, we define the mapping νπh : ∀M ∈ M ,
+
+νπh (M ) := μπM,h . The P-MBED of M is defined by: 
+
+dim PE (M, ε ) := max h∈[H] max π dim E|νπh (M, ε ).By definition, P-MBED can be interpreted as the complexity of the single-agent model class converted from the Mean-Field model class M by partially (adversarially) fixing the density of the functions’ input. In fact, different choices of 
+
+ν in Def. 3.2 may lead to different notions of complexity. In our main text, we stick to the choice in Def. 3.3, but in Appx. D.1, we discuss an alternative choice of ν, its induced P-MBED and associated properties. Next, we take the tabular setting as an example, and show that P-MBED of any function class for tabular MFGs can be controlled by |S||A| , while MBED (Huang et al., 2023) can be exponential in |S| in the worst case. This is reasonable given the single-agent nature of P-MBED. 
+
+Proposition 3.4. (Tabular Setting) For any M and ε > 
+
+0, dim PE (M, ε ) ≤ |S||A| , while there exists a concrete example of M such that dim E(M, ε ) = Ω(exp( |S| )) .
+
+Below we provide the linear mean-field model classes with decomposable transition functions as another exam-4Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+ple. When the transition is independent w.r.t. density μ (i.e. 
+
+G(μ) is constant), the linear MFGs reduce to the single-agent linear MDP (Jin et al., 2020). As we can see, the P-MBED of the model class of linear MFGs is only related to the dimension of the state-action feature, which matches the complexity of their single-agent correspondence. 
+
+Proposition 3.5 (Linear MFGs; Informal version of Prop. D.4) . Consider the model class: MΨ := 
+
+{Pψ |Pψ (·| s, a, μ ) := ϕ(s, a )⊤G(μ)ψ(s′); ψ ∈ Ψ}, with known feature ϕ(·, ·) ∈ R ed, G(·) ∈ R ed×d, and a next-state feature class Ψ satisfying some normalization conditions. Then dim PE (M, ε ) = eO( ed).
+
+Similarly, for model classes in Multi-Type MFGs setting, we can define the Multi-Type P-MBED generalized from 
+
+dim PE in MFGs, which we denote as dim MTPE . We defer its formal definition to Appx. D.3. Likewise, dim MTPE 
+
+can be regarded as the complexity measure for a col-lection of W single-agent model classes converted from 
+
+M. In the tabular case (resp. Prop. D.11), we have 
+
+dim MTPE (M, ε ′) = eO(P  
+
+> w∈[W]
+
+|S w||A w|), and in lin-ear MT-MFG setting with decomposable transitions (resp. Prop. D.12), dim MTPE (M, ε ′) = eO(P  
+
+> w∈[W]
+
+dw) where 
+
+{dw}w∈[W ] are the dimensions of the state-action features. 
+
+## 4. Sample Efficiency of Learning in MFGs 
+
+In this section, we show that the sample complexity of learn-ing NE in MFGs is indeed governed by our new complexity notion P-MBED. We highlight our main algorithm and sam-ple complexity results in Sec. 4.1, and then explain details in the algorithm design and technical novelty in Sec. 4.2. The missing details and proofs for results in this section are deferred to Appx. F. 
+
+4.1. Main Algorithm and Highlight of Main Results 
+
+Before proceeding to the algorithms, we first introduce sev-eral useful notions. Given a reference policy π, we denote 
+
+d(M, fM |π) := max eπ deπ (M, fM |π) ∨ deπ ( fM , M, |π) as the conditional model distance between M and fM , where 
+
+deπ (M, fM |π) := Eeπ,M (π)[PHh=1 ∥PM,h (·|· , ·, μ πM,h ) −
+
+PfM ,h (·|· , ·, μ π
+
+> fM ,h
+
+)∥1]. Given a model class M′, any M ∈M′, and any policy π, we define the ε0-neighborhood of M
+
+in M′ to be: Bε0 
+
+> π
+
+(M ; M′) := {M ′ ∈ M ′|d(M, M ′|π) ≤
+
+ε0}. The “Central Model” (abbr. CM) in M′ w.r.t. pol-icy π is defined to be the model with the most number of neighbors: M ε0
+
+> Ctr
+
+(π; M′) := arg max M ∈M ′ |B ε0 
+
+> π
+
+(M ; M′)|.Besides, when ε0 and M′ is clear from the context, we will use M π 
+
+> Ctr
+
+as a short note of M ε0
+
+> Ctr
+
+(π; M′). Lastly, ∀π, π ′ ∈ Π,we define d∞,1(π, π ′) := max h,s h ∥π(·| sh) − π′(·| sh)∥1.We provide our main algorithm in Alg. 1. The basic idea is to find a sequence of “reference policies” ( πk or πNE ,k  
+
+> Br
+
+,
+
+k = 1 , 2, ... ) and run the model elimination steps (Alg. 2 as ModelElim ) to gradually remove models in M that distinct from M ∗ conditioning on these reference policies, until find an approximate NE. Next, we highlight our main results and its implications. 
+
+Theorem 4.1. [Informal version of Thm. F.7] Under As-sump. A and B, with appropriate hyperparameter choices, w.p. 1 − δ, Alg. 1 terminates at some k ≤ log 2 |M| + 1 and returns an ε-NE of M ∗ after consuming at most 
+
+eO
+
+ H7
+
+ε2 (1 + Lr H)2 dim PE (M, ε ′) log 3 |M| 
+
+δ
+
+
+
+trajectories, where ε′ = O( εH3(1+ Lr H)(1+ LT )H ).
+
+Model-Based RL for MFGs is not Statistically Harder than Single-Agent RL As we will explain more in the next section, ModelElim only needs to be a single-agent model elimination subroutine , and it is the only step consuming samples. Therefore, Thm. 4.1 suggests that the sample complexity of learning MFGs can be characterized by a 
+
+O(log |M| ) number of single-agent model elimination sub-problems, whose learning complexity is controlled by P-MBED. As a result, the total sample complexity only scales with P-MBED and the log-covering number of M.Based on the discussion in Sec. 3, we can expect for many model classes with low P-MBED (e.g. tabular setting Prop. 3.4, linear setting Prop. 3.5), learning MFGs is prov-able sample-efficient. In particular, for tabular MFGs where 
+
+dim PE (M, ε ′) ≤ |S||A| , our result yields a sample com-plexity with polynomial dependence on |S| , |A| , H , which implies that tabular MFGs are provably efficient in gen-eral if considering the model-based function approximation, even without assuming contractivity or monotonicity that are often required in existing works (Guo et al., 2019; Perrin et al., 2020; Yardim et al., 2022). Compared with recent results in function approximation setting for MFGs (Huang et al., 2023) or MFC (Pasztor et al., 2021) with similar Lips-chitz assumptions, our result does not suffer the exponential term (1 + LT )H (see Remark F.4 for more explanation). 
+
+Additional Remarks on log |M| Although low log-covering number of function class is regarded as a stan-dard assumption in many MARL works (Cui et al., 2023; Wang et al., 2023), we would like to take the tabular MFGs as an example and provide remarks about the mag-nitude of log |M| . Under Assump. B, with appropriate discretization, the ε-cover for all possible transition func-tions could be Ω(exp( SAH Nε(∆( S)))) , where Nε(∆( S)) 
+
+denotes the covering number of density space ∆( S) and we omit LT , L r . As a result, in the worst case, log |M| =Ω( Nε(∆( S))) , which could be exponential in SA . Nonethe-less, there are many examples, such that, even in the worst case, log |M| is acceptable. For instance, if the model class is parameterized by some θ ∈ Θ (e.g. Neural Networks) 5Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+Algorithm 1: MEBP : Model Elimination via Bridge Policy  
+
+> 1
+
+Input : Model Class M; Parameters ε0, eε, ¯ε, δ . 
+
+> 2
+
+Initialize : M1 ← M , δ0 ← δ  
+
+> log 2|M| +1
+> 3
+
+for k = 1 , 2, ... do  
+
+> 4
+
+πk ← arg min π |B ε0 
+
+> π
+
+(M π
+
+> Ctr
+
+; Mk)|; 
+
+> 5
+
+if |B ε0 
+
+> πk
+
+(M πk 
+
+> Ctr
+
+; Mk)| ≤ |M k | 
+
+> 2
+
+then Mk+1 ← ModelElim (πk, Mk, eε, δ 0) ; 
+
+> 6
+
+else  
+
+> 7
+
+πNE ,k  
+
+> Br
+
+← BridgePolicy (Mk, ¯ε); Mk+1 ← ModelElim (πNE ,k  
+
+> Br
+
+, Mk, eε, δ 0); 
+
+> 8
+
+Randomly pick fM k from Mk+1 ; ENE   
+
+> fMk
+
+(πNE ,k  
+
+> Br
+
+) ← max π ∆fM k (π, π NE ,k  
+
+> Br
+
+) 
+
+> 9
+
+if ENE   
+
+> fMk
+
+(πNE ,k  
+
+> Br
+
+) ≤ 3ε 
+
+> 4
+
+then return πNE ,k  
+
+> Br
+
+; 
+
+> 10
+
+end  
+
+> 11
+
+if |M k| = 1 then Return the NE of the model ;  
+
+> 12
+
+end 
+
+and take the concatenation of [s, a, μ ] ∈ Rdim( S)+dim( A)+ S
+
+as inputs, where we use dim( ·) to denote the dimension of a given set. Then log |M| = eO(dim(Θ)) , which could just scale with eO(Poly (dim( S), dim( A), S )}). As another example, when the transition function only depends on some sufficient statistics of density instead of the exact den-sity, (e.g. P(·| s, a, μ ) = P(·| s, a, Ees∼μ[es]) ), we may have 
+
+log |M| = eO(Poly (S, A, H )) in the worst case. Note that, for the single-agent RL, the largest log-covering number of models is also bounded by eO(Poly (S, A, H )) (folklore). 
+
+Exponential Separation between MFGs and MFC Dif-ferent from MFGs, in Mean-Field Control (MFC) setting, agents cooperate to find an optimal policy to maximize the total return. Previous work (Huang et al., 2023) suggests that both MFC and MFGs can be solved via a unified MLE framework with similar sample complexity upper bounds. One natural question is: whether learning MFC can also be as sample-efficient as single-agent RL ?We provide a negative answer to this question. In Thm. F.9, we show that even in tabular setting, there exists a hard instance such that learning MFC requires Ω(exp( |S| )) sam-ples. This suggests an exponential separation between learn-ing MFC and MFGs from information-theoretical perspec-tive. Intuitively, for MFC, in the worst case, the agent should explore the entire S × A × ∆( S) space to identify the policy that achieves the maximal return. In contrast, as we will explain in Lem. 4.3, in MFGs setting, the learner does not have to explore the entire state-action-density space; instead, finding a “locally-aligned equilibrium policy” is enough. 
+
+4.2. Algorithm Design and Proof Sketch 
+
+4.2.1. MO D E L EL I M : T HE MODEL ELIMINATION STEP 
+
+ModelElim can be arbitrary single-agent model elimina-tion procedures. Here we provide an example in Alg. 2. The basic idea of Alg. 2 is to eliminate models not aligned with M ∗ conditioning on the given reference policy π. In each iteration, we first find a tuple (eπt, M t, M ′t) resulting in the maximal discrepancy ∆t
+
+> max
+
+. As long as ∆t 
+
+> max
+
+> eε,we collect samples and remove models with low likelihood. With high probability, on the one hand, M ∗ will never be ruled out under Assump. A; on the other hand, the growth of P 
+
+> t
+
+∆t 
+
+> max
+
+is controlled by P-MBED. As a result, the algo-rithm will terminate eventually and return a model class only including those M with small d(M, M ∗|π). We summarize the result in the theorem below. 
+
+Theorem 4.2. [Informal version of Thm. F.3] Given any reference policy π, eε, δ ∈ (0 , 1) , if M ∗ ∈ ¯M, by choosing 
+
+T = eO( H4 dim PE (M,ε ′) 
+
+> eε2
+
+) with ε′ = O( eεH2(1+ LT )H ), w.p. 
+
+1 − δ, Alg. 2 terminates at some T0 ≤ T , and return ¯MT0
+
+s.t. (i) M ∗ ∈ ¯MT0 (ii) ∀M ∈ ¯MT0 , d(M ∗, M |π) ≤ eε.
+
+We claim Alg. 2 is a single-agent model elimination subrou-tine, because from Line 8-11, we can see that Alg. 2 only eliminates those M ∈ M k s.t. PM,h (·|· , ·, μ πM,h ) distinct from PM ∗,h (·|· , ·, μ πM ∗,h ) under some adversarial policy eπt
+
+or π itself. Here the density part of PM,h is fixed by μπM , so during the elimination, all the transitions reduce to single-agent functions only depending on states and actions. 
+
+Beyond P-MBED Notably, although we focus on P-MBED in this paper, one may consider other complexity measures generalized from single-agent RL setting (Foster et al., 2021; Sun et al., 2019) and our analysis can be extended corre-spondingly. That’s because as long as ModelElim satisfies the (i) and (ii) in Thm. 4.2, it can be arbitrary and does not affect the function of other components in Alg. 1. 4.2.2. F AST ELIMINATION WITH BRIDGE POLICY 
+
+We seek to construct reference policies that allow to elim-inate models as efficient as possible, more specifically, to 6Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+Algorithm 2: Model Elimination given a Policy  
+
+> 1
+
+Input : Reference Policy π; ¯M; eε, δ  
+
+> 2
+
+Initialize : ¯M1 ← ¯M; Z0 ← {} ; Set T by Thm. F.3;  
+
+> 3
+
+for t = 1 , 2, ..., T do  
+
+> 4
+
+eπt ← arg max eπ max M,M ′∈ ¯Mt Eeπ,M (π)[ PHh=1 ∥PM,h (·|· , ·, μ πM,h ) − PM ′,h (·|· , ·, μ πM ′,h )∥1]. 
+
+> 5
+
+∆t 
+
+> max
+
+← the maximal value achieved above.  
+
+> 6
+
+if ∆t 
+
+> max
+
+≤ eε then return ¯Mt ; 
+
+> 7
+
+else  
+
+> 8
+
+for h = 1 , 2..., H do  
+
+> 9
+
+Query Sampling Oracle (Def. 2.1) with (π, π ); collect the data at step h: zth := {(sth, a th, s ′th+1 )}. 
+
+> 10
+
+Query Sampling Oracle (Def. 2.1) with (eπt, π ); collect the data at step h: ezth := {(sth, a th, s ′th+1 )}. 
+
+> 11
+
+Zt ← Z t−1 ∪ zth ∪ ezth. 
+
+> 12
+
+end  
+
+> 13
+
+∀M ∈ ¯Mt, lπ
+
+> MLE
+
+(M ; Zt) := P 
+
+> i∈[t],h ∈[H]
+
+log PM,h (s′ih+1 |sih, a ih, μ πM,h ) + log PM,h (es′ih+1 |esih, eaih, μ πM,h ). 
+
+> 14
+
+¯Mt+1 ← { M ∈ ¯Mt| lπ
+
+> MLE
+
+(M ; Zt) ≥ max fM lπ
+
+> MLE
+
+( fM ; Zt) − log HT |M|  
+
+> δ
+
+}. 
+
+> 15
+
+end  
+
+> 16
+
+end  
+
+> 17
+
+return ¯MT .halve the model candidates every iteration until finding the NE. We first consider the simple case, where the models are “scattered” and easy to be distinguished: there exists a policy 
+
+πk, such that, no more than |M k|/2 models are around its CM (resp. If -branch, Line 5 in Alg. 1). In this case, after running ModelElim with πk, Mk+1 only contains those models locating at the neighborhood of M ∗ conditioning πk,which implies |M k+1 | ≤ |B ε0 
+
+> πk
+
+(M πk 
+
+> Ctr
+
+; Mk)| ≤ |M k|/2.The challenging scenario is that, for any policy, the corre-sponding CM is surrounded by over a half of models (resp. 
+
+Else -branch, Line 6 in Alg. 1). In that case, unstrategically selecting reference policies leads to inefficient model elimi-nation. We present a subtle choice of reference policy, called 
+
+Bridge Policy , which can be constructed by Alg. 3. Before diving into the details of our constructions, we first explain the key insights behind it. Our first insight is summarized in the lemma below. 
+
+Lemma 4.3. [Implication of Local Alignment] Given any 
+
+M, fM with transition PM and PfM , denote bπNE  
+
+> M
+
+to be an ε1-approximate NE of M , suppose d(M, fM |bπNE  
+
+> M
+
+) ≤ ε2, then 
+
+bπNE  
+
+> M
+
+is also an O(ε1 + ε2)-approximate NE of fM .
+
+Lem. 4.3 states that, if two models M and fM align with each other conditioning on the NE of one of them, then they ap-proximately share that NE. Therefore, in the Else -branch, after calling ModelElim with πNE ,k  
+
+> Br
+
+as the reference pol-icy, if the NE-Gap ENE   
+
+> fMk
+
+(πNE ,k  
+
+> Br
+
+) is small for some randomly selected fM k ∈ M k+1 (resp. Line 9), we can claim πNE ,k 
+
+> Br
+
+is an approximate NE of M ∗ by Lem. 4.3. However, the remaining challenge is that, if ENE   
+
+> fMk
+
+(πNE ,k  
+
+> Br
+
+)
+
+is large, we cannot conclude anything about it. Hence, 
+
+πNE ,k  
+
+> Br
+
+should be chosen in a strategic way, so that in this case, we can guarantee the elimination is efficient, i.e. 
+
+|M k+1 | ≤ |M k|/2. Our second key insight to overcome this challenge is summarized in Thm. 4.4, which indicates that the existence of a “Bridge Policy” that coincides with the NE of its corresponding CM. 
+
+Theorem 4.4. [Bridge Policy] If the Else -branch in Line 6 in Alg. 1 is activated, running Alg. 3 returns a bridge policy 
+
+πNE ,k  
+
+> Br
+
+, such that, πNE ,k  
+
+> Br
+
+is an approximate NE of M πNE ,k  
+
+> Br
+> Ctr
+
+.
+
+Before we explain how to prove Thm. 4.4, we first check the implication of this result. Based on Thm. 4.4, if 
+
+ENE   
+
+> fMk
+
+(πNE ,k  
+
+> Br
+
+) > 3ε 
+
+> 4
+
+in Line 9, by Lem. 4.3, we know 
+
+d(M πNE ,k  
+
+> Br
+> Ctr
+
+, M ∗|πNE ,k  
+
+> Br
+
+) cannot be small. Therefore, with ap-propriate hyperparameter choices, we can assert that all models in the neighborhood Bε0
+
+> πNE ,k
+> Br
+
+(M πNE ,k  
+
+> Br
+> Ctr
+
+, Mk) should have been eliminated, implying |M k+1 | ≤ |M k|/2.Combining the discussions above, we know our Alg. 1 guar-antees to either return an approximate NE, or at least halve the model sets. We summarize to the following theorem, which paves the way to our main theorem Thm. 4.1. 
+
+Theorem 4.5. In Alg. 1, by choosing ε0 = ε  
+
+> 8(1+ LrH)( H+4)
+
+,
+
+eε = ε0 
+
+> 6
+
+, and choosing ¯ε according to Thm. F.5, w.p. 1 − δ,(1) if the If-Branch in Line 5 is activated: we have 
+
+|M k+1 | ≤ |M k|/2; (2) otherwise, in the Else-Branch 
+
+in Line 6: either we return the πNE ,k  
+
+> Br
+
+which is an ε-approximate NE for M ∗; or the algorithm continues with 
+
+|M k+1 | ≤ |M k|/2.
+
+7Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+Algorithm 3: Bridge Policy Construction  
+
+> 1
+
+Input : MF-MDP model class M; ε0, ¯ε; 
+
+> 2
+
+Convert M to a PAM class ¨M via Eq. (1).  
+
+> 3
+
+Construct ¯ε-cover of the policy space Π w.r.t. d∞,1, denoted as Π¯ε (see Def. F.1).  
+
+> 4
+
+for eπ ∈ Π¯ε do Find the Central Model ¨M ε0
+
+> Ctr
+
+(eπ; ¨M) ← arg max ¨M ∈ ¨M |B ε0 
+
+> π
+
+( ¨M ; ¨M)| ; 
+
+> 5
+
+Construct the new PAM ¨MBr s.t. for any sh, a h, π ,
+
+¨PBr ,h (·| sh, a h, π ) :=         
+
+> P
+> eπ∈Π¯ ε[2¯ ε−d∞,1(π, eπ)] +¨P¨M ε0
+> Ctr (eπ;¨M),h (·| sh,a h,eπ)
+> P
+> eπ∈Π¯ ε[2¯ ε−d∞,1(π, eπ)] +
+
+,
+
+¨rBr ,h (sh, a h, π ) :=         
+
+> P
+> eπ∈Π¯ ε[2¯ ε−d∞,1(π, eπ)] +¨r¨M ε0
+> Ctr (eπ;¨M),h (sh,a h,eπ)
+> P
+> eπ∈Π¯ ε[2¯ ε−d∞,1(π, eπ)] +
+
+, where [x]+ := max {0, x } 
+
+> 6
+
+Compute the NE of ¨MBr : πNE Br ← arg min π max eπ ¨J ¨MBr (eπ; π) − ¨J ¨MBr (π; π). 
+
+> 7
+
+return πNE Br .
+
+Proof Sketch of Thm. 4.4 An informal way to interpret the existence of such bridge policy in Thm. 4.4 is to consider a mapping T from an arbitrary π ∈ Π to the NE of its CM 
+
+M π
+
+> Ctr
+
+. Then, Thm. 4.4 states that T has an approximate fixed point πNE Br ≈ T (πNE Br ). However, given that it’s hard to evaluate the continuity of T and moreover, T can be a one-to-many mapping if multiple NEs exist, we prove the existence of such πNE Br by the non-trivial construction in Alg. 3. We leave the connection between our proofs and the fixed-point theorems as an open problem. Before explaining our construction in Alg. 3, we first in-troduce a new notion called “Policy-Aware Model” (abbr. PAM) denoted by ¨M . The main motivation for introducing PAM is that we want to focus on the policy space, because the feasible densities {μπM ∗,h }π∈Π may not cover the en-tire density space ∆( Sh), and it is not easy to characterize. We defer to Appx. E.1 for the formal definition of PAM and also new notations in Alg. 3 (e.g. ¨M ε0
+
+> Ctr
+
+(·, ·) denotes Central Model, ¨J denotes the total return), and only sum-marize the main idea here to save space. Briefly speak-ing, a PAM ¨M := {S , A, μ 1, H, ¨P, ¨r} is an MDP whose transition ¨P : S × A × Π → ∆( S) and reward functions 
+
+¨r : S × A × Π → [0 , 1 
+
+> H
+
+] depend on state, action and a “reference policy”. PAM can be regarded as a higher-level abstraction of MF-MDP (i.e. MF-MDP ⊂ PAM), where we replace the dependence on μπM in MF-MDP by π. We can convert a MF-MDP M to a PAM ¨M sharing the same 
+
+S, A, μ 1, H by assigning the following for any h ∈ [H]
+
+with μπM, 1 = μ1, ∀π ∈ Π:
+
+¨P ¨M ,h (·|· , ·, π ) := PM,h (·|· , ·, μ πM,h ) (1) 
+
+¨r ¨M ,h (·, ·, π ) := rh(·, ·, μ πM,h ), μ πM,h +1 ← ΓπM,h (μπM,h ).
+
+In Alg. 3, we first convert each MF-MDP to its PAM version. Then, we find an ¯ε-cover of the policy space w.r.t. d∞,1,denoted by Πeε, and construct the “Bridge PAM” ¨MBr by interpolating among CMs w.r.t. eπ ∈ Π¯ε. Here the weights 
+
+[2¯ ε − d∞,1(π, eπ)] + is chosen carefully for the following considerations: • (I) since Π¯ε is an ¯ε-cover, for any π ∈ Π, the denominator P 
+
+> eπ∈Π¯ε
+
+[2¯ ε − d∞,1(π, eπ)] + is always larger than ¯ε, which implies both ¨PBr ,h and ¨rBr ,h are well-defined and continu-ous in π. The continuity is important since it implies that 
+
+¨MBr has at least one NE (Def. E.1), denoted as πNE Br ;• (II) [2¯ ε − d∞,1(π, eπ)] + decays to zero if π largely dis-agrees with eπ, so ¨PBr (·|· , ·, π ) is only determined by CMs of those eπ close to π.Next, we discuss what we can conclude from the above two points. Based on the triggering condition in Line 6 in Alg. 1, for any π, eπ, the neighbors of M π 
+
+> Ctr
+
+and M eπ 
+
+> Ctr
+
+share at least one common model Mshare . By using Mshare as a bridge, we have ∥¨P ¨M π
+
+> Ctr
+
+(·|· , ·, π ) − ¨P ¨M eπ
+
+> Ctr
+
+(·|· , ·, eπ)∥1 = O(d∞,1(π, eπ)) .Combining with (II) , we know ∀π, ∥¨PBr (·|· , ·, π ) −
+
+¨P ¨M π
+
+> Ctr
+
+(·|· , ·, π )∥1 = O(¯ ε), which implies ¨PBr (·|· , ·, π NE Br ) ≈
+
+P ¨M πNE Br Ctr 
+
+(·|· , ·, π NE Br ) if ¯ε is small enough. By the definition of NE in PAM, the conversion rules in Eq. (1) and Lem. 4.3, we can conclude that πNE Br is an approximate NE of M πNE Br  
+
+> Ctr
+
+,and finish the proof of Thm. 4.4. 
+
+## 5. Learning in Multi-Type MFGs 
+
+In this section, we extend our results to the more general Multi-Type MFGs setting 3, allowing to address heteroge-neous agents. 
+
+Reduction to Lifted MFGs with Constrained Policy Our key observation is that, a MT-MFG M to can be lift to a new MF-MDP MMFG := {S MFG , AMFG , μ 1, H, PMFG , r MFG } by augmenting the original states and actions with the type in-dex. The new state and action spaces are given by: SMFG := S 
+
+> w∈[W]
+
+{S w × { w}} and AMFG := S 
+
+> w∈[W]
+
+{A w × { w}} .
+
+> 3
+
+The existence of NE in MT-MFGs can be found in Thm. E.12. 
+
+8Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+We defer the detailed description for the conversion process and the definition of initial state distribution, transition and reward functions in MMFG to Appx. G.2. For policies in MMFG , we only consider Π† := {π|∀ w ∈
+
+[W ], π (aw ◦ w|sw ◦ w) = πw(aw|sw), π w ∈ Πw}, in-cluding all policies which only take actions with the same type as the states. Similar to the NE defined in full pol-icy space Π, we can define the “constrained NE” when agents are constrained to only take policies in the subset Π†.More concretely, we call bπNE Cstr ∈ Π† the ε-approximate Con-strained Nash Equilibrium if ∀π ∈ Π†, J MMFG (π, bπNE Cstr ) ≤
+
+JMMFG (bπNE Cstr , bπNE Cstr ) + ε. The following property reveals the connection between constrained NE in MMFG and the NE in the original multi-type model M .
+
+Proposition 5.1. Given a MT-MFG M and its lifted MFG 
+
+MMFG , we have: (1) an ε-constrained NE bπNE Cstr ∈ Π† for 
+
+MMFG is a ( W ε )-NE in M ; (2) an ε-NE bπNE in M is an 
+
+ε-constrained NE for MMFG .
+
+The above result not only implies the existence of con-strained NE in MMFG given the existence of NE in M by letting ε → 0, but also suggests one can solve NE of MT-MFG by solving the constrained NE in its lifted MFG. The second point is very important since the constrained NE can be solved via almost the same procedures in Sec. 4, as long as we constrain the policy space to Π†. We defer algorithm details to Appx. G.5, and summarize our main result in the following theorem. 
+
+Theorem 5.2. [Informal version of Thm. G.8] Under As-sump. C and D, there exists an algorithm (Alg. 4), s.t. w.p. 
+
+1 − δ, it returns an ε-NE of M ∗ after consuming at most 
+
+eO( W 2H7
+
+ε2 (1 + Lr H)2 dim MTPE (M, ε ′)) 
+
+trajectories, where ε′ = O( εW H 3(1+ Lr H)(1+ LT )H ).
+
+In Appx. H, we investigate a practical multi-agent system called N -player Multi-Type Symmetric Anonymous Games (MT-SAGs) generalized from SAGs. We establish approxi-mation error between MT-MFGs and MT-SAGs. Our results reveal a larger class of Multi-Agent systems where NE can be solved in a sample-efficient way. 
+
+## 6. A Heuristic Algorithm with Improved Computational Efficiency 
+
+Although Alg. 1 is sample-efficient, it requires exponential computation. In this section, we aim to design a heuristic algorithm 4 sharing the main insights as Alg. 1 while more computationally tractable. For the lack of space, we defer the concrete algoirthm (Alg. 7), the experiment setting and      
+
+> 4The code is available at https://github.com/ jiaweihhuang/Heuristic_MEBP .
+
+evaluation results (Fig. 2) to Appx. J. In this section, we just highlight the algorithm design. 
+
+Highlights of Algorithm Design We assume a NE Ora-cle is available, such that given a known MFG model, the Oracle can return its NE. We argue that such oracle can be easily implemented if the model is smooth enough or the monotonicity condition is satisfied (Guo et al., 2019; Pero-lat et al., 2021). Besides, in our experiments, we observe that repeatedly mixing the policy with its best response can converge to a good solution. Given such oracle, Alg. 7 only involves |M| calls of NE oracle, and Poly (|M| , |S| , |A| , H )
+
+arithmetic operations in computing model difference or like-lihood, which avoids exponential computation in Alg. 1. For the algorithm design, Alg. 7 follows the same if-else structure as Alg. 2, but we improve the computational effi-ciency in two aspects. Firstly, we avoid procedures optimiz-ing over the entire policy class, including Line 4 in Alg. 1 and Line 4 in Alg. 2. Instead, we only search over the NE policies of model candidates, which can be computed by calling the NE Oracle |M| times at the beginning. As long as the models in M are diverse enough, we can expect their NEs to be reasonable representatives for Π in distinguishing models. Secondly, we replace the πNE ,k  
+
+> Br
+
+in Alg. 1 with the NE of the model M k ← arg max M ∈M k |B ε0
+
+> πNE
+> M
+
+(M, Mk)|,and do not have to solve the NE of the complicated bridge model in Alg. 3. We claim that this modification still aligns with Alg. 3 in principle. Note that the main intuition behind Alg. 3 is that, when Line 6 in Alg. 1 is activated, the ref-erence policy used for elimination should be a policy πref ,such that, πref collapses with the NE of the model with the maximal number of neighbors conditioning on πref .
+
+## 7. Conclusion 
+
+In this paper, we reveal that learning MFGs can be as sample-efficient as single-agent RL under mild assumptions, and the sample complexity of RL in MFGs can be characterized by a novel complexity measure called Partial Model-Based Eluder Dimension (P-MBED). Besides, we extend our al-gorithms to the more general Multi-Type MFGs setting. Lastly, we contribute an empirical algorithm with improved computational efficiency. As for the future, one interesting direction is to study the sample complexity when only value function approxima-tions are available. Besides, while our focus is the sample efficiency in this paper, it would be valuable to identify general conditions, under which computationally efficient algorithms exist. Lastly, our results underscore the power of mean-field approximation, and it would be worthwhile to investigate other generalizations of the MFGs setting, in order to deepen our understanding on the sample efficiency of learning NE in other MARL systems. 9Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+## Impact Statement 
+
+This paper presents work whose goal is to advance the field of Machine Learning. There are many potential societal consequences of our work, none which we feel must be specifically highlighted here. 
+
+## Acknowledgements 
+
+This research was supported by Swiss National Science Foundation (SNSF) Project Funding No. 200021-207343, SNSF starting grant, SNSF grant agreement 51NF40 180545, and by the European Research Council (ERC) un-der the European Union’s Horizon grant 815943. 
+
+## References 
+
+Agarwal, A., Kakade, S., Krishnamurthy, A., and Sun, W. Flambe: Structural complexity and representation learn-ing of low rank mdps. Advances in neural information processing systems , 33:20095–20107, 2020. Anahtarci, B., Kariksiz, C. D., and Saldi, N. Q-learning in regularized mean-field games. Dynamic Games and Applications , 13(1):89–117, 2023. Auer, P., Jaksch, T., and Ortner, R. Near-optimal regret bounds for reinforcement learning. Advances in neural information processing systems , 21, 2008. Ayoub, A., Jia, Z., Szepesvari, C., Wang, M., and Yang, L. Model-based reinforcement learning with value-targeted regression. In International Conference on Machine Learning , pp. 463–474. PMLR, 2020. Azar, M. G., Osband, I., and Munos, R. Minimax regret bounds for reinforcement learning. In International Con-ference on Machine Learning , pp. 263–272. PMLR, 2017. Bai, Y., Jin, C., and Yu, T. Near-optimal reinforcement learning with self-play. Advances in neural information processing systems , 33:2159–2170, 2020. Cardaliaguet, P. and Lehalle, C.-A. Mean field game of con-trols and an application to trade crowding. Mathematics and Financial Economics , 12:335–363, 2018. Chen, Z., Li, C. J., Yuan, A., Gu, Q., and Jordan, M. I. A general framework for sample-efficient function ap-proximation in reinforcement learning. arXiv preprint arXiv:2209.15634 , 2022a. Chen, Z., Zhou, D., and Gu, Q. Almost optimal algorithms for two-player zero-sum linear mixture markov games. In International Conference on Algorithmic Learning Theory , pp. 227–261. PMLR, 2022b. Cui, K. and Koeppl, H. Approximately solving mean field games via entropy-regularized deep reinforcement learn-ing. In International Conference on Artificial Intelligence and Statistics , pp. 1909–1917. PMLR, 2021. Cui, Q., Zhang, K., and Du, S. S. Breaking the curse of multiagents in a large state space: Rl in markov games with independent linear function approximation. arXiv preprint arXiv:2302.03673 , 2023. Daskalakis, C., Golowich, N., and Zhang, K. The complex-ity of markov equilibrium in stochastic games. In The Thirty Sixth Annual Conference on Learning Theory , pp. 4180–4234. PMLR, 2023. Djehiche, B., Tcheukam, A., and Tembine, H. Mean-field-type games in engineering. arXiv preprint arXiv:1605.03281 , 2016. Du, S., Kakade, S., Lee, J., Lovett, S., Mahajan, G., Sun, W., and Wang, R. Bilinear classes: A structural framework for provable generalization in rl. In International Conference on Machine Learning , pp. 2826–2836. PMLR, 2021. Elie, R., Perolat, J., Lauri `ere, M., Geist, M., and Pietquin, O. On the convergence of model free learning in mean field games. In Proceedings of the AAAI Conference on Artificial Intelligence , volume 34, pp. 7143–7150, 2020. Foster, D., Foster, D. J., Golowich, N., and Rakhlin, A. On the complexity of multi-agent decision making: From learning in games to partial monitoring. In The Thirty Sixth Annual Conference on Learning Theory , pp. 2678– 2792. PMLR, 2023. Foster, D. J., Kakade, S. M., Qian, J., and Rakhlin, A. The statistical complexity of interactive decision mak-ing. arXiv preprint arXiv:2112.13487 , 2021. Ghosh, A. and Aggarwal, V. Model free reinforcement learning algorithm for stationary mean field equilib-rium for multiple types of agents. arXiv preprint arXiv:2012.15377 , 2020. Gomes, D. A. and Pimentel, E. A. Economic models and mean-field games theory. Guo, X., Hu, A., Xu, R., and Zhang, J. Learning mean-field games. Advances in Neural Information Processing Systems , 32, 2019. Huang, B., Lee, J. D., Wang, Z., and Yang, Z. Towards gen-eral function approximation in zero-sum markov games. 
+
+arXiv preprint arXiv:2107.14702 , 2021. Huang, J., Chen, J., Zhao, L., Qin, T., Jiang, N., and Liu, T.-Y. Towards deployment-efficient reinforcement learning: Lower bound and optimality. arXiv preprint arXiv:2202.06450 , 2022. 10 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+Huang, J., Yardim, B., and He, N. On the statistical effi-ciency of mean field reinforcement learning with general function approximation, 2023. Huang, M., Malham ´e, R. P., and Caines, P. E. Large pop-ulation stochastic dynamic games: closed-loop mckean-vlasov systems and the nash certainty equivalence princi-ple. 2006. Jiang, N., Krishnamurthy, A., Agarwal, A., Langford, J., and Schapire, R. E. Contextual decision processes with low bellman rank are pac-learnable. In International Con-ference on Machine Learning , pp. 1704–1713. PMLR, 2017. Jin, C., Allen-Zhu, Z., Bubeck, S., and Jordan, M. I. Is q-learning provably efficient? Advances in neural infor-mation processing systems , 31, 2018. Jin, C., Yang, Z., Wang, Z., and Jordan, M. I. Provably efficient reinforcement learning with linear function ap-proximation. In Conference on Learning Theory , pp. 2137–2143. PMLR, 2020. Jin, C., Liu, Q., and Miryoosefi, S. Bellman eluder di-mension: New rich classes of rl problems, and sample-efficient algorithms. Advances in neural information processing systems , 34:13406–13418, 2021a. Jin, C., Liu, Q., Wang, Y., and Yu, T. V-learning–a simple, efficient, decentralized algorithm for multiagent rl. arXiv preprint arXiv:2110.14555 , 2021b. Lasry, J.-M. and Lions, P.-L. Mean field games. Japanese journal of mathematics , 2(1):229–260, 2007. Lauri `ere, M., Perrin, S., Geist, M., and Pietquin, O. Learning mean field games: A survey. arXiv preprint arXiv:2205.12944 , 2022. Levy, O., Cassel, A., Cohen, A., and Mansour, Y. Eluder-based regret for stochastic contextual mdps, 2022. Mao, W., Qiu, H., Wang, C., Franke, H., Kalbarczyk, Z., Iyer, R., and Basar, T. A mean-field game approach to cloud resource management with function approximation. In Advances in Neural Information Processing Systems ,2022. Mishra, R. K., Vasal, D., and Vishwanath, S. Model-free re-inforcement learning for non-stationary mean field games. In 2020 59th IEEE Conference on Decision and Control (CDC) , pp. 1032–1037. IEEE, 2020. Modi, A., Chen, J., Krishnamurthy, A., Jiang, N., and Agarwal, A. Model-free representation learning and exploration in low-rank mdps. arXiv preprint arXiv:2102.07035 , 2021. Moon, J. and Ba s¸ ar, T. Linear quadratic mean field stackel-berg differential games. Automatica , 97:200–213, 2018. Ni, C., Song, Y., Zhang, X., Jin, C., and Wang, M. Represen-tation learning for general-sum low-rank markov games. 
+
+arXiv preprint arXiv:2210.16976 , 2022. Osband, I. and Van Roy, B. Model-based reinforcement learning and the eluder dimension. Advances in Neural Information Processing Systems , 27, 2014. Pasztor, B., Bogunovic, I., and Krause, A. Efficient model-based multi-agent mean-field reinforcement learning. 
+
+arXiv preprint arXiv:2107.04050 , 2021. Perolat, J., Perrin, S., Elie, R., Lauri `ere, M., Piliouras, G., Geist, M., Tuyls, K., and Pietquin, O. Scaling up mean field games with online mirror descent. arXiv preprint arXiv:2103.00623 , 2021. Perrin, S., P ´erolat, J., Lauri `ere, M., Geist, M., Elie, R., and Pietquin, O. Fictitious play for mean field games: Continuous time analysis and applications. Advances in Neural Information Processing Systems , 33:13199– 13213, 2020. Russo, D. and Van Roy, B. Eluder dimension and the sample complexity of optimistic exploration. Advances in Neural Information Processing Systems , 26, 2013. Subramanian, J. and Mahajan, A. Reinforcement learning in stationary mean-field games. In Proceedings of the 18th International Conference on Autonomous Agents and Multi Agent Systems , pp. 251–259, 2019. Subramanian, S. G., Poupart, P., Taylor, M. E., and Hegde, N. Multi type mean field reinforcement learning. arXiv preprint arXiv:2002.02513 , 2020. Sun, W., Jiang, N., Krishnamurthy, A., Agarwal, A., and Langford, J. Model-based rl in contextual decision pro-cesses: Pac bounds and exponential improvements over model-free approaches. In Conference on learning theory ,pp. 2898–2933. PMLR, 2019. Uehara, M., Zhang, X., and Sun, W. Representation learning for online and offline rl in low-rank mdps. arXiv preprint arXiv:2110.04652 , 2021. uz Zaman, M. A., Miehling, E., and Ba s¸ ar, T. Reinforcement learning for non-stationary discrete-time linear–quadratic mean-field games in multiple populations. Dynamic Games and Applications , 13(1):118–164, 2023. Vasal, D. and Berry, R. Master equation for discrete-time stackelberg mean field games with a single leader. In 
+
+2022 IEEE 61st Conference on Decision and Control (CDC) , pp. 5529–5535. IEEE, 2022. 11 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+Wang, Y., Liu, Q., Bai, Y., and Jin, C. Breaking the curse of multiagency: Provably efficient decentralized multi-agent rl with function approximation. arXiv preprint arXiv:2302.06606 , 2023. Xie, Q., Yang, Z., Wang, Z., and Minca, A. Learning while playing in mean-field games: Convergence and optimality. In International Conference on Machine Learning , pp. 11436–11447. PMLR, 2021. Xie, T., Foster, D. J., Bai, Y., Jiang, N., and Kakade, S. M. The role of coverage in online reinforcement learning. 
+
+arXiv preprint arXiv:2210.04157 , 2022. Yardim, B., Cayci, S., Geist, M., and He, N. Policy mirror ascent for efficient and independent learning in mean field games. arXiv preprint arXiv:2212.14449 , 2022. Yardim, B., Goldman, A., and He, N. When is mean-field reinforcement learning tractable and relevant? arXiv preprint arXiv:2402.05757 , 2024. Zanette, A., Lazaric, A., Kochenderfer, M., and Brunskill, E. Learning near optimal policies with low inherent bellman error. In International Conference on Machine Learning ,pp. 10978–10989. PMLR, 2020. Zhang, F., Tan, V. Y., Wang, Z., and Yang, Z. Learning regularized monotone graphon mean-field games. arXiv preprint arXiv:2310.08089 , 2023. Zhang, K., Yang, Z., and Basar, T. Policy optimization provably converges to nash equilibria in zero-sum lin-ear quadratic games. Advances in Neural Information Processing Systems , 32, 2019. Zhang, K., Yang, Z., and Ba s¸ ar, T. Multi-agent reinforce-ment learning: A selective overview of theories and algo-rithms. Handbook of reinforcement learning and control ,pp. 321–384, 2021. Zhong, H., Xiong, W., Zheng, S., Wang, L., Wang, Z., Yang, Z., and Zhang, T. A posterior sampling frame-work for interactive decision making. arXiv preprint arXiv:2211.01962 , 2022. 12 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+## Outline of the Appendix 
+
+• Appx. A: Frequently used notations. • Appx. B: Additional related works. • Appx. C: Informal Discussions about how to extend our results to unknown reward function setting. • Appx. D: Missing details and proofs related to P-MBED. • Appx. E: Missing details related to Single/Multi-Type Policy Aware Models (PAM). • Appx. F: Proofs for lemma and theorems related to learning MFGs in Sec. 4. • Appx. G: Proofs for lemma and theorems related to learning MultiType MFGs in Sec. 5. • Appx. H: Introduction to Multi-Type Symmetric Anonymous Games (MT-SAGs) and approximation error between MT-MFGs and MT-SAGs. • Appx. I: Some basic lemma useful in our proofs. • Appx. J: Experiment details and results. 
+
+## A. Frequently Used Notations 
+
+Notation Explanation 
+
+M Mean-Field MDP 
+
+M Model class for (single-type) Mean-Field MDP 
+
+π Non-stationary policy for (single-type) Mean-Field MDP 
+
+QM , V M , J M Value functions for (single-type) MF-MDP 
+
+dim PE (M, ε ) Type-I Partial-MBED, Def. 3.3 
+
+dim II PE (M, ε ) Type-II Partial-MBED, Def. D.1 
+
+d(·, ·| π) Conditional distance given a reference policy π
+
+Bε0 
+
+> π
+
+(M, M) ε0-neighborhood of M in M conditioning on πM ε0
+
+> Ctr
+
+(π, M) The “Central Model” 
+
+d∞,1(π, π ′) Policy distance 
+
+M Multi-Type Mean-Field MDP 
+
+M Model class for multi-type Mean-Field MDP 
+
+π Non-stationary policy for multi-type Mean-Field MDP 
+
+QM , V M , J M Value functions for multi-type MF-MDP 
+
+dim MTPE (M, ε ) Type-I Multi-Type Partial-MBED, Def. D.10 
+
+dim II MTPE (M, ε ) Type-II Multi-Type Partial-MBED, Def. D.10 
+
+¨M / ¨M Policy-aware model (single-type/multi-type) 
+
+¨M/ ¨M Model class for the policy-aware model (single-type/multi-type) 
+
+¨Q ¨M , ¨V ¨M , ¨J ¨M / ¨Q ¨M , ¨V ¨M , ¨J ¨M Value functions for the policy-aware model (single-type/multi-type) 13 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+## B. Additional Related Works 
+
+Single-Agent/Multi-Agent RL with General Function Approximation For the single-agent RL with function approxi-mation setting, besides the literature we mentioned in the main text, there are multiple other insightful works (Ayoub et al., 2020; Chen et al., 2022a; Huang et al., 2022; Modi et al., 2021; Uehara et al., 2021; Xie et al., 2022; Zanette et al., 2020; Zhong et al., 2022). As for the multi-agent setting, sample complexity of Markov Games has been extensively studied in both tabular (Bai et al., 2020; Chen et al., 2022b; Jin et al., 2021b; Zhang et al., 2019; 2021) and function approximation setting (Cui et al., 2023; Foster et al., 2023; Huang et al., 2021; Ni et al., 2022; Wang et al., 2023). These papers study a general MARL setting with individually distinct agents, which is quite different from our MFG or MT-MFG. Besides, many of them study the decentralized training setting, which requires much less communication cost than our centralized setting. However, because of the difficulty in learning NE in general Markov Games setting, most of them focus on the convergence to weaker notions of equilibrium instead, e.g. the Correlated Equilibrium or the Coarse Correlated Equilibria, and those results in function approximation setting (Cui et al., 2023; Wang et al., 2023) may still depend on the number of agents, although in polynomial. In contrast, although we specify in mean-field approximation setting, we can have more ambitious goals on solving Nash Equilibrium, and our sample complexity bounds are totally independent w.r.t. the number of agents. Moreover, we also reveal some cases when learning (MT-)MFG can be as sample-efficient as single-agent RL by investigating the Partial Model-Based Eluder Dimension. 
+
+## C. Extension to the Setting when the Reward Function is Unknown 
+
+We remark that our current results extend to the unknown reward setting. Below we elucidate the key modifications needed for this extension. Firstly, for the problem setup, we instead assume a model class M available, where each element M := ( rM , PM ) ∈ M 
+
+corresponds to a (reward, transition) tuple. The definition of the P-MBED can be amended by incorporating both reward and transition differences in Def. 3.3. Secondly, for the algorithm design: • For Algorithm 1, we redefine the model distance the definition deπ (M, fM |π) (introduced at the beginning of Sec. 4.1) to include the expectation of distances in both reward and transition functions: 
+
+deπ (M, fM |π) := Eeπ,M (π)[
+
+> H
+
+X
+
+> h=1
+
+∥rM,h (·|· , ·, μ πM,h )−rfM ,h (·|· , ·, μ π
+
+> fM ,h
+
+)∥1 +∥PM,h (·|· , ·, μ πM,h )−PfM ,h (·|· , ·, μ π
+
+> fM ,h
+
+)∥1].
+
+The definition of ε0-neighborhood and “Central Model” will adjust correspondingly. • For Algorithm 2: we should augment the reward difference into the right-hand side of Line 4, integrate reward into the dataset in Lines 9 and 11, and include the likelihood of reward functions in Line 13. • For Algorithm 3, the construction of bridge policy will follow the new definition of model distance deπ (M, fM |π).Finally, for the analysis, based on the modified algorithms, under realizability assumption, we can extend Lemma D.7 and prove that the accumulative estimation errors of reward and transition are controlled by P-MBED. The current analysis can be seamlessly generalized to establish sample complexity upper bounds depending on the P-MBED of reward and transition function classes. 14 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+## D. Missing Details about Partial Model-Based Eluder Dimension 
+
+D.1. Alternative Notions of Partial MBED in MFGs 
+
+In this section, we introduce a choice of ν different from the one in Def. 3.2, which also leads to a valid P-MBED. In the following, we introduce another choice of ν, which results in a different P-MBED. We will call it ”Type II ” P-MBED to distinguish the one in Def. 3.3. 
+
+Definition D.1 (Type II Partial MBED) . Given a model class M, define the mapping νπM ∗,h : M → ∆( Sh) such that 
+
+∀M ∈ M , νπM ∗,h (M ) := μπM ∗,h , then the type II P-MBED of M is defined by: 
+
+dim II PE (M, ε ) := max  
+
+> π
+
+max  
+
+> h∈[H]
+
+dim E|νπM ∗,h (M, ε ).
+
+We want to highlight here that each of the two types P-MBED has advantages over the other. As we will see in the Thm. F.7, if we use dim II PE to derive the sample complexity upper bound, we have to suffer the exponential term of (1 + LT )H . On the other hand, in the following proposition, we can see dim II PE is directly comparable with MBED (Huang et al., 2023) (α = 1 case), while we can not have the similar guarantee for dim PE .
+
+Proposition D.2 (Low MBED ⊂ Low Type II P-MBED) . dim II PE (M, ε ) ≤ dim E(M, ε ).
+
+D.2. Proofs Related to P-MBED in MFGs Setting Proposition 3.4. (Tabular Setting) For any M and ε > 0, dim PE (M, ε ) ≤ |S||A| , while there exists a concrete example of 
+
+M such that dim E(M, ε ) = Ω(exp( |S| )) .Proof. When the density is fixed, any MF-MDP reduces to a single-agent MDP. For any single-agent MDP, there are at most |S||A| different (sh, a h) pairs, for any h. Therefore, the P-MBED can be upper bounded by |S||A| .In contrast, for MBED in (Huang et al., 2023), we consider the model class constructed in Thm. F.9. Consider the sequence 
+
+{(s1
+
+> h
+
+, a 1
+
+> h
+
+, μ i)}i∈[n] with μi ∈ U ζ=⌊ LT  
+
+> 5ε⌋
+
+for all i ∈ [n], but μi̸ = μj if i̸ = j. For any i ∈ [n − 1] , there exists two models 
+
+Pμi and Pμi+1 , such that, 
+
+> i−1
+
+X
+
+> t=1
+
+∥Pμi (·| s1
+
+> h
+
+, a 1
+
+> h
+
+, μ t) − Pμi+1 (·| s1
+
+> h
+
+, a 1
+
+> h
+
+, μ t)∥21 = 0 
+
+but 
+
+∥Pμi (·| s1
+
+> h
+
+, a 1
+
+> h
+
+, μ i) − Pμi+1 (·| s1
+
+> h
+
+, a 1
+
+> h
+
+, μ i)∥1 = 4 ε. 
+
+Note that |U ζ=⌊ LT 
+
+> 5ε⌋
+
+| = O(( LT 
+
+> Sε
+
+)S−1), by choosing ε ≤ LT 
+
+> 2S
+
+, we have dim E(Mh, ε ) = Ω(exp( S)) . □
+
+Similarly, we can show the type II P-MBED in tabular setting can also be upper bounded by |S||A| , because there are at most |S||A| different state-action tuples. 
+
+Proposition D.3 (Type II P-MBED in the Tabular Setting) . dim II PE (M, ε ) ≤ |S||A| .
+
+Next, we study the linear setting. Given a mapping f : S → Rd, we use Rank([ f (x)] x∈X ) to denote the rank of matrix concatenated by [f (x)] x∈X ∈ R|X |× d.
+
+Proposition D.4 (Linear Setting; Formal version of Prop. 3.5) . Consider the Low-Rank MF-MDP with known feature 
+
+ϕ : S × A × ∆( S) → Rd satisfying ∥ϕ∥ ≤ Cϕ, and unknown next state feature ψ : S → Rd. Given a next state feature function class Ψ satisfying ∀ψ ∈ Ψ, ∀s′ ∈ S , ∀g : S → {− 1, 1}, ∥ P 
+
+> s′
+
+ψ(s′)g(s′)∥2 ≤ CΨ, consider the following model class: 
+
+MΨ := {Pψ |Pψ (·| s, a, μ ) := ϕ(s, a, μ )⊤ψ(s′); ∀s, a, μ, Pψ (·| s, a, μ ) ∈ ∆( S); ψ ∈ Ψ},
+
+we have dim II PE (MΨ, ε ) = eO(max π,h Rank([ ϕh(sh, a h, μ πM ∗,h )] sh∈S ,a h∈A )) .Moreover, if ϕ(s, a, μ ) has decomposition: ϕ(s, a, μ )⊤ = ϕ(s, a )⊤G(μ) with ϕ(·, ·) ∈ R ed and G(·) ∈ R ed×d, we have 
+
+dim PE (MΨ, ε ) = eO( ed) and dim II PE (MΨ, ε ) = eO(min { ed, d }).
+
+15 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+Remark D.5. As we can see, the P-MBED is related to the “activated dimension” of features after partially fixing the density, which can be much lower than its MBED ≈ d. Moreover, when the feature is decomposable, the dimension of state-action feature will also serve as an upper bound. Proof. Proof for Type-II P-MBED (Def. D.1) In the following, we first consider a fixed policy π and h. To simplify the notation, we denote Φ := [ ϕ(sh, a h, μ πM ∗,h )] s∈S ,a ∈A ∈ Rd×| S|| A| to be the matrix concatenated by vectors ϕ(·, ·, μ πM ∗,h ),and denote dactive := Rank(Φ) to be its rank. We use U := [ u1, u 2, ..., u dactive ] ∈ Rd×dactive to denote a normalized orthogonal basis in Span (Φ) = Span (U ) satisfying ∥ui∥2 = 1 for all i ∈ [dactive ] and u⊤ 
+
+> i
+
+uj = 0 for any i̸ = j. Easy to verify that for any sh, a h, the following equation 
+
+U ϕ active (sh, a h, μ πM ∗,h ) = ϕ(sh, a h, μ πM ∗,h ).
+
+has a solution satisfying: 
+
+∥ϕactive (sh, a h, μ πM ∗,h )∥2 = ∥U ⊤U ϕ active (sh, a h, μ πM ∗,h )∥2 = ∥U ⊤ϕ(sh, a h, μ πM ∗,h )∥2 ≤ ∥ ϕ(sh, a h, μ πM ∗,h )∥2 ≤ Cϕ.
+
+Given a fixed policy π, h ∈ [H], suppose (s1
+
+> h
+
+, a 1
+
+> h
+
+), ..., (snh , a nh ) is a partially ε-independent sequence w.r.t. MΨ and νπM ∗,h 
+
+defined in D.1. Then for each i ∈ [n], there should exists ψi, eψi ∈ Ψ, such that: 
+
+ε2 ≥
+
+> i−1
+
+X
+
+> t=1
+
+∥Pψi (·| sth, a th, μ πM ∗,h ), P eψi (·| sth, a th, μ πM ∗,h )∥21.
+
+and 
+
+ε2 ≤∥ Pψi (·| sih, a ih, μ πM ∗,h ) − P eψi (·| sih, a ih, μ πM ∗,h )∥21
+
+=
+
+
+
+ϕactive (sih, a ih, μ πM ∗,h )⊤U ⊤ X
+
+> s′∈S
+
+(ψi(s′) − eψi(s′)) gψi, eψi (sih, a ih, μ πM ∗,h , s ′)
+
+2
+
+≤∥ ϕactive (sih, a ih, μ πM ∗,h )∥2(Λ ih)−1 ∥U ⊤ X
+
+> s′∈S
+
+(ψi(s′) − eψi(s′)) gψi, eψi (sih, a ih, μ πM ∗,h , s ′)∥2Λih
+
+.
+
+where we define: 
+
+Λih := λI +
+
+> i−1
+
+X
+
+> t=1
+
+ϕactive (sih, a ih, μ πM ∗,h )ϕactive (sih, a ih, μ πM ∗,h )⊤ ∈ Rdactive ×dactive ;
+
+gψi, eψi (sh, a h, μ, s ′) := 
+
+(
+
+1, if ϕactive (sih, a ih, μ πM ∗,h )⊤U ⊤(ψi(s′) − eψi(s′)) ≥ 0; 
+
+−1, otherwise .
+
+For simplicity, we use vψ, eψ (sh, a h, μ ) := U ⊤ P 
+
+> s′
+
+(ψ(s′) − eψ(s′)) gψ, eψ (sh, a h, μ, s ′) as a shortnote. Therefore, for each i,
+
+∥vψi, eψi (sih, a ih, μ πM ∗,h )∥2Λih
+
+=λ∥vψi, eψi (sih, a ih, μ πM ∗,h )∥2 +
+
+> i−1
+
+X
+
+> t=1
+
+
+
+ϕactive (sth, a th, μ πM ∗,h )⊤vψi, eψi (sih, a ih, μ πM ∗,h )
+
+2
+
+=λ∥vψi, eψi (sih, a ih, μ πM ∗,h )∥2 +
+
+> i−1
+
+X
+
+> t=1
+
+
+
+ϕactive (sth, a th, μ πM ∗,h )⊤U ⊤ X
+
+> s′
+
+(ψi(s) − eψi(s′)) gψi, eψi (sih, a ih, μ πM ∗,h , s ′)
+
+2
+
+≤4λC 2Ψ +
+
+> i−1
+
+X
+
+> t=1
+
+∥Pψi (·| sth, a th, μ πM ∗,h ) − P eψi (·| sth, a th, μ πM ∗,h )∥21
+
+≤4λC 2Ψ + ε2.
+
+By choosing λ = ε2/4C2Ψ, we have: 
+
+∥ϕactive (sih, a ih, μ πM ∗,h )∥2(Λ ih)−1 ≥ ε2
+
+4λC 2Ψ + ε2 = 12 .
+
+16 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+On the one hand, 
+
+det Λ n+1  
+
+> h
+
+= det(Λ nh + ϕactive (snh , a nh , μ πM ∗,h )ϕactive (snh , a nh , μ πM ∗,h )⊤) = (1 + ∥ϕactive (snh , a nh , μ πM ∗,h )∥2(Λ nh )−1 ) · det Λ nh
+
+≥ 32 det Λ nh ≥ ( 32 )n det Λ 1 
+
+> h
+
+= λdactive  
+
+> h
+
+( 32 )n.
+
+Therefore, 
+
+λdactive  
+
+> h
+
+( 32 )n ≤ det Λ n+1  
+
+> h
+
+≤ ( Tr (Λ nh )
+
+dactive 
+
+)dactive ≤ (λ + nC 2
+
+> ϕ
+
+dactive 
+
+)dactive .
+
+which implies n = O(dactive log(1 + dactive CϕCΨ 
+
+> ε
+
+)) .Finally, if we take the maximum over all policy π, we have 
+
+dim II PE (MΨ, ε ) = eO(max  
+
+> π,h
+
+Rank([ ϕh(sh, a h, μ πM ∗,h )] sh∈S ,a h∈A )) .
+
+When ϕ(sh, a h, μ ) can be decomposed to ϕ(sh, a h)⊤G(μ) for some ϕ(sh, a h) ∈ R ed, easy to verify that for any π, the corresponding dactive ≤ ed. By combining with Prop. D.2, we can conclude dim II PE (M, ε ) = eO(min {d, ed}).
+
+Proofs for P-MBED (Def. 3.3) As for the first type of P-MBED, we only study the decomposable feature setting. Given a fixed policy π, h ∈ [H], suppose (s1
+
+> h
+
+, a 1
+
+> h
+
+), ..., (snh , a nh ) is a partially ε-independent sequence w.r.t. MΨ and the mapping νπh
+
+defined in Def. 3.3, then for each i ∈ [n], there should exists ψi, eψi ∈ Ψ, such that: 
+
+ε2 ≥
+
+> i−1
+
+X
+
+> t=1
+
+∥Pψi (·| sth, a th, μ πψi,h ), P eψi (·| sth, a th, μ π
+
+> eψi,h
+
+)∥21.
+
+and 
+
+ε2 ≤∥ Pψi (·| sih, a ih, μ πψi,h ) − P eψi (·| sih, a ih, μ π
+
+> eψi,h
+
+)∥21
+
+=
+
+
+
+ϕ(sih, a ih)⊤ X
+
+> s′∈S
+
+(G(μπψi,h )ψi(s′) − G(μπ
+
+> eψi,h
+
+) eψi(s′)) egψi, eψi (sih, a ih, s ′)
+
+2
+
+≤∥ ϕ(sih, a ih)∥2(Λ ih)−1 ∥ X
+
+> s′∈S
+
+(G(μπψi,h )ψi(s′) − G(μπ
+
+> eψi,h
+
+) eψi(s′)) egψi, eψi (sih, a ih, s ′)∥2Λih
+
+.
+
+where we define: 
+
+Λih := λI +
+
+> i−1
+
+X
+
+> t=1
+
+ϕ(sih, a ih)ϕ(sih, a ih)⊤ ∈ R ed× ed;
+
+gψi, eψi (sh, a h, s ′) := 
+
+(1, if ϕ(sih, a ih)⊤(G(μπψi,h )ψi(s′) − G(μπ
+
+> eψi,h
+
+) eψi(s′)) ≥ 0; 
+
+−1, otherwise .
+
+The rest analysis is similiar to the non-decomposable setting above. As a result, we can show: 
+
+n = O( ed log(1 + edC ϕCΨ
+
+ε )) .
+
+This holds for any π, which finishes the proof. □
+
+Remark D.6. Following similar analyses as Prop. D.4 and Prop. B.6 and Prop. B.7 in (Huang et al., 2023), we can compute the P-MBED for kernel MF-MDP and generalized linear function classes. All we need to do is to replace def f or d in (Huang et al., 2023) with the corresponding dimensions conditioning on the adversarial densities. 
+
+Lemma D.7. Under Def. 3.3 and Def. D.1, consider a fixed π and an arbitrary h ∈ [H], Suppose we have a sequence 
+
+{PM k ,h }Kk=1 ∈ F and {(skh, a kh)}Kk=1 ⊂ S × A ,
+
+17 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+• if for all k ∈ [K], Pk−1 
+
+> i=1
+
+∥PM k ,h (·| sih, a ih, μ πM k ,h ) − PM ∗,h (·| sih, a ih, μ πM ∗,h )∥21 ≤ β, then for any ε > 0, we have 
+
+PKk=1 ∥PM k ,h (·| skh, a kh, μ πM k ,h ) − PM ∗,h (·| skh, a kh, μ πM ∗,h )∥1 = O(pβK dim PE (M, ε ) + Kε ),
+
+• if for all k ∈ [K], Pk−1 
+
+> i=1
+
+∥PM k ,h (·| sih, a ih, μ πM ∗,h ) − PM ∗,h (·| sih, a ih, μ πM ∗,h )∥21 ≤ β, then for any ε > 0, we have 
+
+PKk=1 ∥PM k ,h (·| skh, a kh, μ πM ∗,h ) − PM ∗,h (·| skh, a kh, μ πM ∗,h )∥1 = O(
+
+q
+
+βK dim II PE (M, ε ) + Kε ).Proof. Let’s consider a single-agent model-class P ⊂ { P |P : S ×A → ∆( S)}. We first introduce the notion of independent state-action sequences given a single-agent model class. 
+
+Definition D.8 (ε-Independent state action pairs) . Given single-agent model P and a data sequence {(sih, a ih)}ni=1 ⊂Sh ×A h, we say (sh, a h) is ε-independent of {(sih, a ih)}ni=1 w.r.t. P if there exists P, eP ∈ M such that Pni=1 ∥Ph(·| sih, a ih)−
+
+ePh(·| sih, a ih)∥21 ≤ ε2 but ∥PM,h (·| sh, a h) − ePh(·| sh, a h)∥1 > ε . We call {(sih, a ih)}ni=1 an ε-independent sequence w.r.t. P
+
+(at step h) if for any i ∈ [n], (sih, a ih, μ ih) is ε-independent w.r.t. {(sth, a th, μ th)}i−1
+
+> t=1
+
+.We use dim E(P, ε ) to denote the maximal length of ε-independent sequence {(si, a i)}i∈[n] for single-agent model class P.Since single-agent RL is a special case of MF-MDP where the transition is independent w.r.t. density. As implied by Lem. 4.4 in (Huang et al., 2023) when α = 1 , suppose there is a sequence {Pk}k∈[K] ⊂ P and a sequence of states and actions 
+
+{(skh, a kh)}k∈K , such that: 
+
+> k−1
+
+X
+
+> i=1
+
+∥Pk(·| sih, a ih) − P∗(·| sih, a ih)∥21 ≤ β
+
+where P∗ ∈ P is some fixed function, then for any ε > 0,
+
+> K
+
+X
+
+> k=1
+
+∥Pk(·| skh, a kh) − P∗(·| skh, a kh)∥1 ≤ O(pβK dim E(P, ε ) + Kε ).
+
+By choosing P := {PM,h |PM,h (·|· , ·) ← PM,h (·|· , ·, μ πM,h ), M ∈ M} with P∗ := PM ∗,h (·|· , ·, μ πM ∗,h ) and combining the definition in Def. 3.3, we can finish the proof of the first statement. By choosing P := {PM,h |PM,h (·|· , ·) ← PM,h (·|· , ·, μ πM ∗,h ), M ∈ M} with P∗ := PM ∗,h (·|· , ·, μ πM ∗,h ) and combining the definition in Def. D.1, we can finish the proof of the second statement. □
+
+D.3. Partial MBED for Model Classes in Multi-Type MFGs Setting Definition D.9 (Partial ε-Independence for Multi-Type Mean-Field Model Classes) . Given a multi-type model class M, con-sider a w ∈ [W ] and a mapping νwh : M → ∆( S1
+
+> h
+
+) × ... × ∆( SWh ), and a sequence of data {(sw,i h , a w,i h )}ni=1 ⊂ S wh × A wh ,we say (swh , a wh ) is partially ε-independent on {(sw,i h , a w,i h )}ni=1 w.r.t. M and νwh at step h, if there exists M , fM ∈
+
+M, s.t. Pni=1 ∥Pw 
+
+> M,h
+
+(·| sw,i h , a w,i h , ν wh (M )) − Pw 
+
+> fM,h
+
+(·| sw,i h , a w,i h , ν wh ( fM )) ∥21 ≤ ε2 but ∥Pw 
+
+> M,h
+
+(·| swh , a wh , ν wh (M )) −
+
+Pw 
+
+> fM,h
+
+(·| swh , a wh , ν wh ( fM )) ∥1 > ε .Besides, we call {(sw,i h , a w,i h )}ni=1 is a partially ε-independent sequence w.r.t. M and νwh if for any i ∈ [n], (sw,i h , a w,i h ) is partially ε-independent on {(sw,t h , a w,t h )}i−1
+
+> t=1
+
+. In the following, we use dim E|νwh (M, ε ) to denote the length of the longest partially ε-independent sequence w.r.t. M and νwh for type w (at step h). 
+
+Definition D.10. Given a model class M and an arbitrary w, we define the mapping νw, π 
+
+> h
+
+: M → ∆( S1) × ... ∆( SW ) s.t. 
+
+νw, π 
+
+> h
+
+(M ) = μπM ,h , and the mapping νw, πM ∗,h : M → ∆( S1) × ... ∆( SW ) s.t. νw, πM ∗,h (M ) = μπM ∗,h . Then, the Multi-Type P-MBEDs are defined by: • Type I MT-P-MBED: dim MTPE (M, ε ) := P  
+
+> w∈[W]
+
+max h∈[H] max π∈Π dim E|νw, π 
+
+> h
+
+(M, ε );• Type II MT-P-MBED: dim II MTPE (M, ε ) := P  
+
+> w∈[W]
+
+max h∈[H] max π∈Π dim E|νw, πM ∗,h (M, ε ).18 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+Proposition D.11 (Tabular Multi-Type MF-MDP) .
+
+max {dim MTPE (M, ε ), dim II MTPE (M, ε )} ≤ X 
+
+> w∈[W]
+
+|S w||A w|.
+
+Proof. By definition, for each w, for any fixed h and π, the longest partially independent state-action sequence would have length |S w||A w|. □
+
+Proposition D.12 (Linear Multi-Type MF-MDP) . Consider the Low-Rank Multi-Type MF-MDP with known feature 
+
+ϕw : Sw × A w × ∆( S1) × ... ∆( SW ) → Rdw
+
+satisfying ∥ϕw∥ ≤ Cϕ for any w ∈ [W ], and unknown next state feature 
+
+ψw : Sw → Rd. Given a next state feature function class Ψ1, ..., ΨW satisfying ∀ψw ∈ Ψw, ∀s′w ∈ S w, ∀g : S → {− 1, 1},
+
+∥ P 
+
+> s′w
+
+ψ(s′w)g(s′w)∥2 ≤ CΨ, define the model class: 
+
+MΨw := {Pψw |∀ sw, a w, μ, Pwψ (·| sw, a w, μ) := ϕw(sw, a w, μ)⊤ψw(s′w); Pwψ (·| sw, a w, μ) ∈ ∆( Sw); ψw ∈ Ψw},
+
+then, we have: 
+
+∀w ∈ [W ], dim II MTPE (MΨw , ε ) = O( X 
+
+> w∈[W]
+
+max  
+
+> π∈Π,h ∈[H]
+
+dw 
+
+> active ,π,h
+
+log(1 + dw
+
+> active ,π,h
+
+CϕCΨ
+
+ε )) 
+
+where dw 
+
+> active ,π,h
+
+:= Rank([ ϕwh (swh , a wh , μπM ∗,h )] swh ∈S w ,a wh ∈A w ).
+
+Moreover, if ϕw(sw, a w, μ) is decomposable, i.e. for any w ∈ [W ], ϕw(sw, a w, μ)⊤ = ϕw(sw, a w)⊤Gw(μ) with 
+
+ϕw(·, ·) ∈ R edw
+
+and Gw(·) ∈ R edw ×dw
+
+, we have dim MTPE (MΨw , ε ) = eO(P  
+
+> w∈[W]
+
+edw) and dim II MTPE (MΨw , ε ) = 
+
+eO(P  
+
+> w∈[W]
+
+min { edw, d w}).Proof. The proof is a direct generalization of Prop. D.4 by applying the same techniques in the proof of Prop. D.4 for each type w ∈ [W ], so we omit it here. □
+
+D.4. Partial MBED in Constrained Policy Spaces 
+
+Next, we define the Constrained Partial MBED extended from Def. 3.3, where the main difference is that we constrain the set of adversarial policies. 
+
+Definition D.13 (Constrained Partial MBED in MFRL) . Given a (single-type) Mean-Field model class M, and M ∗ denotes the true model, we consider the same νπh and νπM ∗,h function defined in Def. 3.3 and Def. D.1, respectively. Then, the constrained P-MBEDs are defined by: • Type I P-MBED: dim ICPE |Π† (M, ε ) := max h∈[H] max π∈Π† dim E|νπh (M, ε );• Type II P-MBED: dim II CPE |Π† (M, ε ) := max h∈[H] max π∈Π† dim E|νπM ∗,h (M, ε ).Comparing with P-MBED, the main difference is that in constrained P-MBED the adversarial policies are only chosen from the constrained policy set. Recall the definition of Π† in Sec. 5. Given a M and a model class MMFG converted from 
+
+M according to Appx. G.2, we have the following relationship between the P-MBED of MMFG constrained on Π† and P-MBED of M.
+
+Proposition D.14. Given a model class M and its corresponding lifted MFG class MMFG :
+
+dim CPE |Π† (MMFG , ε ) ≤ dim MTPE (M, ε ), (2) 
+
+dim II CPE |Π† (MMFG , ε ) ≤ dim II MTPE (M, ε ). (3) 
+
+Proof. Let’s consider a fixed policy π ∈ Π†. Note that, π corresponds to a π := {πw}w∈[W ] with πw : Sw → ∆( Aw) and 
+
+πw(awh |swh ) = π(awh ◦ w|swh ◦ w). Given any ε > 0, and h ∈ [H], suppose we have a partial ε-independent sequence w.r.t. the mapping νπh (or νπM ∗,h ), denoted as {(swi,i h ◦ wi, a wi,i h ◦ wi)}i∈[n]. We divide this sequence according to its group wi,which we denote as {{ sw,i w 
+
+> h
+
+◦ w, a w,i w 
+
+> h
+
+◦ w}iw ∈[nw ]}w∈[W ] with P 
+
+> w
+
+nw = n. By construction of MMFG , for any w ∈ [W ],19 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+{sw,i w 
+
+> h
+
+, a w,i w 
+
+> h
+
+}iw ∈[nw ] is a partial ε-independent sequence w.r.t. function class Mw and the mapping νw, π 
+
+> h
+
+(or νw, πM ∗,h ), which is upper bounded by the Multi-Type P-MBED of model class Mw.We finish the proof of Eq. (2) by maximizing over π ∈ Π†. □
+
+As directly implied by Prop. D.14, Prop. D.11 and Prop. D.12, we can upper bound the constrained P-MBED in some special cases. 20 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+## E. Details about Single-Type/Multi-Type Policy Aware Models 
+
+E.1. (Single-Type) Policy-Aware Model 
+
+Concretely, Policy-Aware Model (PAM) is specified by a tuple ¨M := {S , A, H, μ 1, ¨P ¨M , ¨r ¨M }, where S, A, H, μ 1 are the state space, action space, horizon length, initial state distribution which are the same as the normal MF-MDP setting; 
+
+¨P ¨M := {¨P ¨M , 1, ..., ¨P ¨M ,H } is the transition function with ¨P ¨M ,h : Sh × A h × Π → ∆( Sh+1 ), and ¨r ¨M := {¨r ¨M , 1, ..., ¨r ¨M ,H }
+
+is the reward function 5 satisfying ¨r ¨M ,h : Sh × A h × Π → [0 , 1/H ], where recall Π denotes the collection of all Markov policies. Given any reference policy π, we define the value function ¨Qeπ 
+
+> ¨M ,h
+
+: Sh × A h × Π → R and ¨V eπ 
+
+> ¨M ,h
+
+: Sh × Π → R
+
+regarding eπ in the following way: 
+
+¨Qeπ
+
+> ¨M ,h
+
+(·, ·, π ) := E
+
+h HX
+
+> h′=h
+
+¨r ¨M ,h ′ (sh′ , a h′ , π ) sh = ·, a h = ·, ∀h′ ≥ h, s h′+1 ∼ ¨P ¨M ,h ′ (·| sh′ , a h′ , π ), a h′+1 ∼ eπ(·| sh′+1 )
+
+i
+
+,
+
+¨V eπ
+
+> ¨M ,h
+
+(·, π ) := E
+
+h HX
+
+> h′=h
+
+¨r ¨M ,h ′ (sh′ , a h′ , π ) sh = ·, a h ∼ eπ, ∀h′ ≥ h, s h′+1 ∼ ¨P ¨M ,h ′ (·| sh′ , a h′ , π ), a h′+1 ∼ eπ(·| sh′+1 )
+
+i
+
+.
+
+Similarly, we will denote Eeπ, ¨M (π)[·] to be the expectation taken over trajectories sampled by executing eπ in the model ¨M ,such that the transition and reward functions are fixed by π. Again, we will call π as the “reference policy”. By definition, once the reference policy π is determined, the transition/reward functions reduced to single-agent transi-tion/reward functions, and the value functions are defined in the same way as single-agent RL setting. Besides, we define the total return of eπ conditioning on the reference policy π as: 
+
+¨J ¨M (eπ; π) := Es1∼μ1 [ ¨V eπ
+
+> ¨M ,h
+
+(s1, π )] ,
+
+and define ∆ ¨M (eπ, π ) := ¨J ¨M (eπ, π ) − ¨J ¨M (π, π ). Similar to MF-MDP, we define the NE in ¨M . Intuitively, the NE in ¨M is the policy πNE  
+
+> ¨M
+
+that agents do not tend to deviate when πNE  
+
+> ¨M
+
+is chosen to be the reference policy. 
+
+Definition E.1 (Nash Equilibrium in ¨M ). Given a model ¨M , we call πNE  
+
+> ¨M
+
+is a Nash Equilibrium (NE) of ¨M , if 
+
+∀eπ ∈ Π, ¨J ¨M (eπ; πNE  
+
+> ¨M
+
+) ≤ ¨J ¨M (πNE  
+
+> ¨M
+
+; πNE  
+
+> ¨M
+
+).
+
+Besides, we call bπNE  
+
+> ¨M
+
+is an ε-approximate NE of ¨M , if 
+
+∀eπ ∈ Π, ¨J ¨M (eπ; πNE  
+
+> ¨M
+
+) ≤ ¨J ¨M (πNE  
+
+> ¨M
+
+; πNE  
+
+> ¨M
+
+) + ε. 
+
+Similar to the conditional distance d(M, fM |π) defined in Sec. 4, we can define the conditional distance for PAM. 
+
+d( ¨M , ¨fM |π) := max  
+
+> eπ
+
+max {Eeπ, ¨M (π)[
+
+> H
+
+X
+
+> h=1
+
+∥¨P ¨M ,h (·|· , ·, π ) − ¨P ¨fM ,h (·|· , ·, π )∥1],
+
+Eeπ, ¨fM (π)[
+
+> H
+
+X
+
+> h=1
+
+∥¨P ¨M ,h (·|· , ·, π ) − ¨P ¨fM ,h (·|· , ·, π )∥1]}
+
+Given a PAM model class ¨M and a model ¨M ∈ ¨M, for any reference policy π, we define the ε0-neighborhood of ¨M in ¨M
+
+to be 
+
+Bε0 
+
+> π
+
+( ¨M ; ¨M) := { ¨M ′ ∈ ¨M| d( ¨M , ¨M ′|π) ≤ ε0}.
+
+Besides, we define the Central Model ¨M ε0
+
+> Ctr
+
+(π; ¨M) in ¨M regarding π to be the model with the largest neighborhood set: 
+
+¨M ε0
+
+> Ctr
+
+(π; ¨M) ← arg max   
+
+> ¨M∈¨M
+
+|B ε0 
+
+> π
+
+( ¨M ; ¨M)|.
+
+> 5
+
+Here we specify the model in the subscription, because for those PAM converted from MF-MDPs, even if they share the reward function in mean-field systems, the reward functions in PAM version can be different because of the difference in transition functions. 
+
+21 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+E.1.1. E XISTENCE OF NASH EQUILIBRIUM IN ¨M
+
+Next, we investigate the existence of NE in ¨M . Recall the definition 
+
+d∞,1(π, π ′) := max 
+
+> h∈[H],s h∈S h
+
+∥πh(·| sh) − π′
+
+> h
+
+(·| sh)∥1. (4) 
+
+Theorem E.2. [Existence of Nash Equilibrium in PAM] Given a PAM ¨M with discrete state and action spaces, such that, for any h ∈ [H], s h+1 ∈ S h+1 , s h ∈ S h, a h ∈ A h, both ¨P ¨M ,h (sh+1 |sh, a h, π ) and ¨r ¨M ,h (sh, a h, π ) are continuous at π
+
+w.r.t. distance d∞,1, then ¨M has at least one NE satisfying Def. E.1. Proof. In Prop. E.2, we establish the existence of NE in Multi-Type PAM, and the proof for this theorem is a special case when W = 1 . □
+
+As a direct result of Thm. E.2 and Lem. E.4, we have the following corollary. 
+
+Corollary E.3. Given a MF-MDP model M satisfying Assump. B, the PAM model ¨M converted from M according to the rules in Eq. (1) has at least one NE. 
+
+E.1.2. U SEFUL LEMMA RELATED TO THE PAM CONVERTED FROM MF-MDP 
+
+Lemma E.4. [Lipschitz Continuity of PAM] Given an MF-MDP M satisfying the Lipschitz continuity condition in Assump. B, consider the PAM ¨M converted from M according to Eq. (1) , we have ¨M is also Lipschitz continuous that, ∀h ∈ [H] and any sh ∈ S , a h ∈ A ,
+
+∥¨P ¨M ,h (·| sh, a h, π ) − ¨P ¨M ,h (·| sh, a h, π ′)∥1 ≤ d∞,1(π, π ′)LThX
+
+> h′=1
+
+(1 + LT )h−h′
+
+|¨r ¨M ,h (sh, a h, π ) − ¨r ¨M ,h (sh, a h, π ′)| ≤ d∞,1(π, π ′)LrhX
+
+> h′=1
+
+(1 + LT )h−h′
+
+.
+
+Proof. This lemma is a special case of Lem. E.13 when W = 1 . □
+
+E.2. Multi-Type Policy-Aware Model 
+
+In this section, we introduce Multi-Type Policy-Aware Model (MT-PAM) extended from PAM. To distinguish with MT-MFG, we use ¨M as notation. MT-PAM is specified by ¨M := {(μw 
+
+> 1
+
+, Sw, Aw, H, ¨Pw 
+
+> ¨M
+
+, ¨rw 
+
+> ¨M
+
+)w∈[W ]}6, where Sw, Aw, H, μ w 
+
+> 1
+
+are defined the same as the Multi-Type MF-MDP setting; ¨Pw 
+
+> ¨M
+
+:= {¨Pw 
+
+> ¨M,h
+
+}h∈[H] is the transition function with ¨Pw  
+
+> ¨M,h
+
+: Swh × A wh × Π → ∆( Sh+1 ) and 
+
+¨r ¨M ,h : Swh × A wh × Π → [0 , 1 
+
+> H
+
+], where recall Π denotes the set of all Markov policies π := {πw}w∈[W ] with πw ∈ Πw.Given a reference policy π := {πw}w∈[W ] ∈ Π, for any eπ := {eπw}w∈[W ] ∈ Π, we define the value function for type w
+
+¨Qw, (·)¨M ,h : Swh × A wh × Π → R and ¨V w, (·)¨M ,h : Swh × Π → R in the following way: 
+
+¨Qw, eπ 
+
+> ¨M,h
+
+(·, ·; π) := E
+
+h HX
+
+> h′=h
+
+¨rw  
+
+> ¨M,h ′
+
+(swh′ , a wh′ , π) swh = ·, a wh = ·, ∀eh ≥ h, sw 
+
+> eh+1
+
+∼ ¨Pw 
+
+> ¨M,eh
+
+(·| sw 
+
+> eh
+
+, a w 
+
+> eh
+
+, π), a w 
+
+> eh+1
+
+∼ eπw
+
+> eh+1
+
+i
+
+.V w, eπ 
+
+> ¨M,h
+
+(·; π) := E
+
+h HX
+
+> h′=h
+
+¨rw  
+
+> ¨M,h ′
+
+(swh′ , a wh′ , π) swh = ·, a wh ∼ eπwh , ∀eh ≥ h, sw 
+
+> eh+1
+
+∼ ¨Pw 
+
+> ¨M,eh
+
+(·| sw 
+
+> eh
+
+, a w 
+
+> eh
+
+, π), a w 
+
+> eh+1
+
+∼ eπw
+
+> eh+1
+
+i
+
+.
+
+Similarly, we will denote Eeπ, ¨M (π)[·] to be the expectation taken over trajectories sampled by executing eπ in the model ¨M ,such that the transition and reward functions are fixed by π. Again, we will call π as the “reference policy”. 
+
+> 6
+
+Here we specify the model in the subscription of the reward function, which will avoid confusion when we consider the PAMs converted from (Multi-Type) MF-MDPs 
+
+22 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+We denote ¨Jw 
+
+> ¨M
+
+(eπ; π) := Esw  
+
+> 1∼μw
+> 1
+
+[V w, eπM ,1 (sw 
+
+> 1
+
+; π)] to be the expected return of agents in type w in model ¨M by executing eπ
+
+given π as the reference policy. 
+
+Definition E.5 (Nash Equilibrium in Multi-Type PAM) . The Nash Equilibrium policy in Multi-Type PAM is defined to be the policy πNE := {πw, NE }w∈[W ] satisfying: 
+
+∀w ∈ [W ], ∀eπ ∈ Π, ¨Jw 
+
+> ¨M
+
+(eπ; πNE ) ≤ ¨Jw 
+
+> ¨M
+
+(πNE ; πNE ). (5) Note that ¨Jw 
+
+> ¨M
+
+(eπ; π) actually only depends on π and eπw.E.2.1. E XISTENCE OF NASH EQUILIBRIUM IN MT-PAM We first investigate a stronger notion of NE, which we call the “strict NE”. 
+
+Definition E.6 (Strict NE) . Given a MT-PAM ¨M with transitions and rewards {(¨Pw 
+
+> ¨M
+
+, ¨rw 
+
+> ¨M
+
+)}w∈[W ], the policy πNE is a strict NE of ¨M if and only if the following holds: 
+
+∀w ∈ [W ], πwh (·| swh ) ∈ arg max  
+
+> u∈∆( Aw)
+
+¨Qw, π 
+
+> ¨M,h
+
+(swh , ·, π)⊤u. (6) Note that this is a stronger notion than the NE defined in Def. E.5, i.e. a strict NE is always a NE. In the following, we will focus on the existence of strict NE. 
+
+Lemma E.7 (Strict NE as Fixed Point) . Given a MT-PAM ¨M with transitions and rewards {(¨Pw 
+
+> ¨M
+
+, ¨rw 
+
+> ¨M
+
+)}w∈[W ], the policy 
+
+πSNE is a strict NE of ¨M if and only if the following holds: 
+
+ΓSNE  
+
+> ¨M
+
+(πSNE ) = πSNE ,
+
+where 
+
+ΓSNE  
+
+> ¨M
+
+(π) := {eπ := {eπwh }w∈[W ],h ∈[H]|∀ w, s wh , eπwh (·| swh ) := arg max  
+
+> u∈∆( Aw)
+
+¨Qw, π 
+
+> ¨M,h
+
+(swh , ·, π)⊤u − ∥ πwh (·| swh ) − u∥22}.
+
+Proof. First of all, suppose π is the NE of ¨M according to Def. E.5, by the policy improvement theorem in single-agent RL, we have: 
+
+∀w ∈ [W ], πwh (·| swh ) ∈ arg max  
+
+> u∈∆( Aw)
+
+¨Qw, π 
+
+> ¨M,h
+
+(swh , ·, π)⊤u, 
+
+which also implies 
+
+∀w ∈ [W ], π wh (·| swh ) ∈ arg max  
+
+> u∈∆( Aw)
+
+¨Qw, π 
+
+> ¨M,h
+
+(swh , ·, π)⊤u − ∥ πwh (·| swh ) − u∥22.
+
+Therefore, if π is the strict NE of ¨M , we have ΓSNE  
+
+> ¨M
+
+(π) = π.On the other hand, if ΓSNE  
+
+> ¨M
+
+(π) = π, it implies: 
+
+∀w ∈ [W ], π wh (·| swh ) ∈ arg max  
+
+> u∈∆( Aw)
+
+¨Qw, π 
+
+> ¨M,h
+
+(swh , ·, π)⊤u − ∥ πwh (·| swh ) − u∥22.
+
+By the first order optimality condition of the RHS, we should have: 
+
+∀w ∈ [W ], πwh (·| swh ) ∈ arg max  
+
+> u∈∆( Aw)
+
+¨Qw, π 
+
+> ¨M,h
+
+(swh , ·, π)⊤u, 
+
+Therefore, π is the strict NE of ¨M . □
+
+Definition E.8 (Distance measure between policies) . Given two policies π := {πwh }h∈[H],w ∈[W ] and eπ := 
+
+{eπwh }h∈[H],w ∈[W ], we define: 
+
+d∞,1(π, eπ) := max   
+
+> w∈[W],h ∈[H],s wh∈S wh
+
+∥πwh (·| swh ) − eπwh (·| swh )∥1.
+
+23 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+Condition E.9. Given a model function ¨M := {(¨Pw 
+
+> ¨M,h
+
+, ¨rw 
+
+> ¨M,h
+
+)}h∈[H], for any fixed w ∈ [W ], h ∈ [H], s wh+1 ∈ S wh+1 , s wh ∈Swh , a wh ∈ A wh and any π, ¨Pw 
+
+> ¨M,h
+
+(swh+1 |swh , a wh , π) and ¨rw 
+
+> ¨M,h
+
+(swh , a wh , π) are continuous at π w.r.t. distance d∞,1.
+
+Lemma E.10 (Continuity of ¨Q). Under Cond. E.9, for any w ∈ [W ], any swh , a wh and π, ¨Qw, π 
+
+> ¨M,h
+
+(swh , a wh , π) is continuous at 
+
+π w.r.t. the distance d∞,1 in Def. E.8. Proof. The proof is obvious by noting that ¨Qw, π 
+
+> ¨M,h
+
+(swh , a wh , π) is a function resulting from finite multiplication and addition among ¨Pw 
+
+> ¨M,h
+
+(·|· , ·, π), ¨rw 
+
+> ¨M,h
+
+(·, ·, π) and π. □
+
+In the following proposition, we will establish the existence of NE based on the existence of strict NE. 
+
+Proposition E.11. Under Cond. E.9, the MT-PAM has at least one NE policy πNE satisfying Def. E.5. Proof. We first show the mapping ΓSNE  
+
+> ¨M
+
+: Π → Π is continuous under Cond. E.9. Based on a similar discussion as Lem. E.6 in (Huang et al., 2023), 
+
+u → arg max  
+
+> u′∈∆( Aw)
+
+q⊤u′ − ∥ u − u′∥22,
+
+is continuous for any fixed q ∈ R|A w |, and 
+
+q → arg max  
+
+> u′∈∆( Aw)
+
+q⊤u′ − ∥ u − u′∥22
+
+is also continuous for any fixed u ∈ ∆( Aw).By Lem. E.10, and the rule of composition of continuous functions, ΓSNE  
+
+> ¨M
+
+is a continuous mapping. Therefore, ΓSNE  
+
+> ¨M
+
+maps from the closed and convex polytope Π to a subset of itself. By Brouwers fixed point theorem it has a fixed point. By Lem. E.7, such fixed point is a strict NE of ¨M .Comparing with Def. E.5 and Def. E.6, we know NE is a super-set of strict NE, which implies the existence of NE in the MT-PAM. □
+
+E.2.2. E XISTENCE OF NASH EQUILIBRIUM IN MT-MFG AS COROLLARY 
+
+Conversion from Multi-Type MF-MDP to MT-PAM Given a Multi-Type MF-MDP M , we can convert it to a MT-PAM sharing the same {μw 
+
+> 1
+
+, Sw, Aw, H }w∈[W ] with M , while the transition and reward functions of ¨M are defined by: 
+
+∀w ∈ [W ], ∀h ∈ [H], ¨Pw 
+
+> ¨M,h
+
+(·|· , ·, π) := Pw 
+
+> M,h
+
+(·|· , ·, μπM ,h ), ¨r ¨M ,h (·, ·, π) := rh(·, ·, μπM ,h ), (7) where μπM ,h is the density of agents in all types induced by policy π in model M starting from μπM ,1 = μ1.
+
+Proposition E.12. [Existence of NE in MT-MFG] Under Assump. D, the Multi-Type MF-MDP has at least one NE policy 
+
+πNE satisfying Eq. (11) .Proof. By Lem. E.13, we know the MT-PAM converted from such Multi-Type MF-MDP satisfying Cond. E.9, and by Prop. E.11, the MT-PAM has at least one NE. Easy to check that such NE is also a NE for the Multi-Type MF-MDP satisfying Eq. (11). □
+
+E.2.3. P ROOFS RELATED TO THE MT-PAM CONVERTED FROM MULTI -T YPE MF-MDP 
+
+Lemma E.13. [Lipschitz Continuity of MT-PAM] Given a Multi-Type MF-MDP M satisfying the Lipschitz continuity condition in Assump. D, consider the MT-PAM ¨M converted from M according to Eq. (7) , we have ¨M is also Lipschitz continuous that, ∀w ∈ [W ], h ∈ [H] and any swh ∈ S w, a wh ∈ A w,
+
+∥¨Pw 
+
+> ¨M,h
+
+(·| swh , a wh , π) − ¨Pw 
+
+> ¨M,h
+
+(·| swh , a wh , π′)∥1 ≤ d∞,1(π, π′)W LThX
+
+> h′=1
+
+(1 + LT )h−h′
+
+|¨rw 
+
+> ¨M,h
+
+(swh , a wh , π) − ¨rw 
+
+> ¨M,h
+
+(swh , a wh , π′)| ≤ d∞,1(π, π′)W LrhX
+
+> h′=1
+
+(1 + LT )h−h′
+
+.
+
+24 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+Proof. Based on Lem. I.3, as a special case, when M = M ′, we have: 
+
+∥μπM ,h − μπ′ 
+
+> M,h
+
+∥1 ≤(1 + LT )∥μπM ,h −1 − μπ′ 
+
+> M,h −1
+
+∥1 + W · d∞,1(π, π′)=d∞,1(π, π′)W
+
+> h
+
+X
+
+> h′=1
+
+(1 + LT )h−h′
+
+.
+
+Therefore, for any w ∈ [W ],
+
+∥¨Pw 
+
+> ¨M,h
+
+(·| swh , a wh , π) − ¨Pw 
+
+> ¨M,h
+
+(·| swh , a wh , π′)∥1 =∥Pw 
+
+> M,h
+
+(·| swh , a wh , μπM ,h ) − Pw 
+
+> M,h
+
+(·| swh , a wh , μπ′ 
+
+> M,h
+
+)∥1
+
+≤LT ∥μπM ,h − μπ′ 
+
+> M,h
+
+∥1 ≤ d∞,1(π, π ′)W LThX
+
+> h′=1
+
+(1 + LT )h−h′
+
+.
+
+and 
+
+|¨rw 
+
+> ¨M,h
+
+(swh , a wh , π) − ¨rw 
+
+> ¨M,h
+
+(swh , a wh , π′)| =|rwh (swh , a wh , μ w, πM ,h ) − rwh (swh , a wh , μ w, π′ 
+
+> M,h
+
+)|≤Lr ∥μπM ,h − μπ′ 
+
+> M,h
+
+∥1 ≤ d∞,1(π, π′)W LrhX
+
+> h′=1
+
+(1 + LT )h−h′
+
+.
+
+# □
+
+25 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+## F. Missing Details and Proofs for Results in Sec. 4 
+
+F.1. Proofs for Lemma and Theorems used for Insights Lemma 4.3. [Implication of Local Alignment] Given any M, fM with transition PM and PfM , denote bπNE  
+
+> M
+
+to be an 
+
+ε1-approximate NE of M , suppose d(M, fM |bπNE  
+
+> M
+
+) ≤ ε2, then bπNE  
+
+> M
+
+is also an O(ε1 + ε2)-approximate NE of fM .Proof. For any policy eπ, we have: 
+
+JfM (eπ, bπNE  
+
+> M
+
+) − JfM (bπNE  
+
+> M
+
+, bπNE  
+
+> M
+
+)
+
+≤JfM (eπ, bπNE  
+
+> M
+
+) − JM (eπ, bπNE  
+
+> M
+
+) −
+
+
+
+JfM (bπNE  
+
+> M
+
+, bπNE  
+
+> M
+
+) − JM (bπNE  
+
+> M
+
+, bπNE  
+
+> M
+
+)
+
+
+
++ JM (eπ, bπNE  
+
+> M
+
+) − JM (bπNE  
+
+> M
+
+, bπNE  
+
+> M
+
+)
+
+≤ε1 + JfM (eπ, bπNE  
+
+> M
+
+) − JM (eπ, bπNE  
+
+> M
+
+) −
+
+
+
+JfM (bπNE  
+
+> M
+
+, bπNE  
+
+> M
+
+) − JM (bπNE  
+
+> M
+
+, bπNE  
+
+> M
+
+)
+
+
+
+(bπNE  
+
+> M
+
+is an ε1-NE of M )
+
+≤ε1 + 2 d(M, fM |bπNE  
+
+> M
+
+)
+
+≤ε1 + 2 ε2.
+
+# □
+
+Theorem 4.4. [Bridge Policy] If the Else -branch in Line 6 in Alg. 1 is activated, running Alg. 3 returns a bridge policy 
+
+πNE ,k  
+
+> Br
+
+, such that, πNE ,k  
+
+> Br
+
+is an approximate NE of M πNE ,k  
+
+> Br
+> Ctr
+
+.Proof. Thm. 4.4 is just a helper theorem to make it easy for the reader to understand our proofs. It will not be used in the proof of our main results Thm. F.7, so here we only show an informal proof. 
+
+Combining with Lem. E.4 and Thm. E.2, we show the bridge model ¨MBr has at least one NE πNE Br . In Thm. F.5, we provide upper bound for the distance between the central model of πNE Br with ¨MBr , which implies πNE Br is an approximate NE of its central model. □
+
+F.2. Definition of ε-cover of Policy Space Proposition F.1 (ε-cover of Π). Consider the set 
+
+Πε := {π := {π1, ..., π H }|∀ h ∈ [H], s h ∈ S h, π h(·| sh) ∈ N ε},
+
+where 
+
+Nε := {( N1
+
+N , ..., NA
+
+N )|N = ⌈ 2Aε ⌉; N1, ..., N A ∈ N;
+
+> A
+
+X
+
+> i=1
+
+Ni = N }.
+
+Then, Πε is an ε-cover of the policy space Π w.r.t. d∞,1 distance. Proof. For any u ∈ ∆( A), there exists a v ∈ N ε, such that, ∥u − v∥1 ≤ 1 
+
+> N
+
+· (A − 1) + A−1 
+
+> N
+
+≤ ε, which implies Nε is an 
+
+ε-cover of simplex ∆( A). By definition of Πε, we finish the proof. □
+
+F.3. Proofs for Algorithm 2 Theorem F.2 (Adapted from Thm. 4.2 in (Huang et al., 2023)) . For any δ ∈ (0 , 1) , during the running of Alg. 2, suppose 
+
+M ∗ ∈ ¯M, then w.p. 1 − δ, ∀t ∈ [T ], we have M ∗ ∈ ¯Mt. Besides, denote H as the hellinger distance, for each M ∈ ¯Mt
+
+with transition PM and any h ∈ [H]:
+
+> t−1
+
+X
+
+> i=1
+
+Eeπi,M ∗(π)[H2(PM,h (·| sih, a ih, μ πM,h ), PM ∗,h (·| sih, a ih, μ πM ∗,h ))] ≤ 2 log( 2|M| T H δ )(t − 1) · Eπ,M ∗(π)[H2(PM,h (·| sih, a ih, μ πM,h ), PM ∗,h (·| sih, a ih, μ πM ∗,h ))] ≤ 2 log( 2|M| T H δ ).
+
+26 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+Theorem F.3. Given any reference policy π, eε, δ ∈ (0 , 1) , M ∗ ∈ ¯M, if T = eO( H4 
+
+> eε2
+
+(dim PE (M, ε ′) ∧ (1 + LT )2H (1 + 
+
+LT H)2 dim II PE (M, ε ′)) log 2 2 |M| T H δ ) with ε′ = O( eεH2(1+ LT )H ), w.p. 1 − δ, Alg. 2 terminates at some T0 ≤ T , and return 
+
+¯MT0 s.t. (i) M ∗ ∈ ¯MT0 (ii) ∀M ∈ ¯MT0 , d(M ∗, M |π) ≤ eε.Proof. Suppose Alg. 2 proceeds to iteration T0 ≤ T , and does not terminate at Line 6. On the good events in Thm. F.2, we have M ∗ ∈ ¯Mt for all t ≤ T0.In our first step, we discuss how to provide upper bounds for accumulative model difference depending on two types of P-MBED. 
+
+Step 1-(a): Upper Bound Model Difference with Type II P-MBED For any t ≤ T0, given the fact that ∥P − Q∥1 ≤√2H(P, Q ), for any fixed h ∈ [H], we have: 
+
+> t−1
+
+X
+
+> i=1
+
+Eeπi,M ∗(π)[∥PM ∗,h (·| sh, a h, μ πM ∗,h ) − PM t,h (·| sh, a h, μ πM ∗,h )∥21]
+
+≤2
+
+> t−1
+
+X
+
+> i=1
+
+Eeπi,M ∗(π)[∥PM ∗,h (·| sh, a h, μ πM ∗,h ) − PM t,h (·| sh, a h, μ πM t,h )∥21] + 2 
+
+> t−1
+
+X
+
+> i=1
+
+L2 
+
+> T
+
+∥μπM ∗,h − μπM t,h ∥21
+
+≤8(1 + L2 
+
+> T
+
+H2) log 2|M| T H δ . (8) where in the last step is because, as a result of Lem. I.5, Cauchy’s inequality, and E2[X] ≤ E[X2], we have: 
+
+> t−1
+
+X
+
+> i=1
+
+∥μπM ∗,h − μπM t,h ∥21 ≤(t − 1) · H · Eπ,M ∗ [
+
+> h
+
+X
+
+> h′=1
+
+∥PM ∗,h (·| sh, a h, μ πM ∗,h ) − PM t,h (·| sh, a h, μ πM t,h )∥21]
+
+≤4H2 log 2|M| T H δ .
+
+By Lem. I.1, w.p. 1 − δ/ 2T H , for any t ∈ [T0] and any h ∈ [H], we have: 
+
+> t−1
+
+X
+
+> i=1
+
+∥PM ∗,h (·| esih, eaih, μ πM ∗,h ) − PM t,h (·| esih, eaih, μ πM ∗,h )∥21
+
+≤96(1 + L2 
+
+> T
+
+H2) log 2|M| T H δ + C · log 2T H δ ≤ c1(1 + L2 
+
+> T
+
+H2) log 2|M| T H δ .
+
+for some constant C and c1. By Lem. D.7, we further have: 
+
+> T0
+
+X
+
+> t=1
+
+∥PM ∗,h (·| esth, eath, μ πM ∗,h ) − PM t,h (·| esth, eath, μ πM ∗,h )∥1 ≤ c2((1 + LT H)
+
+r
+
+dim II PE (M, ε ′)T0 log 2|M| T H δ + T0ε′).
+
+for some constant c2. By Lem. I.1 again, w.p. 1 − δ/ 2T H , for any T0 ∈ [T ] and any h ∈ [H],
+
+> T0
+
+X
+
+> t=1
+
+Eeπt,M ∗(π)[∥PM ∗,h (·| sh, a h, μ πM ∗,h ) − PM t,h (·| sh, a h, μ πM ∗,h )∥1]
+
+≤3c2((1 + LT H)
+
+r
+
+dim II PE (M, ε ′)T0 log 2|M| T H δ + T0ε′) + C · log 2T H δ
+
+≤c3 · ((1 + LT H)
+
+q
+
+dim II PE (M, ε ′)T0 log 2|M| T H δ + T0ε′).
+
+for some constant c3. Similarly, we can guarantee by analyzing data collected by (π, π ):
+
+> T0
+
+X
+
+> t=1
+
+Eπ,M ∗(π)[∥PM ∗,h (·| sh, a h, μ πM ∗,h ) − PM t,h (·| sh, a h, μ πM ∗,h )∥1]
+
+27 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+≤c3 · ((1 + LT H)
+
+q
+
+dim II PE (M, ε ′)T0 log 2|M| T H δ + T0ε′).
+
+Therefore, by Lem. I.5 again, 
+
+> T0
+
+X
+
+> t=1
+
+Eeπt,M ∗(π)[
+
+> H
+
+X
+
+> h=1
+
+∥PM ∗,h (·| sh, a h, μ πM ∗,h ) − PM t,h (·| sh, a h, μ πM t,h )∥1]
+
+≤
+
+> T0
+
+X
+
+> t=1
+
+Eeπt,M ∗(π)[
+
+> H
+
+X
+
+> h=1
+
+∥PM ∗,h (·| sh, a h, μ πM ∗,h ) − PM t,h (·| sh, a h, μ πM ∗,h )∥1] + 
+
+> T0
+
+X
+
+> t=1
+> H
+
+X
+
+> h=1
+
+LT ∥μπM ∗,h − μπM t,h ∥1
+
+≤c3 · H(1 + LT )H ((1 + LT H)
+
+q
+
+dim II PE (M, ε ′)T0 log 2|M| T H δ + T0ε′).
+
+where the last step we use: 
+
+> T0
+
+X
+
+> t=1
+> H
+
+X
+
+> h=1
+
+∥μπM ∗,h − μπM t,h ∥1 ≤
+
+> H
+
+X
+
+> h=1
+> h
+
+X
+
+> h′=1
+
+(1 + LT )h−h′
+
+> T0
+
+X
+
+> t=1
+
+Eπ,M ∗(π)[∥PM ∗,h (·| sh, a h, μ πM ∗,h ) − PM t,h (·| sh, a h, μ πM ∗,h )∥1]
+
+≤c4 · H · (1 + LT )h − 1
+
+LT
+
+((1 + LT H)
+
+q
+
+dim II PE (M, ε ′)T0 log 2|M| T H δ + T0ε′).
+
+Similarly, for model M ′t, we also have: 
+
+> T0
+
+X
+
+> t=1
+> H
+
+X
+
+> h=1
+
+Eeπt,M ∗(π)[∥PM ∗,h (·| sh, a h, μ πM ∗,h ) − PM t,h (·| sh, a h, μ πM t,h )∥1]
+
+≤c4 · H(1 + LT )H ((1 + LT H)
+
+q
+
+dim II PE (M, ε ′)T0 log 2|M| T H δ + T0ε′).
+
+Step 1-(b): Upper Bound Model Difference with Type I P-MBED By Thm. F.2 and Lem. I.1, w.p. 1 − δ/ 2T H , for any 
+
+T0 ∈ [T ] and any h ∈ [H], we have: 
+
+> t−1
+
+X
+
+> i=1
+
+∥PM ∗,h (·| esih, eaih, μ πM ∗,h ) − PM t,h (·| esih, eaih, μ πM t,h )∥21 ≤ c5 log 2|M| T H δ + C · log 2T H δ ≤ c6 log 2|M| T H δ .
+
+As a result of Lem. D.7, we have: 
+
+> T0
+
+X
+
+> t=1
+> H
+
+X
+
+> h=1
+
+∥PM ∗,h (·| esth, eath, μ πM ∗,h ) − PM t,h (·| esth, eath, μ πM t,h )∥1 ≤ c7 · H(
+
+r
+
+dim PE (M, ε ′)T0 log 2|M| T H δ + T0ε′).
+
+By Lem. I.1, we have: 
+
+> T0
+
+X
+
+> t=1
+> H
+
+X
+
+> h=1
+
+Eeπt,M ∗(π)[∥PM ∗,h (·| esth, eath, μ πM ∗,h )−PM t,h (·| esth, eath, μ πM t,h )∥1]
+
+≤c8 · H(pdim PE (M, ε ′)T0 log 2|M| T H δ + T0ε′).
+
+Similarly, for model M ′t, we also have: 
+
+> T0
+
+X
+
+> t=1
+> H
+
+X
+
+> h=1
+
+Eeπt,M ∗(π)[∥PM ∗,h (·| esth, eath, μ πM ∗,h )−PM ′t,h (·| esth, eath, μ πM t,h )∥1]
+
+≤c8 · H(pdim PE (M, ε ′)T0 log 2|M| T H δ + T0ε′).
+
+28 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+Step 2: Lower Bound on Model Difference On the other hand, since the algorithm does not terminate at step T0, we have: 
+
+T0 eε < 
+
+> T0
+
+X
+
+> t=1
+
+Eeπt,M t(π)[
+
+> H
+
+X
+
+> h=1
+
+∥PM t,h (·|· , ·, μ πM t,h ) − PM ′t,h (·|· , ·, μ πM ′t,h )∥1]
+
+≤
+
+> T0
+
+X
+
+> i=1
+
+Eeπt,M ∗(π)[
+
+> H
+
+X
+
+> h=1
+
+∥PM ∗,h (·| sh, a h, μ πM ∗,h ) − PM ′t,h (·| sh, a h, μ πM ′t,h )∥1]+ ( H + 1) · Eeπt,M ∗(π)[
+
+> H
+
+X
+
+> h=1
+
+∥PM ∗,h (·| sh, a h, μ πM ∗,h ) − PM t,h (·| sh, a h, μ πM t,h )∥1]. (9) where in the last step we apply Lem. I.8. On the one hand, for Type II P-MBED, we have: 
+
+T0 eε ≤ c4 · H(H + 2)(1 + LT )H ((1 + LT H)
+
+q
+
+dim II PE (M, ε ′)T0 log 2|M| T H δ + T0ε′),
+
+by choosing ε′ ≤ eε(2 c4H(H + 2)(1 + LT )H )−1, it implies, for some constant c8,
+
+T0 ≤ c8 · H4(1 + LT )2H (1 + LT H)2 dim II PE (M, ε ′)
+
+eε2 log 2 2|M| T H δ .
+
+On the other hand, for Type I P-MBED, we have: 
+
+T0 eε ≤ c7 · H(H + 2)( pdim PE (M, ε ′)T0 log 2|M| T H δ + T0ε′),
+
+by choosing ε′ ≥ eε · (c7H(H + 2)) −1, we have: 
+
+T0 ≤ c9 · H4 dim PE (M, ε ′)
+
+eε2 log 2 2|M| T H δ .
+
+As a summary, by choosing 
+
+T = O( H4
+
+eε2 min {dim PE (M, ε ′), (1 + LT )2H (1 + LT H)2 dim PE (M, ε ′)} log 2 2|M| T H δ )
+
+with ε′ = O(eεH −2(1 + LT )−H ), we can guarantee the algorithm will terminates for some T0 ≤ T and return us a model class ¯MT0 satisfying max M,M ′∈ ¯MT0 d(M, M ′|π) ≤ eε, which implies 
+
+d(M ∗, M |π) ≤ eε, ∀M ∈ ¯MT0 .
+
+# □
+
+Remark F.4 (Why (1 + LT )H Disappears if Considering Type-I P-MBED?) . From the proof above, especially the proof in Step 1-(a) and Step 1-(b), we can see that during the model elimination, what matters is the model distance conditioning on the density induced by the corresponding models, i.e. ∥PM,h (·|· , ·, μ πM,h ) − PM ∗,h (·|· , ·, μ πM ∗,h )∥1. Therefore, if we consider the Type-I P-MBED, we do not need additional conversion between ∥PM,h (·|· , ·, μ πM,h ) − PM ∗,h (·|· , ·, μ πM ∗,h )∥1
+
+and ∥PM,h (·|· , ·, μ πM ∗,h ) − PM ′,h (·|· , ·, μ πM ∗,h )∥1, which is the origin of the exponential term (1 + LT )H in the upper bound regarding Type-II P-MBED. 
+
+F.4. Proofs for Algorithm 3 
+
+Recall the notations for central models in Appx. E.1. 
+
+Theorem F.5. Suppose we feed Alg. 3 with a model class ¨M, the bridge model ¨MBr it computes is a valid model, and by choosing ¯ε = ε0/ min {2HL r (1+ LT )H −1 
+
+> LT
+
+, 2H(H + 1)((1 + LT )H − 1) }, for any reference policy π and its associated central model ¨M ε0
+
+> Ctr
+
+(π; ¨M), we have: 
+
+max  
+
+> eπ
+
+Eeπ, ¨M ε0 
+
+> Ctr (π; ¨M)( π)
+
+[
+
+> H
+
+X
+
+> h=1
+
+∥¨P ¨M ε0 
+
+> Ctr (π; ¨M),h
+
+(·| sh, a h, π ) − ¨PBr ,h (·| sh, a h, π )∥1] ≤(H + 3) ε0,
+
+29 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+max  
+
+> eπ
+
+Eeπ, ¨M ε0 
+
+> Ctr (π; ¨M)( π)
+
+[
+
+> H
+
+X
+
+> h=1
+
+|¨r ¨M ε0 
+
+> Ctr (π; ¨M),h
+
+(sh, a h, π ) − ¨rBr ,h (sh, a h, π )|] ≤Lr H(H + 4) ε0.
+
+Proof. In the proof, for notation simplicity, given the refernce policy π, we use ¨M π 
+
+> Ctr
+
+as a short note of ¨M ε0
+
+> Ctr
+
+(π; ¨M), i.e. the central model regarding π.
+
+Validity of Construction First of all, note that Π¯ε is an ¯ε-cover of the policy space. Therefore, for any π, there must exist at least one eπ ∈ Π¯ε satisfying d∞,1(π, eπ) ≤ ¯ε which ensures P 
+
+> eπ∈Π¯ε
+
+[2¯ ε − d∞,1(π, eπ)] + > 0. So the transition and reward functions in the bridge model is well-defined, and also continuous in π w.r.t. distance d∞,1.
+
+Upper Bound on Transition Difference By definition, 
+
+∥¨P ¨M π
+
+> Ctr ,h
+
+(·| sh, a h, π ) − ¨PBr ,h (·| sh, a h, π )∥1 =∥¨P ¨M π
+
+> Ctr ,h
+
+(·| sh, a h, π ) −
+
+P 
+
+> eπ∈Π¯ε
+
+[2¯ ε − d∞,1(π, eπ)] + ¨P ¨M eπ
+
+> Ctr ,h
+
+(·| sh, a h, eπ)
+
+P 
+
+> eπ∈Π¯ε
+
+[2¯ ε − d∞,1(π, eπ)] + ∥1
+
+≤
+
+P 
+
+> eπ∈Π¯ε
+
+[2¯ ε − d∞,1(π, eπ)] +∥¨P ¨M π
+
+> Ctr ,h
+
+(·| sh, a h, π ) − ¨P ¨M eπ
+
+> Ctr ,h
+
+(·| sh, a h, eπ)∥1
+
+P 
+
+> eπ∈Π¯ε
+
+[2¯ ε − d∞,1(π, eπ)] +
+
+We only need to care about those eπ ∈ Π¯ε with [2¯ ε − d∞,1(π, eπ)] + > 0, i.e. d∞,1(π, eπ) < 2¯ ε. Given the condition when Alg. 1 call Alg. 3, we have Bε0 
+
+> π
+
+( ¨M π
+
+> Ctr
+
+; ¨M) > | ¨M|  
+
+> 2
+
+for any π. Therefore, for any π and eπ with d∞,1(π, eπ) ≤ 2¯ ε, there exists a model ¨Mshare such that ¨Mshare ∈ B ε0 
+
+> π
+
+( ¨M π
+
+> Ctr
+
+; ¨M) ∩ B ε0 
+
+> eπ
+
+( ¨M eπ
+
+> Ctr
+
+; ¨M), which implies for any π′
+
+Eπ′, ¨M π
+
+> Ctr (π)
+
+[
+
+> H
+
+X
+
+> h=1
+
+∥¨P ¨M π
+
+> Ctr ,h
+
+(·| sh, a h, π ) − ¨P ¨M eπ
+
+> Ctr ,h
+
+(·| sh, a h, eπ)∥1]
+
+≤Eπ′, ¨M π
+
+> Ctr (π)
+
+[
+
+> H
+
+X
+
+> h=1
+
+∥¨P ¨M π
+
+> Ctr ,h
+
+(·| sh, a h, π ) − ¨P ¨Mshare ,h (·| sh, a h, π )∥ +
+
+> H
+
+X
+
+> h=1
+
+∥¨P ¨Mshare ,h (·| sh, a h, π ) − ¨P ¨Mshare ,h (·| sh, a h, eπ)∥1
+
++
+
+> H
+
+X
+
+> h=1
+
+∥¨P ¨Mshare ,h (·| sh, a h, eπ) − ¨P ¨M eπ
+
+> Ctr ,h
+
+(·| sh, a h, eπ)∥1]
+
+≤ε0 + 2 H((1 + LT )H − 1)¯ ε + Eπ′, ¨M π
+
+> Ctr (π)
+
+[
+
+> H
+
+X
+
+> h=1
+
+∥¨P ¨Mshare ,h (·| sh, a h, eπ) − ¨P ¨M eπ
+
+> Ctr ,h
+
+(·| sh, a h, eπ)∥1]. (Lem. E.4) where by applying Lem. I.7, we have: 
+
+Eπ′, ¨M π
+
+> Ctr (π)
+
+[
+
+> H
+
+X
+
+> h=1
+
+∥¨P ¨Mshare ,h (·| sh, a h, eπ) − ¨P ¨M eπ
+
+> Ctr ,h
+
+(·| sh, a h, eπ)∥1]
+
+≤Eπ′, ¨Mshare (π)[
+
+> H
+
+X
+
+> h=1
+
+∥¨P ¨Mshare ,h (·| sh, a h, eπ) − ¨P ¨M eπ
+
+> Ctr ,h
+
+(·| sh, a h, eπ)∥1]+ H · Eπ′, ¨M π
+
+> Ctr (π)
+
+[
+
+> H
+
+X
+
+> h=1
+
+∥¨P ¨M π
+
+> Ctr ,h
+
+(·| sh, a h, π ) − ¨P ¨Mshare ,h (·| sh, a h, π )∥1]
+
+≤Eπ′, ¨Mshare (π)[
+
+> H
+
+X
+
+> h=1
+
+∥¨P ¨Mshare ,h (·| sh, a h, eπ) − ¨P ¨M eπ
+
+> Ctr ,h
+
+(·| sh, a h, eπ)∥1] + Hε 0 ( ¨Mshare ∈ B ε0 
+
+> π
+
+( ¨M π
+
+> Ctr
+
+; ¨M))
+
+≤Eπ′, ¨Mshare (eπ)[
+
+> H
+
+X
+
+> h=1
+
+∥¨P ¨Mshare ,h (·| sh, a h, eπ) − ¨P ¨M eπ
+
+> Ctr ,h
+
+(·| sh, a h, eπ)∥1]+ H · Eπ′, ¨Mshare (eπ)[
+
+> H
+
+X
+
+> h=1
+
+∥¨P ¨Mshare ,h (·| sh, a h, π ) − ¨P ¨Mshare ,h (·| sh, a h, eπ)∥1] + Hε 0
+
+30 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+≤(H + 1) ε0 + 2 H2((1 + LT )H − 1)¯ ε. ( ¨Mshare ∈ B ε0 
+
+> eπ
+
+( ¨M eπ
+
+> Ctr
+
+; ¨M); Lem. E.4) which implies, 
+
+Eπ′, ¨M π
+
+> Ctr (π)
+
+[
+
+> H
+
+X
+
+> h=1
+
+∥¨P ¨M π
+
+> Ctr ,h
+
+(·| sh, a h, π ) − ¨P ¨M eπ
+
+> Ctr ,h
+
+(·| sh, a h, eπ)∥1]
+
+≤ε0 + 2 H((1 + LT )H − 1)¯ ε + ( H + 1) ε0 + 2 H2((1 + LT )H − 1)¯ ε
+
+≤(H + 2) ε0 + 2 H(H + 1)((1 + LT )H − 1)¯ ε
+
+≤(H + 3) ε0. (2H(H + 1)((1 + LT )H − 1)¯ ε ≤ ε0)Therefore, 
+
+∀π, π ′, Eπ′, ¨M π
+
+> Ctr (π)
+
+[
+
+> H
+
+X
+
+> h=1
+
+∥¨P ¨M π
+
+> Ctr ,h
+
+(·| sh, a h, π ) − ¨PBr ,h (·| sh, a h, π )∥1] ≤
+
+P 
+
+> eπ∈Π¯ε
+
+[2¯ ε − d∞,1(π, eπ)] +(H + 3) ε0
+
+P 
+
+> eπ∈Π¯ε
+
+[2¯ ε − d∞,1(π, eπ)] +
+
+≤(H + 3) ε0.
+
+Upper Bound on Reward Difference By definition, for each h, s h, a h, we have: 
+
+|¨r ¨M ε0 
+
+> Ctr (π; ¨M),h
+
+(sh, a h, π ) − ¨rBr ,h (sh, a h, π )|
+
+=|¨r ¨M ε0 
+
+> Ctr (π; ¨M),h
+
+(sh, a h, π ) −
+
+P 
+
+> eπ∈Π¯ε
+
+[2¯ ε − d∞,1(π, eπ)] + ¨r ¨M ε0 
+
+> Ctr (eπ; ¨M),h
+
+(sh, a h, eπ)
+
+P 
+
+> eπ∈Π¯ε
+
+[2¯ ε − d∞,1(π, eπ)] + |
+
+=
+
+P 
+
+> eπ∈Π¯ε
+
+[2¯ ε − d∞,1(π, eπ)] +|¨r ¨M ε0 
+
+> Ctr (π; ¨M),h
+
+(sh, a h, π ) − ¨r ¨M ε0 
+
+> Ctr (eπ; ¨M),h
+
+(sh, a h, eπ)|
+
+P 
+
+> eπ∈Π¯ε
+
+[2¯ ε − d∞,1(π, eπ)] + .
+
+Similarly, for those eπ ∈ Π¯ε with [2¯ ε − d∞,1(π, eπ)] + > 0, we have: 
+
+|¨r ¨M π
+
+> Ctr ,h
+
+(sh, a h, π ) − ¨r ¨M eπ
+
+> Ctr ,h
+
+(sh, a h, eπ)|
+
+=|rh(sh, a h, μ πM π
+
+> Ctr ,h
+
+) − rh(sh, a h, μ eπM eπ
+
+> Ctr ,h
+
+)|≤Lr ∥μπM π 
+
+> Ctr ,h
+
+− μeπM eπ
+
+> Ctr ,h
+
+∥1
+
+≤Lr Hd ∞,1(π, π ′) + Lr Eπ,M π
+
+> Ctr (π)
+
+[
+
+> h
+
+X
+
+> h′=1
+
+∥PM π 
+
+> Ctr ,h ′
+
+(·| sh′−1, a h′−1, μ πM π
+
+> Ctr ,h ′−1
+
+) − PM eπ 
+
+> Ctr ,h ′
+
+(·| sh′−1, a h′−1, μ eπM eπ
+
+> Ctr ,h ′−1
+
+)∥1]
+
+≤2Lr H ¯ε + Lr Eπ, ¨M π
+
+> Ctr (π)
+
+[
+
+> H
+
+X
+
+> h=1
+
+∥¨P ¨M π
+
+> Ctr ,h
+
+(·| sh, a h, π ) − ¨P ¨M eπ
+
+> Ctr ,h
+
+(·| sh, a h, eπ)∥1]
+
+≤Lr (H + 4) ε0.
+
+Therefore, 
+
+∀π, π ′, Eπ′, ¨M π
+
+> Ctr (π)
+
+[
+
+> H
+
+X
+
+> h=1
+
+|¨r ¨M π
+
+> Ctr ,h
+
+(sh, a h, π ) − ¨r ¨M eπ
+
+> Ctr ,h
+
+(sh, a h, eπ)|] ≤
+
+P 
+
+> eπ∈Π¯ε
+
+[2¯ ε − d∞,1(π, eπ)] +H(H + 4) ε0
+
+P 
+
+> eπ∈Π¯ε
+
+[2¯ ε − d∞,1(π, eπ)] +
+
+≤Lr H(H + 4) ε0.
+
+# □
+
+Next we prove an important Lemma based on results in theorem above, which indicates that the bridge policy constructed in Alg. 3 is close to the NE of its central model. 
+
+Lemma F.6. Suppose the Else -branch in Line 6 if activated in Alg. 2, for policy πNE ,k  
+
+> Br
+
+and its corresponding central model 
+
+M k 
+
+> Ctr
+
+:= arg max M ∈M k |B ε0
+
+> πNE ,k
+> Br
+
+(M ; Mk)|, we have: 
+
+ENE  
+
+> Mk
+> Ctr
+
+(πNE ,k  
+
+> Br
+
+) := max  
+
+> π
+
+∆M k 
+
+> Ctr
+
+(π, π NE ,k  
+
+> Br
+
+) ≤ 2(1 + Lr )( H + 4) ε0.
+
+31 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+Proof. For any policy π, we have 
+
+∆M k 
+
+> Ctr
+
+(π, π NE ,k  
+
+> Br
+
+)
+
+≤∆ ¨M k
+
+> Ctr
+
+(π, π NE ,k  
+
+> Br
+
+) − ∆ ¨MBr (π, π NE ,k  
+
+> Br
+
+) (∆ ¨MBr (π, π NE ,k  
+
+> Br
+
+) ≤ 0)
+
+≤| ¨J ¨M k
+
+> Ctr
+
+(π, π NE ,k  
+
+> Br
+
+) − ¨J ¨MBr (π, π NE ,k  
+
+> Br
+
+)| + | ¨J ¨M k
+
+> Ctr
+
+(πNE ,k  
+
+> Br
+
+, π NE ,k  
+
+> Br
+
+) − ¨J ¨MBr (πNE ,k  
+
+> Br
+
+, π NE ,k  
+
+> Br
+
+)|≤EπNE ,k     
+
+> Br ,¨Mk
+> Ctr (πNE ,k
+> Br )
+
+[
+
+> H
+
+X
+
+> h=1
+
+|¨r ¨M k
+
+> Ctr ,h
+
+(sh, a h, π NE ,k  
+
+> Br
+
+) − ¨r ¨MBr ,h (sh, a h, π NE ,k  
+
+> Br
+
+)|
+
++ ∥¨P ¨M k
+
+> Ctr ,h
+
+(·| sh, a h, π NE ,k  
+
+> Br
+
+), ¨P ¨MBr ,h (·| sh, a h, π NE ,k  
+
+> Br
+
+)∥1]+ Eπ, ¨M k 
+
+> Ctr (πNE ,k
+> Br )
+
+[
+
+> H
+
+X
+
+> h=1
+
+|¨r ¨M k
+
+> Ctr ,h
+
+(sh, a h, π NE ,k  
+
+> Br
+
+) − ¨r ¨MBr ,h (sh, a h, π NE ,k  
+
+> Br
+
+)|
+
++ ∥¨P ¨M k
+
+> Ctr ,h
+
+(·| sh, a h, π NE ,k  
+
+> Br
+
+), ¨P ¨MBr ,h (·| sh, a h, π NE ,k  
+
+> Br
+
+)∥1]
+
+≤2 max  
+
+> π
+
+Eπ, ¨M k 
+
+> Ctr (πNE ,k
+> Br )
+
+[
+
+> H
+
+X
+
+> h=1
+
+|¨r ¨M k
+
+> Ctr ,h
+
+(sh, a h, π NE ,k  
+
+> Br
+
+) − ¨r ¨MBr ,h (sh, a h, π NE ,k  
+
+> Br
+
+)|]+ 2 max  
+
+> π
+
+Eπ, ¨M k 
+
+> Ctr (πNE ,k
+> Br )
+
+[
+
+> H
+
+X
+
+> h=1
+
+∥¨P ¨M k
+
+> Ctr ,h
+
+(·| sh, a h, π NE ,k  
+
+> Br
+
+), ¨P ¨MBr ,h (·| sh, a h, π NE ,k  
+
+> Br
+
+)∥1]
+
+≤2(1 + Lr H)( H + 4) ε0. (Thm. F.5) which finishes the proof. □
+
+F.5. Proofs for Algorithm 1 Theorem 4.5. In Alg. 1, by choosing ε0 = ε  
+
+> 8(1+ LrH)( H+4)
+
+, eε = ε0 
+
+> 6
+
+, and choosing ¯ε according to Thm. F.5, w.p. 1 − δ, (1) if the If-Branch in Line 5 is activated: we have |M k+1 | ≤ |M k|/2; (2) otherwise, in the Else-Branch in Line 6: either we return the πNE ,k  
+
+> Br
+
+which is an ε-approximate NE for M ∗; or the algorithm continues with |M k+1 | ≤ |M k|/2.Proof. We separately discuss the if and else branches in the algorithm. 
+
+Proof for If-Branch in Line 5 On the events in Thm. F.3, for any fM̸ ∈ B ε0 
+
+> πk
+
+(M ∗; Mk), we have d(M ∗, fM |πk) ≥
+
+ε0 > eε, which implies fM̸ ∈ M k+1 . Combining the condition of If-Branch , we have: 
+
+|M k+1 | ≤ |B ε0 
+
+> πk
+
+(M ∗; Mk)| ≤ |M k|
+
+2 .
+
+Proof for Else-Branch in Line 6 First of all, on the events in Thm. F.3, we have d(M ∗, fM k|πNE ,k  
+
+> Br
+
+) ≤ eε. By applying Lem. I.2, it implies: 
+
+|∆M ∗ (π, π NE ,k  
+
+> Br
+
+) − ∆fM k (π, π NE ,k  
+
+> Br
+
+)|≤Eπ,M ∗(πNE ,k  
+
+> Br )
+
+[
+
+> H
+
+X
+
+> h=1
+
+∥PM ∗,h (·| sh, a h, μ πNE ,k  
+
+> Br
+> M∗,h
+
+) − PfM k ,h (·| sh, a h, μ πNE ,k   
+
+> Br
+> fMk,h
+
+)∥1]+ (2 Lr H + 1) EπNE ,k    
+
+> Br ,M ∗(πNE ,k
+> Br )
+
+[
+
+> H
+
+X
+
+> h=1
+
+∥PM ∗,h (·| sh, a h, μ πNE ,k  
+
+> Br
+> M∗,h
+
+) − PfM k ,h (·| sh, a h, μ πNE ,k   
+
+> Br
+> fMk,h
+
+)∥1]
+
+≤2( Lr H + 1) eε. 
+
+Also note that: 
+
+∆M ∗ (π, π NE ,k  
+
+> Br
+
+) =∆ M ∗ (π, π NE ,k  
+
+> Br
+
+) − ∆fM k (π, π NE ,k  
+
+> Br
+
+) + ∆ fM k (π, π NE ,k  
+
+> Br
+
+).
+
+In the following, we separately discuss two cases. 32 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+Case 1: ENE   
+
+> fMk
+
+(πNE ,k  
+
+> Br
+
+) ≤ 3ε 
+
+> 4
+
+and Line 9 is activated Given that eε ≤ ε  
+
+> 16(1+ LrH)
+
+:
+
+∆M ∗ (π, π NE ,k  
+
+> Br
+
+) ≤| ∆M ∗ (π, π NE ,k  
+
+> Br
+
+) − ∆fM k (π, π NE ,k  
+
+> Br
+
+)| + ENE   
+
+> fMk
+
+(πNE ,k  
+
+> Br
+
+) (ENE   
+
+> fMk
+
+(πNE ,k  
+
+> Br
+
+) = max π ∆fM k (π, π NE ,k  
+
+> Br
+
+))
+
+≤2( Lr H + 1) eε + 3ε
+
+4 ≤ ε. 
+
+which implies πNE ,k  
+
+> Br
+
+is an ε-NE of M ∗.
+
+Case 2: ENE   
+
+> fMk
+
+(πNE ,k  
+
+> Br
+
+) > 3ε 
+
+> 4
+
+and Line 9 is not activated As a result, for any policy π,
+
+∆M ∗ (π, π NE ,k  
+
+> Br
+
+) ≥ −| ∆M ∗ (π, π NE ,k  
+
+> Br
+
+) − ∆fM k (π, π NE ,k  
+
+> Br
+
+)| + ∆ fM k (π, π NE ,k  
+
+> Br
+
+) ≥ ∆fM k (π, π NE ,k  
+
+> Br
+
+) − 2( Lr H + 1) eε. 
+
+Therefore, by our choice of eε,
+
+max  
+
+> π
+
+∆M ∗ (π, π NE ,k  
+
+> Br
+
+) ≥ E NE   
+
+> fMk
+
+(πNE ,k  
+
+> Br
+
+) − 2( Lr H + 1) eε ≥ 5ε
+
+8 .
+
+On the other hand, by Lem. F.6, for any π, we have: 
+
+∆M ∗ (π, π NE ,k  
+
+> Br
+
+) − 2(1 + Lr H)( H + 4) ε0
+
+≤| ∆M ∗ (π, π NE ,k  
+
+> Br
+
+)| − | ∆M k 
+
+> Ctr
+
+(π, π NE ,k  
+
+> Br
+
+)| (Here we apply Lem. F.6) 
+
+≤| ∆M ∗ (π, π NE ,k  
+
+> Br
+
+) − ∆M k 
+
+> Ctr
+
+(π, π NE ,k  
+
+> Br
+
+)|≤Eπ,M ∗(πNE ,k  
+
+> Br )
+
+[
+
+> H
+
+X
+
+> h=1
+
+∥PM ∗,h (·| sh, a h, μ πNE ,k  
+
+> Br
+> M∗,h
+
+) − PM k
+
+> Ctr ,h
+
+(·| sh, a h, μ πNE ,k  
+
+> Br
+> Mk
+> Ctr ,h
+
+)∥1]+ (2 Lr H + 1) EπNE ,k    
+
+> Br ,M ∗(πNE ,k
+> Br )
+
+[
+
+> H
+
+X
+
+> h=1
+
+∥PM ∗,h (·| sh, a h, μ πNE ,k  
+
+> Br
+> M∗,h
+
+) − PM k
+
+> Ctr ,h
+
+(·| sh, a h, μ πNE ,k  
+
+> Br
+> Mk
+> Ctr ,h
+
+)∥1]
+
+≤(2 Lr H + 2) d(M ∗, M k
+
+> Ctr
+
+|πNE ,k  
+
+> Br
+
+).
+
+According to the choice of ε0, we have 2(1 + Lr H)( H + 4) ε0 ≤ ε 
+
+> 4
+
+, therefore, 
+
+d(M ∗, M k
+
+> Ctr
+
+|πNE ,k  
+
+> Br
+
+) ≥ 12Lr H + 2 
+
+
+
+max  
+
+> π
+
+∆M ∗ (π, π NE ,k  
+
+> Br
+
+) − 2(1 + Lr H)( H + 4) ε0
+
+
+
+≥ 3ε
+
+16( Lr H + 1) .
+
+Next we try to show that models in Bε0
+
+> πNE ,k
+> Br
+
+(M k
+
+> Ctr
+
+, Mk) will be eliminated. For any M ∈ B ε0
+
+> πNE ,k
+> Br
+
+(M k
+
+> Ctr
+
+, Mk), because of 
+
+eε < ε  
+
+> 48( LrH+1)
+
+we have: 
+
+d(M, M ∗|πNE ,k  
+
+> Br
+
+) ≥ d(M k
+
+> Ctr
+
+, M ∗|πNE ,k  
+
+> Br
+
+) − d(M, M k
+
+> Ctr
+
+|πNE ,k  
+
+> Br
+
+) ≥ 3ε
+
+16( Lr H + 1) − ε0 ≥ ε
+
+16( Lr H + 1) > eε. 
+
+On the event in Thm. F.3 (which holds with probability 1 − δ), M̸ ∈ M k+1 , which implies, 
+
+|M k+1 | ≤ |M k| − |B ε0
+
+> πNE ,k
+> Br
+
+(M k
+
+> Ctr
+
+, Mk)| ≤ |M k|/2.
+
+# □
+
+Theorem F.7. [Sample Complexity of Learning MFGs] Under Assump. A and B, by running Alg. 1 with Alg. 2 as 
+
+ModelElim and Alg. 3 as BridgePolicy , and hyper-parameter choices according to Thm. F.3, 4.5, and F.5, w.p. 
+
+1 − δ, Alg. 1 will terminate at some k ≤ log 2 |M| + 1 and return us an ε-NE of M ∗, and the number of trajectories consumed is at most O( H7 
+
+> ε2
+
+(1 + Lr )2(dim PE (M, ε ′) ∧ H3(1 + LT H)2(1 + LT )2H dim II PE (M, ε ′)) log 3 |M|  
+
+> δ
+
+) where 
+
+ε′ = O(ε/H 3(1 + Lr )(1 + LT )H ), and in eO we omit logarithmic terms of ε, H, log |M| , dim PE , 1 + LT and 1 + Lr .
+
+33 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+Proof. As a result of Thm. 4.5, w.p. 1 − δ  
+
+> log 2|M| +1
+
+· (log 2 |M| + 1) = 1 − δ, there exists a step k ≤ log 2 |M| + 1 such that Alg. 1 will terminate the return us an ε-approximate NE of M ∗. The total number of trajectories required is: 
+
+(log 2 |M| + 1) · 2HT 
+
+=(log 2 |M| + 1) · eO( H5
+
+eε2 (dim PE (M, ε ′) ∧ (1 + LT )2H (1 + LT H)2 dim II PE (M, ε ′)) log 2 2|M| T H δ )= eO( H7
+
+ε2 (1 + Lr H)2
+
+dim PE (M, ε ′) ∧ H3(1 + LT H)2(1 + LT )2H dim II PE (M, ε ′)
+
+
+
+log 3 |M| ).
+
+where we use the fact that by Thm. F.3, we choose eε = ε0 
+
+> 6
+
+= O( ε  
+
+> (1+ LrH)H
+
+), and ε′ = O(eε/H 2(1 + LT )H ) = O(ε/H 3(1 + 
+
+Lr H)(1 + LT )H ). □
+
+F.6. Sample Complexity Separation between Mean-Filed Control and Mean-Field Games 
+
+In this section, we establish the separation between of RL in MFC and MFGs from information theoretical perspective. 
+
+A Basic Recap of the MFC Setting In MFC, similar to single-agent RL, we are interested in finding a policy bπ∗ 
+
+> Opt
+
+to approximately minimize the optimality gap EOpt (π) := max eπ JM ∗ (eπ; μeπM ∗ ) − JM ∗ (π; μπM ∗ ), i.e., 
+
+EOpt (bπ∗
+
+> Opt
+
+) ≤ ε. (10) 
+
+Exponential Lower Bound in Tabular RL for Mean-Field Control Our results are based on a different query model from Def. 2.1 defined below. 
+
+Definition F.8 (Strong Query Model) . The Strong Query Model (SQM) can take a policy π and return a sequence of transition function {Pπh (·|· , ·)}Hh=1 , such that Pπh (·| sh, a h) := PM ∗,h (·| sh, a h, μ πM ∗,h ) for any h ∈ [H], s h ∈ S h, a h ∈ A h.The SQM is strictly stronger than the sample query model in Def. 2.1, because given the conditional model {Pπh (·|· , ·)}Hh=1 ,one can sample arbitrary trajectories by arbitrary policies from it, and therefore, recover the data collection process in Def. 2.1. In the following, we investigate the number of SQM queries required to identify ε-optimal policy in MFC setting. We show that, under Assump. A and B, even in the tabular setting, MFC requires queries exponential to the number of states and actions. 
+
+Figure 1. Construction of Lower Bound 
+
+Theorem F.9. [Exponential Lower Bound for MFC] Given arbitrary LT > 0 and d ≥ 2, consider tabular MF-MDPs satisfying Assump. B with Lipschitz coefficient LT , |S| = |A| = d and H = 3 . For any algorithm Alg , and any ε ≤ LT 
+
+> d+1
+
+,there exists an MDP M ∗ and a model class M satisfying M ∗ ∈ M , and |M| = Ω(( LT 
+
+> dε
+
+)d−1), s.t., if Alg only queries GM or DCP for at most K times with K ≤ |M| /2 − 1, the probability that Alg produces an ε-optimal policy is less than 1/2.Proof. Our proof is divided into three parts: construction of hard MF-MDP instance, construction of model class M, and the proof of lower bound. 34 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+Part 1: Construction of Hard Examples We construct a three layer MDP as shown in Fig. 1. The initial state distribution is fixed to be μ1(s1) = 1 , and we have S states and A actions available at each layer with S = A = d. The transition at initial state is deterministic, i.e., P(si
+
+> 2
+
+|s1, a i
+
+> 1
+
+, μ 1) = 1 . At the second layer, given LT ≤ 1, there exists an optimal state density μ∗
+
+> 2
+
+, such that, ∀i ∈ [S], j ∈ [A] and ∀μ2 ∈ ∆( S):
+
+P(s13|si
+
+> 2
+
+, a j
+
+> 2
+
+, μ 2) = 12 + 2 ε ·
+
+h
+
+1 − LT
+
+4ε ∥μ2 − μ∗
+
+> 2
+
+∥1
+
+i+
+
+, P(s23|si
+
+> 2
+
+, a j
+
+> 2
+
+, μ 2) = 12 − 2ε ·
+
+h
+
+1 − LT
+
+4ε ∥μ2 − μ∗
+
+> 2
+
+∥1
+
+i+
+
+.
+
+where [x]+ = max {x, 0}. As for the reward function, we have zero reward at each state action in the previous two layers, and for the third layer, we have only have non-zero reward at r3(s13, ·, ·) = 1 and r3(si
+
+> 3
+
+, ·, ·) = 0 for all i̸ = 1 .As we can see, for arbitrary policy π, we have μπ 
+
+> 2
+
+(si
+
+> 2
+
+) = π(ai
+
+> 1
+
+|s1). Besides, the optimal policy should be taking action to make sure μ2 = μ∗
+
+> 2
+
+, which can be achieved by setting π∗(ai
+
+> 1
+
+|s1) = μ∗
+
+> 2
+
+(si
+
+> 2
+
+), and then take arbitrary policy at the second layer. Even if the agent just wants to achieve ε-near-optimal policy, it at least has to determine the position of set 
+
+{μ : ∥μ − μ∗
+
+> 2
+
+∥1 ≤ 4εLT }. The key difficulty here is to explore and gather information which can be used to infer μ∗
+
+> 2
+
+.We further reduce the difficulty of the exploration by providing for the learner with the transition at initial state and the third layer (or equivalently, the available representation function for the first and third layers is unique) and all the information of reward function. All the learner need to do is to identify the correct feature for the second layer and use it to obtain the optimal policy (at the initial state) to maximize the return. Next, we verify the above model belongs to the low-rank Mean-Field MDP. For h = 1 , it’s easy to see P(si
+
+> 2
+
+|s1, a j
+
+> 1
+
+, μ 1) = 
+
+ϕ1(s1, a j
+
+> 1
+
+, μ 1)⊤ψ1(si
+
+> 2
+
+), where ϕ1(s1, a j
+
+> 1
+
+, μ 1) = ej and ψ1(si
+
+> 2
+
+) = ei, and e(·) is the one-hot vector with the (·)-th element equal 1. For the second layer, given a density μ ∈ ∆( S), we use ϕμ,L T to denote the following feature function class that, 
+
+∀i ∈ [S], j ∈ [A], μ ′ ∈ ∆( S),
+
+ϕμ,L T (si
+
+> 2
+
+, a j
+
+> 2
+
+, μ ′) := ( 12 + 2 ε ·
+
+h
+
+1 − LT
+
+4ε ∥μ′ − μ∥1
+
+i+
+
+, 12 − 2ε ·
+
+h
+
+1 − LT
+
+4ε ∥μ′ − μ∥1
+
+i+
+
+, 0, .., 0) ⊤ ∈ Rd.
+
+and the next state feature function is ψ(si
+
+> 3
+
+) = e⊤ 
+
+> i
+
+, ∀i ∈ [d]. It’s easy to verify that the transition can be decomposed to 
+
+ϕμ∗  
+
+> 2,L T
+
+(·, ·, μ 2)⊤ψ(si
+
+> 3
+
+), and the above feature satisfies the normalization property: 
+
+∥ X
+
+> i∈[d]
+
+ψ(si
+
+> 3
+
+)g(si
+
+> 3
+
+)∥ ≤ √2d, ∀g : S → {− 1, 1}.
+
+Besides, we verify that for any choice of μ, the induced transition function is LT -Lipschitz: 
+
+∥Pμ,L T (·| si
+
+> 2
+
+, a j
+
+> 2
+
+, μ ′) − Pμ,L T (·| si
+
+> 2
+
+, a j
+
+> 2
+
+, μ ′′ )∥1
+
+= X
+
+> l∈[S]
+
+|ϕμ,L T (si
+
+> 2
+
+, a j
+
+> 2
+
+, μ ′)⊤ψ(sl
+
+> 3
+
+) − ϕμ,L T (si
+
+> 2
+
+, a j
+
+> 2
+
+, μ ′′ )ψ(sl
+
+> 3
+
+)|
+
+=2 · 2ε|
+
+h
+
+1 − LT
+
+4ε ∥μ − μ′′ ∥1
+
+i+
+
+−
+
+h
+
+1 − LT
+
+4ε ∥μ − μ′∥1
+
+i+
+
+|≤LT |∥ μ − μ′∥1 − ∥ μ − μ′′ ∥1| ≤ LT ∥μ′ − μ′′ ∥1
+
+Part 2: Construction of Model Class Given an integer ζ, we denote Nζ := {μ|μ(si
+
+> 2
+
+) = N (si
+
+> 2
+
+)/ζ, N (si
+
+> 2
+
+) ∈
+
+N, P 
+
+> i∈[S]
+
+N (si
+
+> 2
+
+) = ζ}. In another word, Nζ includes all state density with resolution 1/ζ . Now, consider N⌊ LT 
+
+> 5ε⌋
+
+.For each μ, μ ′ ∈ N ⌊ LT 
+
+> 5ε⌋
+
+, we should have: 
+
+∥μ − μ′∥1 ≥ 2/⌊ LT
+
+5ε ⌋ ≥ 10 εLT
+
+> 8εLT
+
+.
+
+Therefore, if we consider the set B(μ, 4εLT ) := {μ′ ∈ ∆( S)|∥ μ − μ′∥1 ≤ 4εLT }, we can expect B(μ, 4εLT ) ∩ B (μ′, 4εLT ) = ∅
+
+for any μ, μ ′ ∈ N ⌊ LT 
+
+> 5ε⌋
+
+. Given arbitrary N ≤ |N ⌊ LT 
+
+> 5ε⌋
+
+| = (⌊ LT    
+
+> 5ε⌋+d−1)! (⌊LT
+> 5ε⌋)!( d−1)!
+
+= Ω(( LT 
+
+> dε
+
+)d−1), we can find N − 1 different elments {μ12, ..., μ N 
+
+> 2
+
+} ⊂ N ⌊ LT  
+
+> 5ε⌋
+
+and construct (here we only specify the representation at the second layer, since we assume the other layers are known) 
+
+M[N ] := {M n := ( ϕμn  
+
+> 2,L T
+
+, ψ )|n ∈ [N ]}.
+
+35 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+For analysis, we introduce another model ¯M which shares the transition and reward function as M ns but for the transition of second layer, it has: 
+
+P(s13|si
+
+> 2
+
+, a j
+
+> 2
+
+, μ 2) = P(s23|si
+
+> 2
+
+, a j
+
+> 2
+
+, μ 2) = 12 , ∀i ∈ [S], j ∈ [A], μ 2 ∈ ∆( S).
+
+We define: 
+
+¯ϕ(·, ·, ·) = ( 12 , ..., 12 ) ∈ Rd.
+
+and define: 
+
+M := M[N ] ∪ { ( ¯ϕ, ψ )}.
+
+Note that ¯M = ( ¯ϕ, ψ ) ∈ M .
+
+Part 3: Establishing Lower Bound Now, we consider the following learning setting: the environment randomly select one model M from M and provide the entire representation feature class M (which is also the entire model class) to the learner; then, the learner can repeatedly use gathered information to compute a policy πk and query it with SQM for each iteration, and output a final policy after K steps. We want to show that, for arbitrary algorithm, there exists at least one model in M which cost number of queries linear w.r.t. N before identifying the optimal policy. In the following, we use Ek,M n to denote the event that in the first k trajectories, there is at least one policy (or equivalently, density μπ 
+
+> 2
+
+) used to query SQM resulting in ∥μπ 
+
+> 2
+
+−μn∥1 ≤ 4εLT . The key observation is that, given arbitrary algorithm Alg , for arbitrary fixed n ∈ [N ], if Alg never deploy a policy π (or equivalently, query an density μπ 
+
+> 2
+
+) satisfying ∥μπ 
+
+> 2
+
+− μn∥1 ≤ 4εLT ,the algorithm can not distinguish between M n and ¯M , and should behave similar in both M n and ¯M . Therefore, Pr M n,Alg (E∁  
+
+> k,M n
+
+) = Pr ¯M , Alg (E∁  
+
+> k,M n
+
+), ∀k ∈ [K].
+
+which also implies: Pr M n,Alg (Ek,M n ) = Pr ¯M , Alg (Ek,M n ), ∀k ∈ [K].
+
+We use Alg (K) to denote the policy output by the algorithm in the final. Besides, we use Π( μ, b 0) := {π|∥ μπ 
+
+> 2
+
+− μ∥1 ≤ b0}
+
+to denote the set of policies, which can lead to a density μπ 
+
+> 2
+
+close to μ. Then, we have: 
+
+X 
+
+> n∈[N]
+
+Pr M n,Alg (Alg (K) ∈ Π( μn, 4εLT
+
+)) − Pr ¯M , Alg (Alg (K) ∈ Π( μn, 4εLT
+
+)) = X 
+
+> n∈[N]
+
+Pr M n,Alg ({Alg (K) ∈ Π( μn, 4εLT
+
+)} ∩ {E K,M n }) − Pr ¯M , Alg ({Alg (K) ∈ Π( μn, 4εLT
+
+)} ∩ {E K,M n })+ X 
+
+> n∈[N]
+
+Pr M n,Alg ({Alg (K) ∈ Π( μn, 4εLT
+
+)} ∩ {E ∁  
+
+> K,M n
+
+}) − Pr ¯M , Alg ({Alg (K) ∈ Π( μn, 4εLT
+
+)} ∩ {E ∁  
+
+> K,M n
+
+})= X 
+
+> n∈[N]
+
+Pr M n,Alg ({Alg (K) ∈ Π( μn, 4εLT
+
+)} ∩ {E K,M n }) − Pr ¯M , Alg ({Alg (K) ∈ Π( μn, 4εLT
+
+)} ∩ {E K,M n })
+
+≤ X 
+
+> n∈[N]
+
+Pr M n,Alg (Ek,M n )
+
+
+
+Pr M n,Alg (Alg (K) ∈ Π( μn, 4εLT
+
+)|E K,M n ) − Pr ¯M , Alg (Alg (K) ∈ Π( μn, 4εLT
+
+)|E K,M n )
+
+
+
+≤ X 
+
+> n∈[N]
+
+Pr M n,Alg (Ek,M n ) = X 
+
+> n∈[N]
+
+Pr ¯M , Alg (Ek,M n ) ≤ K. 
+
+where the last step is because, 
+
+X 
+
+> n∈[N]
+
+Pr ¯M , Alg (Ek,M n ) ≤ X 
+
+> n∈[N]
+> K
+
+X
+
+> k=1
+
+Pr ¯M , Alg (∥μπk 
+
+> 2
+
+− μn∥1 ≤ 4εLT
+
+) = 
+
+> K
+
+X
+
+> k=1
+
+X 
+
+> n∈[N]
+
+Pr ¯M , Alg (∥μπk 
+
+> 2
+
+− μn∥1 ≤ 4εLT
+
+) ≤
+
+> K
+
+X
+
+> k=1
+
+1 = K. 
+
+(B(μi, 4εLT ) ∩ B (μj , 4εLT ) = ∅ for all i̸ = j)36 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+Therefore, the average success probability would be: Pr (M = ¯M ) + X 
+
+> n∈[N]
+
+Pr ({M = M n} ∩ { Alg (K) ∈ Π( μn, 4εLT
+
+)}) (Each policy is optimal in ¯M .) 
+
+= 1
+
+|M| + 1
+
+|M| 
+
+X 
+
+> n∈[N]
+
+Pr M n,Alg (Alg (K) ∈ Π( μn, 4εLT
+
+)) ≤ K + 1 
+
+|M| .
+
+As a result, even if K = |M|  
+
+> 2
+
+− 1 = O(N ), there exists n ∈ [N ], such that, the failure rate Pr M n,Alg (Alg (K)̸ ∈ B (π∗  
+
+> Mn
+
+, 4εLT
+
+)) ≥ 12 .
+
+# □
+
+37 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+## G. Proofs for Multi-Type MFGs 
+
+G.1. More Details about the Setting 
+
+In Multi-Type MF-MDP, we will denote μwh ∈ ∆( Sw) to be a state density at step h in type w, and define μw := {μwh }h∈[H]
+
+to be the collection over all h. For the policies, we define Πw := {πw := {πwh }|∀ h ∈ [H], π wh : Swh → ∆( Awh )}, and 
+
+Π := {π := {πw}w∈[W ]|∀ w ∈ [W ], π w ∈ Πw}. In this paper, we only consider policies in Π, i.e. the set of non-stationary Markovian policies. In order to distinguish with (single-type) MF-MDP setting, for notations regarding the collection of densities or policies over all groups, we use the bold font, i.e. μh := {μwh }w∈[W ] and μ := {μh}h∈[W ], π := {πw}w∈[W ] and πh := {πwh }w∈[W ].When a policy π and a model M is speicified, we use μπM := {μw, πM }w∈[W ] = {μπM ,h }h∈[H] to denote the collection of densities of W groups induced by the policy π in model M , where μw, πM := {μw, πM ,h }h∈[H] and μπM ,h := {μw, πM ,h }w∈[W ].When a policy π ∈ Π is specified, the evolution of the densities in all groups can be described by: 
+
+∀h ∈ [H], ∀w ∈ [W ], μw, πM ,h +1 = Γ w,π w  
+
+> M,h
+
+(μw, πM ,h ),
+
+with Γw,π w  
+
+> M,h
+
+(μwh )( ·) := X 
+
+> swh,a wh
+
+μwh (swh )πwh (awh |swh )Pw 
+
+> M,h
+
+(·| swh , a wh , μπM ,h )
+
+Similarly to MF-MDP setting, given two policies eπ, π ∈ Π, we can define the value functions for each group following eπ
+
+while conditioning on π:
+
+Qw, eπM ,h (·, ·; μπM ) := Eeπ,M (π)[
+
+> H
+
+X
+
+> h′=h
+
+rwh′ (swh′ , a wh′ , μπM ,h ′ )|swh = ·, a wh = ·],V w, eπM ,h (·; μπM ) := Eeπ,M (π)[
+
+> H
+
+X
+
+> h′=h
+
+rwh′ (swh′ , a wh′ , μπM ,h ′ )|swh = ·],Jw 
+
+> M
+
+(eπ; π) := Esw  
+
+> 1∼μw
+> 1
+
+[V w, eπM ,1 (sw 
+
+> 1
+
+)] .
+
+where we use Eeπ,M (π) to denote the expectation over trajectories generated by executing policy eπ in M conditioning on π, i.e. the transitions Pw 
+
+> M,h
+
+(·|· , ·, μπM ,h ) and rewards rwh (·, ·, μπM ,h ) are fixed by π. Besides, we denote Jw 
+
+> M
+
+(eπ; π) := 
+
+Esw  
+
+> 1∼μw
+> 1
+
+[V w, πM ,1 (sw 
+
+> 1
+
+; μπM )] to be the expected return of type w in model M by executing eπ conditioning on π. The Nash Equilibrium policy in Multi-Type MFG is defined to be the policy πNE := {πw, NE }w∈[W ] satisfying: 
+
+∀w ∈ [W ], ∀eπ ∈ Π, Jw 
+
+> M
+
+(eπ; πNE ) ≤ Jw 
+
+> M
+
+(πNE ; πNE ). (11) We define ∆w 
+
+> M
+
+(eπ, πw) := Jw 
+
+> M
+
+(eπ; π) − Jw 
+
+> M
+
+(π; π), and define Ew, NE  
+
+> M
+
+(π) := max eπ ∆w 
+
+> M
+
+(eπ, π). Our goal in this setting is to find an ε-approximate NE policy bπNE := {bπw, NE }w∈[W ] such that: 
+
+∀w ∈ [W ], Ew, NE   
+
+> M∗
+
+(bπ) ≤ ε. (12) 
+
+G.2. Conversion from MT-MFG to MFG with Constrained Policy Space 
+
+Intuitively, the construction is made by integrating the state and action spaces, which will result in a MFG with transition and reward functions following some block diagnoal structure. Given a MT-MFG M := {(μw 
+
+> 1
+
+, H, Sw, Aw, Pw 
+
+> M
+
+, r w)w∈[W ]}, we denote the converted MF-MDP by MMFG := 
+
+{μ1, H, SMFG , AMFG , PMFG , r MFG }, where we have the extended state space SMFG := S 
+
+> w∈[W]
+
+(Sw × { w}) and action space AMFG := S 
+
+> w∈[W]
+
+(Aw × { w}). As we can see, the new state/action space is the collection of all states/actions agumented by the group index w ∈ [W ]. In this way, states and actions in different groups can be distinguished by the group index w. Next, we construct a new initial distribution μ1 := [ μ11 
+
+> W
+
+, μ21 
+
+> W
+
+, ..., μW 
+
+> 1
+> W
+
+] by concatenating all the initial distributions with normalization. For the policy, we define 
+
+Π† := {π|∀ w ∈ [W ], π (aw ◦ w|sw ◦ w) = πw(aw ◦ w|sw ◦ w), for some πw ∈ Πw}, (13) with Πw := {πw : Sw → ∆( Aw)}. In another word, Π† includes and only includes policies taking actions sharing the same group index with states, and we only consider the policies π ∈ Π†.38 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+G.2.1. D EFINITION OF TRANSITION /R EWARD FUNCTIONS IN THE LIFTED MF-MDP Next, given a density μh := [ μ1 
+
+> h
+> W
+
+, ..., μWh 
+
+> W
+
+] ∈ ∆( SMFG ) with μwh ∈ ∆( Sw), the transition and reward functions in the converted MFG is defined by (note that by definition of Π†, we only need to consider the case when the state and action share the group index): 
+
+PMFG ,h (s ewh+1 ◦ ew|swh ◦ w, a wh ◦ w, μ h) = 
+
+(
+
+Pw 
+
+> M,h
+
+(swh+1 |swh , a wh , μ wh ), if ew = w
+
+0, otherwise .rMFG ,h (swh ◦ w, a wh ◦ w, μ h) = rwh (swh , a wh , μ wh ).
+
+For the sake of rigor, we include the definition for the transition/reward functions on those swh ◦ w and a ewh ◦ ew with w̸ = ew.We define PMFG ,h (·| swh ◦ w, a ewh ◦ ew, μ h) to be a uniform distribution over SMFG , and rMFG ,h (swh ◦ w, a ewh ◦ ew, μ h) = 0 , for any μh ∈ ∆( SMFG ).After specifying a policy π ∈ Π†, denote π := {πw}w∈[W ] to be the MT-MFG policy that π corresponds to, we can verify that the state density μπMMFG ,h ∈ ∆( SMFG ) evolves according to: 
+
+∀h ∈ [H] : μπMMFG ,h ← [ μ1,πM ,h 
+
+W , ..., μW, πM ,h 
+
+W ]. (14) where recall μw, πM ,h denotes the density of type w induced by π in model M . To see this, by induction, 
+
+μπMMFG ,h (sw ◦ w) = X
+
+> sh−1∈S MFG ,a h−1∈A MFG
+
+μπMMFG ,h (sh−1)π(ah−1|sh−1)PMFG ,h (swh ◦ w|sh−1, a h−1, μ πMMFG ,h −1)= X 
+
+> swh−1∈S w,a wh−1∈A w
+
+μw,π MMFG ,h −1(swh−1 ◦ w) · π(awh−1 ◦ w|swh−1 ◦ w)Pw 
+
+> M,h
+
+(swh |swh−1, a wh−1, μ w,π MMFG ,h −1),
+
+= X 
+
+> swh−1∈S w,a wh−1∈A w
+
+μw, πM ,h −1(swh−1)/W · πw(awh−1|swh−1)Pw 
+
+> M,h
+
+(swh |swh−1, a wh−1, μ w,π MMFG ,h −1),
+
+=μw, πM ,h (sw)/W. 
+
+Intuitively, in the converted MFG, following a policy π ∈ Π†, if an agent starts from the initial state with index w, it will follow a trajectory as if it is generated in the original MT-MFG. In the following, we will call MMFG (or M ) the corresponding MFG (or MT-MFG) of M (or MMFG ). 
+
+G.3. Assumptions and Additional Definitions 
+
+Recall the definition of {M w}w∈[W ] and M discussed in Sec. 2, In the following, we use MMFG to denote the model class including MFG models converted from models in M according to the method discussed in Appx. G.2, and denote M ∗ 
+
+> MFG
+
+to be the one converted from M ∗.We have the following assumptions, which can be regarded as a generalization of Assump. A, B and Def. 2.1. 
+
+Assumption C (Realizability) . The true model M ∗ ∈ M.
+
+Assumption D (Lipschitz Continuity for MT-MFG) . For any M ∈ M, and for two arbitrary policies π, eπ
+
+∀w ∈ [W ], ∀h, s w, a w, ∥Pw 
+
+> M,h
+
+(·| swh , a wh , μπM ,h ) − Pw 
+
+> M,h
+
+(·| swh , a wh , μeπM ,h )∥1 ≤ LT
+
+W ∥μπM ,h − μeπM ,h ∥1,
+
+|rwh (swh , a wh , μπM ,h ) − rwh (swh , a wh , μeπM ,h )| ≤ LT
+
+W ∥μπM ,h − μeπM ,h ∥1.
+
+Here we introduce a normalization factor W given that ∥μπM ,h − μeπM ,h ∥1 = P  
+
+> w∈[W]
+
+∥μw, πM ,h − μw, eπM ,h ∥1.
+
+Definition G.1 (Trajectory Sampling Model in MT-MFG) . The learner can query the sampling model with an arbitrary policy π := {π1, ..., π W }, a group index w and another policy eπ := {eπ1, ..., eπW }, and receive a trajectory by executing 
+
+eπw while the transition and reward functions are fixed by π, i.e. Pw 
+
+> M∗,h
+
+(·|· , ·, μπM ∗,h ) and rwh (·, ·, μπM ∗,h ).39 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+Similar to the sampling model in Def. 2.1, the model above can be implemented by utilizing the observation of an individually deviating agent with type w following policy eπw while the other agents follows π in a large Multi-Type MARL system. Moreover, for learning in the lifted MFGs, note that a sampling model in M ∗ 
+
+> MFG
+
+as described in Def. 2.1 can be implemented by Def. G.1. To see this, given two policies π, eπ ∈ Π†, which correspond to π := {π1, ..., π W } and eπ := {eπ1, ..., eπW },respectively, the trajectory can be generated by first uniformly sample w ∈ [W ], and then sample a trajectory with Def. G.1 with π converted from π, type w and policy eπw.
+
+Proposition G.2. Given a MT-MFG model class M satisfying Assump. D, consider its converted MF-MDP model class 
+
+MMFG , for any M ∈ M MFG , and any π, eπ ∈ Π†, we have, 
+
+∀h ∈ [H], ∥PM,h (·| sh, a h, μ πM,h ) − PM,h (·| sh, a h, μ eπM,h )∥1 ≤ LT · ∥ μπM,h − μeπM,h ∥1. (15) 
+
+|rh(sh, a h, μ πM,h ) − rh(sh, a h, μ eπM,h )| ≤ Lr · ∥ μπM,h − μeπM,h ∥1 (16) 
+
+Proof. According to the definition in Appx. G.2.1, for those sh, a h with different group index, their transition or reward differences will be 0. Therefore, we only need to consider the case when sh, a h share the group index. As we explained in Eq. (14), given π, eπ ∈ Π†, which corresponds to π, eπ ∈ Π, respectively, we have: 
+
+∥μπM,h − μeπM,h ∥1 = 1
+
+W
+
+X 
+
+> w∈[W]
+
+∥μw, πM ,h , μ w, eπM ,h ∥1,
+
+where M is the corresponding MT-MFG model of M . Combining with Assump. D, we finish the proof. □
+
+G.4. Constrained Nash Equilibrium Proposition 5.1. Given a MT-MFG M and its lifted MFG MMFG , we have: (1) an ε-constrained NE bπNE Cstr ∈ Π† for MMFG 
+
+is a ( W ε )-NE in M ; (2) an ε-NE bπNE in M is an ε-constrained NE for MMFG .Proof. Given any π ∈ Π†, we denote its corresponding policy in MT-MFG by π := {π1, ..., π W } with πw : Sw → ∆( Aw)
+
+and π(awh ◦ w|swh ◦ w) = πw(awh |swh ). Conversely, given any π := {π1, ..., π W }, we can convert it to a policy in Π†, which we denote by π. For bπNE Cstr , we denote its correspondence in MT-MFG by bπNE := {bπNE ,1, ... bπNE ,W }.Note that, given any π, eπ ∈ Π† and their correspondence π := {π1, ...π W } and eπ := {eπ1, ... eπW }, we have: 
+
+JMMFG (eπ; π) = Eeπ;MMFG (π)[
+
+> H
+
+X
+
+> h=1
+
+rMMFG ,h (sh, a h, μ πMMFG ,h )] = 1
+
+W
+
+> W
+
+X
+
+> w=1
+
+Eeπw ;M (π)[
+
+> H
+
+X
+
+> h=1
+
+rwh (swh , a wh , μπM ,h )] .
+
+where recall rw is the reward in type w in MT-MFG and μπM ,h := {μw,π  
+
+> M,h
+
+}w∈[W ] is the collection of densities for all groups. Consider the case when π = bπNE and eπ ew ← bπNE , ew for all ew except ew = w, we have: 
+
+ε ≥JMMFG (eπ; bπNE Cstr ) − JMMFG (bπNE Cstr ; bπNE Cstr )= 1
+
+W
+
+
+
+Eeπw ;M (bπNE )[
+
+> H
+
+X
+
+> h=1
+
+rwh (swh , a wh , μbπNE  
+
+> M,h
+
+)] − EbπNE ,w ;M (bπNE )[
+
+> H
+
+X
+
+> h=1
+
+rwh (swh , a wh , μbπNE  
+
+> M,h
+
+)] 
+
+
+
+= 1
+
+W
+
+
+
+Jw 
+
+> M
+
+(eπ, bπNE ) − Jw 
+
+> M
+
+(eπ, bπNE )
+
+
+
+.
+
+By repeating such discussion for any w ∈ [W ] and any πw, we complete the proof for argument (1). On the other hand, given an ε-approximate NE bπNE in M and its corresponding bπNE Cstr in MMFG , for any π ∈ Π† we have: 
+
+JMMFG (π; bπNE Cstr ) − JMMFG (bπNE Cstr ; bπNE Cstr )= 1
+
+W
+
+X 
+
+> w∈[W]
+
+
+
+Eπw ;M (bπNE )[
+
+> H
+
+X
+
+> h=1
+
+rwh (swh , a wh , μbπNE  
+
+> M,h
+
+)] − EbπNE ,w ;M (bπNE )[
+
+> H
+
+X
+
+> h=1
+
+rwh (swh , a wh , μbπNE  
+
+> M,h
+
+)] 
+
+
+
+.
+
+40 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+To upper bound the RHS, for each w ∈ [W ], we consider an arbitrary policy eπ with with eπ ew = bπNE , ew for all ew except 
+
+eπw = πw, we should have: 
+
+Eπw ;M (bπNE )[
+
+> H
+
+X
+
+> h=1
+
+rwh (swh , a wh , μbπNE  
+
+> M,h
+
+)] − EbπNE ,w ;M (bπNE )[
+
+> H
+
+X
+
+> h=1
+
+rwh (swh , a wh , μbπNE  
+
+> M,h
+
+)] = Jw 
+
+> M
+
+(eπ, bπNE ) − Jw 
+
+> M
+
+(eπ, bπNE ) ≤ ε, 
+
+By repeating for all w ∈ [W ], we complete the proof for argument (2). □
+
+Existence of Constrained NE Policy Before we introduce algorithms finding constrained NE(s) in MFG, we first investigate their existence, which is actually directly implied by Prop. 5.1. 
+
+Corollary G.3. Given M satisfying Lipschitz continuity conditions in Assump. D, the MFG MMFG converted from M has at least one constrained NE satisfying ∀π ∈ Π†, J MMFG (π, bπNE Cstr ) ≤ JMMFG (bπNE Cstr , bπNE Cstr ) + ε with ε = 0 .Proof. From Prop. E.12, any MT-MFG M satisfying Assump. D has at least one NE. As implied by Prop. 5.1 when ε → 0,any MFG MMFG converted from an MT-MFG M with NE(s) should have at least one constrained NE. Therefore, under Assump. D, we can guarantee any model in the converted function class MMFG has at least one constrained NE. □
+
+G.5. Algorithm Details 
+
+We first generalize some notations in Sec. 4. We define the (constrained) conditional distance between models: 
+
+d†(M, fM |π) := max 
+
+> eπ∈Π†
+
+max {Eeπ,M (π)[
+
+> H
+
+X
+
+> h=1
+
+∥PM,h (·|· , ·, μ πM,h ) − PfM ,h (·|· , ·, μ π
+
+> fM ,h
+
+)∥1],
+
+Eeπ, fM (π)[
+
+> H
+
+X
+
+> h=1
+
+∥PM,h (·|· , ·, μ πM,h ) − PfM ,h (·|· , ·, μ π
+
+> fM ,h
+
+)∥1]}.
+
+Besides, given a MF-MDP class M, a model M ∈ M , and any policy π, we define the ε0-neighborhood of M in M w.r.t. distance d†(·, ·| π) to be: B†,ε 0 
+
+> π
+
+(M ; M) := {M ′ ∈ M| d†(M, M ′|π) ≤ ε0}. The “Central Model” of M w.r.t. policy π and distance d† is defined to be the model with the largest neighborhood set M †,ε 0 
+
+> Ctr
+
+(π; M) ← arg max M ∈M |B †,ε 0 
+
+> π
+
+(M ; M)|.When ε0 and M is clear from context, we will use M †,π  
+
+> Ctr
+
+as a short note. Besides, we define E†,NE  
+
+> M
+
+(π) := max eπ∈Π† ∆M (eπ, π ) = max eπ∈Π† JM (eπ, π ) − JM (π, π ) to be the constrained NE gap. 
+
+Algorithm 4: Multi-Type MFG Learning with Constrained Policy Space  
+
+> 1
+
+Input : Model Class M; Policy Class Π†; Accuracy level ε0, eε, ¯ε; Confidence level δ 
+
+> 2
+
+Convert M to MMFG as described in Appx. G.2; M1 
+
+> MFG
+
+← M MFG , δ0 ← δ  
+
+> log 2|M MFG |+1
+
+. 
+
+> 3
+
+for k = 1 , 2, ... do  
+
+> 4
+
+πk ← arg min π∈Π† |B †,ε 0 
+
+> π
+
+(M †,π  
+
+> Ctr
+
+; Mk
+
+> MFG
+
+)|; 
+
+> 5
+
+if |B †,ε 0 
+
+> πk
+
+(M †,π k 
+
+> Ctr
+
+; Mk
+
+> MFG
+
+)| ≤ |M k 
+
+> MFG |
+> 2
+
+then Mk+1  
+
+> MFG
+
+← ModelElimCstr (πk, Mk
+
+> MFG
+
+, eε, δ 0). ;  
+
+> 6
+
+else  
+
+> 7
+
+π†,NE ,k  
+
+> Br
+
+← BridgePolicyCstr (Mk
+
+> MFG
+
+, ¯ε); 
+
+> 8
+
+Mk+1  
+
+> MFG
+
+← ModelElimCstr (π†,NE ,k  
+
+> Br
+
+, Mk
+
+> MFG
+
+, eε, δ 0); 
+
+> 9
+
+Randomly pick fM k from Mk+1 
+
+> MFG
+
+; 
+
+> 10
+
+E†,NE   
+
+> fMk
+
+(π†,NE ,k  
+
+> Br
+
+) ← max π∈Π† JfM k (π, π †,NE ,k  
+
+> Br
+
+) − JfM k (π†,NE ,k  
+
+> Br
+
+, π †,NE ,k  
+
+> Br
+
+); 
+
+> 11
+
+if E†,NE   
+
+> fMk
+
+(π†,NE ,k  
+
+> Br
+
+) ≤ 3ε 
+
+> 4
+
+then return π†,NE ,k  
+
+> Br
+
+; 
+
+> 12
+
+end  
+
+> 13
+
+if |M MFG | = 1 then Return the NE of the model in MMFG . ;  
+
+> 14
+
+end  
+
+> 15
+
+Return the constrained NE policy of the model in Mk
+
+> MFG
+
+.41 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+Algorithm 5: ModelElimCstr  
+
+> 1
+
+Input : Reference Policy π; Policy Class Π†; Model Class ¯M; Accuracy level eε; Confidence δ 
+
+> 2
+
+¯M1 ← M ; ¯ε; Choosing T according to Thm. G.4  
+
+> 3
+
+for t = 1 , 2, ..., T do  
+
+> 4
+
+eπt, M t, M ′t ← arg max eπ∈Π† max M,M ′∈ ¯Mt Eeπ,M (π)[PHh=1 ∥PwM,h (·|· , ·, μ πM,h ) − PwM ′,h (·|· , ·, μ πM ′,h )∥1]. 
+
+> 5
+
+Denote the value taken at the above as ∆t
+
+> max
+
+. 
+
+> 6
+
+if ∆t 
+
+> max
+
+≤ eε then return ¯Mt ; 
+
+> 7
+
+else  
+
+> 8
+
+Zt ← {}  
+
+> 9
+
+for h = 1 , 2..., H do  
+
+> 10
+
+for w ∈ [W ] do  
+
+> 11
+
+// Trajectory sampling in M ∗ 
+
+> MFG
+
+can be implemented by Def. G.1.  
+
+> 12
+
+Sample a trajectory with (π, π ), and collect the data at step h: {(sw,t h , a w,t h , s ′w,t h+1 )}. 
+
+> 13
+
+Sample a trajectory with (eπt, π ), and collect the data at step h: {(esw,t h , eaw,t h , es′w,t h+1 )}. 
+
+> 14
+
+Zt ← Z t ∪ { (sw,t h , a w,t h , s ′w,t h+1 )}{ (esw,t h , eaw,t h , es′w,t h+1 )}. 
+
+> 15
+
+end  
+
+> 16
+
+end  
+
+> 17
+
+∀M ∈ ¯Mt, define 
+
+lπ
+
+> MLE
+
+(M ; Zt) := 
+
+> K
+
+X
+
+> k=1
+> W
+
+X
+
+> w=1
+> H
+
+X
+
+> h=1
+
+log PwM,h (s′w,t h+1 |sw,t h , a w,t h , μ πM,h ) + log PwM,h (es′w,t h+1 |esw,t h , eaw,t h , μ πM,h ).
+
+¯Mt+1 ← { M ∈ ¯Mt| lπ
+
+> MLE
+
+(M ; Zt) ≥ max fM lπ
+
+> MLE
+
+( fM ; Zt) − log W HT |M|  
+
+> δ
+
+}. 
+
+> 18
+
+end  
+
+> 19
+
+end Algorithm 6: BridgePolicyCstr  
+
+> 1
+
+Input : MF-MDP model class M; Policy Space Π†; Accuracy Level ¯ε, ε0 
+
+> 2
+
+Convert Policy-Aware MDP Model Class ¨M from M by Eq. (1).  
+
+> 3
+
+Construct ¯ε-cover of the policy space Π† w.r.t. d∞,1 distance, denoted as Π†
+
+> ¯ε
+
+. 
+
+> 4
+
+for eπ ∈ Π† 
+
+> ¯ε
+
+do Find the central model ¨M †,ε 0 
+
+> Ctr
+
+(eπ; ¨M) ← arg max ¨M ∈ ¨M |B †,ε 0 
+
+> π
+
+( ¨M ; ¨M)| ; 
+
+> 5
+
+Construct the new PAM ¨MBr with transition and reward functions ∀w ∈ [W ], h ∈ [H]:
+
+¨Pw
+
+> Br ,h
+
+(·| sh, a h, π ) := 
+
+P
+
+> eπ∈Π†
+> ¯ε
+
+[2¯ ε − d∞,1(π, eπ)] + ¨Pw  
+
+> ¨Meπ,h
+
+(·| sh, a h, eπ)
+
+P
+
+> eπ∈Π†
+> ¯ε
+
+[2¯ ε − d∞,1(π, eπ)] +
+
+¨rw
+
+> Br ,h
+
+(sh, a h, π ) := 
+
+P
+
+> eπ∈Π†
+> ¯ε
+
+[2¯ ε − d∞,1(π, eπ)] + ¨rw  
+
+> ¨Meπ,h
+
+(sh, a h, eπ)
+
+P
+
+> eπ∈Π†
+> ¯ε
+
+[2¯ ε − d∞,1(π, eπ)] + . 
+
+> 6
+
+Find the NE of bridge model: π†,NE Br ← arg min π∈Π† max eπ∈Π† ¨J ¨MBr (eπ; π) − ¨J ¨MBr (π; π). 
+
+> 7
+
+return π†,NE Br .42 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+G.6. Proofs for Algorithm 4 Theorem G.4. Under Assump. C and D, in Alg. 5, given any eε, reference policy π, δ ∈ (0 , 1) , and M ∗ ∈ ¯M, by choosing 
+
+T = eO( H4 
+
+> eε2
+
+(dim CPE |Π† (M, ε ′) ∧ (1 + LT )2H (1 + LT H)2 dim II CPE |Π† (M, ε ′))) with ε′ = O( eεH2(1+ LT )H ), , w.p. 1 − δ,the algorithm terminates at some T0 ≤ T , and return ¯MT0 satisfying (i) M ∗ ∈ ¯MT0 (ii) ∀M ∈ ¯MT0 , d†(M ∗, M |π) ≤ eε.Proof. The proof is the same as Thm. F.3, except that we consider the constrained policy space, and need to replace P-MBED with constrained P-MBED. □
+
+Theorem G.5. Suppose we feed Alg. 6 with a model class ¨M and policy space Π†, then for the bridge model ¨MBr it computes, by choosing ¯ε = ε0/ min {2HL r (1+ LT )H −1 
+
+> LT
+
+, 2H(H + 1)((1 + LT )H − 1) }, for any reference policy π ∈ Π†
+
+and its associated central model ¨M †,ε 0 
+
+> Ctr
+
+(π; ¨M), we have: 
+
+max 
+
+> eπ∈Π†
+
+Eeπ, ¨M †,ε 0 
+
+> Ctr (π; ¨M)( π)
+
+[
+
+> H
+
+X
+
+> h=1
+
+∥¨P ¨M †,ε 0 
+
+> Ctr (π; ¨M),h
+
+(·| sh, a h, π ) − ¨PBr ,h (·| sh, a h, π )∥1] ≤(H + 3) ε0,
+
+max 
+
+> eπΠ†
+
+Eeπ, ¨M †,ε 0 
+
+> Ctr (π; ¨M)( π)
+
+[
+
+> H
+
+X
+
+> h=1
+
+|r ¨M †,ε 0 
+
+> Ctr (π; ¨M),h
+
+(sh, a h, π ) − ¨rBr ,h (sh, a h, π )|] ≤Lr H(H + 4) ε0.
+
+Proof. The proof is the same as Thm. F.5 except that we constrain the policies in Π†. □
+
+Lemma G.6. Suppose the Else -branch in Line 6 if activated in Alg. 2, for policy π†,NE ,k  
+
+> Br
+
+and its corresponding central model M †,k  
+
+> Ctr
+
+:= arg max M ∈M k |B †,ε 0
+
+> π†,NE ,k
+> Br
+
+(M ; Mk)|, we have: 
+
+E†,NE  
+
+> M†,k
+> Ctr
+
+(π†,NE ,k  
+
+> Br
+
+) := max 
+
+> π∈Π†
+
+∆M †,k 
+
+> Ctr
+
+(π, π †,NE ,k  
+
+> Br
+
+) ≤ 2(1 + Lr )( H + 4) ε0.
+
+Proof. The proof is the almost the same as Lem. F.6, except that we consider the constrained policy space. For any policy π ∈ Π†, we have 
+
+∆M †,k 
+
+> Ctr
+
+(π, π †,NE ,k  
+
+> Br
+
+)
+
+≤∆ ¨M †,k 
+
+> Ctr
+
+(π, π †,NE ,k  
+
+> Br
+
+) − ∆ ¨MBr (π, π †,NE ,k  
+
+> Br
+
+) (∆ ¨MBr (π, π †,NE ,k  
+
+> Br
+
+) ≤ 0)
+
+≤| ¨J ¨M †,k 
+
+> Ctr
+
+(π, π †,NE ,k  
+
+> Br
+
+) − ¨J ¨MBr (π, π †,NE ,k  
+
+> Br
+
+)| + | ¨J ¨M †,k 
+
+> Ctr
+
+(π†,NE ,k  
+
+> Br
+
+, π †,NE ,k  
+
+> Br
+
+) − ¨J ¨MBr (π†,NE ,k  
+
+> Br
+
+, π †,NE ,k  
+
+> Br
+
+)|≤Eπ†,NE ,k      
+
+> Br ,¨M†,k
+> Ctr (π†,NE ,k
+> Br )
+
+[
+
+> H
+
+X
+
+> h=1
+
+|¨r ¨M †,k  
+
+> Ctr ,h
+
+(sh, a h, π †,NE ,k  
+
+> Br
+
+) − ¨r ¨MBr ,h (sh, a h, π †,NE ,k  
+
+> Br
+
+)|
+
++ ∥¨P ¨M †,k  
+
+> Ctr ,h
+
+(·| sh, a h, π †,NE ,k  
+
+> Br
+
+), ¨P ¨MBr ,h (·| sh, a h, π †,NE ,k  
+
+> Br
+
+)∥1]+ Eπ, ¨M †,k   
+
+> Ctr (π†,NE ,k
+> Br )
+
+[
+
+> H
+
+X
+
+> h=1
+
+|¨r ¨M †,k  
+
+> Ctr ,h
+
+(sh, a h, π †,NE ,k  
+
+> Br
+
+) − ¨r ¨MBr ,h (sh, a h, π †,NE ,k  
+
+> Br
+
+)|
+
++ ∥¨P ¨M †,k  
+
+> Ctr ,h
+
+(·| sh, a h, π †,NE ,k  
+
+> Br
+
+), ¨P ¨MBr ,h (·| sh, a h, π †,NE ,k  
+
+> Br
+
+)∥1]
+
+≤2 max 
+
+> π∈Π†
+
+Eπ, ¨M †,k   
+
+> Ctr (π†,NE ,k
+> Br )
+
+[
+
+> H
+
+X
+
+> h=1
+
+|¨r ¨M †,k  
+
+> Ctr ,h
+
+(sh, a h, π †,NE ,k  
+
+> Br
+
+) − ¨r ¨MBr ,h (sh, a h, π †,NE ,k  
+
+> Br
+
+)|]+ 2 max 
+
+> π∈Π†
+
+Eπ, ¨M †,k   
+
+> Ctr (π†,NE ,k
+> Br )
+
+[
+
+> H
+
+X
+
+> h=1
+
+∥¨P ¨M †,k  
+
+> Ctr ,h
+
+(·| sh, a h, π †,NE ,k  
+
+> Br
+
+), ¨P ¨MBr ,h (·| sh, a h, π †,NE ,k  
+
+> Br
+
+)∥1]
+
+≤2(1 + Lr H)( H + 4) ε0. (Thm. G.5) which finishes the proof. □
+
+43 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+Theorem G.7. In Alg. 4, by choosing ε0 = ε  
+
+> 8( H+4)(1+ LrH)
+
+, eε = ε0 
+
+> 6
+
+and choosing ¯ε according to Thm. G.5, on the good events in Thm. G.4, (1) if the If-Branch in Line 5 is activated: we have |M k+1 | ≤ |M k|/2; (2) otherwise, in the 
+
+Else-Branch in Line 6: either we return the π†,NE ,k  
+
+> Br
+
+which is an ε-approximate NE for M ∗; or the algorithm continues with |M k+1 | ≤ |M k|/2.Proof. We separately discuss the if and else branches in the algorithm. 
+
+Proof for If-Branch in Line 5 On the events in Thm. G.4, for any fM̸ ∈ B †,ε 0 
+
+> πk
+
+(M ∗; Mk), we have d†(M ∗, fM ) ≥
+
+ε0 > eε, which implies fM̸ ∈ M k+1 . Combining the condition of If-Branch , we have: 
+
+|M k+1 | ≤ |B †,ε 0 
+
+> πk
+
+(M ∗; Mk)| ≤ |M k|
+
+2 .
+
+Proof for Else-Branch in Line 6 First of all, on the events in Thm. G.4, we have d†(M ∗, fM k|π†,NE ,k  
+
+> Br
+
+) ≤ eε. By applying Lem. I.2, it implies: 
+
+|∆M ∗ (π, π †,NE ,k  
+
+> Br
+
+) − ∆fM k (π, π †,NE ,k  
+
+> Br
+
+)|≤Eπ,M ∗(π†,NE ,k  
+
+> Br )
+
+[
+
+> H
+
+X
+
+> h=1
+
+∥PM ∗,h (·| sh, a h, μ π†,NE ,k   
+
+> Br
+> M∗,h
+
+) − PfM k ,h (·| sh, a h, μ π†,NE ,k    
+
+> Br
+> fMk,h
+
+)∥1]+ (2 Lr H + 1) Eπ†,NE ,k    
+
+> Br ,M ∗(π†,NE ,k
+> Br )
+
+[
+
+> H
+
+X
+
+> h=1
+
+∥PM ∗,h (·| sh, a h, μ π†,NE ,k   
+
+> Br
+> M∗,h
+
+) − PfM k ,h (·| sh, a h, μ π†,NE ,k    
+
+> Br
+> fMk,h
+
+)∥1]
+
+≤2( Lr H + 1) eε. (17) Also note that: 
+
+∆M ∗ (π, π †,NE ,k  
+
+> Br
+
+) =∆ M ∗ (π, π †,NE ,k  
+
+> Br
+
+) − ∆fM k (π, π †,NE ,k  
+
+> Br
+
+) + ∆ fM k (π, π †,NE ,k  
+
+> Br
+
+).
+
+In the following, we separately discuss two cases. 
+
+Case 1: E†,NE   
+
+> fMk
+
+(π†,NE ,k  
+
+> Br
+
+) ≤ 3ε 
+
+> 4
+
+and Line 9 is activated Given that eε ≤ ε  
+
+> 16(1+ LrH)
+
+:
+
+∀π ∈ Π†, ∆M ∗ (π, π †,NE ,k  
+
+> Br
+
+) ≤| ∆M ∗ (π, π †,NE ,k  
+
+> Br
+
+) − ∆fM k (π, π †,NE ,k  
+
+> Br
+
+)| + E†,NE   
+
+> fMk
+
+(π†,NE ,k  
+
+> Br
+
+)
+
+(E†,NE   
+
+> fMk
+
+(π†,NE ,k  
+
+> Br
+
+) = max π∈Π† ∆fM k (π, π †,NE ,k  
+
+> Br
+
+))
+
+≤2( Lr H + 1) eε + 3ε
+
+4 ≤ ε. 
+
+which implies π†,NE ,k  
+
+> Br
+
+is an ε-NE of M ∗.
+
+Case 2: E†,NE   
+
+> fMk
+
+(π†,NE ,k  
+
+> Br
+
+) > 3ε 
+
+> 4
+
+and Line 9 is not activated As a result, for any policy π ∈ Π†, by Eq. (17), we have: 
+
+∆M ∗ (π, π †,NE ,k  
+
+> Br
+
+) ≥ −| ∆M ∗ (π, π †,NE ,k  
+
+> Br
+
+) − ∆fM k (π, π †,NE ,k  
+
+> Br
+
+)| + ∆ fM k (π, π †,NE ,k  
+
+> Br
+
+) ≥ ∆fM k (π, π †,NE ,k  
+
+> Br
+
+) − 2( Lr H + 1) eε. 
+
+Therefore, by our choice of eε,
+
+max 
+
+> π∈Π†
+
+∆M ∗ (π, π †,NE ,k  
+
+> Br
+
+) ≥ E †,NE   
+
+> fMk
+
+(π†,NE ,k  
+
+> Br
+
+) − 2( Lr H + 1) eε ≥ 5ε
+
+8 .
+
+On the other hand, by Lem. F.6, for any π ∈ Π†, we have: 
+
+∆M ∗ (π, π †,NE ,k  
+
+> Br
+
+) − 2(1 + Lr H)( H + 4) ε0
+
+≤| ∆M ∗ (π, π †,NE ,k  
+
+> Br
+
+)| − | ∆M †,k 
+
+> Ctr
+
+(π, π †,NE ,k  
+
+> Br
+
+)| (Here we apply Lem. G.6) 44 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+≤| ∆M ∗ (π, π †,NE ,k  
+
+> Br
+
+) − ∆M †,k 
+
+> Ctr
+
+(π, π †,NE ,k  
+
+> Br
+
+)|≤Eπ,M ∗(π†,NE ,k  
+
+> Br )
+
+[
+
+> H
+
+X
+
+> h=1
+
+∥PM ∗,h (·| sh, a h, μ π†,NE ,k   
+
+> Br
+> M∗,h
+
+) − PM †,k  
+
+> Ctr ,h
+
+(·| sh, a h, μ π†,NE ,k  
+
+> Br
+> fM ,h
+
+)∥1]+ (2 Lr H + 1) Eπ†,NE ,k    
+
+> Br ,M ∗(π†,NE ,k
+> Br )
+
+[
+
+> H
+
+X
+
+> h=1
+
+∥PM ∗,h (·| sh, a h, μ π†,NE ,k   
+
+> Br
+> M∗,h
+
+) − PM †,k  
+
+> Ctr ,h
+
+(·| sh, a h, μ π†,NE ,k   
+
+> Br
+> M†,k
+> Ctr ,h
+
+)∥1]
+
+≤(2 Lr H + 2) d†(M ∗, M †,k  
+
+> Ctr
+
+|π†,NE ,k  
+
+> Br
+
+).
+
+According to the choice of ε0, we have 2(1 + Lr H)( H + 4) ε0 ≤ ε 
+
+> 4
+
+, therefore, 
+
+d†(M ∗, M †,k  
+
+> Ctr
+
+|π†,NE ,k  
+
+> Br
+
+) ≥ 12( Lr H + 1) 
+
+
+
+max 
+
+> π∈Π†
+
+|∆M ∗ (π, π †,NE ,k  
+
+> Br
+
+)| − 2(1 + Lr H)( H + 4) ε0
+
+
+
+≥ 3ε
+
+16( Lr H + 1) .
+
+Next we try to show that models in Bε0
+
+> π†,NE ,k
+> Br
+
+(M †,k  
+
+> Ctr
+
+, Mk) will be eliminated. For any M ∈ B ε0
+
+> π†,NE ,k
+> Br
+
+(M †,k  
+
+> Ctr
+
+, Mk), we have: 
+
+d†(M, M ∗|π†,NE ,k  
+
+> Br
+
+) ≥ d†(M †,k  
+
+> Ctr
+
+, M ∗|π†,NE ,k  
+
+> Br
+
+) − d†(M, M †,k  
+
+> Ctr
+
+|π†,NE ,k  
+
+> Br
+
+) ≥ 3ε
+
+16( Lr H + 1) − ε > eε. 
+
+On the good events in Thm. G.4, we have M̸ ∈ M k+1 , which implies 
+
+|M k+1 | ≤ |M k| − |B ε0
+
+> π†,NE ,k
+> Br
+
+(M †,k  
+
+> Ctr
+
+, Mk)| ≤ |M k|/2.
+
+# □
+
+Theorem G.8. [Sample Complexity in MT-MFG] Under Assump. C and D, by running Alg. 4 with Alg. 5 as 
+
+ModelElimCstr and Alg. 6 as BridgePolicyCstr , and hyper-parameter choices according to Thm. G.4, G.5, and G.7, w.p. 1 − δ, Alg. 4 will terminate at some k ≤ log 2 |M| + 1 and return an ε-NE of M ∗.The number of trajectories consumed is eO( W 2H7 
+
+> ε2
+
+(1 + Lr H)2 P 
+
+> w∈[W]
+
+(dim MTPE (Mw, ε ′) ∧ H3(1 + LT )2H (1 + 
+
+LT H)2 dim II MTPE (Mw, ε ′)) log 2 |M| 
+
+> δ
+
+), where ε′ = O(ε/W H 3(1 + Lr H)(1 + LT )H ), dim MTPE (Mw, ε ′) and 
+
+dim II MTPE (Mw, ε ′) are the Multi-Type P-MBED defined in Def. D.10, and we omit the logarithmic terms of 
+
+H, ε, log |M|, dim MTPE , 1 + LT and 1 + Lr .Proof. As a result of Thm. G.7, w.p. 1− δ  
+
+> log 2|M MFG |+1
+
+·(log 2 |M MFG |+1) = 1 −δ, there exists a step k ≤ log 2 |M MFG |+1 = log 2 |M| + 1 such that Alg. 4 will terminate the return us an εW -approximate NE of M ∗
+
+> MFG
+
+. The total number of trajectories required is: 
+
+(log 2 |M| + 1) · T · 2H = eO( H5
+
+eε2
+
+
+
+dim CPE |Π† (MMFG , ε ′) ∧ H3(1 + LT )2H (1 + LT H)2 dim II CPE |Π† (MMFG , ε ′)
+
+
+
+)
+
+Note that in Thm. G.4, we choose eε = ε0 
+
+> 6
+
+= O( εW H (1+ Lr H) ), and ε′ = O(eε/H 2(1 + LT )H ) = O(ε/W H 3(1 + Lr H)(1 + 
+
+LT )H ). Combining with the above discussion and Prop. D.14 and Prop. 5.1, we finish the proof. □
+
+45 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+## H. Approximation Ability of Multi-Type MFGs 
+
+H.1. Multi-Type Symmetric Anonymous Games Notations Given a multi-agent system where agents are divided into W groups, where for each type w the agents share the state-action spaces Sw, Aw and initial distribution μw 
+
+> 1
+
+, we use N w to denote the number of agents in group w ∈ [W ],and sw,n h , a w,n h and πw,n to denote the state, action, and policy for the n-th agent in type w, respectively. Besides, we define 
+
+sh := {sw,n h }w∈[W ],n ∈[N w ], ah := {aw,n h }w∈[W ],n ∈[N w ] to be the collection of states and actions of all agents in the system at step h, and denote psh := {p1 
+
+> sh
+
+, ..., p W 
+
+> sh
+
+} to be the empirical distribution of the agents’ states with: 
+
+pw 
+
+> sh
+
+∈ R|S w | : pw 
+
+> sh
+
+(·) = 1
+
+N wN w
+
+X
+
+> n=1
+
+δ(sw,n h = ·),
+
+To distinguish the policy in MFG setting, we use eν := {πw,n }w∈[W ],n ∈[N w ] to denote the collection of policies. We will denote ν(ah|sh) := Q 
+
+> w∈[W]
+
+Q   
+
+> n∈[Nw]
+
+πw,n (aw,n h |sw,n h ). Besides, we use ν−(w,n ) ◦ eπw,n to denote the policy replacing 
+
+πw,n to eπw,n while keeping the others fixed. 
+
+Definition H.1 (Multi-Type Symmetric Anonymous Game) . The Multi-Type Symmetric Anonymous Game (MT-SAG) 
+
+¯M := {(μw 
+
+> 1
+
+, Sw, Aw, H, Pw, r w)}w∈[H] is a Multi-Agent system consists of W groups. Given a policy π, the system evolves as: 
+
+sw,n  
+
+> 1
+
+∼ μw 
+
+> 1
+
+; ∀h, w, n : aw,n h ∼ πw,n h (·| sw,n h ), r w,n h ← rwh (sw,n h , a w,n h , p sh ), s w,n h+1 ∼ Pwh (·| swh , a wh , p sh ). (18) Given a policy ν, we define the value functions V : S → [0 , 1] and Q : S × A → [0 , 1] of the (w, n )-th agent conditioning on the system state sh to be: 
+
+V w,n, ν  
+
+> ¯M,h
+
+(sw,n h ; sh) := E ¯M ,ν [
+
+> H
+
+X
+
+> h′=h
+
+rwh′ (sw,n h′ , a w,n h′ , p sh′ )|sh]; (19) where the expectation is taken over the evolution process in Eq. (18) . Besides, we define the total value starting from the initial states Jw,n  
+
+> ¯M
+
+(ν) := Eμ1 [V w,n, ν 
+
+> 1
+
+(sw,n  
+
+> 1
+
+; s1)] .A policy ν is called to be the NE policy in MT-SAG if any agent can not improve its value by deviating from its current policy while the others’ are fixed, 
+
+∀w, n, max  
+
+> eπw,n
+
+Jw,n  
+
+> ¯M
+
+(ν−(w,n ) ◦ eπw,n ) ≤ Jw,n  
+
+> ¯M
+
+(ν).
+
+and a policy ν′ is called to be an ε-approximate NE in MT-SAG if 
+
+∀w, n, max  
+
+> eπw,n
+
+Jw,n  
+
+> ¯M
+
+(ν−(w,n ) ◦ eπw,n ) ≤ Jw,n  
+
+> ¯M
+
+(ν) + ε. 
+
+Assumption E (Lipschitz Continuity in MT-SAG) . We assume the transition and reward functions of MT-SAG are Lipschitz continuous w.r.t. the density, s.t. ∀w ∈ [W ], h ∈ [H], ∀ bμh, bμ′ 
+
+> h
+
+∈ ∆( S1) × ... ∆( SW )
+
+∥Pwh (·| swh , a wh , bμh) − Pwh (·| swh , a wh , bμ′
+
+> h
+
+)∥1 ≤ LT
+
+W ∥ bμh − bμ′
+
+> h
+
+∥1
+
+|rwh (swh , a wh , bμh) − rwh (swh , a wh , bμ′
+
+> h
+
+)∥1 ≤ Lr
+
+W ∥ bμh − bμ′
+
+> h
+
+∥1.
+
+H.2. Approximating MT-SAGs via MT-MFGs Definition H.2 (Multi-Type Mean-Field Game Approximation of MT-SAG) . Given an MT-SAG ¯M , its Multi-Type Mean-Field (MT-MFG) Approximation is a model Multi-Type MF-MDP model M := {(μw 
+
+> 1
+
+, Sw, Aw, H, Pw 
+
+> M
+
+, r w 
+
+> M
+
+)}w∈[W ],sharing the group, initial distribution, state-action spaces and transition Pw and reward function rw as MT-SAG (i.e. 
+
+Pw 
+
+> M
+
+(·|· , ·, ·) = Pw 
+
+> ¯M
+
+(·|· , ·, ·), r w 
+
+> M
+
+(·, ·, ·) = rw 
+
+> ¯M
+
+(·, ·, ·)), by have different transition rules. 46 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+Next, we describe “the different transition rules” in MT-MFG. For simplicity of notation, in the following, we omit M or 
+
+¯M in the sub-scription of transition and reward functions. Given a reference policy π := {π1, ..., π W } consisting of W
+
+policies shared by each group, the density μπ 
+
+> h
+
+:= {μ1,π 
+
+> h
+
+, ..., μ W, π 
+
+> h
+
+} at step h is defined by: 
+
+μw, π 
+
+> 1
+
+= μw 
+
+> 1
+
+, ∀h ≥ 1, μw, π 
+
+> h+1
+
+← Γw, π 
+
+> h
+
+(μπ 
+
+> h
+
+), with Γw, π 
+
+> h
+
+(μh)( ·) := X 
+
+> swh,a wh
+
+μwh (swh )πwh (awh |swh )Pwh (·| swh , a wh , μh).
+
+where Γw, π 
+
+> h
+
+is a mapping from ∆( S1) × ... ∆( SW ) to ∆( Sw). The evolution process of the (w, n ) agent in type w following a deviation policy eπw conditioning on reference policy π is specified by: 
+
+sw,n  
+
+> 1
+
+∼ μw 
+
+> 1
+
+; ∀h : aw,n h ∼ eπwh (·| sw,n h ), r w,n h ← rwh (sw,n h , a w,n h , μπ 
+
+> h
+
+), s w,n h+1 ∼ Pwh (·| swh , a wh , μπ 
+
+> h
+
+). (20) Comparing with Eq. (18) , the evolution of agents’ states is depend on the density when ∀w ∈ [W ], N w → +∞, instead of the empirical one in practice. Recall that given a reference policy π and a deviation policy eπw, the value functions V : S → [0 , 1] of the (w, n )-th agent conditioning on the density μπM ,h is defined to be: 
+
+V w,n, π−w ◦eπw  
+
+> M,h
+
+(sw,n h ; μπM ,h ) := Eeπw ,M (π)[
+
+> H
+
+X
+
+> h′=h
+
+rwh′ (sw,n h′ , a w,n h′ , μπM ,h ′ )]; 
+
+where the expectation is taken over the process in Eq. (20) . Then, we define the total value of π−w ◦ eπw given the reference policy π to be: 
+
+Jw,n  
+
+> M
+
+(π−w ◦ eπw; π) := Esw  
+
+> 1∼μw
+> 1
+
+[V w,n, eπw 
+
+> 1
+
+(sw 
+
+> 1
+
+, μ1)] .
+
+A π is called NE policy if: 
+
+∀w, n, ∀eπw, Jw,n  
+
+> M
+
+(π−w ◦ eπw; π) ≤ Jw,n  
+
+> M
+
+(π; π).
+
+Proposition H.3 (Approximation Error of MT-MFG) . Given a Multi-Type Symmetric Anonymous Game (MT-SAG) ¯M , as defined in Def. H.1, and its Multi-Type MFG approximation (MT-MFG) M , as defined in Def. H.2, suppose π := {πw}w∈[W ]
+
+is the NE policy of MT-MFG, then for any ε0 > 0, the lifted policy ν := {πw,n }w∈[W ],n ∈[N w ] with πw,n = πw, ∀n ∈ [N w]
+
+is an ε0-approximate NE of MT-SAG if 
+
+∀w ∈ [W ], N w ≥ O(( Lr + LT )2W 2H3 (1 + LT )H − 1
+
+LT
+
+2
+
+P  
+
+> w∈[W]
+
+Sw
+
+ε20
+
+log 2(1 + Lr + LT )HW S max 
+
+ε0
+
+).
+
+where Smax := max w Sw.Proof. Given π := {π1, ..., π W }, we denote ν := {πw,n }w∈[W ],n ∈[N w ] to be the lifted policy such that νw,n ← πw for all 
+
+w and n ∈ [N w]. Given a deviation policy eπw for some w (eπw may equal πw), we define eν := {πw,n }w∈[W ],n ∈[N w ] to be a policy in MT-SAG, such that eπ ew,n ← π ew for all agent except the (w, 1) -th agent (i.e. the first agent in type w), we set 
+
+eπ(w, 1) ← eπw.
+
+Concentration Events We first provide a high-probability bound for the distance between state density μπ 
+
+> h
+
+in MT-MFG and the empirical distribution peνsh in MT-SAG w.r.t. the lifted policy eν.We use Γw, πM ,h (·) to denote the operator Γw, π 
+
+> h
+
+(·) in Eq. (20) specified in model M . We extend its definition to h = 0 by 
+
+∀μ0, Γw, eν 
+
+> 0
+
+(μ0) ← μw 
+
+> 1
+
+, and define ΓπM ,h (·) := {Γ1,πM ,h (·), ..., ΓW, πM ,h (·)}. Then, conditioning on peνsh−1 , we have: 
+
+∥E ¯M ,eν [peνsh |peνsh−1 ] − ΓπM ,h −1(peνsh−1 )∥1
+
+=∥E ¯M ,eν [pw, eνsh |peνsh−1 ] − Γw, πM ,h −1(peνsh−1 )∥1
+
+= N w − 1
+
+N w ∥E ¯M ,eν [ 1
+
+N wN w −1X
+
+> n=2
+
+δsw,n h =( ·)|peνsh−1 ] − Γw, πM ,h −1(peνsh−1 )∥1
+
+47 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
++ 1
+
+N w ∥E ¯M ,eν [δsw, 1 
+
+> h=( ·)
+
+|peνsh−1 ] − Γw, πM ,h −1(peνsh−1 )∥1
+
+= 1
+
+N w ∥E ¯M ,eν [δsw, 1 
+
+> h=( ·)
+
+|peνsh−1 ] − Γw, πM ,h −1(peνsh−1 )∥1
+
+≤ 2
+
+N w . (21) where δsw,n h =( ·) ∈ RP   
+
+> w|S w|
+
+denotes a vector with 1 at the (w, n )-th value and 0 at the others. In the equalities, we use the fact that ¯M and M share the transition function. Besides, conditioning on peνsh−1 , for any ew ∈ [W ] we can treat {s ew,n h }n∈[N ew ] as i.i.d. samples according to distribution 
+
+E[p ew, eνsh |peνsh−1 ]. By applying Lem. I.6 for a fixed peνsh−1 , ∀w ∈ [W ], h ∈ [H], for any ε ∈ (0 , 1) and δ ∈ (0 , 1) , as long as 
+
+N ew ≥ min { 8W 2S ew 
+
+> ε2
+
+, 8W 2 
+
+> ε2
+
+log 2Wδ } holds for any ew ∈ [W ], we have: 
+
+Pr( ∥peνsh − ΓπM ,h −1(peνsh−1 )∥1 ≥ ε)
+
+≤ Pr( ∥peνsh − ΓπM ,h −1(peνsh−1 )∥ + ∥E[peνsh |peνsh−1 ] − ΓπM ,h −1(peνsh−1 )∥1 ≥ ε)
+
+≤ Pr( ∥peνsh − E[peνsh |peνsh−1 ]∥1 ≥ ε
+
+2 ) (Eq. (21)) 
+
+≤ X 
+
+> ew∈[W]
+
+Pr( ∥p ew, eνsh − E[p ew, eνsh |peνsh−1 ]∥1 ≥ ε/ 2W )
+
+≤δ. (22) Note that the number of possible values of peνsh−1 can be upper bounded by Q 
+
+> w∈[W]
+
+(N w)Sw
+
+. We define event E := {∀ h ∈
+
+[H], w ∈ [W ], ∥peνsh − ΓπM ,h −1(peνsh−1 )∥1 < ε }. By applying a union bound over h, w and all possible peνsh−1 , we have: 
+
+Pr( E) ≥ 1 − δ, as long as ∀w ∈ [W ], N w ≥ O( W 2 P  
+
+> w∈[W]
+
+Sw
+
+ε2 log 2HW S max 
+
+δε ), (23) 
+
+Density Error Decomposition The following discussion are based on the event E. Recall we use μπ 
+
+> h
+
+:= {μ1,π 
+
+> h
+
+, ..., μ W, π 
+
+> h
+
+}
+
+to denote the density induced by π in MT-MFG. Then we have: 
+
+∥peνsh − μπ 
+
+> h
+
+∥1
+
+=∥peνsh − ΓπM ,h −1(peνsh−1 )∥1 + ∥ΓπM ,h −1(peνsh−1 ) − μπ 
+
+> h
+
+∥1
+
+≤ε + X 
+
+> ew∈[W]
+
+X 
+
+> sewh
+
+| X  
+
+> sewh−1,a ewh−1
+
+p ew, eνsh−1 (s ewh−1)π ewh−1(a ewh−1|s ewh−1)P ewh−1(s ewh |s ewh−1, a ewh−1, p eνsh−1 )
+
+− X  
+
+> sewh−1,a ewh−1
+
+μ ew, π
+
+> h−1
+
+(s ewh−1)π ewh−1(a ewh−1|s ewh−1)P ewh−1(s ewh |s ewh−1, a ewh−1, μπ
+
+> h−1
+
+)|≤ε + X 
+
+> ew∈[W]
+
+X 
+
+> sewh
+
+X  
+
+> sewh−1,a ewh−1
+
+|p ew, eνsh−1 (s ewh−1) − μ ew, π
+
+> h−1
+
+(s ewh−1)|π ewh−1(a ewh−1|s ewh−1)P ewh−1(s ewh |s ewh−1, a ewh−1, p eνsh−1 )+ X 
+
+> ew∈[W]
+
+X  
+
+> sewh−1,a ewh−1
+
+μ ew, π
+
+> h−1
+
+(s ewh−1)π ewh−1(a ewh−1|s ewh−1) X 
+
+> sewh
+
+|P ewh−1(s ewh |s ewh−1, a ewh−1, p eνsh−1 ) − P ewh−1(s ewh |s ewh−1, a ewh−1, μπ
+
+> h−1
+
+)|≤ε + (1 + LT )∥peνsh−1 − μπ
+
+> h−1
+
+∥1
+
+≤ (1 + LT )h − 1
+
+LT
+
+ε. 
+
+Upper Bound of Approximation Error Recall the definition of value functions in Def. H.1 and Def. H.2. We focus on the 
+
+(w, 1) -agent which takes a potentially deviated policy eπw while the others do not, and we are interested in provide an upper bound for the value difference J(w, 1) ¯M (eν) − J(w, 1)  
+
+> M
+
+(π−w ◦ eπw; π), which will be useful to characterize the sub-optimality of lifted policy ν.48 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+We start from step h = H, following the choice of N w in Eq. (23), 
+
+E ¯M ,eν [V (w, 1) ,eν
+
+¯M ,H (s(w, 1) 
+
+H ; sH ) − V (w, 1) ,π−w ◦eπw
+
+M ,H (s(w, 1) 
+
+H ; μπ
+
+H )] =E ¯M ,eν [rwH (s(w, 1) 
+
+H , a (w, 1) 
+
+H ; peνsH ) − rwH (s(w, 1) 
+
+H , a (w, 1) 
+
+H ; μπ
+
+H )] 
+
+≤Lr E ¯M ,eν [∥peνsH − μπ
+
+H ∥1] ≤ Lr (2 δ + (1 + LT )H − 1
+
+LT
+
+ε) =: εH .
+
+For h < H , we have: 
+
+E ¯M ,eν [V (w, 1) ,eν
+
+¯M ,h (s(w, 1) 
+
+h ; sh) − V (w, 1) ,π−w ◦eπw
+
+M ,h (s(w, 1) 
+
+h ; μπ
+
+h )] =E ¯M ,eν [rwh (s(w, 1) 
+
+h , a (w, 1) 
+
+h ; peνsh ) − rwh (s(w, 1) 
+
+h , a (w, 1) 
+
+h ; μπ
+
+h ) + X
+
+sh+1 
+
+P ¯M (sh+1 |sh, ah)V (w, 1) ,eν
+
+¯M ,h +1 (s(w, 1) 
+
+h+1 ; sh+1 )
+
+− X
+
+s(w, 1) 
+
+> h+1
+
+Pwh (s(w, 1) 
+
+h+1 |s(w, 1) 
+
+h , a (w, 1) 
+
+h , μπ
+
+h )V (w, 1) ,π−w ◦eπw
+
+M ,h +1 (s(w, 1) 
+
+h+1 ; μπ
+
+h+1 )] 
+
+≤E ¯M ,eν [Lr ∥peνsh − μπ
+
+h ∥1 + X
+
+sh+1 
+
+P ¯M (sh+1 |sh, ah)
+
+
+
+V (w, 1) ,eν
+
+¯M ,h +1 (s(w, 1) 
+
+h+1 ; sh+1 ) − V (w, 1) ,π−w ◦eπw
+
+M ,h +1 (s(w, 1) 
+
+h+1 ; μπ
+
+h+1 )
+
+
+
++ X
+
+sh+1 
+
+P ¯M (sh+1 |sh, ah)V (w, 1) ,π−w ◦eπw
+
+M ,h +1 (s(w, 1) 
+
+h+1 ; μπ
+
+h+1 )
+
+− X
+
+s(w, 1) 
+
+> h+1
+
+Pwh (s(w, 1) 
+
+h+1 |s(w, 1) 
+
+h , a (w, 1) 
+
+h , μπ
+
+h )V (w, 1) ,π−w ◦eπw
+
+M ,h +1 (s(w, 1) 
+
+h+1 ; μπ
+
+h+1 )] 
+
+≤εh+1 + E ¯M ,eν [Lr ∥peνsh − μπ
+
+h ∥1 + X
+
+sh+1 
+
+P ¯M (sh+1 |sh, ah)V (w, 1) ,π−w ◦eπw
+
+M ,h +1 (s(w, 1) 
+
+h+1 ; μπ
+
+h+1 )
+
+− X
+
+s(w, 1) 
+
+> h+1
+
+Pwh (s(w, 1) 
+
+h+1 |s(w, 1) 
+
+h , a (w, 1) 
+
+h , μπ
+
+h )V (w, 1) ,π−w ◦eπw
+
+M ,h +1 (s(w, 1) 
+
+h+1 ; μπ
+
+h+1 )] (By induction from h + 1 )
+
+=εh+1 + E ¯M ,eν [Lr ∥peνsh − μπ
+
+h ∥1++ X
+
+s(w, 1) 
+
+> h+1
+
+
+
+Pwh (s(w, 1) 
+
+h+1 |s(w, 1) 
+
+h , s (w, 1) 
+
+h , p eνsh ) − Pwh (s(w, 1) 
+
+h+1 |s(w, 1) 
+
+h , a (w, 1) 
+
+h , μπ
+
+h )
+
+
+
+V (w, 1) ,π−w ◦eπw
+
+M ,h +1 (s(w, 1) 
+
+h+1 ; μπ
+
+h+1 )] 
+
+≤εh+1 + ( Lr + LT )E ¯M ,eν [∥peνsh − μπ
+
+h ∥1] ≤ εh+1 + ( Lr + LT )(2 δ + (1 + LT )h − 1
+
+LT
+
+ε) =: εh.
+
+where we use P ¯M (sh+1 |sh, ah) := Q
+
+w∈[W ]
+
+Q
+
+n∈[N ] Pwh (s(w, 1) 
+
+h+1 |s(w, 1) 
+
+h , a (w, 1) 
+
+h , p sh ) to denote the dynamics in MF-SAG. Therefore, for h = 1 , note that ¯M and M have the same initial distribution, and we have: 
+
+J(w, 1) ¯M (eν) − J(w, 1) 
+
+M (π−w ◦ eπw; π) ≤ 2δ(Lr + LT )H + 2( Lr + LT )H (1 + LT )H − 1
+
+LT
+
+ε. 
+
+Given an eε NE policy in M , denoted by π, consider the lifted policy ν and a deviation policy eν agrees with ν except that it takes some eπw for agent with index (w, 1) . By choosing δ = ε0
+
+8( Lr +LT )H and ε = ε0/
+
+
+
+4( Lr + LT )H (1+ LT )H −1
+
+LT
+
+
+
+, we have: 
+
+max 
+
+eπw J(w, 1) ¯M (eν) − J(w, 1) ¯M (ν) ≤ max 
+
+eπw J(w, 1) ¯M (eν) − J(w, 1) ¯M (ν) −
+
+
+
+max 
+
+eπw J(w, 1) 
+
+M (π−w ◦ eπw; π) − J(w, 1) 
+
+M (π; π)
+
+
+
++ eε
+
+≤2 max 
+
+eπw |J(w, 1) ¯M (eν) − J(w, 1) 
+
+M (π−w ◦ eπw; π)| + eε ≤ ε0 + eε. 
+
+To satisfy the requirements in δ and ε0, we need: 
+
+∀w ∈ [W ], N w ≥ O(( Lr + LT )2W 2H3 (1 + LT )H − 1
+
+LT
+
+2
+
+P
+
+w∈[W ] Sw
+
+ε20
+
+log 2( Lr + LT )(1 + LT )HW S max 
+
+ε0
+
+).
+
+# □
+
+49 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+## I. Basic Lemma 
+
+I.1. Lemma from (Huang et al., 2023) Lemma I.1 (Lem. D.4 in (Huang et al., 2023)) . Let X1, X 2, ... be a sequence of random variable taking value in [0 , C ] for some C ≥ 1. Define Fk = σ(X1, .., X k−1) and Yk = E[Xk|F k] for k ≥ 1. For any δ > 0, we have: 
+
+Pr( ∃n
+
+> n
+
+X
+
+> k=1
+
+Xk ≤ 3
+
+> n
+
+X
+
+> k=1
+
+Yk + C log 1
+
+δ ) ≤ δ, Pr( ∃n
+
+> n
+
+X
+
+> k=1
+
+Yk ≤ 3
+
+> n
+
+X
+
+> k=1
+
+Xk + C log 1
+
+δ ) ≤ δ. 
+
+Lemma I.2 (Lem. 4.6 in (Huang et al., 2023)) . Under Assump. B, given two arbitrary model M and fM , and two policies π
+
+and eπ, we have: 
+
+|∆M (eπ, π ) − ∆fM (eπ, π )| ≤ Eeπ,M (π)[
+
+> H
+
+X
+
+> h=1
+
+∥PM,h (·| sh, a h, μ πM,h ) − PfM ,h (·| sh, a h, μ π
+
+> fM ,h
+
+)∥1]+(2 Lr H + 1) Eπ,M (π)[
+
+> H
+
+X
+
+> h=1
+
+∥PM,h (·| sh, a h, μ πM,h ) − PfM ,h (·| sh, a h, μ π
+
+> fM ,h
+
+)∥1]. (24) 
+
+I.2. Other Lemma Lemma I.3 (Density Difference Lemma) . Given arbitrary Multi-Type Mean-Field MDPs M and M ′, and two arbitrary policies π and π′, for any h ∈ [H], we have: 
+
+∥μπM ,h − μπ′ 
+
+> M′,h
+
+∥1 ≤∥ μπM ,h −1 − μπ′ 
+
+> M,h −1
+
+∥1 + W · d∞,1(π, π′)+ X 
+
+> w∈[W]
+
+Eπ,M (π)[∥Pw 
+
+> M,h
+
+(·| swh−1, a wh−1, μπM ,h −1) − Pw 
+
+> M′,h
+
+(·| swh−1, a wh−1, μπ′ 
+
+> M′,h −1
+
+)∥1].
+
+Proof. For any w ∈ [W ], we have: 
+
+∥μw, πM ,h − μw, π′ 
+
+> M′,h
+
+∥1
+
+=| X
+
+> swh
+
+ X
+
+> swh−1,a wh−1
+
+μw, πM ,h (swh−1)πwh−1(awh−1|swh−1)Pw 
+
+> M,h
+
+(swh |swh−1, a wh−1, μπM ,h −1)
+
+− X
+
+> swh−1,a wh−1
+
+μw, π′ 
+
+> M′,h
+
+(swh )π′wh−1(awh−1|swh−1)Pw 
+
+> M′,h
+
+(swh |swh−1, a wh−1, μπ′ 
+
+> M′,h −1
+
+)
+
+
+
+|≤| 
+
+ X 
+
+> swh−1
+
+μw, πM ,h (swh−1) − μw, π′ 
+
+> M′,h
+
+(swh−1)
+
+ X 
+
+> awh−1
+
+π′wh−1(awh−1|swh−1) X
+
+> sh
+
+Pw 
+
+> M′,h
+
+(swh |swh−1, a wh−1, μπM ′,h −1)|
+
++ | X
+
+> swh−1
+
+μw, πM ,h (swh−1) X
+
+> awh−1
+
+
+
+πwh−1(awh−1|swh−1) − π′wh−1(awh−1|swh−1)
+
+ X 
+
+> swh
+
+Pw 
+
+> M′,h
+
+(swh |swh−1, a wh−1, μπM ′,h −1)|
+
++ X
+
+> swh−1,a wh−1
+
+μw, πM ,h (swh )πwh−1(awh−1|swh−1) X
+
+> swh
+
+|Pw 
+
+> M,h
+
+(swh |swh−1, a wh−1, μπM ,h −1) − Pw 
+
+> M′,h
+
+(swh |swh−1, a wh−1, μπ′ 
+
+> M′,h −1
+
+)|
+
+(Assump. B) 
+
+≤∥ μw, πM ,h −1 − μw, π′ 
+
+> M′,h −1
+
+∥1 + d∞,1(π, π′) + Eπ,M (π)[∥Pw 
+
+> M,h
+
+(·| swh−1, a wh−1, μπM ,h −1) − Pw 
+
+> M′,h
+
+(·| swh−1, a wh−1, μπ′ 
+
+> M′,h −1
+
+)∥1]
+
+By repeating the above discussion for every w ∈ [W ], we have: 
+
+∥μπM ,h − μπ′ 
+
+> M′,h
+
+∥1
+
+≤∥ μπM ,h −1 − μπ′ 
+
+> M,h −1
+
+∥1 + W · d∞,1(π, π′)+ X 
+
+> w∈[W]
+
+Eπ,M (π)[∥Pw 
+
+> M,h
+
+(·| swh−1, a wh−1, μπM ,h −1) − Pw 
+
+> M′,h
+
+(·| swh−1, a wh−1, μπ′ 
+
+> M′,h −1
+
+)∥1].
+
+# □
+
+50 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+Lemma I.4. Given two model M and M ′ and a policy π, for any h ∈ [H], w ∈ [W ], we have: 
+
+∥μπM ,h +1 − μπM ′,h +1 ∥1 ≤ X 
+
+> w∈[W]
+
+Eπ,M (π)[
+
+> h
+
+X
+
+> h′=1
+
+∥Pw  
+
+> M,h ′
+
+(·|· , ·, μπM ,h ′ ) − Pw  
+
+> M′,h ′
+
+(·|· , ·, μπM ′,h ′ )∥1]. (25) 
+
+Besides, under Assump. B, we have: 
+
+∥μπM ,h +1 − μπM ′,h +1 ∥1 ≤ X 
+
+> w∈[W]
+
+Eπ,M (π)[
+
+> h
+
+X
+
+> h′=1
+
+(1 + LT )h−h′
+
+∥Pw  
+
+> M,h ′
+
+(·|· , ·, μπM ,h ′ ) − Pw  
+
+> M′,h ′
+
+(·|· , ·, μπM ,h ′ )∥1]. (26) 
+
+Proof. By applying Lem. I.3 to the case when π = π′, and combining with Assump. D, we finish the proof. □
+
+Lemma I.5. Given two model M and M ′, and two arbitrary policies π and π′, for any h ∈ [H], we have: 
+
+∥μπM,h − μπ′ 
+
+> M′,h
+
+∥1
+
+≤∥ μπM,h −1 − μπ′
+
+> M,h −1
+
+∥1 + d∞,1(π, π ′) + Eπ,M (π)[∥PM,h (·| sh−1, a h−1, μ πM,h −1) − PM ′,h (·| sh−1, a h−1, μ π′ 
+
+> M′,h −1
+
+)∥1].
+
+Moreover, as a special case when π = π′, we have: 
+
+∥μπM,h +1 − μπM ′,h +1 ∥1 ≤Eπ,M (π)[
+
+> h
+
+X
+
+> h′=1
+
+∥PM,h ′ (·| sh′ , a h′ , μ πM,h ′ ) − PM ′,h ′ (·| sh′ , a h′ , μ πM ′,h ′ )∥1]. (27) 
+
+Besides, under Assump. B, we have: 
+
+∥μπM,h +1 − μπM ′,h +1 ∥1 ≤ Eπ,M (π)[
+
+> h
+
+X
+
+> h′=1
+
+(1 + LT )h−h′
+
+∥PM,h ′ (·| sh′ , a h′ , μ πM,h ′ ) − PM ′,h ′ (·| sh′ , a h′ , μ πM,h ′ )∥1]. (28) 
+
+Proof. The proof is simply completed by setting W = 1 in Lem. I.4. □
+
+Lemma I.6 (Concentration w.r.t. l1-distance) . Given a discrete domain X and a distribution p on X , suppose we draw 
+
+N i.i.d. samples {xn}n∈[N ] from p and provide an estimation bp ∈ ∆( X ) with bp(x) = 1
+
+> N
+
+PNn=1 δ(xn = x), then for any 
+
+δ ∈ (0 , 1) and ε > 0, as long as N ≥ max { 2|X |  
+
+> ε2
+
+, 2 
+
+> ε2
+
+log 2 
+
+> δ
+
+}, we have: 
+
+P(∥p − bp∥1 ≥ ε) ≤ δ. 
+
+Proof. We first provide an upper bound for E[∥p − bp∥1]:
+
+E[∥p − bp∥1] = X
+
+> x∈X
+
+E[|p(x) − bp(x)|] ≤ X
+
+> x∈X
+
+pE[|p(x) − bp(x)|2] = 
+
+r 1
+
+N
+
+X
+
+> x∈X
+
+pp(x)(1 − p(x)) ≤ 12
+
+r |X | 
+
+N .
+
+where we use the fact that bp(x) is a Bernoulli random variable with mean p(x) and variance 1 
+
+> N
+
+p(x)(1 − p(x)) .Next, and note that deviation of any xn will only result in 2/N deviation of ∥p − bp∥1. By McDiarmid’s inequality, for any ε,we have: 
+
+P(∥p − bp∥1 ≥ ε
+
+2 + 12
+
+r 2|X | 
+
+N ) ≤ P(|∥ p − bp∥1 − E[∥p − bp∥1]| ≥ ε
+
+2 ) ≤ 2 exp( − N
+
+2 ε2),
+
+By assigning appropriate values for N , we finish the proof. □
+
+51 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+Lemma I.7. [Model Difference Lemma] For any policies eπ, π and π′, and any bounded functions f1, f 2, ..., f H ∈ { f |f :
+
+S × A → [0 , 1] },(i) Given any two MF-MDPs M and M ′, we have: 
+
+Eeπ,M (π)[
+
+> H
+
+X
+
+> h=1
+
+fh(sh, a h)] − Eeπ,M ′(π′)[
+
+> H
+
+X
+
+> h=1
+
+fh(sh, a h)] ≤H · Eeπ,M (π)[
+
+> H
+
+X
+
+> h=1
+
+∥PM (·| sh, a h, μ πM,h ) − PM ′ (·| sh, a h, μ π′ 
+
+> M′,h
+
+)∥1].
+
+(ii) Given any two PAMs ¨M and ¨M ′, we have: 
+
+Eeπ, ¨M (π)[
+
+> H
+
+X
+
+> h=1
+
+fh(sh, a h)] − Eeπ, ¨M ′(π′)[
+
+> H
+
+X
+
+> h=1
+
+fh(sh, a h)] ≤H · Eeπ, ¨M (π)[
+
+> H
+
+X
+
+> h=1
+
+∥¨P ¨M (·| sh, a h, π ) − ¨P ¨M ′ (·| sh, a h, π ′)∥1].
+
+Proof. We first proof (ii). We use μπ  
+
+> ¨M(π′),h
+
+to denote the density induced by π in model ¨M given π′ as the reference policy. 
+
+∥μeπ  
+
+> ¨M(π),h
+
+− μeπ 
+
+> ¨M′(π′),h
+
+∥1
+
+=| X
+
+> sh
+
+ X
+
+> sh−1,a h−1
+
+μeπ 
+
+> ¨M(π),h −1
+
+(sh−1)eπ(ah−1|sh−1)¨P ¨M (sh|sh−1, a h−1, π )
+
+− X
+
+> sh−1,a h−1
+
+μeπ 
+
+> ¨M′(π′),h −1
+
+(sh−1)eπ(ah−1|sh−1)¨P ¨M ′ (sh|sh−1, a h−1, π ′)
+
+
+
+|≤| X
+
+> sh
+
+X
+
+> sh−1,a h−1
+
+μeπ  
+
+> ¨M(π),h −1
+
+eπ(ah−1|sh−1)( ¨P ¨M (sh|sh−1, a h−1, π ) − ¨P ¨M ′ (sh|sh−1, a h−1, π ′)) |
+
++ | X
+
+> sh
+
+X
+
+> sh−1,a h−1
+
+(μeπ 
+
+> ¨M(π),h −1
+
+(sh−1) − μeπ 
+
+> ¨M′(π′),h −1
+
+(sh−1)) eπ(ah−1|sh−1)¨P ¨M ′ (sh|sh−1, a h−1, π ′)|≤Eeπ, ¨M (π)[∥¨P ¨M (·| sh−1, a h−1, π ) − ¨P ¨M ′ (·| sh−1, a h−1, π ′)∥1] + ∥μeπ  
+
+> ¨M(π),h −1
+
+− μeπ 
+
+> ¨M′(π′),h −1
+
+∥1
+
+≤Eeπ, ¨M (π)[
+
+> h−1
+
+X
+
+> h′=1
+
+∥¨P ¨M (·| sh′ , a h′ , π ) − ¨P ¨M ′ (·| sh′ , a h′ , π ′)∥1].
+
+Therefore, 
+
+Eeπ, ¨M (π)[
+
+> H
+
+X
+
+> h=1
+
+fh(sh, a h)] − Eeπ, ¨M ′(π′)[
+
+> H
+
+X
+
+> h=1
+
+fh(sh, a h)] ≤
+
+> H
+
+X
+
+> h=1
+
+∥μeπ  
+
+> ¨M(π),h
+
+− μeπ 
+
+> ¨M′(π′),h
+
+∥1
+
+≤H · Eeπ, ¨M (π)[
+
+> H
+
+X
+
+> h=1
+
+∥¨P ¨M (·| sh, a h, π ) − ¨P ¨M ′ (·| sh, a h, π ′)∥1].
+
+The proof for (i) can be directly obtained by replacing ¨P ¨M ,h (·|· , ·, π ) and ¨P ¨M ′,h (·|· , ·, π ′) with PM,h (·|· , ·, μ πM,h ) and 
+
+PM ′,h (·|· , ·, μ πM ′,h ).
+
+# □
+
+Lemma I.8. Given three arbitrary models M, fM , ¯M , and two arbitrary policies π, eπ, we have: 
+
+Eeπ, fM (π)[
+
+> H
+
+X
+
+> h=1
+
+∥PfM ,h (·| sh, a h, μ π
+
+> fM ,h
+
+) − P ¯M ,h (·| sh, a h, μ π
+
+> ¯M ,h
+
+)∥1]
+
+≤Eeπ,M (π)[
+
+> H
+
+X
+
+> h=1
+
+∥PM,h (·| sh, a h, μ πM,h ) − P ¯M ,h (·| sh, a h, μ π
+
+> ¯M ,h
+
+)∥1]+ ( H + 1) · Eeπ,M (π)[
+
+> H
+
+X
+
+> h=1
+
+∥PM,h (·| sh, a h, μ πM,h ) − PfM ,h (·| sh, a h, μ π
+
+> fM ,h
+
+)∥1]. (29) 52 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+Proof. By applying Lem. I.7 with fh(sh, a h) = ∥PfM ,h (·| sh, a h, μ π
+
+> fM ,h
+
+) − P ¯M ,h (·| sh, a h, μ π
+
+> ¯M ,h
+
+)∥1, we have: 
+
+Eeπ, fM (π)[
+
+> H
+
+X
+
+> h=1
+
+∥PfM ,h (·| sh, a h, μ π
+
+> fM ,h
+
+) − P ¯M ,h (·| sh, a h, μ π
+
+> ¯M ,h
+
+)∥1]
+
+≤Eeπ,M (π)[
+
+> H
+
+X
+
+> h=1
+
+∥PfM ,h (·| sh, a h, μ π
+
+> fM ,h
+
+) − P ¯M ,h (·| sh, a h, μ π
+
+> ¯M ,h
+
+)∥1]+ H · Eeπ,M (π)[
+
+> H
+
+X
+
+> h=1
+
+∥PM,h (·| sh, a h, μ πM,h ) − PfM ,h (·| sh, a h, μ π
+
+> fM ,h
+
+)∥1]
+
+≤Eeπ,M (π)[
+
+> H
+
+X
+
+> h=1
+
+∥PM,h (·| sh, a h, μ πM,h ) − P ¯M ,h (·| sh, a h, μ π
+
+> ¯M ,h
+
+)∥1]+ ( H + 1) Eeπ,M (π)[
+
+> H
+
+X
+
+> h=1
+
+∥PM,h (·| sh, a h, μ πM,h ) − PfM ,h (·| sh, a h, μ π
+
+> fM ,h
+
+)∥1]. (30) 
+
+# □
+
+53 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+## J. Details of Experiments 
+
+J.1. Algorithm Design 
+
+In the following, we provide the missing algorithm details for Sec. 6. 
+
+Algorithm 7: A Heuristic Oracle-Efficient NE Finding  
+
+> 1
+
+Input : Model Class M; Accuracy level ε0, eε, ¯ε; Confidence level δ; Batch size T 
+
+> 2
+
+M1 ← M ; δ0 ← δ  
+
+> log 2|M| +1
+> 3
+
+∀M ∈ M 1, compute (one of) its NE policy πNE  
+
+> M
+
+← NE Compute (M ). 
+
+> 4
+
+for k = 1 , 2, ..., do  
+
+> 5
+
+if ∃M k ∈ M k, s.t. max fM ∈M k |B ε0
+
+> πNE
+> M k
+
+( fM , Mk)| ≤ |M k | 
+
+> 2
+
+then  
+
+> 6
+
+Mk+1 ← ModelElim Exp (πNE   
+
+> Mk
+
+, Mk, eε, δ 0, T ). 
+
+> 7
+
+end  
+
+> 8
+
+else  
+
+> 9
+
+M k ← arg max M ∈M k |B ε0
+
+> πNE
+> M
+
+(M, Mk)|, 
+
+> 10
+
+πNE Br ← πNE   
+
+> Mk
+
+, 
+
+> 11
+
+Mk+1 ← ModelElim Exp (πNE Br , Mk, eε, δ 0, T ). 
+
+> 12
+
+if M k ∈ M k+1 then return πNE   
+
+> Mk
+
+; 
+
+> 13
+
+end  
+
+> 14
+
+end 
+
+Here ModelElim Exp is the same algorithm as Alg. 2 except that we replac Line 4 with: 
+
+eπt ← arg max 
+
+> eπ∈ΠNE
+
+max   
+
+> M,M ′∈¯Mt
+
+Eeπ,M (π)[
+
+> H
+
+X
+
+> h=1
+
+∥PM,h (·|· , ·, μ πM,h )
+
+− PM ′,h (·|· , ·, μ πM ′,h )∥1],
+
+In another word, we only consider policies from ΠNE := {πNE  
+
+> M
+
+}M ∈ ¯M, including the NE policies of models in ¯M.
+
+J.2. Experiment Setup Environments We consider the linear style MFG, such that 
+
+P(sh+1 |sh, a h, μ h) = |ϕ(sh, a h)⊤G(μh)ψ(sh+1 )|
+
+P 
+
+> sh+1
+
+|ϕ(sh, a h)⊤G(μh)ψ(sh+1 )| ,
+
+where ϕ ∈ Rdϕ and G(·) ∈ Rdϕ×dψ are known but ψ ∈ Rdψ are unknown. Note that our environment is different from linear model in Prop. D.12, where features are self-normalized. We choose H = 3 , S = 100 , A = 50 and dϕ = dψ = 5 ,where the number of states and actions is much larger than the feature dimension. We consider a model set with |M| = 200 .To construct the environment, for each h, we first generate a random matrix Φh ∈ RSA ×dϕ using as feature ϕ(sh, a h), and generate another random matrix Uh ∈ RS×dϕdψ , and define the function Gh(μh) by 
+
+∀μh ∈ ∆( Sh), Gh(μh) := ( μ⊤ 
+
+> h
+
+Uh).reshape (dϕ, d ψ ) ∈ Rdϕ,d ψ .
+
+After that, we generate 200 random matrices {Ψih}i∈[200] with Ψih ∈ Rdψ ×S as the next feature function. Then, the model class is specified by M := {(Φ h, U h, Ψih)}. In order to make the model elimination process more challenging, 
+
+{Ψih}i=2 ,..., 200 is generated by randomly perturbing from Ψ1
+
+> h
+
+, i.e.: 
+
+Ψih = (1 − β) eΨih + βΨ1
+
+> h
+
+,
+
+where eΨih is a random matrix independent w.r.t. Ψ1 
+
+> h
+
+and β ∼ Uniform (0 , 0.1) . In this way, the difference between models in M will be small and harder to distinguish. 54 Model-Based RL for Mean-Field Games is not Statistically Harder than Single-Agent RL 
+
+Training Procedure We construct 5 model classes M1, ..., M5 with different Φ, U to increase the randomness in experiments. For each model class Mi, we repeat 5 trials, where in each trial, we first randomly select one model from Mi
+
+as the true model, and run Alg. 7 for model elimination. We set ε=1e-3, i.e. we want to find a 1e-3-approximate NE. Besides, we set batch size T = 50 , δ = 0 .001 . For the 
+
+NE Oracle in Alg. 7, we implement it by repeatedly update 
+
+πi+1 ← (1 − α)πi + αBestReponse (πi; M ). (31) where α = 0 .02 , and BestReponse (πi; M ) return the policy maximizing the NE gap of πi in M . We stop the update process as long as ENE  
+
+> M
+
+(πi) ≤ 5e-4. 
+
+Experiments Results We provide our experiment results in Fig. 2. On the LHS, we report the number of uneliminated models verses the number of trajectories consumed, and as we can see, our algorithm can eliminate unqualified models very quickly. The total consumed trajectories is much less than the number of states actions SA = 100 ∗ 50 = 5000 .On the RHS 7, we report the normalized worst case NE Gap w.r.t. the remaining models. At each iteration t, we compute the NE gap for every uneliminated model’s NE policy, and pick out the largest one denoted as Gap t. The normalized gap is defined to be Gap t
+
+> Gap 0
+
+, where the normalization term Gap 0 is the maximal NE gap at the beginning of the algorithm, i.e. the worst NE gap without starting the algorithm. As we can see, our algorithm can gradually eliminate inaccurate models and return the (approximate) NE. 0 400 800 1200 1600 2000      
+
+> Number of Trajectories
+> 25
+> 50
+> 75
+> 100
+> 125
+> 150
+> 175
+> 200
+> Number of Model Candidates
+> 0400 800 1200 1600 2000
+> Number of Trajectories
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> NE Gap (Normalized)
+
+Figure 2. Experiment results in linear style MFG. We report the number of remaining models and the normalized maximal NE Gap by the NE policies of remaining models during the model elimination process. Error bars correspond to 95% confidence intervals. 
+
+> 7
+
+In the RHS sub-plot of Fig. 2, we set the normalized NE Gap to 0 as long as it is lower than 1e-3 
+
+55

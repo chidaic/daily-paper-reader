@@ -1,0 +1,1001 @@
+Title: Preference-CFR: Beyond Nash Equilibrium for Better Game Strategies
+
+URL Source: https://openreview.net/pdf?id=beBNOZP5Tk
+
+Number of Pages: 18
+
+Markdown Content:
+# Preference-CFR: Beyond Nash Equilibrium for Better Game Strategies 
+
+Qi Ju 1 2 Thomas Tellier 3 Meng Sun 1 2 Zhemei Fang 1 2 Yunfeng Luo 1 2 
+
+# Abstract 
+
+Artificial intelligence (AI) has surpassed top hu-man players in a variety of games. In imperfect information games, these achievements have pri-marily been driven by Counterfactual Regret Min-imization (CFR) and its variants for computing Nash equilibrium. However, most existing re-search has focused on maximizing payoff, while largely neglecting the importance of strategic di-versity and the need for varied play styles, thereby limiting AI’s adaptability to different user prefer-ences. To address this gap, we propose Preference-CFR (Pref-CFR), a novel method that incorporates two key parameters: preference degree and vulnerabil-ity degree. These parameters enable the AI to ad-just its strategic distribution within an acceptable performance loss threshold, thereby enhancing its adaptability to a wider range of strategic demands. In our experiments with Texas Hold’em, Pref-CFR successfully trained Aggressive and Loose Passive styles that not only match original CFR-based strategies in performance but also display clearly distinct behavioral patterns. Notably, for certain hand scenarios, Pref-CFR produces strate-gies that diverge significantly from both conven-tional expert heuristics and original CFR outputs, potentially offering novel insights for professional players. 
+
+# 1. Introduction 
+
+In machine learning, complex gaming problems are impor-tant benchmarks for assessing artificial intelligence (AI). Prominent games such as Chess (Campbell et al., 2002),         
+
+> 1School of Artificial Intelligence and Automation, Huazhong University of Science and Technology 2National Key Laboratory of Science and Technology on Multispectral Information Process-ing 3GTOKing. Correspondence to: Qi Ju <juqi@hust.edu.cn >,Thomas Tellier <thomas@gtoking.com >, Zhemei Fang <zm-fang2018@hust.edu.cn >.
+> Proceedings of the 42 nd International Conference on Machine Learning , Vancouver, Canada. PMLR 267, 2025. Copyright 2025 by the author(s).
+
+Go (Silver et al., 2016; 2018), StarCraft (Vinyals et al., 2019), and Texas Hold’em (Morav ˇc´ık et al., 2017; Bowling et al., 2015; Brown & Sandholm, 2019b) have significantly influenced both academic research and public interest. Traditionally, research has focused primarily on identifying the Nash Equilibrium (NE), as it guarantees that no player can improve their expected payoff by unilaterally deviat-ing from their strategy. From the perspective of expected payoffs, this guarantee makes the NE considered the opti-mal solution in a game. Consequently, many studies treat a game problem as resolved once its NE is identified. How-ever, maximizing expected payoffs is not the sole criterion for evaluating strategy quality. First, many practical problems feature multiple NEs. In eco-nomics, understanding the diversity of NE often holds more value than simply identifying one. For example, Schelling’s work on predicting specific NE, which earned him the 2005 Nobel Prize in Economics, exemplifies this significance. Second, state-of-the-art game-playing AIs (e.g., AlphaGo and Pluribus) have already surpassed top human players. However, strategies with maximizing expected payoffs as the sole objective are typically overly rational, lack diver-sity, and are difficult for humans to master. For instance, Lee Sedol, a top human Go expert who competed against AlphaGo, chose to retire and said, “I can no longer en-joy the game.” (Wakabayashi & Young, 2024) This high-lights that competition is not the sole purpose of gameplay; games should also provide entertainment and spiritual ful-fillment. Additionally, strategies that incur minor payoff losses against top AIs may still perform well against hu-man opponents. For example, in chess, professional players are highly familiar with common openings recommended by AI, often resulting in drawn games. To overcome this, top players deliberately choose unconventional strategies to lead the game into unexplored scenarios, leveraging their superior skills to gain an advantage. To the best of our knowledge, algorithms for incomplete-information games have not considered the importance of identifying diverse NEs, nor have they explored how strat-egy ranges change when some payoff is sacrificed. To ad-dress these limitations, we propose a novel algorithm called Preference Counterfactual Regret Minimization (Pref-CFR). This algorithm introduces two parameters for strategy selec-1Preference-CFR: Beyond Nash Equilibrium for Better Game Strategies 
+
+tion from the perspectives of style and diversity : the degree of preference δ, representing a player’s inclination toward specific strategy (the style of strategies), and the degree of vulnerability β, denoting the maximum exploitability a player is willing to tolerate (the diversity of strategies). In two-player zero-sum games, setting δ ensures convergence to a NE aligned with the specified preferences. If the game has a unique NE, setting δ alone ( β = 0 ) does not affect the strategy’s convergence. Incorporating β further enables convergence to an ϵ-NE ( ϵ ≤ β), significantly expanding the selection of preferred actions. The combination of δ and β
+
+can derive a strategy that best suits the user’s style at a given tolerable loss. In Texas Hold’em experiment, we success-fully obtained strategies exhibiting Aggressive and Loose Passive play-styles. Results indicate these strategies exhibit significant differences from original CFR-trained strategies while maintaining comparable performance in head-to-head matches. Notably, Pref-CFR uncovers novel strategies. For example, in the Aggressive style, it sometimes raises with weak hands like 82o ——a move previously missed by both human experts and Game Theory Optimal (GTO) solvers, offering insights for professional players. Our code can be found at GitHub. 
+
+Related Work 
+
+The related work in this paper is structured into two in-terrelated categories. First, we survey the foundational algorithms for solving game equilibria, focusing on their convergence properties and limitations. Second, we ex-plore research that transcends traditional NE and Coarse Correlated Equilibrium (CCE), examining efforts to define “better” strategies. In the realm of normal-form games, the preeminent algo-rithm is Regret Minimization (RM), along with its vari-ant, Counterfactual Regret Minimization (CFR) (Zinkevich et al., 2007), which is applied in extensive-form games. RM/CFR can converge to the NE in two-player zero-sum games and to CCE in multi-player general-sum games (Han-nan, 1957). Noteworthy variants include CFR+ (Tammelin, 2014), Monte-Carlo CFR (MCCFR) (Lanctot et al., 2009), and Discounted CFR (DCFR) (Brown & Sandholm, 2019a). In particular, CFR+ and MCCFR have played a pivotal role in significant AI advancements over the past decade (Brown & Sandholm, 2019b; Bowling et al., 2015; Brown & Sand-holm, 2017). Besides the RM algorithm, the Fictitious Play (FP) algorithm is another commonly-employed approach for solving games. FP was initially introduced in Brown’s 1951 paper (Brown, 1951), and the treatise The Theory of Learn-ing in Games (Fudenberg & Levine, 1998) further solidified previous research, establishing a standardized framework for FP. In two-player zero-sum games, FP is proven to converge to the NE. Recently, Qi et al. integrated CFR with the FP algorithm to propose the CFVFP algorithm (Ju et al., 2024). However, a common limitation persists: these methods pri-marily target NE computation, overlooking the applicability and diversity of equilibria discussed earlier. While equilibrium-solving algorithms have advanced, game theory research has also diversified into non-NE equilib-rium concepts. The 2005 Nobel Prize in Economics rec-ognized Aumann and Schelling for refining equilibrium theory: Aumann demonstrated that correlated equilibria yield fairer and more efficient outcomes than NE (Aumann, 1974), while Schelling analyzed equilibrium selection in multi-equilibrium scenarios (Schelling, 1980). Fudenberg et al. contended that stable states reached during the learning (or evolutionary) process can also be regarded as equilib-rium (Fudenberg & Levine, 1998). Recently, Ganzfried introduced a novel concept called safe equilibrium, which takes into account the irrationality of opponents and enables more flexible responses to various adversaries (Ganzfried, 2023). Despite these innovations, a critical void remains: existing studies rarely address the computational methods for solving these novel equilibria. This methodological gap motivates our synthesis of algorithmic and conceptual research streams. This paper integrates algorithmic rigor in equilibrium solv-ing with conceptual advances in non-NE research to bridge theory and computation. We aim to define novel stylized equilibrium strategies and demonstrate how learning the-ory enables their precise computation, uniting theoretical innovation with algorithmic practice. 
+
+# 2. Notion and Preliminaries 
+
+2.1. Game Theory 
+
+2.1.1. N ORMAL -F ORM GAME 
+
+The normal-form game is the fundamental model in game theory. Let N = {1, 2, . . . , i, . . . } denote the set of players, where player i has a finite action set Ai. The strategy σi of player i is defined as a |A i|-dimensional probability distribution over Ai (where | · | represents the number of elements in the set), with σi(a′) indicating the probability of player i choosing action a′. Strategies can be categorized into pure strategies and mixed strate-gies: a pure strategy involves taking a specific action with 100% probability, while all strategies other than pure strate-gies are considered mixed strategies. A strategy profile 
+
+σ = ×
+
+> i∈N
+
+σi is a collection of strategies for all players, and 
+
+σ−i = ( σ1, . . . , σ i−1, σ i+1 , . . . ) refers to all strategies in 
+
+σ except for player i. The set of all strategy profiles is de-noted as Σ = ×
+
+> i∈N
+
+Σi. We define the finite payoff function 
+
+ui : Σ → R, where ui(σi, σ −i) represents the payoff re-ceived by player i when player i selects strategy σi and all other players follow the strategy profile σ−i. Finally, we 2Preference-CFR: Beyond Nash Equilibrium for Better Game Strategies 
+
+define L = max σ∈Σ,i ∈N ui(σ) − min σ∈Σ,i ∈N ui(σ) as the payoff interval of the game. 2.1.2. E XTENSIVE -F ORM GAMES 
+
+In extensive-form games, which are commonly depicted as game trees, the set of players is represented as N =
+
+{1, 2, . . . }. The nodes s within the game tree signify pos-sible states, collectively forming the state set s ∈ S , while leaf nodes z ∈ Z denote terminal states. For each state 
+
+s ∈ S , the successor edges delineate the action set A(s)
+
+accessible to either a player or chance events. The player function P : S → N ∪ { c} specifies which entity acts at a particular state, where c represents chance. Information sets I ∈ I i comprise collections of states that player i cannot distinguish from one another. The payoff function R : Z → R|N | assigns a payoff vector for the players based on the terminal states. The behavioral strategy 
+
+σi(I) ∈ R|A (I)| is defined as a probability distribution over each information set I for all I ∈ I i. We also define πσ (I)
+
+as the probability of encountering information set I when all players select actions according to the strategy profile σ.2.1.3. N ASH EQUILIBRIUM 
+
+The best response (BR) strategy for player i in relation to the strategy profile σ−i is defined as: 
+
+bi(σ−i) = arg max a∗∈A i ui(a∗, σ −i). (1) The BR strategy can either be a pure strategy or a mixed strategy; yet, identifying a pure BR strategy is generally more straightforward. For the purposes of our analysis, we will assume that b(σ) is a pure strategy. In this context, 
+
+arg max denotes the action that produces the highest pay-off within a given set. If there are multiple actions that yield this maximum payoff, the strategy that appears first in lexicographic order will be selected. In a two-player zero-sum game, the deviation incentive of player i for a strategy profile σ is defined as: 
+
+ϵi = ui(bi(σ−i), σ −i) − ui(σ), (2) while the overall exploitability ϵ across all players is calcu-lated as: 
+
+ϵ = 1
+
+|N | 
+
+X 
+
+> i∈N
+
+ϵi, (3) if ϵ = 0 , the strategy profile σ is a NE; otherwise, it is termed an ϵ-NE. If an algorithm ensures that the exploitability of the game meets the condition ϵ ≤ CT −1 after T iterations (where C is a constant), then the convergence rate of this algorithm is O(T −1). This formula can still serve as a basis for strategy convergence in multiplayer games. However, since more than one player may deviate from the strategy simultaneously, it is no longer termed exploitability but NashConv. 
+
+2.2. Counterfactual Regret Minimization 
+
+In normal-form games, let σit be the strategy used by player 
+
+i at iteration t, and the regret of player i for not choosing action a ∈ A i is defined as: 
+
+¯RiT (a) = 1
+
+T
+
+> T
+
+X
+
+> t=1
+
+ui  ait, σ −it
+
+ − ui (σt) , (4) the new strategy is generated as follows: 
+
+σiT +1 (a) = 
+
+    
+
+> ¯Ri, +
+> T(a)
+> P
+> a∈A i¯Ri, +
+> T(a)
+
+if ¯Ri, + 
+
+> T
+
+(a′)̸ = 0 
+
+> 1
+> |A i|
+
+otherwise , (5) where ¯Ri, + 
+
+> T
+
+(a) = max   ¯RiT (a), 0 and 0 denotes the zero vector. Since the probability of taking action σit+1 (a) is pro-portional to the regret value ¯Ri, + 
+
+> T
+
+(a), this strategy is called the regret matching strategy. Define ¯σiT = 1
+
+> T
+
+PTt=1 σit as the average strategy of player i. When T → ∞ , ¯σiT con-verges to NE in two-player zero-sum games with a conver-gence rate of O  T −1/2.In extensive-form games, we define the counterfactual value 
+
+u(I, σ ) as the expected value conditioned on reaching the information set I while all players adopt the strategy σ,with the exception that player i plays in a way that allows reaching I. For every action a ∈ A i(I), we denote σ|I→a
+
+as the strategy profile that is identical to σ except that player 
+
+i always selects action a when in information set I. The 
+
+average counterfactual regret defined as: 
+
+¯RiT (I, a ) = 1
+
+T
+
+> T
+
+X
+
+> t=1
+
+π−iσt (I)  ui (I, σ t|I→a) − ui (I, σ t) ,
+
+(6) where π−iσt (I) is the probability of information set I oc-curring given that all players (including chance, except for player i) choose actions according to σt. We define 
+
+¯Ri, + 
+
+> T
+
+(I, a ) = max( ¯RiT (I, a ), 0) . The strategy for player i
+
+at time T + 1 is given by: 
+
+σiT +1 (I, a ) = 
+
+    
+
+> ¯Ri, +
+> T(I,a )
+> P
+> a∈A (I)¯Ri, +
+> T(I,a )
+
+if ¯Ri, + 
+
+> T
+
+(I)̸ = 0 
+
+> 1
+> |A (I)|
+
+otherwise. (7) The average strategy ¯σiT (I) for an information set I after T
+
+iterations is defined as: 
+
+¯σiT (I) = 
+
+PTt=1 πiσt (I)σit(I)
+
+PTt=1 πiσt (I) . (8) Ultimately, as T → ∞ , ¯σT will converge to a NE. 
+
+# 3. Motivation 
+
+3.1. Style and Diversity of Strategies in the Game 
+
+This paper re-examines strategy selection through the lenses of “diversity” and “style”, an aspect that has been relatively 3Preference-CFR: Beyond Nash Equilibrium for Better Game Strategies 
+
+unexplored in existing research. To formalize this perspec-tive, we first define these two metrics in the context of game theory. Specifically, diversity refers to the size of the acceptable strategy space Σacc , while style quantifies the similarity between a given strategy distribution and a preferred strategy σ∗.The definition of Σacc is relatively straightforward. If a player is a professional competitor aiming solely to max-imize their probability of winning, the acceptable strat-egy space should coincide with the NE strategy set, i.e., 
+
+Σacc = Σ NE . In contrast, if the game is played casually among friends, where entertainment takes precedence over optimal strategy, then the acceptable strategy space is the set of all possible strategies, Σacc = Σ .In comparison, defining “style” is more intricate. In real-world settings, styles are often measured by macroscopic statistical indicators. Roughly speaking, in football, pos-session percentage is commonly used to characterize Tiki-taka style——when possession exceeds a certain thresh-old, the playing style is classified as such. However, such statistical indicators are difficult to integrate directly into game training. As game training is inherently a sparse re-ward problem—where payoffs are only obtained at terminal nodes—incorporating macro-style indicators (e.g., the entry rate in Texas Hold’em) would require numerous games to generate meaningful style signals. This effectively exacer-bates the sparsity issue, making learning more challenging. To address this, we map style-related measurements from the macroscopic level to the decision-making level within in-formation sets. We define style as the distance Dis (¯ σT , σ ∗)
+
+between the final learned strategy ¯σT and the preferred strat-egy σ∗. For instance, if a ball possession rate exceeding 70% is defined as characteristic of the Tiki-taka style, and the corresponding strategy set is ΣTiki-taka with centroid strat-egy σ∗
+
+> Tiki-taka
+
+, then the degree to which ¯σT adheres to the Tiki-taka style can be measured by Dis (¯ σT , σ ∗
+
+> Tiki-taka
+
+).Given these definitions, we seek a final strategy ¯σT that min-imizes the distance to the preferred style while remaining within the acceptable strategy space: 
+
+¯σT = min 
+
+> σ∈Σacc
+
+Dis (σ, σ ∗). (9) The choice of Σacc can be guided by different criteria. In this paper, we constrain it based on the worst-case performance loss relative to NE strategies, which we term the vulner-ability degree . Specifically, we introduce a vulnerability parameter β during training, ensuring that the final learned strategy satisfies ¯σT ∈ Σϵ−NE where ϵ ≤ β.
+
+3.2. Controlling the Convergence of RM Iteration 
+
+Extensive experiments (Section 5.1 provides an example) on two-player zero-sum games reveal that even when multi-ple equilibria exist and the RM/CFR algorithm starts from different initial strategies, it typically converges to a unique equilibrium point. Formally, we propose the following con-jecture: 
+
+Conjecture 3.1. In a two-player zero-sum game, if the set of Nash equilibrium ΣNE forms a convex polyhedron, then for any initial strategy σt=0 , the RM iteration converges to a unique fixed point σRM ∈ ΣNE .
+
+This conjecture suggests that modifying the initialization of RM alone is insufficient to steer convergence towards different equilibria. Instead, altering the final strategy ¯σT
+
+requires intervention during the iterative process. While RM lacks prior research in this direction, insights can be drawn from the Generalized Weakened Fictitious Play (GWFP) algorithm, whose update rule is: 
+
+¯σt+1 = (1 − αt+1 )¯ σt + αt+1 (bϵt (¯ σt) + Mt+1 ), (10) where {Mt}t≥1 is a sequence of perturbation terms, and 
+
+bϵt (¯ σt) is a sub-BR strategy with a gap of ϵt from the BR strategy, that is: 
+
+ui(b(¯ σ−it ), ¯σ−it ) − ui(bϵt (¯ σ−it ), ¯σ−it ) ≤ ϵt. (11) GWFP converges to the NE when the following three condi-tions are met. First, ϵt → 0 as t → ∞ . Second, αt → 0 as 
+
+t → ∞ and P 
+
+> t≥1
+
+αt = ∞. Finally: 
+
+lim  
+
+> t→∞
+
+sup 
+
+> k
+
+( k−1X
+
+> i=t
+
+αi+1 Mi+1 :
+
+> k−1
+
+X
+
+> i=t
+
+αi+1 ≤ T
+
+)
+
+= 0 .
+
+(12) We first establish that RM can be interpreted as a special case of GWFP (see Appendix D). Based on this, we pro-pose three methods to influence RM’s convergence behav-ior: (i) Adjusting the learning rate αt; (ii) Modifying the exploitability parameter in bϵt (¯ σt); (iii) Introducing a per-turbation sequence Mt.Among these, the most effective approach is modifying ϵt,as we have already defined Dis (σ, σ ∗) as the style metric. Moreover, ϵt directly corresponds to the vulnerability pa-rameter β. Therefore, our subsequent improvements will all be centered around bϵt (¯ σ).
+
+# 4. Method 
+
+4.1. Preference CFR 
+
+We now introduce the Pref-CFR algorithm. For each infor-mation set, we define a preference degree δ(I) ∈ R|A (I)|,where δ(I, a ) ≥ 1. Note that in our setting, ∀a ∈ A (I)
+
+δ(I, a ) = 1 is not allowed. The strategy for the next itera-4Preference-CFR: Beyond Nash Equilibrium for Better Game Strategies 
+
+tion T + 1 is calculated as: 
+
+σiT +1 (I, a ) = 
+
+    
+
+> δ(I,a ) ¯Ri, +
+> T(I,a )
+> P
+> a∈A (I)δ(I,a ) ¯Ri, +
+> T(I,a )
+
+if ¯Ri, + 
+
+> T
+
+(I)̸ = 0  
+
+> δ(I,a )−1P
+> a∈A i(I)δ(I,a )−1
+
+otherwise. (13) Alternatively, we can also adopt the BR strategy for the next iteration: 
+
+σiT +1 (I) = arg max a∈A i(I)δ(I, a ) ¯RiT (I, a ). (14) In this paper, we denote Pref-CFR(RM) to indicate that the next strategy follows the regret minimization approach, as shown in Equation 13, while Pref-CFR(BR) signifies that the next strategy is based on the BR approach, as presented in Equation 14. We prove in the Appendix B.2 that the convergence of the Pref-CFR algorithm is consistent with the original CFR. Specifically, it can converge to the NE in two-player zero-sum games and to the CCE in multi-player general-sum games. The action preference degree δ(a) is related to the preferred strategy σ∗(a); a larger proportion of a′ in σ∗(a′)
+
+warrants a higher δ(a′). How to define a suitable δ(a) will be discussed in the next section. Introducing δ drives the strategy toward convergence to different-style equilibria. However, with δ alone ( β = 0 ), the acceptable strategy set is Σacc = Σ NE . In many cases, the adjustments are small or have almost no macroscopic dif-ference from non-δ strategies. As highlighted in Section 1, competition is not the sole dimension of a game. To address this, we introduce the vulnerability degree β(I). Define: 
+
+¯BiT (I, a ) = ¯RiT (I, a ) − β(I), (15) the strategy for time T + 1 is determined as follows: 
+
+σiT +1 (I, a ) = 
+
+
+
+arg max 
+
+> a∈A i
+
+¯BiT (I, a ) if ¯Bi, + 
+
+> T
+
+(I, a )̸ = 0   
+
+> δ(I,a )−1P
+> a∈A i(I)δ(I,a )−1
+
+otherwise, (16) where ¯Bi, + 
+
+> T
+
+(I, a ) = max { ¯BiT (I, a ), 0}. In Appendix B.3, we prove that in normal-form games, the vulnerability de-gree β ensures the final strategy is an ϵ-NE strategy with 
+
+ϵ ≤ β. By integrating preference and vulnerability, we devise a strategy that not only aligns with desired stylistic requirements but also minimizes potential losses. 
+
+4.2. Analysis of Pref-CFR Algorithm 
+
+Pre-CFR offers a method for converging to different strate-gies. Nevertheless, during actual training, the settings for 
+
+δ(I) and β still require careful configuration by experts. 1. Setting larger values for δ(I, a ) and β(I) can enhance the distinctiveness of the final strategy’s style. How-ever, this may result in slower convergence speeds and a strategy that deviates significantly from the NE, mak-ing it susceptible to astute opponents. 2. While we can adjust δ(I, a ) and β(I) at the micro level, translating macro-level style characteristics rec-ognized by the public into parameter settings for each information set is challenging. To address the first problem, setting appropriate parameters for δ(I, a ) and β(I) can help the final strategy converge to a reasonable interval. For the parameter δ(I, a ), experiments indicate that when δ(I, a ) ≤ 5, the convergence speed re-mains acceptable, significantly increasing the likelihood of the preferred action being adopted in the final output strat-egy. Regarding β(I), it can be determined based on the specifics of different games and the experience of human experts. For instance, an error margin of 25 mbb/h in Texas Hold’em is typically inconspicuous. The second problem is more complex. Fortunately, for common games like Texas Hold’em, there is ample expert knowledge to draw upon. If a player has a narrow range of hands when entering the pot, their style is classified as “tight”; conversely, a wider range is termed “loose.” For definitions of these Texas Hold’em terms, please refer to Appendix A. If a player exhibits a relatively high proportion of 3-bets after entering the pot, they are labeled as “aggres-sive.” These styles exhibit strong consistency. Thus, we can apply the same set of δ values across all information sets. For example, to make the AI more aggressive, we could increase δ(I, Raise ) for all raising actions across all information sets. However, for more extensive-form games that lack extensive expert analysis, the design of δ(I, a ) and β(I) remains an area requiring further research. 
+
+# 5. Experiments 
+
+Our experiments are conducted using Kuhn poker (Kuhn, 1950), Leduc poker (Shi & Littman, 2001) as well as two-player and three-player Texas Hold’em poker. A brief introduction to the rules of these games can be found in Appendix A. The experimental codes for Kuhn poker and Leduc poker have been made publicly available on GitHub. In our Kuhn poker experiments, we used the vanilla Pref-CFR while Texas Hold’em experiments utilized a variant of the multi-valued state technique (Brown et al., 2018). Solutions were computed in under 10 minutes with a 24-core CPU; subgames included 35k states and the full game used for leaf estimates had 25M states. In Heads-Up play, this setup achieved exploitability below 4 mBB/h in our Texas Hold’em experiments. These settings are comparable to previous experiments (Brown et al., 2018). 5Preference-CFR: Beyond Nash Equilibrium for Better Game Strategies 
+
+5.1. Pref-CFR Converges to Different Nash Equilibria 
+
+Before analyzing the Pref-CFR algorithm, it is crucial to first elucidate the scenarios where CFR fails to converge to distinct NEs. We will use Kuhn poker as an example. In this game, player 1 faces multiple equilibria. The equilibrium strategy for player 1 in Kuhn poker is detailed in Table 1.     
+
+> Table 1. The equilibrium strategy of player 1 in Kuhn poker, where
+> α∈[0 ,1/3] . It can be considered that player 1 has countless equilibrium strategies in this game.
+
+The equilibrium strategy for Player 1 can be defined by the parameter α, which corresponds to the probability of choos-ing to bet in the information set J . After iterating through 
+
+10 7 nodes, the exploitability of the strategy is reduced to below 0.001 . At this point, we approximate the equilibrium strategy with α = σ(J , Bet ).We initialize the CFR training with a randomly distributed strategy. As depicted in Figure 1, although Kuhn poker admits multiple NEs, CFR converges to a single equilibrium at α = 0 .2, irrespective of the initial strategy. This behavior is not exclusive to Kuhn poker; as Conjecture 3.1 posits, altering the initial state of RM does not affect its final con-vergence point. Furthermore, the strategies generated by the CFR algorithm closely resemble traditional “machine strategies,” which are complex, stable, and lacking distinct characteristics. In practical gameplay, human players can readily recognize and memorize simpler strategies, such as 
+
+α = 0 and α = 1 /3. For example, when α = 0 , player 1 always selects Pass, embodying a cautious and conser-vative playstyle. Conversely, Pref-CFR can identify these characteristic equilibria. The parameter configurations for these experiments are de-tailed in Appendix C. As shown in Figure 2, the convergence rates across all settings remain comparable to that of the original CFR. However, all variants of Pref-CFR yield equi-librium that deviate from α = 0 .2, with higher preference degree settings resulting in more pronounced deviations. Moreover, the performance of Pref-CFR(RM) is notably in-ferior to that of Pref-CFR(BR). Consequently, we advocate for the use of the Pref-CFR(BR) method, which was also utilized in all subsequent experiments. Kuhn poker, a game with multiple NEs, allows PrefCFR to converge to different NEs when β = 0 . In contrast, as Fig. 3 shows, in the Leduc poker experiment, with 
+
+δ(raise ) = 10 , β = 0 and δ(call ) = 10 , β = 0 , both eventu-ally converge like the original CFR. Only by introducing β
+
+can the strategy deviate stably from the standard one, sug-gesting Leduc poker may have a single NE. As analyzed in Appendix B.2, setting β = 0 implies Σacc = Σ NE , so different δ values lead to convergence to the unique NE. Users then face a trade-off: sacrifice some utility (com-pared to the NE strategy) to diversify the strategy. Fig. 4 reveals that a larger β increases the Raise probability in the final strategy, making it more aggressive, but at the expense of higher exploitability. It is also noteworthy that in the Leduc poker experiments, the difference between setting 
+
+δ(raise ) = 10 and δ(raise ) = 5 is negligible. Therefore, we set δ(a) = 5 in subsequent experiments. 
+
+5.2. Pref-CFR Converges to Different Styles in Texas Hold’em 
+
+The traditional CFR algorithm does not account for goals beyond expected payoffs. In Texas Hold’em, two significant “style demands” have consistently emerged, yet the previous CFR algorithm was unable to address them. 1. Aggressive strategy A prominent feature of this strat-egy is its higher probability of raising. For some am-ateur players with an abundance of chips, sensitivity to chip loss is minimal. Their primary motivation for participating in Texas Hold’em is not necessarily to win more chips but rather to seek novel experiences or enhance the atmosphere at social gatherings. As a result, these players often look forward to engaging in games with larger pot amounts. In training, we set 
+
+δ(I, raise ) = 5 and β = 0 .05 at the first decision node of player 1. 2. Loose passive strategy A significant characteristic of this strategy is that the probability of folding is lower than that of a typical strategy. This phenomenon arises from the difficulty many players with a small number of chips experience when it comes to folding. After in-vesting a considerable amount of chips during the flop or turn stages, these players often feel uncomfortable quitting the game without knowing their opponent’s hole cards. The discomfort is especially pronounced when they suspect they have been successfully bluffed. By minimizing folds, this strategy provides psycholog-ical comfort for these players, helping them avoid the frustration of being outplayed by an opponent’s bluff. In training, we set δ(I, call ) = 5 and β = 0 .05 at the first decision node of Player 1. Before analyzing style variations among AI models, we first compare their performance. Our goal is to develop AIs with distinct play styles without sacrificing significant payoffs. Given the challenge of evaluating strategy effectiveness in large-scale games, we use head-to-head matches to assess different algorithms. As shown in Table 2, performance 6Preference-CFR: Beyond Nash Equilibrium for Better Game Strategies           
+
+> Figure 1. Convergence rate of CFR in Kuhn poker (left) and fluctuation of αin CFR algorithm iterations (right). Thirty experiments were performed for each setting, and the shaded area indicates the 90% confidence interval of these trials (the settings remain unchanged in subsequent experiments). It can be seen that regardless of the initial strategy, all CFR iterations converge to α= 0 .2.
+> Figure 2. Convergence rate of CFR/Pref-CFR in Kuhn poker (left) and the fluctuation of the αvalue during CFR/Pref-CFR iterations (right). It is evident that the Pref-CFR algorithm can still converge to equilibrium, with a convergence speed comparable to that of the original CFR. Additionally, the right figure clearly shows that in Pref-CFR, strategies converge to results deviating from the NE, and these deviations become larger with higher values of β.
+> Table 2. The battle results between different AIs in two-player Texas Hold’em. In Texas Hold’em, mBB/h represents the thou-sandth of a big blind won or lost per hand, used to accurately measure a player’s profit or loss for each individual hand.
+
+differences across styles remain minimal in both two-player and three-player games, staying within 10mBB/h. Prior re-search suggests that a training error below 1mBB/h indicates convergence to NE (Bowling et al., 2015). For reference, Pluribus achieved a 32mBB/h win rate against top human players (Brown & Sandholm, 2019b). Thus, the observed 10mBB/h difference suggests these AIs are of comparable skill levels. Our experiments clearly demonstrate how the algorithm influences the final strategies in the first row of Figure 5. In standard CFR training for two-player Texas Hold’em, the average preflop strategy distribution is [5.4%, 52.7%, 42.0%, 0.0%, 0.0%] for folding, calling, raising to 2, raising to 3, and going all-in, respectively. In contrast, the loose AI’s strategy distribution shifts to [0.3%, 73.3%, 21.7%, 4.7%, 0.0%], while the aggressive AI shows [4.2%, 64.8%, 9.8%, 21.1%, 0.0%]. As expected, the loose AI exhibits a much lower folding probability, dropping from 5.4% to 0.3%—a 94.4% decrease. The differences between aggressive and standard strategies are also pronounced, with the aggressive AI raising to 3 at a 21.1% rate compared to 0% in the standard strategy. We believe these AI strategies provide valuable insights for human players. For example, traditional human ex-7Preference-CFR: Beyond Nash Equilibrium for Better Game Strategies        
+
+> Figure 3. Convergence rates of ES-MCCFR/Pref-ES-MCCFR in Leduc poker (left) and the fluctuations in the probability of choosing Call during ES-MCCFR/Pref-ES-MCCFR iterations (right). This figure shows that in Leduc poker, strategies will converge to different equilibria only when β > 0is set.
+> Figure 4. Convergence rates of ES-MCCFR/Pref-ES-MCCFR in Leduc poker (left) and the fluctuations in the probability of choosing Call during ES-MCCFR/Pref-ES-MCCFR iterations (right). Obviously, the larger βis, the higher the probability of choosing to Call and the more obvious the strategy style is.
+
+perts and GTO-based AIs typically fold weak hand com-binations like 82o and 72o, considered poor due to low straight potential, unsuitedness, and low card ranks. In con-trast, our loose-passive AI opts to call almost 100% of the time, while the aggressive AI may even raise with these hands. Such stylized strategies cleverly adjust hand dis-tributions to obscure hand strength, akin to “hiding a leaf in the forest.” The loose-passive AI’s higher calling rates make it difficult for opponents to distinguish between a weak-hand bluff or a strong-hand slow-play. Similarly, the aggressive AI increases raising frequency across all hands, potentially challenging conventional Texas Hold’em tactics. While loose-passive play was historically deemed subop-timal, our results show it can be a viable strategy when balanced across all hand combinations, offering a fresh tac-tical perspective. The results of three-player AI matches,  
+
+> Table 3. The battle results between different AIs in three-player Texas Hold’em.
+
+displayed in Table 3 and the second row of Figure 5, show that our algorithm achieves even more pronounced effects in three-player scenarios. In standard three-player training, the average strategy distribution is [61.4%, 0.0%, 38.6%, 0.0%]. This example illustrates why the loose-passive style was previously considered ineffective: according to GTO calculations, it is typically not recommended. However, our 8Preference-CFR: Beyond Nash Equilibrium for Better Game Strategies      
+
+> (a) 2P Loose passive AI (b) 2P Normal AI (c) 2P Aggressive AI
+> (d) 3P Loose passive AI (e) 3P Normal AI (f) 3P Aggressive AI
+> Figure 5. Strategy display for Texas Hold’em. In the top left corner of each image, the current player’s information and available actions are displayed. The central area showcases the strategies for different hand combinations at this stage. In Texas Hold’em poker, there are 13 ranks across 4 suits, with no distinction in value between suits, resulting in 169 unique hand combinations. These are represented in a 13 ×13 matrix, where the lower left displays offsuit hands and the upper right shows suited hands. Each matrix element’s color indicates the strategic choice for the corresponding hand: blue for folding, green for calling, red shades for raising (with deeper red shades indicating higher raises), and black-red for going all-in. The bottom row provides an overview of the average strategies across all hands, allowing for a visual understanding of the overall strategy distribution.
+
+experiments reveal that the Loose-Passive strategy not only avoids any loss in earnings but actually gains an advantage of 0.2mBB/h compared to the Normal strategy, while sig-nificantly increasing the calling probability from 0.0% to 23.9%. We speculate that the added complexity of three-player poker compared to two-player games accentuates the impact of style changes. 
+
+# 6. Conclusion and Prospect 
+
+The Pref-CFR algorithm proposed in this study addresses a key limitation of traditional CFR by enabling the discovery of diverse equilibria. Our experiments demonstrate suc-cessful training of Texas Hold’em AIs with distinct strategic profiles. For example, in three-player games, the Aggressive AI increased its 3-bet probability from 0.0% to 16.0% with only a 10mBB/h performance decrement, while the Loose AI raised its calling rate from 0.0% to 23.9%. Notably, the algorithm maintains training efficiency and supports real-time strategic guidance for human players. However, the current framework requires manual calibration of preference degrees for actions in each information set, restricting its adaptability to varied player styles. Given the game’s complexity, human users face challenges in implementing context-dependent strategies. To enhance practical utility, we propose automating the translation of user-specified metrics (e.g., betting frequencies or pot en-try rates) into information-set-specific preference weights, streamlining the customization workflow. Additionally, ex-tending this framework to interdisciplinary domains—such as behavioral economics or market dynamics—presents an intriguing avenue for bridging game-theoretic algorithms with real-world decision systems. 9Preference-CFR: Beyond Nash Equilibrium for Better Game Strategies 
+
+# Impact Statement 
+
+This paper presents work whose goal is to advance the field of Machine Learning. There are many potential societal consequences of our work, none of which we feel must be specifically highlighted here. 
+
+# Acknowledgements 
+
+This work was supported by the National Natural Science Foundation of China (Grant No. 62103158). 
+
+# References 
+
+Abernethy, J., Bartlett, P. L., and Hazan, E. Blackwell approachability and no-regret learning are equivalent. In 
+
+Proceedings of the 24th Annual Conference on Learning Theory , pp. 27–46. JMLR Workshop and Conference Proceedings, 2011. Aumann, R. J. Subjectivity and correlation in randomized strategies. Journal of mathematical Economics , 1(1): 67–96, 1974. Bowling, M., Burch, N., Johanson, M., and Tammelin, O. Heads-up limit hold’em poker is solved. Science , 347 (6218):145–149, 2015. Brown, G. W. Iterative solution of games by fictitious play. 
+
+Act. Anal. Prod Allocation , 13(1):374, 1951. Brown, N. and Sandholm, T. Safe and nested subgame solving for imperfect-information games. Advances in neural information processing systems , 30, 2017. Brown, N. and Sandholm, T. Solving imperfect-information games via discounted regret minimization. In Proceed-ings of the AAAI Conference on Artificial Intelligence ,volume 33, pp. 1829–1836, 2019a. Brown, N. and Sandholm, T. Superhuman ai for multiplayer poker. Science , 365(6456):885–890, 2019b. Brown, N., Sandholm, T., and Amos, B. Depth-limited solving for imperfect-information games. Advances in Neural Information Processing Systems (NeurIPS) , 31, 2018. Campbell, M., Hoane Jr, A. J., and Hsu, F.-h. Deep blue. 
+
+Artificial intelligence , 134(1-2):57–83, 2002. Fudenberg, D. and Levine, D. K. The theory of learning in games , volume 2. MIT press, 1998. Ganzfried, S. Safe equilibrium. In 2023 62nd IEEE Con-ference on Decision and Control (CDC) , pp. 5230–5236. IEEE, 2023. Hannan, J. Approximation to bayes risk in repeated play. 
+
+Contributions to the Theory of Games , 3(2):97–139, 1957. Ju, Q., Hei, F., Feng, T., Yi, D., Fang, Z., and Luo, Y. Ac-celerating nash equilibrium convergence in monte carlo settings through counterfactual value based fictitious play. In The Thirty-eighth Annual Conference on Neural Infor-mation Processing Systems , 2024. Kuhn, H. W. A simplified two-person poker. Contributions to the Theory of Games , 1:97–103, 1950. Lanctot, M., Waugh, K., Zinkevich, M., and Bowling, M. Monte carlo sampling for regret minimization in exten-sive games. Advances in neural information processing systems , 22, 2009. Morav ˇc´ık, M., Schmid, M., Burch, N., Lis `y, V., Morrill, D., Bard, N., Davis, T., Waugh, K., Johanson, M., and Bowl-ing, M. Deepstack: Expert-level artificial intelligence in heads-up no-limit poker. Science , 356(6337):508–513, 2017. Schelling, T. C. The Strategy of Conflict: with a new Preface by the Author . Harvard university press, 1980. Shi, J. and Littman, M. L. Abstraction methods for game theoretic poker. In Computers and Games: Second In-ternational Conference, CG 2000 Hamamatsu, Japan, October 26–28, 2000 Revised Papers 2 , pp. 333–345. Springer, 2001. Silver, D., Huang, A., Maddison, C. J., Guez, A., Sifre, L., Van Den Driessche, G., Schrittwieser, J., Antonoglou, I., Panneershelvam, V., Lanctot, M., et al. Mastering the game of go with deep neural networks and tree search. 
+
+nature , 529(7587):484–489, 2016. Silver, D., Hubert, T., Schrittwieser, J., Antonoglou, I., Lai, M., Guez, A., Lanctot, M., Sifre, L., Kumaran, D., Grae-pel, T., et al. A general reinforcement learning algorithm that masters chess, shogi, and go through self-play. Sci-ence , 362(6419):1140–1144, 2018. Tammelin, O. Solving large imperfect information games using cfr+. arXiv preprint arXiv:1407.5042 , 2014. Vinyals, O., Babuschkin, I., Czarnecki, W. M., Mathieu, M., Dudzik, A., Chung, J., Choi, D. H., Powell, R., Ewalds, T., Georgiev, P., et al. Grandmaster level in starcraft ii using multi-agent reinforcement learning. Nature , 575 (7782):350–354, 2019. Wakabayashi, D. and Young, J. Y. Defeated by a.i., a legend in the board game go warns: Get ready for what’s next. The New York Times , 2024. ISSN 0362-4331. URL https://www.nytimes.com/2024/07/ 10/world/asia/lee-saedol-go-ai.html .10 Preference-CFR: Beyond Nash Equilibrium for Better Game Strategies 
+
+Zinkevich, M., Johanson, M., Bowling, M., and Piccione, C. Regret minimization in games with incomplete informa-tion. Advances in neural information processing systems ,20, 2007. 11 Preference-CFR: Beyond Nash Equilibrium for Better Game Strategies 
+
+# A. Game introduction 
+
+A.1. Kuhn poker 
+
+Kuhn poker is a simple poker game. Here is a detailed rules introduction to it: • Card composition : Kuhn poker uses only three cards: J, Q, and K. Each player can only get one card at a time. • Action sequence : Usually, two players participate in the game. At the beginning of each round, each player places a blind bet first. Then each player will randomly receive a card. Subsequently, players take actions in turn. The action options are Bet and Pass . If one player bets, the other player can choose to call(Bet) or fold(Pass). • Winning determination : Finally, if a player calls, both players show their cards and compare the sizes. The player with the larger card wins and takes the chips in the pot. In Kuhn poker, K > Q > J. Kuhn poker is a classic model in game theory research. Due to its simple rules and limited card types and action choices, it is convenient for mathematical analysis and theoretical derivation. 
+
+A.2. Leduc poker 
+
+Leduc poker is a simplified poker game that extends Kuhn poker with additional complexity, making it a key model for game theory research. Here is a detailed introduction to its rules: • Card composition : Leduc poker uses six cards from two suits (e.g., spades and hearts), specifically J, Q, K of each suit. Each player is dealt one hole card, and one community card is placed face up. • Action sequence : The game involves two players and two betting rounds: 1. First round : Players post blinds, then receive hole cards. Actions include Bet or Check (pass). If a player bets, the opponent can Call or Fold .2. Second round : A community card is dealt, and players act again. Actions remain Bet, Check, Call, or Fold, with betting limits typically set to standardize stakes. • Winning determination : If both players call by the end of the second round, they reveal their hole cards. Hand strength is determined by: 1. Pair : Hole card and community card of the same rank (e.g., J-J) is the strongest. 2. High card : If neither pair nor flush, compare the higher card (K ¿ Q ¿ J); if tied, spades suit prevails over hearts. Leduc poker bridges the gap between simple and complex games, featuring two betting rounds and community cards that introduce strategic depth. Its structured complexity—more intricate than Kuhn poker but less complex than Texas Hold’em—makes it ideal for testing algorithms in extensive-form games and studying equilibrium strategies in partial-information scenarios. Our experiments used a 12-card (6-pair) setup. 
+
+A.3. Texas Hold’em 
+
+Texas Hold’em is a poker game that has a large player population and extensive influence globally. In terms of tournaments, numerous international Texas Hold’em competitions draw significant attention. High prize money attracts many top players to participate. Socially, it is a popular activity for people to enhance communication during leisure gatherings. The following is an introduction to some basic Texas Hold’em poker terminology. For more content, you can refer to Wikipedia. • Preflop : The stage before the community cards are dealt. Decisions are made based on hands, position, etc., like raising, calling or folding. • Flop : The first three community cards dealt. Evaluate competitiveness combined with hands and decide strategies. • Turn : The fourth community card after the flop. 12 Preference-CFR: Beyond Nash Equilibrium for Better Game Strategies 
+
+• River : The last community card. Decides the final decision. • Big blind (BB) : The big blind is a forced bet made by one of the players before the cards are dealt. It is typically twice the size of the small blind. • Small blind (SB) : The small blind is also a forced bet made by a player before the cards are dealt. • Button : The button indicates which player is the dealer for that hand. The player on the button has certain advantages in terms of position and play order. • mBB/h : In Texas Hold’em, mBB/h represents the thousandth of a big blind won or lost per hand, used to accurately measure a player’s profit or loss for each individual hand. • Loose : Play many hands with a low entry criterion. Often participate even with weak hands. High risk but may win with weak hands against strong ones. • Aggressive : Actively bet or raise to put pressure on opponents and control the game to win the pot. The hand may not be strong. • 3 Bet : Raise again after someone has raised. Often indicates a strong hand or wanting to pressure opponents and increase the pot. • All-in : Bet all chips. Due to confidence in the hand or having few chips and wanting to pressure. • Call : Follow by betting the same amount of chips as the opponent. Want to continue to see the cards and compete. • Fold : Give up the hand and not participate in the pot. Due to weak hands or high risk from large bets by opponents. • Bluff : When having a weak hand, make large bets and let opponents think the hand is strong so they fold to win the pot. High risk. 
+
+# B. Proof of Convergence of Pref-CFR 
+
+B.1. Blackwell Approachability Game Definition B.1. A Blackwell approachability game in normal-form two-player games can be described as a tuple 
+
+(Σ , u, S 1, S 2), where Σ is a strategy profile set, u is the payoff function, and Si = R|A i|≤0 is a closed convex target cone. The Player i’s regret vector of the strategy profile σ is Ri(σ) ∈ R|A i|, for each component Ri(σ, a x) = ui  ax, σ −i − ui (σ) ,
+
+ax ∈ A i the average regret vector for players i to take actions at T time a is ¯RiT
+
+¯RiT = 1
+
+T
+
+> T
+
+X
+
+> t=1
+
+Ri(σt), (17) 
+
+at each time t, the two players interact in this order: 
+
+• Player 1 chooses a strategy σ1 
+
+> t
+
+∈ Σ1;
+
+• Player 2 chooses an action σ2 
+
+> t
+
+∈ Σ2 , which can depend adversarially on all the σt output so far; 
+
+• Player 1 gets the vector value payoff R1(σt) ∈ R|A 1|.The goal of Player 1 is to select actions σ11 , σ 12 , . . . ∈ Σ1 such that no matter what actions σ21 , σ 22 , . . . ∈ Σ2 played by Player 2, the average payoff vector converges to the target set S1.
+
+min 
+
+> ˆs∈S1
+
+ˆs − ¯R1  
+
+> T2
+
+→ 0 as T → ∞ . (18) Before explaining how to choose the action σt to ensure this goal achieve, we first need to define the forceable half-space: 13 Preference-CFR: Beyond Nash Equilibrium for Better Game Strategies 
+
+Definition B.2. Let H ⊆ Rd as half-space, that is, for some a ∈ Rd, b ∈ R, H = x ∈ Rd : a⊤x ≤ b . In Blackwell approachability games, the halfspace H is said to be forceable if there exists a strategy σi∗ ∈ Σi of Player i that guarantees that the regret vector Ri(σ) is in H no matter the strategy played by Player −i, such that 
+
+Ri  σi∗, ˆσ−i ∈ H ∀ˆσ−i ∈ Σ−i, (19) 
+
+and σi∗ is forcing action for H.
+
+Blackwell’s approachability theorem states the following. 
+
+Theorem B.3. Goal 18 can be attained if and only if every halfspace Ht ⊇ S is forceable. 
+
+The relationship between Blackwell approachability and no-regret learning is: 
+
+Theorem B.4. Any strategy (algorithm) that achieves Blackwell approachability can be converted into an algorithm that achieves no-regret, and vice versa (Abernethy et al., 2011). 
+
+If the algorithm achieves Blackwell approachability, the average strategy ¯σiT will converge to equilibrium with T → ∞ .The rate of convergence is ϵiT ≤ ¯RiT ≤ Lp|A i|/√T .
+
+B.2. Pref-CFR Achieves Blackwell Approachability  
+
+> Figure 6. The differences in the selected forcing actions and forcing half-spaces of RM, FP and Pref-RM in the two-dimensional plane.
+
+The proof concept for the Pref-CFR algorithm is as follows: If an algorithm guarantees that the regret value converges to zero in normal-form games, applying this algorithm to two-player zero-sum games will converge to the NE and to the CCE in multi-player general-sum games. Furthermore, Theorem B.4 indicates that any algorithm satisfying Blackwell approachability is equivalent to a no-regret algorithm. Additionally, as shown in paper (Zinkevich et al., 2007), if an algorithm ensures that regret converges to zero in normal-form games, then its application in extensive-form games leads to the convergence of counterfactual regret to zero (i.e., behavioral strategy convergence to NE in two-player zero-sum games). Thus, to demonstrate that Pref-CFR converges to NE in two-player zero-sum extensive-form games, we need only establish that it satisfies Blackwell approachability. In this proof, we primarily show that Pref-CFR(BR) meets the criteria for Blackwell approachability, while Pref-CFR(RM) can derive similar results through a relatively straightforward conversion. Let ¯Ri, ∗ 
+
+> t
+
+represent any component of the vector ¯Rit such that ¯Ri, ∗ 
+
+> t
+
+> 0. Next, we identify the point ψt = ¯Rit − ¯Ri, ∗ 
+
+> t
+
+∈ R|A i|
+
+on the axis (noting that this point is not necessarily located on the surface of the target cone Si). We can define the normal vector as ¯Rit−ψt
+
+| ¯Rit−ψt| , which allows us to determine the half-space defined by this normal vector and point ψt:
+
+HP 
+
+> t
+
+=
+
+n
+
+z ∈ R|A −i| : ( ¯Rit − ψt)⊤z ≤ ( ¯Rit − ψt)⊤ψt
+
+o
+
+. (20) 14 Preference-CFR: Beyond Nash Equilibrium for Better Game Strategies 
+
+Since ¯Rit − ψt = ¯Ri, ∗ 
+
+> t
+
+and ( ¯Rit − ψt)⊤ψt = 0 , we can simplify this to: 
+
+HP 
+
+> t
+
+=
+
+n
+
+z ∈ R|A −i| :
+
+D ¯Ri, ∗ 
+
+> t
+
+, z
+
+E
+
+≤ 0
+
+o
+
+, (21) for any point s′ ∈ Si there is 
+
+D ¯Ri, ∗ 
+
+> t
+
+, s′
+
+E
+
+≤ 0. Then we need to find the forcing action that matches HP 
+
+> t
+
+. According to Definition B.2, we need to find a σi∗ 
+
+> t+1
+
+∈ Σi that achieves Ri  σi∗
+
+> t+1
+
+, ˆσ−it+1 
+
+ ∈ H i, P 
+
+> t+1
+
+for any ˆσ−it+1 ∈ Σ−i. For simplicity, let 
+
+ℓ= [ ui  a1, σ −i, . . . ]⊤ ∈ R|A i|, we rewrite the regret vector as Ri  σi∗
+
+> t+1
+
+, ˆσ−it+1 
+
+ = ℓ − ℓ, σ i∗ 
+
+> t+1
+
+1, we are looking for a 
+
+σi∗ 
+
+> t+1
+
+∈ Σi such that: 
+
+Ri  σi∗
+
+> t+1
+
+, ˆσ−it+1 
+
+ ∈ H P
+
+> t
+
+⇐⇒ 
+
+D ¯Ri, ∗ 
+
+> t
+
+, ℓ − ℓ, σ i∗ 
+
+> t+1
+
+1
+
+E
+
+≤ 0
+
+⇐⇒ 
+
+D ¯Ri, ∗ 
+
+> t
+
+, ℓ
+
+E
+
+− ℓ, σ i∗
+
+> t+1
+
+D ¯Ri, ∗ 
+
+> t
+
+, 1
+
+E
+
+≤ 0
+
+⇐⇒ 
+
+D ¯Ri, ∗ 
+
+> t
+
+, ℓ
+
+E
+
+− ℓ, σ i∗ 
+
+> t+1
+
+¯Ri, ∗ 
+
+> t1
+
+≤ 0
+
+⇐⇒ 
+
+*
+
+ℓ, ¯Ri, ∗
+
+> t
+
+¯Ri, ∗ 
+
+> t1
+
++
+
+− ℓ, σ i∗ 
+
+> t+1
+
+≤ 0
+
+⇐⇒ 
+
+*
+
+ℓ,
+
+ ¯Rit
+
+∗
+
+ ¯Rit
+
+∗
+
+> 1
+
+− σi∗
+
+> t+1
+
++
+
+≤ 0.
+
+(22) Therefore, the strategy σi∗ 
+
+> t+1
+
+= ¯Ri, ∗
+
+> t
+
+∥ ¯Ri, ∗ 
+
+> t
+
+∥1
+
+can guarantee HP 
+
+> t+1
+
+to be forceable half-space. Figure 6 intuitively shows the relationship between these points, half-spaces and the target set in a two-dimensional plane. It should be noted that the half-space HP 
+
+> t+1
+
+can only prove that the distance from the average regret value ¯Rit to the point 
+
+ψt converges to 0, but ψt is not necessarily on the target cone Si. So it cannot be shown that ¯Rit will converge to Si. The projection of ¯Rit to the target cone Si is point γit =  ¯Rit
+
+− , ¯Ri, − 
+
+> t
+
+= min {0, ¯Rit}. We need to keep the distance from the ¯Rit
+
+to point ψt and point γit within a certain range, and preference degree δ(a) just plays this role. Define aBR = arg max a∈A i ¯Rit(a), aP = arg max a∈A i δ(a) ¯Rit(a). The distance from the average regret value ¯Rit to γit is 
+
+∥ ¯Ri, + 
+
+> t
+
+∥2, and the distance from ¯Rit to the point ψt is δi(aP ) ¯Rit(aP ). Define dist (x, y ) as the distance between points x and 
+
+y.dist ( ¯Rit, γt) = ∥ ¯Ri, + 
+
+> t
+
+∥2 ≤ p|A i| ¯Ri, + 
+
+> t
+
+(aBR ), (23) at the same time, dist ( ¯Rit, ψt) = δi(aP ) ¯Ri, + 
+
+> t
+
+(aP ) ≥ δi(aBR ) ¯Ri, + 
+
+> t
+
+(aBR ), (24) since δi(aBR ) ≥ 1, so: dist ( ¯Rit, γt) ≤
+
+p|A i|δi(aP )
+
+δi(aBR ) dist ( ¯Rit, ψt). (25) Define δ∗ = max a∈A i (δi(a)) . Therefore, from Blackwell’s approachability, we know that dist ( ¯Rit, ψt) ≤ L√|A i|δ∗ 
+
+> √t
+
+.Finally, we get: dist ( ¯Rit, γt) = L|A i|δ∗
+
+√t . (26) The convergence speed will linearly slow down as δ∗ increases. As long as δ∗ is set within a reasonable range, it will not significantly reduce the convergence speed of Pref-CFR. 
+
+B.3. Vulnerability CFR Will Converge to an ϵ-NE 
+
+The proof for the Vulnerability CFR algorithm is more straightforward. In the original scenario, the historical strategy ¯σit
+
+converging to a NE is equivalent to the regret ¯Rit converging to the convex target cone Si = R|A i|≤0 . This holds true because, 15 Preference-CFR: Beyond Nash Equilibrium for Better Game Strategies    
+
+> Figure 7. The differences in the selected forcing actions and forcing half-spaces of RM and βvulnerability RM in the two-dimensional plane.
+
+given the opponent’s strategy ¯σ−it , player i identifies a strategy ¯σit such that regardless of which pure strategy player i selects, their payoff will not increase (since ¯Rit(a) ≤ 0 for all a ∈ A i as t → ∞ ), thus satisfying the conditions for NE. However, what if our target cone is not Si = R|A i|≤0 , but instead Si = R|A i|≤β for some β ≥ 0? This means that the regret of any pure strategy will not exceed β, indicating that we have identified a β-NE. In the iteration, we only need to adjust the translation. The original projection point is γt = ¯Ri, − 
+
+> t
+
+, and the distance that needs to be reduced is given by: dist ( ¯Rit, γt) = ∥ ¯Rit − γt∥2 = ∥ ¯Ri, + 
+
+> t
+
+∥2. (27) Now, the projection point becomes γβt = ¯Ri, −βt , where ¯Ri, −βt = min { ¯Rit, β }. At this point, the distance that needs to be reduced is: dist ( ¯Rit, γβt ) = ∥ ¯Rit − γβt ∥2 = ∥ ¯Ri, + 
+
+> t
+
+− β∥2. (28) Thus, in the CFR iteration, we simply need to replace ¯Rit(a) with ¯Bit (a) = ¯Rit(a) − β to ensure that the final strategy converges to a β-NE. Figure 7 intuitively illustrates the relationship between these points, the half-spaces, and the target set in a two-dimensional plane. Strictly speaking, in many of our subsequent experiments, both Pref-CFR and Vulnerability CFR are used simultaneously. However, Pref-CFR is the more critical component of the algorithm. Using Vulnerability CFR alone does not produce meaningful results. Therefore, even though Vulnerability CFR is utilized, it will not be mentioned in the name of the algorithm. 
+
+# C. Kuhn Poker Experiment Setup 
+
+The settings in the experiment are as follows: 1. Pref-CFR( BR ) with δ(J ,Bet ), δ (Q ,Bet ), δ (K ,Bet ) = 10 .2. Pref-CFR( BR ) with δ(J ,Bet ), δ (Q ,Bet ), δ (K ,Bet ) = 5.3. Pref-CFR( RM ) with δ(J ,Bet ), δ (Q ,Bet ), δ (K ,Bet ) = 5.4. Pref-CFR( RM ) with δ(J ,Pass ), δ (Q ,Pass ), δ (K ,Pass ) = 5.5. Pref-CFR( BR ) with δ(J ,Pass ), δ (Q ,Pass ), δ (K ,Pass ) = 5.6. Pref-CFR( BR ) with δ(J ,Pass ), δ (Q ,Pass ), δ (K ,Pass ) = 10 .In Kuhn poker, there are 12 information sets. For all actions in all information sets except for those on the information sets specified here, δ(I, a ) = 1 .16 Preference-CFR: Beyond Nash Equilibrium for Better Game Strategies 
+
+# D. The RM Algorithm is a GWFP Process 
+
+The final strategy of RM is: 
+
+¯σT = 1
+
+T
+
+> T
+
+X
+
+> t=1
+
+σt, RM , (29) where 
+
+σt, RM =
+
+    
+
+> ¯Ri, +
+> T(a)
+> P
+> a∈A i¯Ri, +
+> T(a)
+
+if ¯Ri, + 
+
+> T
+
+(a′)̸ = 0 
+
+> 1
+> |A i|
+
+otherwise , (30) Compared with Formula 10, in the GWFP process, it is equivalent to αt = 1 /t , Mt = 0, and bϵt = σt, RM . Therefore, in a two-player zero-sum game, we only need to prove 
+
+lim   
+
+> T→∞
+
+ϵT = 0 , (31) where 
+
+ϵT = ui(bi(¯ σ−iT ), ¯σ−iT ) − ui(σiT, RM , ¯σ−iT ), (32) to show that the RM algorithm is a GWFP process. First, recall that in the FP process, the essence is to find a BR strategy to the historical strategy. 
+
+¯σt+1 = tt + 1 ¯σt + 1
+
+t + 1 b(¯ σt). (33) In a two-player zero-sum normal-from game, this means performing a matrix multiplication. Let the pay-off matrix of the game be U ∈ R|A 1|×|A 2|. Then, to find b(¯ σt), we need to calculate 
+
+b1(¯ σ2 
+
+> t
+
+) = arg max 
+
+> a∈A 1
+
+U ¯σ2 
+
+> t
+
+. (34) Here, we start from the perspective of player 1, and the calculation method for player 2 is symmetric. Specifically: 
+
+b1(¯ σ2 
+
+> t
+
+) = arg max 
+
+> a∈A 1
+
+U ¯σ2 
+
+> t
+
+= 1
+
+t arg max  
+
+> a∈A
+
+U
+
+> t
+
+X
+
+> k=1
+
+σ2
+
+> k
+
+= 1
+
+t arg max 
+
+> a∈A 1
+> t
+
+X
+
+> k=1
+
+U σ 2
+
+> k
+
+.
+
+(35) Define qit(a) = ui(a, σ −it ) and QiT = PTt=1 qt, then 
+
+bi(¯ σ−it ) = arg max 
+
+> a∈A i
+
+Qit. (36) Define ¯QiT = 1 
+
+> T
+
+QiT , and the value obtained is: 
+
+ui(b(¯ σ−iT ), ¯σ−2 
+
+> T
+
+) = ¯QiT (b(¯ σ−iT )) , (37) the value obtained by the RM strategy is: 
+
+ui(σiT, RM , ¯σ−iT ) = X
+
+> a∈A i
+
+σiT, RM (a) ¯QiT (a). (38) When ¯Ri, + 
+
+> T
+
+(a′) = 0, it means that all ¯QiT (a) are equal, and naturally: 
+
+ui(b(¯ σ−iT ), ¯σ−iT ) − ui(σiT, RM , ¯σ−iT ) = 0 . (39) When ¯Ri, + 
+
+> T
+
+(a′)̸ = 0, in the RM process, define ¯V iT = PTt=1 ui(σt). The regret of each action can be rewritten as: 
+
+¯RiT (a) = ¯QiT (a) − ¯V iT , (40) 17 Preference-CFR: Beyond Nash Equilibrium for Better Game Strategies 
+
+Formula 32 can be rewritten as: 
+
+ϵiT = ui(b(¯ σ−iT ), ¯σ−iT ) − ui(σiT, RM , ¯σ−iT )= ¯QiT (b(¯ σ−iT )) − X   
+
+> a∈A iand ¯Ri, +
+> T(a)>0
+
+σiT, RM (a) ¯QiT (a)= X   
+
+> a∈A iand ¯Ri, +
+> T(a)>0
+
+σT, RM (a)   ¯QiT (b(¯ σ−iT )) − ¯QiT (a)
+
+= X   
+
+> a∈A iand ¯Ri, +
+> T(a)>0
+
+σT, RM (a)   ¯RiT (b(¯ σ−iT )) − ¯RiT (a) .
+
+(41) Since ¯Ri, + 
+
+> T
+
+(a) > 0, so: 
+
+0 < ¯RiT (a) ≤ ¯RiT (b(¯ σ−it )) , (42) in a two-player zero-sum game, lim T →∞ max a∈A i ¯RiT (a) = 0 . We have: 
+
+ϵit = X   
+
+> a∈A iand ¯Ri, +
+> T(a)>0
+
+σT, RM (a)   ¯RiT (b(¯ σ−iT )) − ¯RiT (a) = 0 , (43) holds for all i ∈ N . Therefore, RM satisfies all the conditions of GWFP, and RM is a GWFP process. Q.E.D. 18

@@ -1,0 +1,1111 @@
+Title: Decoding Rewards in Competitive Games: Inverse Game Theory with Entropy Regularization
+
+URL Source: https://openreview.net/pdf?id=L47M0km5dq
+
+Number of Pages: 13
+
+Markdown Content:
+# Decoding Rewards in Competitive Games: Inverse Game Theory with Entropy Regularization 
+
+Junyi Liao 1 Zihan Zhu 2 Ethan X. Fang 1 Zhuoran Yang 3 Vahid Tarokh 1
+
+# Abstract 
+
+Estimating the unknown reward functions driv-ing agents’ behavior is a central challenge in in-verse games and reinforcement learning. This paper introduces a unified framework for reward function recovery in two-player zero-sum matrix games and Markov games with entropy regular-ization. Given observed player strategies and ac-tions, we aim to reconstruct the underlying re-ward functions. This task is challenging due to the inherent ambiguity of inverse problems, the non-uniqueness of feasible rewards, and limited observational data coverage. To address these challenges, we establish reward function identi-fiability using the quantal response equilibrium (QRE) under linear assumptions. Building on this theoretical foundation, we propose an algorithm to learn reward from observed actions, designed to capture all plausible reward parameters by con-structing confidence sets. Our algorithm works in both static and dynamic settings and is adapt-able to incorporate other methods, such as Maxi-mum Likelihood Estimation (MLE). We provide strong theoretical guarantees for the reliability and sample-efficiency of our algorithm. Empirical re-sults demonstrate the framework’s effectiveness in accurately recovering reward functions across var-ious scenarios, offering new insights into decision-making in competitive environments. 
+
+# 1. Introduction 
+
+Understanding the underlying reward functions that drive agents’ behavior is a central problem in inverse reinforce-       
+
+> 1Department of Electrical and Computer Engineering, Duke University, Durham NC, USA 2Department of Statistics and Data Science, University of Pennsylvania, Philadelphia PA, USA 3Department of Statistics and Data Science, Yale Uni-versity, New Haven CT, USA. Correspondence to: Junyi Liao
+> <junyi.liao@duke.edu >.
+> Proceedings of the 42 nd International Conference on Machine Learning , Vancouver, Canada. PMLR 267, 2025. Copyright 2025 by the author(s).
+
+ment learning (IRL) (Ng & Russell, 2000; Arora & Doshi, 2020). While traditional reinforcement learning (RL) (Szepesv ´ari, 2010; Sutton & Barto, 2018) focuses on solv-ing policies based on a known reward function, IRL inverts this process, aiming to infer the reward function from ob-served behavior. In competitive settings, such as two-player zero-sum games, this problem becomes even more compli-cated, as the agents’ strategies depend not only on their own rewards but also on their opponents’ strategies (Wang & Klabjan, 2018; Savas et al., 2019; Wei et al., 2021). These challenges motivate the study of inverse game theory (Lin et al., 2014; Yu et al., 2019), which seeks to recover reward functions from observed strategies in competitive games. From a practical perspective, inferring the reward functions in competitive games has wide-ranging applications in eco-nomics, cyber security, robotics, and autonomous systems (Ng & Russell, 2000; Ziebart et al., 2008). Understand-ing the motivations behind players’ actions in adversarial settings help optimize resource allocation in cyber security (Miehling et al., 2018), model strategic interactions in eco-nomic markets (Chow & Djavadian, 2015), or design better AI systems for competitive tasks (Huang et al., 2019). Meanwhile, recovering reward functions in competitive games involves several key challenges: (i) Inverse problems are inherently ill-posed (Ahuja & Orlin, 2001; Yu et al., 2019), as multiple reward functions can lead to the same optimal strategy and equilibrium solutions. A well-designed algorithm should not merely recover a single reward func-tion but instead identify the entire set of feasible reward functions (Metelli et al., 2021; Lindner et al., 2022; Metelli et al., 2023). (ii) In an offline setting (Jarboui & Perchet, 2021), insufficient dataset coverage is also a significant chal-lenge. Observed strategies often fail to comprehensively cover the state-action space, making it difficult to ensure ro-bust reward function recovery. These challenges are further amplified in Markov games (Littman, 1994), where agents’ strategies evolve dynamically over time, introducing addi-tional complexity in reward identification and estimation. 
+
+1.1. Major Contributions 
+
+We propose a unified framework for inverse game theory that addresses the identification and estimation of reward 1Inverse Game Theory with Entropy Regularization 
+
+functions in competitive games in both static and dynamic settings. Our contribution is four-fold: • Identification of Reward Functions: We study the iden-tification problem using the quantal response equilib-rium (QRE) under a linear assumption. We formally define the conditions for reward parameter identifiabil-ity and characterize the feasible set when parameters are not uniquely identifiable. • Algorithm for Reward Estimation: Building on the identification results, we propose an algorithm that estimates reward functions by constructing confidence sets to capture all feasible reward parameters. • Extension to Markov Games: We extend our frame-work to entropy-regularized Markov games, combining reward recovery with transition kernel estimation to handle dynamic settings. This approach is designed to be sample-efficient and adaptable, incorporating meth-ods like Maximum Likelihood Estimation (MLE). • Theoretical and Empirical Validation: We provide rig-orous theoretical guarantees to establish the reliability and efficiency of our algorithm. Additionally, numeri-cal experiments demonstrate the effectiveness of our framework in accurately recovering reward functions across various competitive scenarios. 
+
+1.2. Related Work Zero-sum Markov Games. The zero-sum Markov game (Shapley, 1953; Xie et al., 2020; Cen et al., 2023; Kalogian-nis & Panageas, 2023) models the competitive interactions between two players in dynamic environments. The solution typically focuses on finding equilibrium strategies (Nash Jr, 1951; McKelvey & Palfrey, 1995; Xie et al., 2020) where neither player can unilaterally improve their outcome. With a primary focus on learning in a sample-efficient manner, learning algorithms are proposed, including policy-based methods (Cen et al., 2021; Wei et al., 2021; Zhao et al., 2022; Cen et al., 2023) and value-based methods (Xie et al., 2020; Chen et al., 2022; Kalogiannis & Panageas, 2023). 
+
+Inverse Optimization and Inverse Reinforcement Learn-ing (IRL). Inverse optimization (Ahuja & Orlin, 2001; Chan et al., 2022; Ahmadi et al., 2023) reverses the tradi-tional optimization process by taking observed decisions as input to infer an objective function (Ahuja & Orlin, 2001; Nourollahi & Ghate, 2018) and constraints (Chan & Kaw, 2019; Ghobadi & Mahmoudzadeh, 2021) that make these decisions approximately or exactly optimal. In practice, inverse optimization offers a powerful framework for un-derstanding and modeling decision-making in complex sys-tems across fields like marketing (Chow & Djavadian, 2015; Vatandoust et al., 2023), operations research (Brotcorne et al., 2005; Agarwal & ¨Ozlem Ergun, 2010; Yu et al., 2021), and machine learning (Konstantakopoulos et al., 2017; Dong et al., 2018; Tan et al., 2019). Inverse reinforcement learning (Ng & Russell, 2000; Ziebart et al., 2008; Herman et al., 2016; Wulfmeier et al., 2016; Arora & Doshi, 2020) focuses on inferring the reward func-tion based on the observed behavior or strategy of agents and experts, which is crucial for understanding various decision-making processes, from single-agent processes (Boularias et al., 2011; Herman et al., 2016; Fu et al., 2018) to compet-itive or cooperative games (Vorobeychik et al., 2007; Ling et al., 2018; Wang & Klabjan, 2018; Wu et al., 2024). A popular approach within the field of IRL is the Maximum Entropy IRL (Ziebart et al., 2008; Ziebart, 2018; Wulfmeier et al., 2016; Snoswell et al., 2020), which is based on the principle of maximum entropy and is provably efficient in handling uncertainty of agent behaviors (Snoswell et al., 2020; Gleave & Toyer, 2022) and high-dimensional obser-vations (Wulfmeier et al., 2016; Snoswell et al., 2020; Song et al., 2022). 
+
+Entropy Regularization in RL and Games. We use the entropy regularization in our framework, which has be-come a widely used technique in reinforcement learning (Szepesv ´ari, 2010; Ziebart, 2018) and game theory (Savas et al., 2019; Guan et al., 2021; Cen et al., 2023). Entropy regularization is provably effective in addressing challenges like exploration-exploitation tradeoff (Haarnoja et al., 2018; Wang et al., 2019; Ahmed et al., 2019; Neu et al., 2017), algorithm robustness (Zhao et al., 2020; Guo et al., 2021) and convergence acceleration (Cen et al., 2021; Cen et al., 2023; Zhan et al., 2023). Importantly, entropy regularization has also been shown to improve identifiability in inverse reinforcement learning (IRL) problems. Recent works in single-agent IRL, such as Cao et al. (2021) and Rolland et al. (2022), leverage entropy-regularized policies to transform ill-posed IRL problems into identifiable ones under mild assumptions. Our work builds on this insight by extending it to competitive multi-agent settings, where identifiability becomes even more subtle due to strategic interactions. 
+
+Paper Organization. In §2, we develop the framework of inverse game theory for entropy-regularized zero-sum games. In §3, we extend the framework introduced in §2 to a sequential decision-making setting, focusing on entropy-regularized zero-sum Markov games. We provide numerical experiments to validate the theoretical findings in §4, and conclude the paper in §5. 
+
+Notations. We introduce some useful notation before proceeding. Throughout this paper, we denote the set 
+
+1, 2, · · · , n by [n] for any positive integer n. For two posi-tive sequences (an)∞ 
+
+> n=1
+
+and (bn)∞
+
+> n=1
+
+, we write an = O(bn)
+
+or an ≲ bn if there exists a positive constant C such that an ≤ C · bn. For any integer d, we denote the d-2Inverse Game Theory with Entropy Regularization 
+
+dimensional Euclidean space by Rd, with inner product 
+
+⟨x, y ⟩ = x⊤y and the induced norm ∥x∥ = p⟨x, x ⟩.For any matrix A = ( aij ), the Frobenius norm of A is 
+
+∥A∥F = ( P 
+
+> i,j
+
+a2 
+
+> ij
+
+)1/2, and the operator norm (or spec-tral norm) of A is ∥A∥op = σ1(A), where σ1(A) stands for the largest singular value of A. For any square ma-trix A = ( aij ), denote its trace by tr (A) = P 
+
+> i
+
+aii . For a nonempty set X , we denote by ∆( X ) the space of all probability distributions on X .
+
+# 2. Entropy-Regularized Zero-Sum Matrix Games 
+
+We derive the inverse game theory for entropy-regularized two-player zero-sum matrix games. We consider the iden-tification problem of payoff matrices under the linear para-metric assumption and derive a necessary and sufficient condition for strong identification. Furthermore, we pro-pose methods to recover identified sets and payoff matrices. 
+
+2.1. Preliminary and Problem Formulation 
+
+We consider a two-player zero-sum matrix game, which is specified by a triple (A, B, Q ), where A = {1, 2, · · · , m }
+
+and B = {1, 2, · · · , n } are finite sets of actions that players 
+
+i ∈ { 1, 2} can take, and Q(·, ·) is the payoff function. The zero-sum game can be formulated as the following min-max optimization problem 
+
+max  
+
+> μ
+
+min  
+
+> ν
+
+μ⊤Qν, 
+
+where μ ∈ ∆( A) and ν ∈ ∆( B) are policies for each player, and Q = ( Q(a, b )) a∈A ,b ∈B ∈ Rm×n denotes the payoff matrix. The solution of this optimization problem is also known as the Nash equilibrium (Nash Jr, 1951), where both agents play the best response against the other agent. 
+
+Entropy-Regularized Two-Player Zero-Sum Matrix Game. We study the entropy-regularized matrix game. Formally, this amounts to solving the following matrix game with entropy regularization (Mertikopoulos & Sandholm, 2016): 
+
+max  
+
+> μ
+
+min  
+
+> ν
+
+μ⊤Qν + η−1H(μ) − η−1H(ν),
+
+where η > 0 is the regluarization parameter, and 
+
+H(π) = − X
+
+> i
+
+πi log( πi)
+
+denotes the Shannon entropy (Shannon, 1948) of π. Accord-ing to the von-Neumann minimax theorem (von Neumann, 1928), there exists a unique solution (μ∗, ν ∗) to this min-max problem, denoted as the quantal response equilibrium (McKelvey & Palfrey, 1995), which satisfies the following fixed point equations: 
+
+
+
+μ∗(a) = eηQ (a, ·)ν∗
+
+P 
+
+> a∈A
+
+eηQ (a, ·)ν∗ , for all a ∈ A ,ν∗(b) = e−ηQ (·,b )⊤μ∗
+
+P 
+
+> b∈B
+
+e−ηQ (·,b )⊤μ∗ , for all b ∈ B .
+
+This non-linear system is equivalent to the following m +
+
+n − 2 linear constraints: for all a ∈ A and b ∈ B ,
+
+(  Q(a, ·) − Q(1 , ·)ν∗ = log( μ∗(a)/μ ∗(1)) /η, 
+
+ Q(·, b ) − Q(·, 1) ⊤μ∗ = − log( ν∗(b)/ν ∗(1)) /η. (1) 
+
+Goal. We study the inverse game theory for this entropy-regularized zero-sum game. To elaborate, we observe strat-egy pairs (ak, b k) iid 
+
+∼ (μ∗, ν ∗) follows the QRE, and we aim to recover all the feasible payoff functions Q(·, ·).
+
+Identification of payoff matrices. To derive inverse game theory, it is important to study the identifiability of the pay-off matrix, i.e. if there exists a unique payoff matrix that satisfies the QRE constraint. In this paper, we study the identification problem under the linear structure assump-tion (§2.2) and further generalize the analysis to the partial identification case (§2.3). 
+
+2.2. Strong Identification 
+
+Suppose (μ∗, ν ∗) are the QRE for two players and we use the observed data to obtain an estimation denoted by (bμ, bν).Next, we are going to estimate the payoff matrix from this estimated QRE. To ensure the game is identifiable, we lever-age the following linear parametric assumption. 
+
+Assumption 2.1 (Linear payoff functions) . Suppose that there exists a vector-valued kernel ϕ : A × B → Rd and a vector θ∗ ∈ Rd such that ∥θ∗∥ ≤ M for some M > 0, and 
+
+Q(a, b ) = ⟨ϕ(a, b ), θ ∗⟩
+
+for all (a, b ) ∈ A × B .To estimate the payoff matrix Q from the observed data, our essential goal is to estimate θ∗. Under Assumption 2.1, the linear system (1) can be rewritten as follows: for all a ∈ A 
+
+and b ∈ B ,
+
+(
+
+(ϕ(a, ·) − ϕ(1 , ·)) ν∗, θ = log( μ∗(a)/μ ∗(1)) /η, 
+
+(ϕ(·, b ) − ϕ(·, 1)) ⊤ μ∗, θ = − log( ν∗(b)/ν ∗(1)) /η, 
+
+where (ϕ(a, ·) − ϕ(1 , ·)) ν∗, (ϕ(·, b ) − ϕ(·, 1)) ⊤ μ∗ ∈ Rd.To simplify the notation, we define matrices 
+
+A(ν) = (( ϕ(a, ·) − ϕ(1 , ·)) ν)a∈A /{1} ∈ R(m−1) ×d,B(μ) = (( ϕ(·, b ) − ϕ(·, 1)) ⊤ μ)b∈B /{1} ∈ R(n−1) ×d,
+
+3Inverse Game Theory with Entropy Regularization 
+
+and define vectors 
+
+c(μ) = (log( μ(a)/μ (1)) /η )a∈A /{1} ∈ Rm−1,d(ν) = ( − log( ν(b)/ν (1)) /η )b∈B /{1} ∈ Rn−1
+
+Then the linear constraints would be 
+
+A(ν∗)
+
+B(μ∗)
+
+
+
+θ =
+
+c(μ∗)
+
+d(ν∗)
+
+
+
+. (2) Since the linear system has m + n − 2 constraints and the dimension of θ is d. Intuitively, if d ≤ m + n − 2 and the linear constraints are full rank, there is at most one solution of the above linear equations. 
+
+Proposition 2.2 (Necessary and sufficient condition for strong identification) . Under Assumption 2.1, there is a unique θ ∈ Rd such that Q(a, b ) = ⟨ϕ(a, b ), θ ⟩ (i.e. θ = θ∗)for all (a, b ) ∈ A × B if and only if the QRE satisfies the rank condition rank 
+
+ A(ν∗)
+
+B(μ∗)
+
+ 
+
+= d. (3) Let the rank condition (3) hold, so that the game is strongly identifiable. In an offline setting, we propose a two-step method to estimate θ∗.1. Estimate the QRE (μ∗, ν ∗) from the observed data and obtain (bμ, bν).2. Leverge (2) to estimate θ. To be specific, we conduct the least-square estimation and obtain bθ:
+
+bθ := arg min 
+
+> θ∈Rd
+
+A(bν)
+
+B(bμ)
+
+
+
+θ −
+
+c(bμ)
+
+d(bν)
+
+ 2
+
+, (4) If the sample size is sufficiently large and TV (bμ, μ ∗) and TV (bν, ν ∗) are close to zero, the coefficient matrix in (4) is of full column rank, and we can derive a closed form for bθ:
+
+bθ =
+
+A(bν)
+
+B(bμ)
+
+⊤ A(bν)
+
+B(bμ)
+
+!−1 A(bν)
+
+B(bμ)
+
+⊤ c(bμ)
+
+d(bν)
+
+
+
+. (5) Next, we derive the estimation error of the two-step method. Namely, given a finite sample bound for TV( bμ, μ ∗) and 
+
+TV( bν, ν ∗), we aim to derive ∥bθ − θ∗∥.
+
+Theorem 2.3 (Parameter estimation error) . Let ϵ1 and ϵ2
+
+be two small numbers satisfying ϵ1 < min a∈[m] μ∗(a) and 
+
+ϵ2 < min b∈[n] ν∗(b). Under Assumption 2.1 and the rank condition in (3) , suppose (ˆ μ, ˆν) satisfies TV (ˆ μ, μ ∗) ≤ ϵ1/2
+
+and TV (ˆ ν, ν ∗) ≤ ϵ2/2, then ˆθ constructed by (4) satisfies 
+
+∥ˆθ−θ∗∥2 ≲ ϵ21· 1 + m · (ϵ22 + 1) +ϵ22· 1 + n · (ϵ21 + 1)  .
+
+Now we present the finite sample result of the sample com-plexity. In the two-step method, given a dataset of agent actions following the true QRE, we first use a consistent estimator to approximate the true QRE and obtain bμ, bν, then we use the estimated QRE to conduct the least square (5) .Therefore, the sample complexity would be dependent on the convergence rate of the QRE estimator. A natural choice for QRE estimation is the frequency estimator. 
+
+Theorem 2.4 (Finite sample error bound) . Given N sam-ples {(ak, b k)}k∈[N ] following the true QRE (μ∗, ν ∗), we obtain bμ, bν by the frequency estimator. For any δ ∈ (0 , 1) ,the estimation error bound of the payoff matrix holds with probability at least 1 − δ
+
+∥ bQ − Q∥2 
+
+> F
+
+≲ O
+
+ m2 + n2 + ( m + n) log(1 /δ )
+
+N
+
+
+
+.
+
+Theorem 2.4 provides a probabilistic guarantee for the accu-racy of the reconstructed payoff matrix bQ in a finite-sample setting. The bound explicitly depends on the sample size 
+
+N , the action space dimensions m, n , and the confidence parameter δ. The estimation error decreases at a rate of 
+
+O(1 /N ), which is consistent with the standard empirical result of the frequency estimator (van der Vaart, 1998). As the sample size N increases, the errors of bμ and bν decrease, leading to a more accurate reconstruction of the reward 
+
+Q∗. On the other hand, the bound grows with the action space size in terms of m2 + n2, indicating that larger action spaces require more samples to achieve the same estimation accuracy. 
+
+2.3. Partial Identification 
+
+If the rank condition (3) does not hold, there are infinitely many θ ∈ Rd that satisfy the QRE constraint (2). Under Assumption 2.1, the feasible set Θ ⊂ Rd is 
+
+Θ = 
+
+
+
+θ :
+
+A(ν∗)
+
+B(μ∗)
+
+
+
+θ =
+
+c(μ∗)
+
+d(ν∗)
+
+
+
+, ∥θ∥ ≤ M
+
+
+
+.
+
+Since the true parameter θ∗ is partially identified, we con-struct a confidence set that contains the identified set with high probability. Given N strategy pairs following the true QRE, we first estimate the QRE from the observed data by frequency estimators bμ and bν. Next, we select a threshold 
+
+κN > 0 and construct the confidence set as follows: 
+
+bΘN =
+
+(
+
+θ :
+
+A(bν)
+
+B(bμ)
+
+
+
+θ −
+
+c(bμ)
+
+d(bν)
+
+ 2
+
+≤ κN , ∥θ∥ ≤ M
+
+)
+
+.
+
+(6) To recover the feasible payoff functions, we simply compute 
+
+bQ(a, b ) = ϕ(a, b )⊤ bθ for all bθ ∈ bΘ according to the linear assumption. 4Inverse Game Theory with Entropy Regularization 
+
+We demonstrate the effectiveness of our Algorithm by es-tablishing its ability to construct accurate confidence sets. To be specific, we show that the confidence set bΘ is close to the identified set Θ when the sample size N is large. The key to approximating feasible set Θ is to identify a suitable threshold κN that makes the confidence set bΘN “similar” to 
+
+Θ. The following theorem formalizes this intuition. 
+
+Theorem 2.5 (Convergence of confidence set) . Let Assump-tion 2.1 hold. For each N ∈ N, suppose we observe N
+
+samples {(ak, b k)}k∈[N ] following the true QRE (μ∗, ν ∗),and calculate (bμ, bν) by the frequency estimator. Set the confidence set bΘN as in (6) , where κN = O(N −1). Then with probability at least 1 − δ,
+
+dH (Θ , bΘN ) ≲ m + n + p(m + n) log(1 /δ )
+
+√N , (7) 
+
+where dH is the Hausdorff distance corresponding to the Euclidean distance in Rd.
+
+Theorem 2.5 establishes the asymptotic consistency of our confidence set bΘN in the finite-sample setting, showing that it converges to the true feasible set Θ as the number of observed samples increases. The finite-sample bound (7) demonstrates that the estimation error decreases at the rate of O(N −1/2), which matches the standard concentration rate for empirical frequency estimators. The dependence on 
+
+m and n highlights that larger action spaces require more samples for the same level of confidence. This result con-firms that our method provides both statistical consistency and a well-characterized finite-sample error bound, making it a robust approach for inverse game-theoretic inference. 
+
+2.4. Selection in Confidence Sets 
+
+As discussed in §2.3, the true parameter θ∗ is partially iden-tifiable when the rank condition (3) does not hold, and there are infinitely many parameters that lead to the same QRE. To avoid unnecessary large coefficients that might overfit or lead to instability, we define the optimal solution θ∗ as the vector that satisfies the QRE constraints and has the minimum Euclidean norm, i.e., 
+
+θ∗ = argmin 
+
+> θ∈Rd
+
+∥θ∥, subject to 
+
+A(ν∗)
+
+B(μ∗)
+
+
+
+θ =
+
+c(μ∗)
+
+d(ν∗)
+
+
+
+.
+
+When the system is not full column rank, the minimum-norm solution of least square is uniquely determined by the Moore–Penrose inverse (Ben-Israel & Greville, 2006): 
+
+θ∗ =
+
+A(ν∗)
+
+B(μ∗)
+
+† c(μ∗)
+
+d(ν∗)
+
+
+
+.
+
+Therefore, to estimate the optimal parameter θ∗, we propose the following plug-in estimator: 
+
+bθ =
+
+A(bν)
+
+B(bμ)
+
+† c(bμ)
+
+d(bν)
+
+
+
+.
+
+Now we derive the estimation error bound ∥bθ − θ∗∥.
+
+Theorem 2.6 (Convergence of the optimal QRE solution) .
+
+Assume that the matrix 
+
+X =
+
+A(ν∗)
+
+B(μ∗)
+
+
+
+∈ R(m+n−2) ×d
+
+is of full row rank, and its smallest singular value is bounded from below, that is, σm+n−2 (X) ≥ σb for some σb > 0.Given N samples {(ak, b k)}k∈[N ] following the true QRE 
+
+(μ∗, ν ∗), we obtain (bμ, bν) by the frequency estimator. For any δ ∈ (0 , 1) , when N is sufficiently large, the following estimation error bound of the optimal QRE solution holds with probability at least 1 − δ:
+
+∥bθ − θ∗∥ ≲ m + n + p(m + n) log(1 /δ )
+
+√N .
+
+In practice, selecting the minimum-norm solution helps avoid overfitting and promotes stability (Hastie et al., 2009). The convergence rate O(N −1/2) matches standard results in statistical estimation, showing the reliability and efficiency of our method in practical settings. 
+
+# 3. Entropy-Regularized Zero-Sum Markov Games 
+
+In this section, we follow the same methodology in §2 and derive the inverse game theory for entropy-regularized two-player zero-sum Markov games. 
+
+3.1. Preliminary and Problem Formulation 
+
+We briefly review the setting of a two-player zero-sum Markov game (Littman, 1994), which is a framework that extends Markov decision processes (MDPs) to multi-agent settings, where two players with opposing objectives in-teract in a shared environment. A two-player zero-sum simultaneous-move episodic Markov game is defined by a sextuple (S, A, B, r, P, H ), where • S is the state space, with |S| = S,• A and B are two finite sets of actions that players 
+
+i ∈ { 1, 2} can take, • H ∈ N is the number of time steps, • r = {rh}h∈[H] is a collection of reward functions, and • P = {Ph}h∈[H] is a collection of transition kernels. At each time step h ∈ [H], the players 1 and 2 simul-taneously take actions a ∈ A and b ∈ B respectively upon observing the state s ∈ S , and then player 1 receives the reward rh(s, a, b ), while player 2 receives −rh(s, a, b ).Namely, the gain of one player equals the loss of the other. The system then transitions to a new state s′ ∼ Ph(·| s, a, b )
+
+according to the transition kernel Ph.5Inverse Game Theory with Entropy Regularization 
+
+Entropy-regularized two-player zero-sum Markov game. 
+
+We study the two-player zero-sum Markov game with en-tropy regularization. We use (μ, ν ) to denote the policy of two players, where μ = {μh}Hh=1 and ν = {νh}Hh=1 . At step h, the entropy-regularized V-function is 
+
+V μ,ν h (s) = E
+
+ HX
+
+> t=h
+
+γt−hrt(st, a t, b t) − η−1 log μt(at|st)+ η−1 log νt(bt|st) sh = s
+
+
+
+,
+
+where γ ∈ [0 , 1] is the discount factor and η > 0 is the parameter of regularization. Meanwhile,, we define the entropy-regularized Q-function that 
+
+Qμ,ν h (s, a, b ) = rh(s, a, b ) + γEPh(·| s,a,b )
+
+V μ,ν h+1 (·) . (8) For notation simplicity, we denote by Qμ,ν h (s) ∈ Rm×n the collection of Q-functions at the state s, which is the matrix 
+
+[Qμ,ν h (s, a, b )] (a,b )∈A×B . With this notation, we may write 
+
+V μ,ν h (s) = μh(s)⊤Qμ,ν h (s)νh(s)+ η−1H(μh(s)) − η−1H(νh(s)) . (9) The equations (8) and (9) are also known as Bellman equa-tions for Markov games. In a zero-sum game, one player seeks to maximize the value function while the other player wants to minimize it: 
+
+V ∗ 
+
+> 1
+
+(s) = max  
+
+> μ
+
+min  
+
+> ν
+
+V μ,ν  
+
+> 1
+
+(s) = min  
+
+> ν
+
+max  
+
+> μ
+
+V μ,ν  
+
+> 1
+
+(s).
+
+Definition 3.1 (Quantal response equilibrium) . For each time step h, there is a unique pair of optimal policies 
+
+(μ∗
+
+> h
+
+, ν ∗
+
+> h
+
+) of the entropy-regularized Markov game, i.e. the quantal response equilibrium (QRE), characterized by the following minimax problem: 
+
+V μ∗,ν ∗ 
+
+> h
+
+(s) = max 
+
+> μh
+
+min 
+
+> νh
+
+V μ,ν h (s) = min 
+
+> νh
+
+max 
+
+> μh
+
+V μ,ν h (s).
+
+which is equivalent to 
+
+V μ∗,ν ∗ 
+
+> h
+
+(s) = max 
+
+> μh
+
+min 
+
+> νh
+
+μh(s)⊤Qμ,ν h (s)νh(s)+ η−1H(μh(s)) − η−1H(νh(s)) ,
+
+(10) where μh : S → ∆( A) is the policy followed by player 1 and νh : S → ∆( B) is the policy followed by player 2, and 
+
+H(π) := − P 
+
+> i
+
+πi log( πi) denotes the Shannon entropy of a distribution π. Also, it is known that the unique solution of this minimax problem (QRE) satisfies the following fixed point equations: 
+
+
+
+μ∗
+
+> h
+
+(a|s) = eη⟨Q∗
+
+> h(s,a, ·),ν ∗
+> h(·| s)⟩B
+
+P 
+
+> a∈A
+
+eη⟨Q∗
+
+> h(s,a, ·),ν ∗
+> h(·| s)⟩B
+
+, ∀a ∈ A ,ν∗
+
+> h
+
+(b|s) = e−η⟨Q∗
+
+> h(s, ·,b ),μ ∗
+> h(·| s)⟩A
+
+P 
+
+> b∈B
+
+e−η⟨Q∗
+
+> h(s, ·,b ),μ ∗
+> h(·| s)⟩A
+
+, ∀b ∈ B .
+
+(11) 
+
+Goal. We study the inverse game theory for this entropy-regularized two-player zero-sum Markov game, where both the rewards (rh) and the transition kernels (Ph) are un-known. To elaborate, we observe i.i.d. trajectories 
+
+{(st
+
+> 1
+
+, a t
+
+> 1
+
+, b t
+
+> 1
+
+), · · · , (stH , a tH , b tH )}t∈[T ]
+
+following the QRE (μ∗, ν ∗), and we aim to recover all the feasible reward functions r defined as follows. 
+
+Definition 3.2 (Identified reward sets) . Given state and ac-tion space S × A × B and quantal response equilibrium 
+
+(μ∗, ν ∗), a reward function r : S × A × B → RH is iden-tified if μh, ν h is the solution of the minimax problem (10) induced by the reward function rh for all h ∈ [H].
+
+3.2. Learning Reward Functions from Actions 
+
+In this section, we propose an algorithm to find all the feasible reward functions that lead to the QRE. We assume that both the reward function and transition kernel have a linear structure (Bradtke & Barto, 2004; Jin et al., 2020). 
+
+Assumption 3.3 (Linear MDP) . For the underlying MDP, we assume that for every reward function rh : S × A × B → 
+
+[0 , 1] and every transition kernel Ph : S × A × B → ∆( S),there exist ωh ∈ Rd and πh(·) : S → Rd such that 
+
+rh(s, a, b ) = ϕ(s, a, b )⊤ωh,
+
+Ph(·| s, a, b ) = ϕ(s, a, b )⊤πh(·)
+
+for all (s, a, b ) ∈ S × A × B . In addition, the Q function is linear with respect to ϕ. Namely, for any QRE (μ, ν ) and 
+
+h ∈ [H], there exists a vector θh ∈ Rd such that 
+
+Qh(s, a, b ) = ϕ(s, a, b )⊤θh.
+
+We assume ∥ϕ(·, ·, ·)∥ ≤ 1, ∥θh∥ ≤ R, and ∥πh(s)∥ ≤ √d
+
+for all h ∈ [H] and s ∈ S .
+
+Remark 3.4 . In Assumption 3.3, since the reward functions 
+
+rh are normalized to the unit interval [0 , 1] and the number of time steps [H] is finite, every Q-function Qh must be bounded by some constant, and the constant R ≥ H(1 + log m + log n) exists. Since (ωh) can be recovered by (θh),we prefer to make an assumption on (θh) instead of (ωh)
+
+for the convenience of subsequent analysis. We are going to find all the feasible ωh for all h ∈ [H]
+
+under Assumption 3.3. Analogous to matrix games, we first consider the identification problem of the Q-function. Namely, whether there is a unique θh corresponding to the QRE. Given the equilibrium constraint (11) , we propose the following theorem for strong identification. 
+
+Proposition 3.5 (Strong identification of Q-function) . Un-der Assumption 3.3, for each h ∈ [H], the Q-function 
+
+Qh(s, a, b ) = ϕ(s, a, b )⊤θh is feasible for all (s, a, b ) ∈
+
+6Inverse Game Theory with Entropy Regularization 
+
+S × A × B if θh satisfies the following linear system: 
+
+Ah(s, ν ∗
+
+> h
+
+)
+
+Bh(s, μ ∗
+
+> h
+
+)
+
+
+
+θh =
+
+ch(s, μ ∗
+
+> h
+
+)
+
+dh(s, ν ∗
+
+> h
+
+)
+
+
+
+for all s ∈ S , (12) 
+
+where 
+
+Ah(s, ν h) = (( ϕ(s, a, ·) − ϕ(s, 1, ·)) νh(·| s)) a∈A\{ 1},Bh(s, μ h) = (( ϕ(s, ·, 1) − ϕ(s, ·, b )) μh(·| s)) b∈B\{ 1}
+
+and 
+
+ch(s, μ h) = 
+
+
+
+η−1 log μh(a|s)
+
+μh(1 |s)
+
+
+
+> a∈A\{ 1}
+
+∈ Rm−1,dh(s, ν h) = 
+
+
+
+−η−1 log νh(b|s)
+
+νh(1 |s)
+
+
+
+> b∈B\{ 1}
+
+∈ Rn−1.
+
+Moreover, there exists a unique θh ∈ Rd if and only if the QRE satisfies the rank condition rank   Ah(ν∗
+
+> h
+
+)⊤ Bh(μ∗
+
+> h
+
+)⊤ = d, (13) 
+
+where 
+
+Ah(νh) := 
+
+
+
+Ah(1 , ν h)
+
+Ah(2 , ν h)
+
+...
+
+Ah(|S| , ν h)
+
+ , Bh(μh) := 
+
+
+
+Bh(1 , μ h)
+
+Bh(2 , μ h)
+
+...
+
+Bh(|S| , μ h)
+
+ .
+
+Following the Bellman equation (8) , rh is a feasible reward function iff there exists a feasible Q function Qh and V function Vh+1 such that 
+
+rh(s, a, b ) = Qh(s, a, b ) − γEPh(·| s,a,b ) [Vh+1 (·)] . (14) Next, we propose an algorithm to recover the feasible reward functions. For all h ∈ [H], the algorithm performs the following four steps: • Recover the feasible set by solving the least square problem associated with the linear system (12): 
+
+bΘh =
+
+
+
+∥θ∥ ≤ R :
+
+Ah(bνh)
+
+Bh(bμh)
+
+
+
+θ −
+
+ch(bμh)
+
+dh(bνh)
+
+ 2
+
+≤ κh
+
+
+
+.
+
+(15) • Calculate the feasible Q and V functions ( Qh and Vh)for all bθh ∈ bΘh.• Estimate the transition kernel Ph from the observed data. Since the transition kernel has a linear structure, we employ ridge regression for estimation: 
+
+Λh =
+
+> T
+
+X
+
+> t=1
+
+ϕ(sth, a th, b th)ϕ(sth, a th, b th)⊤ + λId,
+
+bPh bVh+1 (s, a, b ) = ϕ(s, a, b )⊤Λ−1
+
+> h
+
+×
+
+> T
+
+X
+
+> t=1
+
+ϕ(sth, a th, b th) bVh+1 (sth+1 ); 
+
+• Recover feasible set Rh by the Bellman equation (14) .
+
+3.3. Theoretical Guarantees 
+
+In this section, we present the theoretical results for our Algorithm. To begin with, we define the base metric to measure the distance between rewards. 
+
+Definition 3.6 (Uniform metric for rewards) . We define the metric d between any pair of rewards r, r ′ as 
+
+D(r, r ′) = sup 
+
+> (h,s,a,b )∈[H]×S×A×B
+
+|(rh − r′
+
+> h
+
+)( s, a, b )| .
+
+We aim to recover the feasible reward set defined below. 
+
+Definition 3.7 (Feasible reward set) . We say a reward func-tion r = (r1, r 2, · · · , r H ) is feasible with respect to a quantal response equilibrium μ and ν if the Q function 
+
+Q = ( Q1, Q 2, · · · , Q H ) satisfies the identifability condi-tion (11) and the norm constraint ∥θ∗
+
+> h
+
+∥ ≤ R. We denote 
+
+R as the feasible reward set corresponding to the quantal response equilibrium μ and ν, namely, 
+
+R := 
+
+(
+
+r = ( r1, r 2, · · · , r H ) : r is identified and 
+
+ωh + γ X
+
+> s∈S
+
+πh(s)Vh+1 (s) ≤ R for all h ∈ [H]
+
+)
+
+.
+
+Also, we denote Q as the feasible Q function set: 
+
+Q = {(Qh)Hh=1 : Q is identified and ∥θh∥ ≤ R, ∀h ∈ [H]}.
+
+Our formulation provides a principled way to handle partial identifiability in Markov games. Instead of forcing a single estimated reward function, we construct a structured set of feasible rewards, which offers a more robust approach to analyzing decision-making in complex multi-step strategic settings. Intuitively, the norm constraint ∥θh∥ ≤ R plays a key role in ensuring that the estimated reward functions remain well-conditioned, and do not include arbitrarily large coefficients. Additionally, by linking the feasible reward set to the recursive Bellman equations (8) - (9) , our defini-tion ensures that every element of bR maintains temporal consistency. In other words, the inferred rewards lead to equilibrium strategies that are valid over multiple decision-making steps. For the sake of clarity, we fix the initial state distribu-tion in the Markov game ρ1 ∈ ∆( S), and define the marginal state visitation distributions associated with poli-cies μ, ν at each time step h ∈ [H] as dμ,ν h (s) = P(sh =
+
+s|ρ1, μ, ν ). Also, write the state-action visitation distri-butions as dμ,ν h (s, a, b ) = P(sh = s, a h = a, b h =
+
+b|ρ1, μ, ν ).To control the uniform metric in Definition 3.6, we require an estimator of the QRE that performs uniformly well across 7Inverse Game Theory with Entropy Regularization 
+
+all states s ∈ S . When using frequency estimators to ap-proximate the policies μ∗
+
+> h
+
+(·| s) and ν∗
+
+> h
+
+(·| s), the estimation at each state is conducted independently. As a result, it is essential that the dataset sufficiently covers all states in S
+
+to obtain reliable estimates. To ensure this, we impose the following assumption, which guarantees that every state is visited with a minimum frequency throughout the horizon. 
+
+Assumption 3.8 (C-well-posedness) . There exists a con-stant C > 0 such that 
+
+dμ∗,ν ∗ 
+
+> h
+
+(s) ≥ C
+
+for all s ∈ S and h ∈ [H].Now we are ready to present the theoretical results for the proposed algorithm. 
+
+Theorem 3.9 (Sample complexity of constructing feasible reward set) . Under Assumptions 3.3 and 3.8, let ρh = d∗ 
+
+> h
+
+be the stationary distribution associated with optimal policies 
+
+μ∗ and ν∗, where h ∈ [H]. We assume that the following 
+
+d × d matrix 
+
+Ψh = Eρh
+
+ϕ(sh, a h, b h)ϕ(sh, a h, b h)⊤
+
+is nonsingular for all h ∈ [H]. Let R be the feasi-ble reward set given in Definition 3.7. Given a dataset 
+
+D = {D h}h∈[H] = {{ (sth, a th, b th)}t∈[T ]}h∈[H], we set λ =
+
+O(1) , κh = O(T −1), and let bR be the output of our Algo-rithm. Let ξ = min h∈[H],s ∈S ,a ∈A ,b ∈B {μ∗
+
+> h
+
+(a|s), ν ∗
+
+> h
+
+(b|s)}.For any δ ∈ (0 , 1) , let T > 0 be sufficiently large, so 
+
+T ≥ max 
+
+ 1
+
+C2 log 2HS δ , 16( m ∨ n)
+
+Cξ 2 log 4HS δ ,
+
+512 ∥Ψ−1 
+
+> h
+
+∥2op log 2Hd δ , 4λ∥Ψ−1 
+
+> h
+
+∥op 
+
+
+
+.
+
+Then the following inequality holds with probability at least 
+
+1 − 3δ:
+
+D(R, bR) ≲ 1
+
+√T
+
+r 
+
+S(m + n) log HS δ log T
+
++ S(m + n)
+
+r
+
+log HS δ +  √Sd + pd log T  log( mn )
+
+
+
+,
+
+where D is the Hausdorff distance corresponding to the uniform metric in Definition 3.6. 
+
+Theorem 3.9 provides a strong guarantee on the accuracy of our reward recovery algorithm in Markov games. Our bound shows that the distance D(R, bR) diminishes at the rate of 
+
+O(T −1/2), which matches the optimal statistical rate for empirical risk minimization problems. This demonstrates that with sufficient data, the estimated reward functions remain close to the true feasible set, making our method statistically reliable and sample-efficient. The explicit de-pendence on problem parameters offers insights into how exploration, feature representations, and action space size affect the difficulty of inverse reward learning in Markov games. We also note that the condition that Ψh is nonsingular en-sures that the feature representation provides sufficient in-formation for parameter recovery (Tu & Recht, 2017; Min et al., 2022). The norm ∥Ψ−1 
+
+> h
+
+∥op appears in the sample complexity bound, indicating that ill-conditioned feature matrices lead to larger estimation errors and require more samples to achieve the same level of accuracy. In addition, instead of relying solely on frequency estima-tors for QRE estimation, we can extend our framework to integrate Maximum Likelihood Estimation (MLE) into our method and establish a convergence result with the same 
+
+T −1/2 rate. 
+
+# 4. Numerical Experiments 
+
+In this section, we implement our reward-learning algo-rithm and conduct numerical experiments in both entropy-regularized zero-sum matrix games and Markov games. All experiments are conducted in Google Colab. In this section we consider only two-player entropy-regularized entropy-regularized zero-sum Markov games. 
+
+Setup. We define the kernel function ϕ : A × B → Rd
+
+with dimension d = 2 , and set the true parameter ωh that specifying reward functions to be 
+
+ω∗ 
+
+> h
+
+= (0 .8, −0.6) ⊤
+
+for all steps h ∈ [H]. We set the sizes of action spaces to be m = 5 and n = 5 , the size of state space S = 4 , and the horizon H = 6 . The entropy regularization term is η = 0 .5.We implement the algorithm proposed in §3.2. In each experiment, our algorithm outputs a parameter bθh in the confidence set bΘh. We set the bound of feasible parameters 
+
+θh to be R = 10 , and set the threshold κh = 10 3/N , where 
+
+N is the sample size. The regularization term in ridge regression is λ = 0 .01 .
+
+Metrics. We evaluate the performance of our algorithm using two metrics: (1) the error in the estimated reward function (brh), which measures how accurately the recon-structed payoff function matches the true reward function; and (2) the error in the estimated QRE, which quantifies the discrepancy between the QRE (bμ, bν) derived from the estimated payoff function and the true QRE (μ∗, ν ∗). We are particularly interested in the error in the estimated QRE, which validates whether the reconstructed reward functions interpret the observed strategy. 8Inverse Game Theory with Entropy Regularization 
+
+Results. As shown in Figures 1, 2 and Table 1, the overall error of our algorithm’s output decreases as the sample size 
+
+N increases from 10 4 to 10 5, demonstrating the improved accuracy of our approach with more data. While the esti-mation error of reward functions (brh)6 
+
+> h=1
+
+can be relatively large, the corresponding QRE (bμh, bνh) remains well-aligned with the true QRE (μ∗
+
+> h
+
+, ν ∗
+
+> h
+
+). Although some fluctuations are observed across time steps, the error remains small, espe-cially for larger sample sizes. These results confirm that our method for reward estimation in Markov games is both statistically consistent and sample-efficient. 
+
+# 5. Conclusion 
+
+To conclude, we explore the challenge of recovering re-ward functions that explain agents’ behavior in competitive games, with a focus on the entropy-regularized zero-sum setting. We propose a framework of inverse game theory concerning the underlying reward mechanisms driving ob-served behaviors, which applies to both the static setting (§2) and the dynamic setting (§3). Under a linear assumption, we develop a novel approach for the identifiability of the parameter specifying the current-time payoff. To move forward, we develop an offline algo-rithm unifying QRE estimation, confidence set construction, transition kernel estimation, and reward recovery, and es-tablish its convergence properties under regular conditions. Additionally, we adapt this algorithm to incorporate a MLE approach and provide theoretical guarantees for the adapted version. Our algorithms are reliable and effective in both static and dynamic settings, even in the presence of high-dimensional parameter spaces or rank deficiencies. Future directions include exploring more complicated game settings, such as partially observable games and non-linear payoff functions, and extending the framework to online learning setting. Meanwhile, this research contributes to the broader effort to make competitive systems more inter-pretable, offering valuable insights at the intersection of game theory and reinforcement learning. 
+
+# Impact Statement 
+
+This work advances the field of inverse reinforcement learn-ing and game theory by introducing a unified framework for reward function identification and estimation in competitive multi-agent settings. Our findings contribute to a deeper understanding of decision-making in strategic environments, with potential applications in economics, automated negoti-ation, and multi-agent AI systems. While our research provides theoretical and methodological advancements, we acknowledge potential ethical considera-tions. The ability to infer reward functions from observed                         
+
+> Figure 1. The reconstruction error of the reward functions (brh)6
+> h=1 .The X-axis represents the time step hfrom 1to 6, while the Y-axis represents the error ∥brh−r∗
+> h∥Fof the reward function br.
+> Figure 2. The discrepancy between the QRE (bμ, bν)correspond-ing to the estimated reward functions (brh)6
+> h=1 and the true QRE
+> (μ∗, ν ∗). The X-axis represents the time step hfrom 1to 6, while the Y-axis represents the errors TV( bμh, μ ∗
+> h) + TV( bνh, ν ∗
+> h)
+
+Sample Size Reward Error 
+
+Mean 95% CI 10,000 2.4611 ± 0.1596 20,000 1.9031 ± 0.1048 50,000 1.5609 ± 0.0663 100,000 1.4398 ± 0.0499 
+
+Sample Size QRE Error 
+
+Mean 95% CI 10,000 7.08 × 10 −3 ± 4.61 × 10 −4
+
+20,000 5.11 × 10 −3 ± 3.11 × 10 −4
+
+50,000 3.28 × 10 −3 ± 1.70 × 10 −4
+
+100,000 2.41 × 10 −3 ± 1.41 × 10 −4 
+
+> Table 1. Mean error and 95% confidence intervals for reward and QRE estimation over 100 repetitions in the Markov game setting, across all time steps.
+
+9Inverse Game Theory with Entropy Regularization 
+
+behavior could be used both positively—to enhance trans-parency in AI decision-making and improve algorithmic fairness—and negatively, if applied to manipulate or exploit agents in competitive settings. Ensuring the responsible application of this work will require careful consideration of ethical safeguards and alignment with societal values. Overall, this paper aims to advance Machine Learning and Game Theory research, and we do not foresee immediate societal risks. However, we encourage further discussion on the ethical implications of inverse game theory in real-world applications. 
+
+# References 
+
+Agarwal, R. and ¨Ozlem Ergun. Network Design and Allocation Mechanisms for Carrier Alliances in Liner Shipping. Operations Research , 58(6):1726– 1742, December 2010. doi: 10.1287/opre.1100. 0848. URL https://ideas.repec.org/a/inm/ oropre/v58y2010i6p1726-1742.html .Ahmadi, F., Ganjkhanloo, F., and Ghobadi, K. Inverse learn-ing: Solving partially known models using inverse op-timization, 2023. URL https://arxiv.org/abs/ 2011.03038 .Ahmed, Z., Le Roux, N., Norouzi, M., and Schuurmans, D. Understanding the impact of entropy on policy opti-mization. In Chaudhuri, K. and Salakhutdinov, R. (eds.), 
+
+Proceedings of the 36th International Conference on Ma-chine Learning , volume 97 of Proceedings of Machine Learning Research , pp. 151–160. PMLR, 09–15 Jun 2019. URL https://proceedings.mlr.press/v97/ ahmed19a.html .Ahuja, R. and Orlin, J. Inverse optimization. Operations Re-search , 49, 06 2001. doi: 10.1287/opre.49.5.771.10607. Arora, S. and Doshi, P. A survey of inverse reinforcement learning: Challenges, methods and progress, 2020. URL 
+
+https://arxiv.org/abs/1806.06877 .Ben-Israel, A. and Greville, T. Generalized In-verses: Theory and Applications . CMS Books in Mathematics. Springer New York, 2006. ISBN 9780387216348. URL https://books.google. com/books?id=abEPBwAAQBAJ .Boularias, A., Kober, J., and Peters, J. Relative entropy inverse reinforcement learning. In Gordon, G., Dunson, D., and Dud ´ık, M. (eds.), Proceedings of the Fourteenth International Conference on Artificial Intelligence and Statistics , volume 15 of Proceedings of Machine Learning Research , pp. 182–189, Fort Lauderdale, FL, USA, 11– 13 Apr 2011. PMLR. URL https://proceedings. mlr.press/v15/boularias11a.html .Bradtke, S. J. and Barto, A. G. Linear least-squares al-gorithms for temporal difference learning. Machine Learning , 22:33–57, 2004. URL https://api. semanticscholar.org/CorpusID:10316699 .Brotcorne, L., Marcotte, P., Savard, G., and WIART, M. Joint pricing and network capacity setting problem. 01 2005. Cao, H., Cohen, S., and Szpruch, L. Identifiability in inverse reinforcement learning. In Ranzato, M., Beygelzimer, A., Dauphin, Y., Liang, P., and Vaughan, J. W. (eds.), 
+
+Advances in Neural Information Processing Systems ,volume 34, pp. 12362–12373. Curran Associates, Inc., 2021. URL https://proceedings.neurips. cc/paper_files/paper/2021/file/ 671f0311e2754fcdd37f70a8550379bc-Paper. pdf .Cen, S., Cheng, C., Chen, Y., Wei, Y., and Chi, Y. Fast global convergence of natural policy gradient methods with en-tropy regularization, 2021. URL https://arxiv. org/abs/2007.06558 .Cen, S., Wei, Y., and Chi, Y. Fast policy extragradient methods for competitive games with entropy regulariza-tion, 2023. URL https://arxiv.org/abs/2105. 15186 .Chan, T. C. Y. and Kaw, N. Inverse optimization for the recovery of constraint parameters, 2019. URL https: //arxiv.org/abs/1811.00726 .Chan, T. C. Y., Mahmood, R., and Zhu, I. Y. Inverse optimization: Theory and applications, 2022. URL 
+
+https://arxiv.org/abs/2109.03920 .Chen, Z., Ma, S., and Zhou, Y. Sample efficient stochas-tic policy extragradient algorithm for zero-sum markov game. In International Conference on Learning Represen-tations , 2022. URL https://openreview.net/ forum?id=IvepFxYRDG .Chow, J. Y. and Djavadian, S. Activity-based market equilib-rium for capacitated multimodal transport systems. Trans-portation Research Procedia , 7:2–23, 2015. ISSN 2352-1465. doi: https://doi.org/10.1016/j.trpro.2015.06.001. URL https://www.sciencedirect.com/ science/article/pii/S2352146515000691 .21st International Symposium on Transportation and Traffic Theory Kobe, Japan, 5-7 August, 2015. Dong, C., Chen, Y., and Zeng, B. Generalized inverse optimization through online learning. In Bengio, S., Wal-lach, H., Larochelle, H., Grauman, K., Cesa-Bianchi, N., and Garnett, R. (eds.), Advances in Neural Information Processing Systems , volume 31. Curran Associates, Inc., 10 Inverse Game Theory with Entropy Regularization 
+
+2018. URL https://proceedings.neurips. cc/paper_files/paper/2018/file/ 28dd2c7955ce926456240b2ff0100bde-Paper. pdf .Fu, J., Luo, K., and Levine, S. Learning robust rewards with adversarial inverse reinforcement learning, 2018. URL 
+
+https://arxiv.org/abs/1710.11248 .Ghobadi, K. and Mahmoudzadeh, H. Inferring linear feasi-ble regions using inverse optimization. European Journal of Operational Research , 290(3):829–843, 2021. ISSN 0377-2217. doi: https://doi.org/10.1016/j.ejor.2020.08. 048. URL https://www.sciencedirect.com/ science/article/pii/S037722172030761X .Gleave, A. and Toyer, S. A primer on maximum causal entropy inverse reinforcement learning, 2022. URL 
+
+https://arxiv.org/abs/2203.11409 .Guan, Y., Zhang, Q., and Tsiotras, P. Learning nash equilibria in zero-sum stochastic games via entropy-regularized policy approximation, 2021. URL https: //arxiv.org/abs/2009.00162 .Guo, X., Xu, R., and Zariphopoulou, T. Entropy regular-ization for mean field games with learning, 2021. URL 
+
+https://arxiv.org/abs/2010.00145 .Haarnoja, T., Zhou, A., Abbeel, P., and Levine, S. Soft actor-critic: Off-policy maximum entropy deep reinforcement learning with a stochastic actor, 2018. URL https: //arxiv.org/abs/1801.01290 .Hastie, T., Tibshirani, R., and Friedman, J. The Elements of Statistical Learning: Data Mining, Inference, and Predic-tion . Springer series in statistics. Springer, 2009. ISBN 9780387848846. URL https://books.google. com/books?id=eBSgoAEACAAJ .Herman, M., Gindele, T., Wagner, J., Schmitt, F., and Bur-gard, W. Inverse reinforcement learning with simultane-ous estimation of rewards and dynamics. In Gretton, A. and Robert, C. C. (eds.), Proceedings of the 19th Interna-tional Conference on Artificial Intelligence and Statistics ,volume 51 of Proceedings of Machine Learning Research ,pp. 102–110, Cadiz, Spain, 09–11 May 2016. PMLR. URL https://proceedings.mlr.press/v51/ herman16.html .Huang, S., Held, D., Abbeel, P., and Dragan, A. Enabling robots to communicate their objectives. Autonomous Robots , 43, 02 2019. doi: 10.1007/s10514-018-9771-0. Jarboui, F. and Perchet, V. Offline inverse reinforcement learning, 2021. URL https://arxiv.org/abs/ 2106.05068 .Jin, C., Yang, Z., Wang, Z., and Jordan, M. I. Prov-ably efficient reinforcement learning with linear func-tion approximation. In Abernethy, J. and Agarwal, S. (eds.), Proceedings of Thirty Third Conference on Learn-ing Theory , volume 125 of Proceedings of Machine Learning Research , pp. 2137–2143. PMLR, 09–12 Jul 2020. URL https://proceedings.mlr.press/ v125/jin20a.html .Kalogiannis, F. and Panageas, I. Zero-sum polymatrix markov games: Equilibrium collapse and efficient com-putation of nash equilibria. In Oh, A., Naumann, T., Globerson, A., Saenko, K., Hardt, M., and Levine, S. (eds.), Advances in Neural Information Processing Sys-tems , volume 36, pp. 59996–60020. Curran Associates, Inc., 2023. Konstantakopoulos, I., Ratliff, L., Jin, M., Sastry, S., and Spanos, C. A robust utility learning framework via in-verse optimization. IEEE Transactions on Control Sys-tems Technology , PP, 04 2017. doi: 10.1109/TCST.2017. 2699163. Langley, P. Crafting papers on machine learning. In Langley, P. (ed.), Proceedings of the 17th International Conference on Machine Learning (ICML 2000) , pp. 1207–1216, Stan-ford, CA, 2000. Morgan Kaufmann. Lin, X., Beling, P., and Cogill, R. Multi-agent inverse reinforcement learning for zero-sum games. IEEE Trans-actions on Computational Intelligence and AI in Games ,PP, 03 2014. doi: 10.1109/TCIAIG.2017.2679115. Lindner, D., Krause, A., and Ramponi, G. Active ex-ploration for inverse reinforcement learning. In Oh, A. H., Agarwal, A., Belgrave, D., and Cho, K. (eds.), 
+
+Advances in Neural Information Processing Systems ,2022. URL https://openreview.net/forum? id=TPOJzwv2pc .Ling, C. K., Fang, F., and Kolter, J. Z. What game are we playing? end-to-end learning in normal and exten-sive form games, 2018. URL https://arxiv.org/ abs/1805.02777 .Littman, M. L. Markov games as a framework for multi-agent reinforcement learning. In Cohen, W. W. and Hirsh, H. (eds.), Machine Learning Proceedings 1994 ,pp. 157–163. Morgan Kaufmann, San Francisco (CA), 1994. ISBN 978-1-55860-335-6. doi: https://doi.org/ 10.1016/B978-1-55860-335-6.50027-1. URL https: //www.sciencedirect.com/science/ article/pii/B9781558603356500271 .McKelvey, R. D. and Palfrey, T. R. Quantal re-sponse equilibria for normal form games. Games and Economic Behavior , 10(1):6–38, 1995. ISSN 11 Inverse Game Theory with Entropy Regularization 
+
+0899-8256. doi: https://doi.org/10.1006/game.1995. 1023. URL https://www.sciencedirect.com/ science/article/pii/S0899825685710238 .Mertikopoulos, P. and Sandholm, W. H. Learning in games via reinforcement and regularization. Math. Oper. Res. ,41(4):1297–1324, November 2016. ISSN 0364-765X. Metelli, A. M., Ramponi, G., Concetti, A., and Restelli, M. Provably efficient learning of transferable re-wards. In Meila, M. and Zhang, T. (eds.), Pro-ceedings of the 38th International Conference on Ma-chine Learning , volume 139 of Proceedings of Machine Learning Research , pp. 7665–7676. PMLR, 18–24 Jul 2021. URL https://proceedings.mlr.press/ v139/metelli21a.html .Metelli, A. M., Lazzati, F., and Restelli, M. Towards the-oretical understanding of inverse reinforcement learn-ing. In Krause, A., Brunskill, E., Cho, K., Engel-hardt, B., Sabato, S., and Scarlett, J. (eds.), Proceed-ings of the 40th International Conference on Machine Learning , volume 202 of Proceedings of Machine Learn-ing Research , pp. 24555–24591. PMLR, 23–29 Jul 2023. URL https://proceedings.mlr.press/ v202/metelli23a.html .Miehling, E., Rasouli, M., and Teneketzis, D. A pomdp approach to the dynamic defense of large-scale cyber networks. IEEE Transactions on Information Forensics and Security , 13(10):2490–2505, 2018. doi: 10.1109/ TIFS.2018.2819967. Min, Y., Wang, T., Zhou, D., and Gu, Q. Variance-aware off-policy evaluation with linear function approxima-tion, 2022. URL https://arxiv.org/abs/2106. 11960 .Nash Jr, J. Non-cooperative games. Annals of Mathematics ,54(2):286–295, 1951. ISSN 0003486X, 19398980. URL 
+
+http://www.jstor.org/stable/1969529 .Neu, G., Jonsson, A., and G ´omez, V. A unified view of entropy-regularized markov decision processes, 2017. URL https://arxiv.org/abs/1705.07798 .Ng, A. Y. and Russell, S. J. Algorithms for inverse rein-forcement learning. In Proceedings of the Seventeenth International Conference on Machine Learning , ICML ’00, pp. 663–670, San Francisco, CA, USA, 2000. Mor-gan Kaufmann Publishers Inc. ISBN 1558607072. Nourollahi, S. and Ghate, A. Inverse optimization in mini-mum cost flow problems on countably infinite networks. 
+
+Networks , 73, 11 2018. doi: 10.1002/net.21862. Rolland, P., Viano, L., Sch ¨urhoff, N., Nikolov, B., and Cevher, V. Identifiability and generalizability from multi-ple experts in inverse reinforcement learning. In Koyejo, S., Mohamed, S., Agarwal, A., Belgrave, D., Cho, K., and Oh, A. (eds.), Advances in Neural Information Process-ing Systems , volume 35, pp. 550–564. Curran Associates, Inc., 2022. Savas, Y., Ahmadi, M., Tanaka, T., and Topcu, U. Entropy-regularized stochastic games. In 2019 IEEE 58th Con-ference on Decision and Control (CDC) , pp. 5955–5962, 2019. doi: 10.1109/CDC40024.2019.9029555. Shannon, C. E. A mathematical theory of communication. 
+
+The Bell System Technical Journal , 27(3):379–423, 1948. doi: 10.1002/j.1538-7305.1948.tb01338.x. Shapley, L. S. Stochastic games*. Proceedings of the National Academy of Sciences , 39:1095 – 1100, 1953. URL https://api.semanticscholar. org/CorpusID:263414073 .Snoswell, A. J., Singh, S. P. N., and Ye, N. Revisiting maximum entropy inverse reinforcement learning: New perspectives and algorithms. In 2020 IEEE Symposium Se-ries on Computational Intelligence (SSCI) , pp. 241–249. IEEE, December 2020. doi: 10.1109/ssci47803.2020. 9308391. URL http://dx.doi.org/10.1109/ SSCI47803.2020.9308391 .Song, L., Li, D., Wang, X., and Xu, X. Ad-aboost maximum entropy deep inverse reinforce-ment learning with truncated gradient. Informa-tion Sciences , 602:328–350, 2022. ISSN 0020-0255. doi: https://doi.org/10.1016/j.ins.2022.04. 017. URL https://www.sciencedirect.com/ science/article/pii/S002002552200353X .Sutton, R. S. and Barto, A. G. Reinforcement Learning: An Introduction . A Bradford Book, Cambridge, MA, USA, 2018. ISBN 0262039249. Szepesv ´ari, C. Algorithms for Reinforcement Learn-ing , volume 4. 01 2010. doi: 10.2200/ S00268ED1V01Y201005AIM009. Tan, Y., Delong, A., and Terekhov, D. Deep inverse op-timization. In Rousseau, L.-M. and Stergiou, K. (eds.), 
+
+Integration of Constraint Programming, Artificial Intel-ligence, and Operations Research , pp. 540–556, Cham, 2019. Springer International Publishing. ISBN 978-3-030-19212-9. Tu, S. and Recht, B. Least-squares temporal difference learning for the linear quadratic regulator, 2017. URL 
+
+https://arxiv.org/abs/1712.08642 .12 Inverse Game Theory with Entropy Regularization 
+
+van der Vaart, A. W. Asymptotic Statistics . Cambridge Series in Statistical and Probabilistic Mathematics. Cam-bridge University Press, 1998. Vatandoust, B., Zad, B. B., Vall ´ee, F., Toubeau, J.-F., and Bruninx, K. Integrated forecasting and scheduling of im-plicit demand response in balancing markets using inverse optimization. In 2023 19th International Conference on the European Energy Market (EEM) , pp. 1–6, 2023. doi: 10.1109/EEM58374.2023.10161818. von Neumann, J. Zur theorie der gesellschaftsspiele. Math-ematische Annalen , 100:295–320, 1928. URL https: //api.semanticscholar.org/CorpusID: 122961988 .Vorobeychik, Y., Wellman, M. P., and Singh, S. Learning payoff functions in infinite games. Mach. Learn. , 67(1–2): 145–168, May 2007. ISSN 0885-6125. doi: 10.1007/ s10994-007-0715-8. URL https://doi.org/10. 1007/s10994-007-0715-8 .Wang, H., Zariphopoulou, T., and Zhou, X. Exploration versus exploitation in reinforcement learning: a stochastic control approach, 2019. URL https://arxiv.org/ abs/1812.01552 .Wang, X. and Klabjan, D. Competitive multi-agent in-verse reinforcement learning with sub-optimal demon-strations. In Dy, J. and Krause, A. (eds.), Proceed-ings of the 35th International Conference on Machine Learning , volume 80 of Proceedings of Machine Learn-ing Research , pp. 5143–5151. PMLR, 10–15 Jul 2018. URL https://proceedings.mlr.press/v80/ wang18d.html .Wei, C.-Y., Lee, C.-W., Zhang, M., and Luo, H. Last-iterate convergence of decentralized optimistic gradient descent/ascent in infinite-horizon competitive markov games, 2021. URL https://arxiv.org/abs/ 2102.04540 .Wu, J., Shen, W., Fang, F., and Xu, H. Inverse game theory for stackelberg games: the blessing of bounded rationality. In Proceedings of the 36th International Conference on Neural Information Processing Systems , NIPS ’22, Red Hook, NY, USA, 2024. Curran Associates Inc. ISBN 9781713871088. Wulfmeier, M., Ondruska, P., and Posner, I. Maximum entropy deep inverse reinforcement learning, 2016. URL 
+
+https://arxiv.org/abs/1507.04888 .Xie, Q., Chen, Y., Wang, Z., and Yang, Z. Learning zero-sum simultaneous-move markov games using function ap-proximation and correlated equilibrium. In Abernethy, J. and Agarwal, S. (eds.), Proceedings of Thirty Third Con-ference on Learning Theory , volume 125 of Proceedings of Machine Learning Research , pp. 3674–3682. PMLR, 09–12 Jul 2020. URL https://proceedings. mlr.press/v125/xie20a.html .Yu, L., Song, J., and Ermon, S. Multi-agent adversarial inverse reinforcement learning, 2019. URL https:// arxiv.org/abs/1907.13220 .Yu, S., Wang, H., and Dong, C. Learning risk prefer-ences from investment portfolios using inverse optimiza-tion, 2021. URL https://arxiv.org/abs/2010. 01687 .Zhan, W., Cen, S., Huang, B., Chen, Y., Lee, J. D., and Chi, Y. Policy mirror descent for regularized reinforce-ment learning: A generalized framework with linear con-vergence, 2023. URL https://arxiv.org/abs/ 2105.11066 .Zhao, L., Liu, T., Peng, X., and Metaxas, D. Maximum-entropy adversarial data augmentation for improved generalization and robustness. In Larochelle, H., Ranzato, M., Hadsell, R., Balcan, M., and Lin, H. (eds.), 
+
+Advances in Neural Information Processing Systems ,volume 33, pp. 14435–14447. Curran Associates, Inc., 2020. URL https://proceedings.neurips. cc/paper_files/paper/2020/file/ a5bfc9e07964f8dddeb95fc584cd965d-Paper. pdf .Zhao, Y., Tian, Y., Lee, J., and Du, S. Provably ef-ficient policy optimization for two-player zero-sum markov games. In Camps-Valls, G., Ruiz, F. J. R., and Valera, I. (eds.), Proceedings of The 25th Interna-tional Conference on Artificial Intelligence and Statis-tics , volume 151 of Proceedings of Machine Learn-ing Research , pp. 2736–2761. PMLR, 28–30 Mar 2022. URL https://proceedings.mlr.press/ v151/zhao22b.html .Ziebart, B. D. Modeling Purposeful Adaptive Behavior with the Principle of Maximum Causal Entropy. 7 2018. doi: 10.1184/R1/6720692.v1. Ziebart, B. D., Maas, A. L., Bagnell, J. A., and Dey, A. K. Maximum entropy inverse reinforcement learn-ing. In AAAI Conference on Artificial Intelligence ,2008. URL https://api.semanticscholar. org/CorpusID:336219 .13

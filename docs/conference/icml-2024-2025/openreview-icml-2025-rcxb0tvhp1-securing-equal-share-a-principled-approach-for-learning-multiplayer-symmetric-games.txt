@@ -1,0 +1,2177 @@
+Title: Securing Equal Share: A Principled Approach for Learning Multiplayer Symmetric Games
+
+URL Source: https://openreview.net/pdf?id=rCxB0tVHp1
+
+Number of Pages: 22
+
+Markdown Content:
+# Securing Equal Share: A Principled Approach for Learning Multiplayer Symmetric Games 
+
+Jiawei Ge * 1 Yuanhao Wang * 2 Wenzhe Li 3 Chi Jin 3
+
+# Abstract 
+
+This paper examines multiplayer symmetric constant-sum games with more than two play-ers in a competitive setting, such as Mahjong, Poker, and various board and video games. In contrast to two-player zero-sum games, equi-libria in multiplayer games are neither unique nor non-exploitable, failing to provide mean-ingful guarantees when competing against op-ponents who play different equilibria or non-equilibrium strategies. This gives rise to a series of long-lasting fundamental questions in multi-player games regarding suitable objectives, solu-tion concepts, and principled algorithms. This paper takes an initial step towards addressing these challenges by focusing on the natural ob-jective of equal share —securing an expected payoff of C/n in an n-player symmetric game with a total payoff of C. We rigorously identify the theoretical conditions under which achiev-ing an equal share is tractable and design a se-ries of efficient algorithms, inspired by no-regret learning, that provably attain approximate equal share across various settings. Furthermore, we provide complementary lower bounds that justify the sharpness of our theoretical results. Our ex-perimental results highlight worst-case scenarios where meta-algorithms from prior state-of-the-art systems for multiplayer games fail to secure an equal share, while our algorithm succeeds, demonstrating the effectiveness of our approach.          
+
+> *Equal contribution 1Department of Operations Research and Financial Engineering, Princeton University 2Department of Computer Science, Princeton University 3Department of Elec-trical and Computer Engineering, Princeton University. Cor-respondence to: Jiawei Ge <jg5300@princeton.edu >, Chi Jin
+> <chij@princeton.edu >.
+> Proceedings of the 42 nd International Conference on Machine Learning , Vancouver, Canada. PMLR 267, 2025. Copyright 2025 by the author(s).
+
+# 1. Introduction 
+
+In recent years, AI systems have achieved remarkable suc-cess in multi-agent decision-making problems, particularly in a wide range of strategic games. These include, but are not limited to, Go (Silver et al., 2016), Mahjong (Li et al., 2020), Poker (Moravˇ c´ ık et al., 2017; Brown & Sand-holm, 2018; 2019), Starcraft 2 (Vinyals et al., 2019), DOTA 2 (Berner et al., 2019), League of Legends (Ye et al., 2020), and Diplomacy (Gray et al., 2020; Bakhtin et al., 2022; , FAIR). Many of these games are two-player zero-sum games 1, where Nash equilibria (NEs) always exist and can be computed in polynomial time. NEs in two-player zero-sum games are also non-exploitable—an agent employing a NE strategy will not lose even when facing an adversarial opponent who seeks to exploit the agent’s weaknesses. Al-though such equilibrium strategies do not necessarily capi-talize on opponents’ weaknesses or guarantee large-margin victories, human players often adopt suboptimal strategies that deviate significantly from equilibria in complex games with large state spaces. Consequently, AI agents who adopt equilibrium strategies often outperform humans in practice for two-player zero-sum games. In contrast, multiplayer games—defined here as those with more than two players —exhibit fundamentally dif-ferent game structures compared to two-player zero-sum games. This distinction introduces several unique chal-lenges. Firstly, NEs are believed to be no longer com-putable in polynomial time (Daskalakis et al., 2009; Chen & Deng, 2005). Moreover, there may exist multiple NEs with distinct values. Such non-uniqueness in equilibria raises a critical concern about the adoption of equilibrium strategies in multiplayer settings: if a learning agent adopts an equilibrium that is different from other players, collec-tively, they are not playing any single equilibrium, which undermines the equilibrium property that dissuades the agent from changing its strategy as long as others maintain theirs. Finally, in multiplayer games, equilibrium strate-gies are no longer non-exploitable and fail to provide mean-ingful guarantees when competing against opponents who 
+
+> 1Games such as DOTA and League of Legends, despite in-volving two teams, can be mostly considered similar to two-player zero-sum games in terms of their game structures and solutions.
+
+1Securing Equal Share: A Principled Approach for Learning Multiplayer Symmetric Games 
+
+are not playing equilibria. Although the introduction of alternative equilibrium notions such as (coarse) correlated equilibria alleviates computational hardness, issues of non-uniqueness and the lack of guarantees in the general set-tings remain. This leads to the first critical question: 
+
+What is the suitable solution concept for learning in multiplayer games? 
+
+Due to the presence of such fundamental challenge, even state-of-the-art expert-level or superhuman AI systems for popular multiplayer games, including Mahjong (Li et al., 2020) (4 players), Poker (Brown & Sandholm, 2019) (6 players), and Diplomacy (Bakhtin et al., 2022; , FAIR) (7 players), are designed with limited theoretical supports. These works focus on developing algorithmic frameworks capable of learning effective strategies that excel in lad-ders, online gaming platforms, or tournaments against op-ponents. Generally, most of these systems rely on a basic self-play framework, starting from scratch or from oppo-nents’ strategies acquired through behavior cloning, with or without regularization. While the success of these self-play algorithms is remarkable, their performance has been demonstrated primarily within the specific applica-tions they were designed for, often coupled with human expertise and extensive engineering efforts. It remains un-clear whether these algorithms are general-purpose solu-tions that can be readily applied to multiplayer games be-yond Mahjong, Poker, or Diplomacy. This leads to the sec-ond important question: 
+
+What is the principled algorithm that provable learns a rich class of multiplayer games? 
+
+In this paper, we consider multiplayer symmetric constant-sum games, which are prevalent in games involving more than two players. Examples include previously discussed multiplayer games like Mahjong, Poker, and Diplomacy, as well as a variety of board games such as Avalon (Light et al., 2023), Mafia, and Catan. 2 Symmetry brings fairness among players, providing a natural baseline where a learn-ing agent should at least secure an equal share — achiev-ing an expected payoff of C/n in an n-player symmetric game with a total payoff of C. This paper takes an ini-tial step toward addressing the two fundamental questions highlighted above by focusing on securing an equal share in multiplayer symmetric normal-form games 3. The main contributions are summarized as follows: 1. Regarding the question of solution concepts, we first 
+
+> 2All these examples are symmetric games up to randomization of the seating.
+> 3Extensive-Form Games (EFGs) or Markov Games (MGs) can be viewed as special cases of normal-form games, where each action in normal-form games corresponds to a strategy in EFGs or MGs, although such representations may not always be efficient.
+
+demonstrate the insufficiency of classical equilibrium con-cepts and general self-play frameworks (learning from scratch) in achieving an equal share in symmetric games. We then proceed to identify the structural conditions where equal share is achievable. In contrast to two-player zero-sum games, we prove that in order to achieve an equal share in multiplayer games: (1) all opponents need to deploy the same strategy; (2) all opponents must have limited adap-tivity, and the learning agent has to model the opponents (See Section 4). We show that without either condition, an equal share can not be attained in the worst case. We prove that our identified conditions apply to practical multiplayer gaming platforms with a large player base. They are also tightly connected to the design of many prior modern mul-tiplayer AI agents. 2. Regarding the question of principled algorithms, this paper illustrates how we can leverage existing tools from no-regret learning and no-dynamic-regret learning com-munities to achieve equal share with provable guarantees. Concretely, this paper considers several opponent settings: fixed, slowly adapting, and opponents that adapt at inter-mediate rates. For all cases, we design algorithms that ap-proximately achieve equal share, with an error tolerance of 
+
+1/poly (T ), where T is the total number of games played. Additionally, we provide matching lower bounds, demon-strating that these guarantees cannot be significantly im-proved in the worst-case scenario. 3. We further complement our theory by experiments on two basic multiplayer symmetric games. Our experimen-tal results illustrate that (1) the self-play meta-algorithms from prior state-of-the-art systems for multiplayer games can fail to secure an equal share even under favorable set-tings, while our principled algorithm always succeeds; (2) prior meta-algorithm has no clear advantage over our al-gorithm on exploitability in the worst case. This indicates that prior self-play algorithms are not general-purpose and highlights the effectiveness of our theoretical framework. 
+
+1.1. Related work AI gaming agents in practice. Building superhuman AI has long been a goal in various games. A large body of works in this line focus on two-player or two-team zero-sum games like Chess (Campbell et al., 2002), Go (Silver et al., 2016), Heads-Up Texas Hold’em (Moravˇ c´ ık et al., 2017; Brown & Sandholm, 2018), Starcraft 2 (Vinyals et al., 2019), DOTA 2 (Berner et al., 2019) and League of Legends (Ye et al., 2020). Most of them are based on finding equilibria via self-play, fictitious play, league train-ing, etc. There is comparatively much less amount of work on games with more than two players, whose game struc-tures are fundamentally different from two-player zero-sum games. Several remarkable multiplayer successes in-2Securing Equal Share: A Principled Approach for Learning Multiplayer Symmetric Games 
+
+clude Poker (Brown & Sandholm, 2019), Mahjong (Li et al., 2020), Doudizhu (Zha et al., 2021) and Diplo-macy (Bakhtin et al., 2022; , FAIR). Despite lacking a clearly formulated learning objective, these works typically design meta-algorithms, which include initially training the model using behavior cloning from opponents, then en-hancing it through self-play, and finally applying adapta-tions based on the game’s specific structure or human ex-pertise. It remains elusive whether such a recipe is gener-ally effective for a wide range of multiplayer games. 
+
+Existing results for symmetric games. Von Neumann & Morgenstern (1947) gave the first definition of sym-metric games and used the three-player majority-vote ex-ample to showcase the stark difference between symmet-ric three-player zero-sum games and symmetric two-player zero-sum games. In his seminal paper that introduced Nash equilibrium (NE), Nash proved that a symmetric fi-nite multi-player game must have a symmetric NE (Nash, 1951). However, this existence result holds little signifi-cance from an individual standpoint, as there is no reason 
+
+a priori to assume that other players are indeed playing ac-cording to this symmetric equilibrium. Papadimitriou & Roughgarden (2005) studied the computational complexity of finding the NE in symmetric multi-player games when the number of actions available is much smaller than the number of players and gave a polynomial-time algorithm for the problem. In this case, symmetry greatly reduced the computational complexity (as computing Nash in general is PPAD -hard). Daskalakis (2009) proposed anonymous games , a generalization of symmetric games. 
+
+No-regret learning. There is a rich literature on applying no-regret learning algorithms to learning equilibria . It is well-known that if all agents have no regret, the resulting empirical average would be an approximate Coarse Corre-lated Equilibrium (CCE) (Young, 2004), while if all agents have no swap-regret, the resulting empirical average would be an ϵ-Correlated Equilibrium (CE) (Hart & Mas-Colell, 2000; Cesa-Bianchi & Lugosi, 2006). Later work continu-ing this line of research includes those with faster conver-gence rates (Syrgkanis et al., 2015; Chen & Peng, 2020; Daskalakis et al., 2021), last-iterate convergence guaran-tees (Daskalakis & Panageas, 2018; Wei et al., 2020), and extension to extensive-form games (Celli et al., 2020; Bai et al., 2022b;a; Song et al., 2022) and Markov games (Song et al., 2021; Jin et al., 2021). 
+
+# 2. Preliminaries 
+
+Notation. For any set A, its cardinality is represented by 
+
+|A| , and ∆( A) denotes a probability distribution over A.We employ A⊗n to denote the Cartesian product of n in-stances of A. Given a distribution x over A, x⊗n represents the joint distribution of n independent copies of x, forming a distribution over A⊗n. For a function f : A → R, we denote ∥f ∥∞ := max a∈A |f (a)|. We use [n] to denote the set {1, . . . , n }. In this paper, we use C to denote universal constants, which may vary from line to line. 
+
+2.1. Normal-form games and equilibrium Normal-form game. An n-player normal-form game con-sists of a finite set of n players, where each player has an action space Ai and a corresponding payoff function 
+
+Ui : A1 × · · · × A n → [−1, 1] with Ui(a1, . . . , a n)
+
+denotes the payoff received by the i-th player if n play-ers are taking joint actions (a1, . . . , a n). We define a game as constant-sum if there exists constant C such that Pni=1 Ui(a1, . . . , a n) = C for all joint actions. We further denote a game as zero-sum if it is a constant-sum game with a total payoff of C = 0 . Normal-form games can represent a wide range of games as their special cases, including se-quential games such as extensive-form or Markov games. Due to space limit, we refer readers to Appendix A for more details of basic concepts in normal-form games, in-cluding formal definitions of strategy, learning protocol, and best response. 
+
+Equilibrium. Nash Equilibrium (NE) is the most commonly-used solution concept for games: a mixed strat-egy x ∈ ∆( A1 × · · · × A n) of all players is said to be NE if x is a product distribution 4, and no player could gain by deviating from her own strategy while holding all other players’ strategies fixed. That is, for all i ∈ [n] and 
+
+a′ 
+
+> i
+
+∈ A i, Ea∼x[Ui(ai, a −i)] ≥ Ea∼x[Ui(a′
+
+> i
+
+, a −i)] .There are also two equilibrium notions relaxing the notion of NE by no longer requiring x to be a product distribution. It allows general joint distribution x which describes corre-lated strategies among players. In particular, (1) x is a Cor-related Equilibrium (CE) if for all i ∈ [n] and a′ 
+
+> i
+
+∈ A i,
+
+Ea∼x[Ui(ai, a −i) | ai] ≥ Ea∼x[Ui(a′
+
+> i
+
+, a −i) | ai], and (2) x
+
+is Coarse Correlated Equilibrium (CCE) if for all i ∈ [n]
+
+and a′ 
+
+> i
+
+∈ A i: Ea∼x[Ui(ai, a −i)] ≥ Ea∼x[Ui(a′
+
+> i
+
+, a −i)] .The major difference between those two notions is in the cases when the agent deviates from her current strategy, whether she is still allowed to observe the randomness in drawing actions from the correlated strategy. The relation-ship among various equilibrium concepts is encapsulated by NE ⊂ CE ⊂ CCE .
+
+Two-player zero-sum games. In two-player zero-sum games, all Nash equilibria share the unique payoff value 
+
+0. Furthermore, a Nash equilibrium is non-exploitable 
+
+against any strategy that is not necessarily an equilibrium. In math, if (μ⋆, ν ⋆) is the Nash equilibrium, we have 
+
+min ν U1(μ⋆, ν ) = max μ min ν U1(μ, ν ) = 0 .
+
+Multiplayer/general-sum games. When there are more 
+
+> 4Randomness in different players’ strategies are independent.
+
+3Securing Equal Share: A Principled Approach for Learning Multiplayer Symmetric Games 
+
+than two players, or games are no longer constant-sum games, NEs become PPAD-hard to compute (Daskalakis et al., 2009) while CEs and CCEs can be still computed in polynomial time. All of these three concepts admit mul-tiple equilibria with distinct payoffs. Furthermore, they no longer own strong guarantees, such as non-exploitness, when competing against non-equilibrium players. 
+
+2.2. Symmetric games and equal share Symmetric games. For an n-player normal-form game with an action space {A i}ni=1 and a payoff {Ui}ni=1 , we say the game is symmetric if (1) Ai = A, for all i ∈ [n]; (2) for any permutation σ : [ n] → [n], we have Ui(a1, · · · , a n) = 
+
+Uσ−1(i)(aσ(1) , · · · , a σ(n)).In short, the payoffs of a symmetric game for employing a specific action are determined solely by the actions used by others, agnostic of the identities of the players using them. Thus, the payoff function of the first player denoted as U1,is sufficient to encapsulate the entire game. Symmetric games are popular in practice as they bring fair-ness among players. Technically, all asymmetric can be converted to symmetric games by randomizing the roles of the players at the beginning of the game. Nevertheless, casting the games in the symmetric form gives a natural and minimal baseline — the learning agent should attain an equal share in the long run. 
+
+Equal share. We say an agent attains an equal share, if its average payoff of the games is at least C/n for a n-player symmetric constant-sum game with a total payoff of C.It is not hard to see that shifting the total payoff of a game by any absolute constant will not alter the strategic aspects of the game. Therefore, without loss of generality, this pa-per sets a total payoff of C = 0 and focuses on achieving an equal share in multiplayer symmetric zero-sum games .
+
+# 3. Insufficiency of Equilibria and Self-play for Equal Share 
+
+In this section, we demonstrate that existing equilibria no-tions and the self-play from scratch algorithm are insuffi-cient to secure equal shares in multiplayer symmetric zero-sum games even under very basic settings. To show this, we consider the following 3-player majority vote game: 
+
+Example 1 (Three-player majority vote game) . Every player chooses either 0 or 1. If all players take the same action, then they receive a payoff of 0. Otherwise, being in the majority yields a positive payoff of 1/2, while being in the minority results in a negative payoff of −1.
+
+Insufficiency of equilibria. In this setup, both pure strate-gies (0 , 0, 0) and (1 , 1, 1) constitute NE. However, the ex-istence of multiple NEs creates a predicament for the learn-ing agent. It must choose which equilibrium to follow, yet there is always the risk that the two opponents are both playing the other NE, leading to a negative payoff for the learner. In other words, adhering to a single NE does not reliably ensure an equal share when multiple equilibria ex-ist. Since NE ⊂ CE ⊂ CCE , we know the same limitation also holds for CE and CCE. 
+
+Insufficiency of self-play from scratch. Self-play is a training method in which the learning agent improves its performance by repeatedly playing against copies of itself without human supervision. See pseudo-code in Algorithm 1. The learner maintains its own strategy {xt}Tt=1 . At the 
+
+tth iteration, the learner first pretends that all opponents are employing its current strategy xt, and samples actions from them. Then the learner updates its own strategy to xt+1 us-ing the gradient information from the gameplay. The up-dates can be made using any optimizer such as gradient descent or Hedge. Here, we argue that self-play from scratch (the algorithm adopted in (Brown & Sandholm, 2019)) again fails to se-cure an equal share in the same three-player majority vote game: Consider two opponents play the same fixed strat-egy that is one of the NEs. In this case, the learner has no choice but to play the exact same NE as the opponents to secure an equal share. That is, if the learner’s algorithm is agnostic to the strategies of the opponents, it is doomed to fail. We note that while recent systems (Li et al., 2020; Ja-cob et al., 2022) combine self-play with behavior cloning which is no longer agnostic to opponents’ strategies, our experiment shows that their meta-algorithms remain insuf-ficient to secure an equal share in the worst-case scenario (See Section 6). 
+
+# 4. Sufficient Conditions for Securing Equal Share 
+
+Here we further identify structural conditions of the games where equal share is achievable. We will show that the following two conditions are needed to achieve equal share: 
+
+Condition 1. All opponents need to deploy the same strat-egy, i.e., x2 = . . . = xn;
+
+Condition 2. All opponents must have limited adaptivity and the player has to model the opponents, i.e., {xj }nj=2 can not adversarially change across different rounds of the game. We justify these two conditions by proving that without ei-ther condition, an equal share can not be attained in multi-player symmetric games in the worst case. We remark that both conditions restrict the strategies of opponents rather 4Securing Equal Share: A Principled Approach for Learning Multiplayer Symmetric Games 
+
+than the type of games. 
+
+Non-adaptive opponents that deploy different strate-gies. We start by considering the case where Condition 2 holds but Condition 1 does not hold. 
+
+Proposition 4.1. There exist symmetric zero-sum games with opponents using fixed but differing strategies, such that no learner’s strategy secures an equal share. In math, 
+
+max 
+
+> x1
+
+min  
+
+> x2,··· ,x n
+
+U1(x1, · · · , x n)
+
+≤ min  
+
+> x2,··· ,x n
+
+max 
+
+> x1
+
+U1(x1, · · · , x n) ≤ 0 (1) 
+
+where both inequalities can be strict in certain games. 
+
+Here, we can further strengthen the proposition to require opponents to deploy strategies without “collusion”. That is, the hard instance holds even when the strategies em-ployed by opponents are statistically independent without any shared randomness. Proposition 4.1 highlights the challenge when opponents can adopt different strategies. 
+
+Adaptive opponents that deploy identical strategy. We next examine the case where Condition 1 holds but Condi-tion 2 does not hold. 
+
+Proposition 4.2. There exist symmetric zero-sum games such that no learner’s strategy secures an equal share against adversarial opponents, even under the constraint they adhere to identical strategy at each round. In math, 
+
+max 
+
+> x1
+
+min  
+
+> x
+
+U1(x1, x ⊗n−1)
+
+≤ min  
+
+> x
+
+max 
+
+> x1
+
+U1(x1, x ⊗n−1) = 0 , (2) 
+
+where the inequality can be strict in certain games. 
+
+Proposition 4.2 implies a property that makes multiplayer games significantly different from two-player zero-sum games: even under the favorable scenario of all opponents employing identical strategies, one can no longer find a fixed “non-exploitable” strategy agnostic to the strategies of opponents. All strategies are exploitable. Opponent modeling is necessary to secure an equal share. 
+
+Solution concepts beyond equilibrium. Combining Proposition 4.1 and Proposition 4.2, we observe that both conditions mentioned at the beginning of Section 4 are needed to make equal share achievable. In math, we con-clude from Eq.(1) and Eq.(2) that, out of the four related minimax concepts, only min x max x1 U1(x1, x ⊗n−1) = 0 
+
+across all multiplayer symmetric zero-sum games, which guarantees an equal share. This remaining minimax con-cept precisely corresponds to the two identified condi-tions where opponents employ identical strategies, and the learner must be adaptive to the opponents. Therefore, we will use min x max x1 U1(x1, x ⊗n−1) as our target solu-tion concept for this paper to achieve equal share. We remark that this solution concept does not necessarily cor-respond to any equilibrium in most multiplayer games . We conclude with this solution concept from a principled man-ner with equal share as our primary objective. For con-ciseness, from now on, we will also refer to the common strategy employed by all opponents as the meta-strategy .
+
+4.1. Connections between identified conditions and practice 
+
+While the two identified conditions may seem restrictive, here we argue that they in fact apply to practical multi-player gaming platforms with a large player base. Con-dition 1 is further implicitly adopted by most prior state-of-the-art AI agents for multiplayer games. 
+
+Connection to multiplayer games with a large player base. We argue that both identified conditions are well-justified in modern multiplayer gaming platforms with a large player base. Imagine a casino hosting N players who randomly join poker tables or an online Mahjong match-making platform with N users. Let {xi}Ni=1 be the strategy set for these N players. We can then define the popula-tion meta-strategy as ¯x = (1 /N ) PNi=1 xi. The following proposition claims that, for n-player symmetric zero-sum games, in terms of the expected payoff, playing against 
+
+n − 1 random players is almost the same as playing against 
+
+n − 1 players who all adopt the same population meta-strategy ¯x, as long as N ≫ (n − 2) 2.
+
+Proposition 4.3. Let Ex−1 be the expectation over the ran-domness on sampling n − 1 strategies uniformly from the set {xi}Ni=1 without replacement. Then for any strategy 
+
+z ∈ ∆( A), we have |Ex−1 [U1(z, x −1)] − U1(z, ¯x⊗n−1)| ≤ 
+
+2( n − 2) 2/N .
+
+Furthermore, it is often safe to assume that the population meta-strategy ¯x — the average strategy of all players within the player pool — will not quickly adapt to one particular player’s strategy. 
+
+Connection to practical AI systems. We remark that a majority of practical AI systems for multiplayer games (Li et al., 2020; Brown & Sandholm, 2019; Bakhtin et al., 2022; , FAIR) leverage self-play meta-algorithms (Algo-rithm 1), which equate the strategies of all opponents with those of the learner. This implicitly assumes all opponents employ an identical strategy at every round. 
+
+# 5. Provably Efficient Algorithms 
+
+In this section, we explore efficient algorithms that prov-ably secure an equal share under the two conditions iden-tified in Section 4. Particularly, we consider several oppo-nent settings with various adaptivity: fixed, slowly adapt-ing, and opponents that adapt at intermediate rates. 5Securing Equal Share: A Principled Approach for Learning Multiplayer Symmetric Games 
+
+We use the following notations throughout this section: at round t, let xt denote the learner’s strategy, and yt the meta-strategy employed by all opponents. We denote ut(·) as the expected payoff function of the learner at round t, where 
+
+ut(·) := U1(·, (yt)⊗n−1). Then the average payoff of the learner is: uavg (T ) := (1 /T ) PTt=1 ut(xt).
+
+5.1. Fixed opponents 
+
+We begin by exploring the simple stationary scenario, where the meta-strategy used by the opponents remains constant over time, denoted as yt = y for all t ∈ [T ].Notably, in this particular scenario, the payoff function 
+
+ut(·) remains constant over time. Additionally, by sym-metry, it is not hard to observe that at least one action will consistently yield an expected payoff of 0 in all rounds. This implies max a∈A 
+
+PTt=1 ut(a) ≥ 0, which makes the no-regret learning tool well-poised to achieve equal share in this setting. Standard (static) regret , defined as fol-lows, compares the learner’s total payoff to the total payoff achieved by the best action in hindsight: Reg (T ) := max a∈A 
+
+PTt=1 ut(a) − PTt=1 ut(xt),
+
+An algorithm has no-regret if Reg (T ) ≤ o(T ) for all large 
+
+T . We deploy a standard no-regret learning algorithm — Hedge (Freund & Schapire, 1997), which provides the fol-lowing guarantees: 
+
+Theorem 5.1 (Stationary opponents) . Let {xt}Tt=1 be the strategy sequence implemented by the Hedge algo-rithm against stationary opponents. Then, with prob-ability at least 1 − δ, we have uavg (T ) ≥ u⋆ −
+
+Cplog( A/δ )/T , for some absolute constant C, where 
+
+u⋆ := max a∈A U1(a, y ⊗n−1) ≥ 0.
+
+The probability is taken over the random actions by op-ponents sampled from the meta-strategy 5. Theorem 5.1 claims that with stationary opponents, the Hedge algorithm approximately achieves an equal share up to a ˜O(1 /√T )
+
+error, which demonstrates its effectiveness in the long run. 
+
+5.2. Adaptive opponents 
+
+In practical scenarios, encountering a fixed opponent strat-egy is relatively uncommon. More often, opponents adapt and modify their strategies over time, responding to the game’s dynamics and the actions of other players. Thus, in this section, we shift our focus to the non-stationary sce-nario, where the meta-strategy yt adopted by the opponents 
+
+varies over time. According to Proposition 4.2, it is clear that attaining an 
+
+> 5Recall that our learning protocol in Section 2 assumes the learner only observes the noisy actions of the other players at each round.
+
+equal share is impossible if opponents can change their meta-strategy yt arbitrarily fast across different rounds. Thus we introduce a constraint on the adaptive power of the opponents by positing a variation budget VT , which bounds the total variation of the payoff function across the time horizon. Specifically, we assume the payoff function belongs to U, which is defined as 
+
+U := 
+
+n
+
+{ut}Tt=1 
+
+PT −1 
+
+> t=1
+
+ut+1 − ut 
+
+> ∞
+
+≤ VT
+
+o
+
+. (3) Furthermore, we denote G(n, A, V T ) as the set of tuples, which consists of a n-player symmetric zero-sum game with A actions and a corresponding meta-strategy sequence 
+
+{yt}Tt=1 , such that the payoff function {ut}Tt=1 ∈ U . This constraint effectively moderates the adaptivity of the oppo-nents compared to a fully adversarial setup. 
+
+Slowly adapting opponents. In non-stationary environ-ments, the total payoff achieved by the best action in hindsight max a∈A 
+
+PTt=1 ut(a) is no longer non-negative. Therefore, minimizing standard regret in this setting is no longer effective in securing an equal share. This motivates us to turn our attention to a stronger notion of regret — 
+
+dynamic regret , defined as: D-Reg (T ) := PTt=1 max a∈A ut(a) − PTt=1 ut(xt).
+
+This measures a strategy’s performance against the best ac-tion at each time step (dynamic oracle), providing a more relevant benchmark in changing environments. In the setting of symmetric games, the dynamic ora-cle is always assured to secure an equal share, i.e., PTt=1 max a∈A ut(a) ≥ 0. Thus, any algorithm achieving no-dynamic-regret is guaranteed to achieve an equal share up to a small error. To this ends, we adapt a no-dynamic-regret algorithm—Strongly Adaptive Online Learner with Hedge H as a black box algorithm ( SAOL H) (See Ap-pendix C.1.2), as proposed by (Daniely et al., 2015) to our setting and achieve following guarantees: 
+
+Theorem 5.2. Suppose that n ≥ 3, A ≥ 2, and VT ∈
+
+[1 , T ], then for any game and any meta-strategy sequence in G(n, A, V T ), with probability at least 1 − δ, SAOL H
+
+satisfies 
+
+uavg (T ) ≥ u† − CV 1/3 
+
+> T
+
+T −1/3
+
+plog( A/δ ) + log T
+
+
+
+for some absolute constant C, where u† := (1 /T ) PTt=1 max a∈A ut(a) ≥ 0.
+
+Theorem 5.2 implies that SAOL H achieves a non-negative average payoff, up to an error term that scales with 
+
+˜O(V 1/3 
+
+> T
+
+T −1/3). Therefore, if VT is sublinear in T ,
+
+SAOL H is capable of approximately achieving equal share over an extended duration. 6Securing Equal Share: A Principled Approach for Learning Multiplayer Symmetric Games 
+
+Opponents that adapt at intermediate rates. Interest-ingly, there is an intermediate regime where opponents’ strategies {yt}Tt=1 are changing neither too fast nor too slow where the favorable algorithm for the learner might be behavior cloning—simply mimic opponents’ strategies. Formally, we define the behavior cloning algorithm for the learner by making her action in t-th round the same as the action taken by the 2nd player in (t − 1) -th round (See Algorithm 2). Behavior cloning achieves the following: 
+
+Theorem 5.3. Suppose that n ≥ 3, A ≥ 2, and 
+
+VT ∈ [1 , T ], for any game and any meta-strategy se-quence in G(n, A, V T ), behavior cloning guarantees that 
+
+E[uavg (T )] ≥ − (VT + 1) /T. 
+
+We remark that while the error term O(VT /T ) in Theorem 5.3 is always smaller than the error term ˜O(( VT /T )1/3) in Theorem 5.2, the latter is comparing to the baseline of dy-namic oracle u†, which has a greater value than the base-line in behavior cloning — 0. It is not hard to see that in the intermediate regime ˜Θ( u†) ≤ VT /T ≤ Θ(1) , the meta-strategy is changing too fast so that it is better for the learner to simply copy the meta-strategy instead of run-ning sophisticated no-dynamic-regret algorithm to learn the game and to counter the meta-strategy by herself. 
+
+Matching lower bounds. Finally, we also complement our upper bounds by matching lower bounds showing that 
+
+SAOL H and behavior cloning are already the near-optimal algorithms in terms of error rates when compared with the corresponding baselines — the dynamic oracle and zero payoff respectively. The techniques used here are based on adapting existing hard instances for a more general setup to the symmetric zero-sum game setting. Please see more discussion in Appendix C.2. 
+
+Theorem 5.4. There exists some absolute constant C > 0
+
+such that for any n ≥ 3, A ≥ 2, and VT ∈ [1 , T ], and any learning algorithm, there exists a game and a meta-strategy sequence in G(n, A, V T ), such that E[uavg (T )] ≤
+
+u† − CV 1/3 
+
+> T
+
+T −1/3.
+
+Theorem 5.5. There exists some absolute constant C > 0
+
+such that for any n ≥ 3, A ≥ 2, and VT ∈ [1 , T ], and any learning algorithm, there exists a game and a meta-strategy sequence in G(n, A, V T ) such that E [uavg (T )] ≤−CV T /T .
+
+The expectation in both theorems are taking over the ran-dom actions by the opponents as well as the possible in-trinsic randomness in a stochastic algorithm. Theorem 5.4 and 5.5 match Theorem 5.2 and 5.3 respectively, up to ad-ditional logarithmic factors. 
+
+# 6. Experiments 
+
+In this section, we focus on the scenario where one learning agent competes against n − 1 opponents who play the iden-tical meta-strategy. For simplicity, we restrict ourselves to the setting of fixed opponents. We aim to answer: (Q1) Can existing algorithmic frameworks in previous superhuman AI systems consistently secure an equal share under this favorable setting? If not, what are the failure cases? (Q2) 
+
+Are these trained agents exploitable by adversarial oppo-nents? We design the following two games to compare our algorithm with prior self-play-based algorithms. 
+
+Majority Vote (MV). We first consider the standard 3-player majority vote game (Example 1). Here [1 , 0] , [0 , 1] ,and [1 /2, 1/2] are all NEs, where [p, 1 − p] denotes the mixture strategy that takes the first action with probability 
+
+p and the second action with probability 1 − p. We fix the opponent meta-strategy ymeta = [0 .49 , 0.51] for all rounds. 
+
+Switch Dominance Game (SDG). In each round, players simultaneously choose an action from set {A, B, C }. Let 
+
+n be the total number of players and nA be the number of agents choosing action A, We define the game rule as: 
+
+(
+
+B ≻ A ≻ C if nA > 0.2n, C ≻ B ≻ A otherwise ,
+
+where the rule i ≻ j ≻ k intuitively means that action i
+
+dominates both j and k, and action j dominates k. SDG is designed so that C is a dominated action when there is a reasonable number of players taking action A, but a 
+
+dominating action otherwise. Concretely, for i ≻ j ≻ k,we assign the following payoff (ri, r j , r k) to players taking actions (i, j, k ) respectively, where: 
+
+ri = I[nj + nk > 0] ,rj = I[nk > 0] − I[nj + nk > 0] · ni/(nj + nk),rk = −I[nj + nk > 0] · ni/(nj + nk) − I[nk > 0] · nj /n k.
+
+This payoff design guarantees that SDG is a symmetric zero-sum game. Here we set n = 30 and pick the fixed meta-strategy of the opponents ymeta = [0 .399 , 0.6, 0.001] 
+
+(in the order of action A, B, C ) for all rounds. Note that while this game has an NE strategy [0, 0, 1], its utility is negative against our chosen meta-strategy ymeta .
+
+6.1. Learning algorithms 
+
+To better focus on the key game-theoretic property of the algorithms, we idealize the process of imitation learning by assuming that the learning agent has already learned (i.e., has direct access to) the meta-strategy ymeta by the opponents. In this setting, according to Theorem 5.1, our theoretical framework suggests to directly run the Hedge 
+
+algorithm (Hedge) against opponents who play the meta-7Securing Equal Share: A Principled Approach for Learning Multiplayer Symmetric Games                                                             
+
+> Table 1. The distribution of mixed strategies to which different self-play algorithms converge in MV. We use SP BC λas the short name of SP BC reg with regularization coefficients λ.Strategy SP scratch SP BC SP BC 10 −5SP BC 10 −4SP BC 10 −3SP BC 10 −2Hedge
+> [1 ,0] 52% 48% 50% 46% 42% 42% 0% [0 ,1] 48% 52% 50% 54% 58% 58% 100%
+> Table 2. The utility and exploitability of each algorithm. Particularly, for MV, as self-play algorithms converge to two different solutions with roughly equal probability, we evaluate the utility of the worse converged solution of the two to reflect the worst-case performance.
+> MV SP scratch / SP BC / SP BC reg Hedge
+> Utility ( ×10 −2)-1.00 ±0.09 1.03 ±0.10 Exploitability -1.00 ±0.00 -1.00 ±0.00
+> SDG SP scratch / SP BC / SP BC reg Hedge
+> Utility -12.67 ±0.01 1.00 ±0.00 Exploitability -29.00 ±0.00 -29.00 ±0.00
+
+strategy. We compare our algorithm against three meta-algorithms adopted by prior state-of-the-art AI systems in practice: (1) self-play from scratch (SP scratch) (Brown & Sandholm, 2019); (2) self-play initialized from behav-ior cloning (SP BC) (Li et al., 2020), and (3) self-play ini-tialized from behavior cloning with regularization towards the meta-strategy (SP BC reg) (Jacob et al., 2022). While these AI systems further implement multi-step lookahead with a few additional techniques, many of them only ap-ply to sequential games, not the basic normal-form games. Here, we focus on the comparison of the high-level game-theoretic meta-algorithms. 
+
+Algorithm details. We also use the Hedge algorithm as the optimizer for the self-play algorithm to update its strategy. We choose the learning rate for the Hedge algorithm based on theoretically optimal value and choose the regulariza-tion parameter according to (Jacob et al., 2022). We refer readers to Appendix D for more details. 
+
+6.2. Results 
+
+To answer Q1 and Q2 , we evaluate the utility of the learned strategy ˆx against the pre-specified meta-strategy ymeta , i.e., 
+
+U1(ˆ x, y ⊗(n−1)  
+
+> meta
+
+), as well as the exploitability of the learner 
+
+ˆx, i.e., min y U1(ˆ x, y ⊗(n−1) ). To measure the utility, we evaluate the payoff of the agent’s converged strategy by Monte Carlo methods with 3 × 10 5 games and report the mean and standard deviation of 10 runs. As for the ex-ploitability, pick the best exploiter strategy within 100 runs, and report the payoff of the learner against that exploiter. 
+
+Convergence analysis. We first check the convergence for each algorithm in both games: 
+
+MV : Table 1 reports the limiting solution each algorithm converges to within 100 runs. Our algorithm (Hedge) con-sistently converges to the good strategy [0 , 1] . All self-play variants have significant probability converge to the bad strategy [1 , 0] , which has a negative utility against the cho-sen meta-strategy ymeta = [0 .49 , 0.51] .
+
+SDG : We report that while our Hedge algorithm converges to the strategy [0 , 1, 0] , all self-play variants consistently converge to the strategy [0 , 0, 1] .
+
+Utility and Exploitability. We summarize the results in Table 2, which show that even in these two simple sym-metric zero-sum games, none of the self-play algorithms can consistently secure a non-negative payoff, i.e., an equal share, in the worst case. This undesirable behavior persists even without opponents making any adaptations! More-over, based on these two games, we further conclude two potential failure modes of self-play algorithms: (1) For games with multiple NEs, such as MV, self-play methods may converge to different NEs based on different initial-ization. When the opponents’ meta-strategy (i.e., the initial strategy for SP BC) lies close to the boundary of the con-vergence basins of two different NEs, self-play algorithms will have a non-zero probability of converging to both of them due to the statistical randomness in the game. It is likely one of the two NEs is undesirable against the meta-strategy ymeta . (2) For games with a single NE, self-play algorithms are still very likely to be attracted to this equi-librium. A carefully designed game structure can result in this NE yielding a negative utility against the chosen meta-strategy, and hence jailbreak all self-play variants. The aforementioned failure modes highlight a significant lim-itation of self-play variants when being applied to diverse and complex multiplayer games. In contrast, the princi-pled algorithm according to our theory consistently beats the meta-strategy of the opponents, receives a much higher payoff, and secures an equal share. Regarding exploitabil-ity, all learned strategies can be easily exploited by adver-sarial opponents. 
+
+# 7. Conclusion 
+
+Unlike in the two-player zero-sum games, standard equi-libria are no longer always the suitable solution concept for multiplayer games. They are non-unique and lack mean-ingful guarantees in general scenarios. This paper estab-8Securing Equal Share: A Principled Approach for Learning Multiplayer Symmetric Games 
+
+lishes a new theoretical framework that provides the solu-tion concepts and the principled algorithms for multiplayer games from the unique angle of achieving equal share. We hope our results serve as the first step toward further research on principled methodologies and algorithms for multiplayer games. 
+
+# Acknowledgement 
+
+The authors would like to thank Haifeng Xu for the help-ful discussions. This work is supported by Office of Naval Research N00014-22-1-2253. 
+
+# Impact Statement 
+
+This paper presents work whose goal is to advance the field of Machine Learning. There are many potential societal consequences of our work, none which we feel must be specifically highlighted here. 
+
+# References 
+
+Bai, Y., Jin, C., Mei, S., Song, Z., and Yu, T. Efficient 
+
+Φ-regret minimization in extensive-form games via on-line mirror descent. arXiv preprint arXiv:2205.15294 ,2022a. Bai, Y., Jin, C., Mei, S., and Yu, T. Near-optimal learning of extensive-form games with imperfect information. arXiv preprint arXiv:2202.01752 , 2022b. Bakhtin, A., Wu, D. J., Lerer, A., Gray, J., Jacob, A. P., Farina, G., Miller, A. H., and Brown, N. Mastering the game of no-press diplomacy via human-regularized reinforcement learning and planning. arXiv preprint arXiv:2210.05492 , 2022. Berner, C., Brockman, G., Chan, B., Cheung, V., Debiak, P., Dennison, C., Farhi, D., Fischer, Q., Hashme, S., Hesse, C., et al. Dota 2 with large scale deep reinforce-ment learning. arXiv preprint arXiv:1912.06680 , 2019. Besbes, O., Gur, Y., and Zeevi, A. Stochastic multi-armed-bandit problem with non-stationary rewards. Advances in neural information processing systems , 27, 2014. Brown, N. and Sandholm, T. Superhuman ai for heads-up no-limit poker: Libratus beats top professionals. Sci-ence , 359(6374):418–424, 2018. Brown, N. and Sandholm, T. Superhuman ai for multi-player poker. Science , 365(6456):885–890, 2019. Campbell, M., Hoane Jr, A. J., and Hsu, F.-h. Deep blue. 
+
+Artificial intelligence , 134(1-2):57–83, 2002. Celli, A., Marchesi, A., Farina, G., and Gatti, N. No-regret learning dynamics for extensive-form correlated equilib-rium. Advances in Neural Information Processing Sys-tems , 33:7722–7732, 2020. Cesa-Bianchi, N. and Lugosi, G. Prediction, learning, and games . Cambridge university press, 2006. Chen, X. and Deng, X. 3-nash is ppad-complete. In Elec-tronic Colloquium on Computational Complexity , vol-ume 134, pp. 2–29. Citeseer, 2005. Chen, X. and Peng, B. Hedging in games: Faster conver-gence of external and swap regrets. Advances in Neu-ral Information Processing Systems , 33:18990–18999, 2020. Daniely, A., Gonen, A., and Shalev-Shwartz, S. Strongly adaptive online learning. In International Conference on Machine Learning , pp. 1405–1411. PMLR, 2015. Daskalakis, C. Nash equilibria: Complexity, symmetries, and approximation. Computer Science Review , 3(2):87– 100, 2009. Daskalakis, C. and Panageas, I. Last-iterate convergence: Zero-sum games and constrained min-max optimization. 
+
+arXiv preprint arXiv:1807.04252 , 2018. Daskalakis, C., Goldberg, P. W., and Papadimitriou, C. H. The complexity of computing a nash equilibrium. SIAM Journal on Computing , 39(1):195–259, 2009. Daskalakis, C., Fishelson, M., and Golowich, N. Near-optimal no-regret learning in general games. Advances in Neural Information Processing Systems , 34:27604– 27616, 2021. (FAIR)†, M. F. A. R. D. T., Bakhtin, A., Brown, N., Dinan, E., Farina, G., Flaherty, C., Fried, D., Goff, A., Gray, J., Hu, H., et al. Human-level play in the game of diplomacy by combining language models with strategic reasoning. 
+
+Science , 378(6624):1067–1074, 2022. Freund, Y. and Schapire, R. E. A decision-theoretic gener-alization of on-line learning and an application to boost-ing. Journal of computer and system sciences , 55(1): 119–139, 1997. Gray, J., Lerer, A., Bakhtin, A., and Brown, N. Human-level performance in no-press diplomacy via equilibrium search. arXiv preprint arXiv:2010.02923 , 2020. Hart, S. and Mas-Colell, A. A simple adaptive procedure leading to correlated equilibrium. Econometrica , 68(5): 1127–1150, 2000. 9Securing Equal Share: A Principled Approach for Learning Multiplayer Symmetric Games 
+
+Jacob, A. P., Wu, D. J., Farina, G., Lerer, A., Hu, H., Bakhtin, A., Andreas, J., and Brown, N. Modeling strong and human-like gameplay with kl-regularized search. In International Conference on Machine Learning , pp. 9695–9728. PMLR, 2022. Jin, C., Liu, Q., Wang, Y., and Yu, T. V-learning–a simple, efficient, decentralized algorithm for multiagent rl. arXiv preprint arXiv:2110.14555 , 2021. Li, J., Koyamada, S., Ye, Q., Liu, G., Wang, C., Yang, R., Zhao, L., Qin, T., Liu, T.-Y., and Hon, H.-W. Suphx: Mastering mahjong with deep reinforcement learning. 
+
+arXiv preprint arXiv:2003.13590 , 2020. Light, J., Cai, M., Shen, S., and Hu, Z. Avalonbench: Eval-uating llms playing the game of avalon. In NeurIPS 2023 Foundation Models for Decision Making Work-shop , 2023. Moravˇ c´ ık, M., Schmid, M., Burch, N., Lis` y, V., Morrill, D., Bard, N., Davis, T., Waugh, K., Johanson, M., and Bowling, M. Deepstack: Expert-level artificial intelli-gence in heads-up no-limit poker. Science , 356(6337): 508–513, 2017. Nash, J. Non-cooperative games. Annals of mathematics ,pp. 286–295, 1951. Papadimitriou, C. H. and Roughgarden, T. Computing equilibria in multi-player games. In SODA , volume 5, pp. 82–91. Citeseer, 2005. Silver, D., Huang, A., Maddison, C. J., Guez, A., Sifre, L., Van Den Driessche, G., Schrittwieser, J., Antonoglou, I., Panneershelvam, V., Lanctot, M., et al. Mastering the game of go with deep neural networks and tree search. 
+
+nature , 529(7587):484–489, 2016. Song, Z., Mei, S., and Bai, Y. When can we learn general-sum markov games with a large number of players sample-efficiently? arXiv preprint arXiv:2110.04184 ,2021. Song, Z., Mei, S., and Bai, Y. Sample-efficient learning of correlated equilibria in extensive-form games. arXiv preprint arXiv:2205.07223 , 2022. Syrgkanis, V., Agarwal, A., Luo, H., and Schapire, R. E. Fast convergence of regularized learning in games. Ad-vances in Neural Information Processing Systems , 28, 2015. Vinyals, O., Babuschkin, I., Czarnecki, W. M., Mathieu, M., Dudzik, A., Chung, J., Choi, D. H., Powell, R., Ewalds, T., Georgiev, P., et al. Grandmaster level in star-craft ii using multi-agent reinforcement learning. Nature ,575(7782):350–354, 2019. Von Neumann, J. and Morgenstern, O. Theory of games and economic behavior, 2nd rev. 1947. Wei, C.-Y., Lee, C.-W., Zhang, M., and Luo, H. Linear last-iterate convergence in constrained saddle-point op-timization. arXiv preprint arXiv:2006.09517 , 2020. Ye, D., Chen, G., Zhang, W., Chen, S., Yuan, B., Liu, B., Chen, J., Liu, Z., Qiu, F., Yu, H., et al. Towards play-ing full moba games with deep reinforcement learning. 
+
+Advances in Neural Information Processing Systems , 33: 621–632, 2020. Young, H. P. Strategic Learning and its Limits . Oxford University Press, 11 2004. ISBN 9780199269181. Zha, D., Xie, J., Ma, W., Zhang, S., Lian, X., Hu, X., and Liu, J. Douzero: Mastering doudizhu with self-play deep reinforcement learning. In international conference on machine learning , pp. 12333–12344. PMLR, 2021. 10 Securing Equal Share: A Principled Approach for Learning Multiplayer Symmetric Games 
+
+# A. Extended Preliminaries 
+
+A.1. Basic concepts Strategy A (mixed) strategy of a player is a probability distribution over the player’s actions. For i ∈ [n], we use 
+
+ai ∈ A and xi ∈ ∆( A) to denote an action and a mixed strategy of the i-th player respectively. We use a−i ∈ A ⊗n−1
+
+and x−i ∈ ∆( A⊗n−1) to denote the actions and the mixed strategies of the other players. We denote Ui(xi, x −i) := 
+
+Eai∼xi,a −i∼x−i [Ui(ai, a −i)] .
+
+Learning protocol We assume that the learner knows the game rule, and thus her own payoff function U1. At every round t, all players take action simultaneously, and the learner only observes the opponents’ noisy actions (at
+
+> 2
+
+, a t
+
+> 3
+
+, . . . , a tn)
+
+that are sampled from their strategies. 
+
+Best response Given a mixed strategy x−i of the other n − 1 players, the best response set BR i(x−i) of the i-th player is defined as BR i(x−i) := arg max ai∈A i Ui(ai, x −i).
+
+A.2. No-regret learning 
+
+No-regret learning is a commonly adopted strategy in game theory to find equilibrium solutions. We consider a T -step learning procedure, where for each round t ∈ [T ]: (1) the agent picks a mixed strategy μt over A, (2) the environment picks an adversarial loss ℓt ∈ [0 , 1] |A| . The expected utility for t-th round is defined as −⟨ μt, ℓ t⟩. To measure the performance of a particular algorithm, a common approach is to consider regret, where the algorithm’s performance is compared against the single best action in hindsight. Specifically, for policy sequence (μ1, . . . , μ T ) taken by an algorithm, the static regret is given, by Reg (T ) = 
+
+> T
+
+X
+
+> t=1
+
+⟨μt, ℓ t⟩ − min 
+
+> a∈A
+> T
+
+X
+
+> t=1
+
+ℓt(a).
+
+We say that the algorithm is a no-regret algorithm if Reg (T ) = o(T ). One of such no-regret learning algorithms is Hedge algorithm , which performs the following exponential weight updates: 
+
+μt+1 (a) ∝ μt(a)e−ηtℓt(a), for ∀a ∈ A .
+
+where ηt is the learning rate. See Algorithm 5 for the Hedge algorithm as applied to our problem setup. 
+
+A.3. 3-player majority and minority game 
+
+In this section, we give a formal definition of the 3-player majority and minority game. We define the 3-player majority game as a symmetric zero-sum game with action space A := {0, 1} and the payoff function given by: 
+
+U1(0 , 0, 0) = U1(1 , 1, 1) = 0 
+
+U1(0 , 1, 0) = U1(0 , 0, 1) = U1(1 , 1, 0) = U1(1 , 0, 1) = 1 /2
+
+U1(0 , 1, 1) = U1(1 , 0, 0) = −1.
+
+In other words, players receive a positive payoff if they are part of the majority and a negative payoff if they are in the minority. Correspondingly, we define the 3-player minority game as a symmetric zero-sum game with action space 
+
+A := {0, 1} and the payoff function given by: 
+
+U1(0 , 0, 0) = U1(1 , 1, 1) = 0 
+
+U1(0 , 1, 0) = U1(0 , 0, 1) = U1(1 , 1, 0) = U1(1 , 0, 1) = −1/2
+
+U1(0 , 1, 1) = U1(1 , 0, 0) = 1 .
+
+In other words, players receive a positive payoff if they are part of the minority and a negative payoff if they are in the majority. 11 Securing Equal Share: A Principled Approach for Learning Multiplayer Symmetric Games 
+
+# B. Proofs for Section 4 
+
+In the sequel, we will prove Proposition 4.1 in Section B.1, Proposition 4.2 in Section B.2 and Propostion 4.3 in Section B.3. 
+
+B.1. Proof of Proposition 4.1 
+
+In this section, we will prove (1), where both inequalities can be made strict in certain games. 
+
+Proof of Proposition 4.1. For the first inequality, note that for any (x1, . . . , x n):
+
+U1(x1, · · · , x n) ≤ max 
+
+> x1
+
+U1(x1, · · · , x n),
+
+which implies 
+
+min  
+
+> x2,··· ,x n
+
+U1(x1, · · · , x n) ≤ min  
+
+> x2,··· ,x n
+
+max 
+
+> x1
+
+U1(x1, · · · , x n).
+
+By further taking maximum over x1 ∈ ∆( A), we prove that 
+
+max 
+
+> x1
+
+min  
+
+> x2,··· ,x n
+
+U1(x1, · · · , x n) ≤ min  
+
+> x2,··· ,x n
+
+max 
+
+> x1
+
+U1(x1, · · · , x n).
+
+To show the first inequality can be strict, we consider the 3-player majority vote. Suppose 3 players adopt the mixed strategies (α1, 1 − α1), (α2, 1 − α2) and (α3, 1 − α3), respectively. It then holds that 
+
+U1(x1, x 2, x 3) = U1(α1, α 2, α 3)= α1
+
+
+
+−(1 − α2)(1 − α3) + 12 α2(1 − α3) + 12 α3(1 − α2)
+
+
+
++ (1 − α1)
+
+
+
+−α2α3 + 12 α2(1 − α3) + 12 α3(1 − α2)
+
+
+
+.
+
+By choosing α2 = α3 = 0 when α1 > 1/2 and α2 = α3 = 1 when α1 ≤ 1/2, it can be seen that 
+
+max 
+
+> α1
+
+min 
+
+> α2,α 3
+
+U1(α1, α 2, α 3) ≤ max 
+
+> α1
+
+min {− α1, −(1 − α1)} = − 12 .
+
+Note that 
+
+min 
+
+> α2,α 3
+
+max 
+
+> α1
+
+U1(α1, α 2, α 3)= 12 min 
+
+> α2,α 3
+
+max {− 2(1 − α2)(1 − α3) + α2(1 − α3) + α3(1 − α2),
+
+− 2α2α3 + α2(1 − α3) + α3(1 − α2)}
+
+= 12 min 
+
+> α2,α 3
+
+max {3( α2 + α3) − 4α2α3 − 2, α 2 + α3 − 4α2α3}
+
+= 0 .
+
+Thus, we show that max α1 min α2,α 3 U1(α1, α 2, α 3) < min α2,α 3 max α1 U1(α1, α 2, α 3), which implies the first inequality can be strict. For the second inequality, due to a restriction on the minimization constraints, it is straightforward that 
+
+min  
+
+> x2,··· ,x n
+
+max 
+
+> x1
+
+U1(x1, · · · , x n) ≤ min  
+
+> x
+
+max 
+
+> x1
+
+U1(x1, x ⊗n−1).
+
+In the sequel, we prove min x max x1 U1(x1, x ⊗n−1) = 0 via contradiction. Note that by choosing x1 = x, we can show that 
+
+min  
+
+> x
+
+max 
+
+> x1
+
+U1(x1, x ⊗n−1) ≥ 0.
+
+12 Securing Equal Share: A Principled Approach for Learning Multiplayer Symmetric Games 
+
+Suppose for some game inequality holds, then by definition 
+
+∀x ∈ ∆( A), ∃x′ ∈ ∆( A), s.t. U 1(x′, x, · · · , x ) > 0.
+
+Define the set-valued argmax function ϕ : ∆( A) → 2∆( A):
+
+ϕ(x) := {x′ ∈ ∆( A) | U1(x′, x, · · · , x ) = max  
+
+> x′′
+
+U1(x′′ , x, · · · , x )}.
+
+We claim that argmax function ϕ(x) is: • Always non-empty and convex; • Has a closed graph. The first property is obvious, so we focus on the second one. Suppose that sequences {xi}, {yi} satisfy xi → x, yi → y
+
+and yi ∈ ϕ(xi). Since the payoff function is (Lipschitz) continuous, max x′′ U1(x′′ , ·) is continuous by Berge’s maximum theorem. Thus max x′′ U1(x′′ , x i, · · · , x i) converges to max x′′ U1(x′′ , x, · · · , x ). Meanwhile U1(yi, x i, · · · , x i) converges to U1(y, x, · · · , x ). Thus 
+
+U1(y, x · · · , x ) = lim  
+
+> i→∞
+
+U1(yi, x i, · · · , x i) = lim  
+
+> i→∞
+
+max  
+
+> x′′
+
+U1(x′′ , x i, · · · , x i) = max  
+
+> x′′
+
+U1(x′′ , x, · · · , x ).
+
+This implies y ∈ ϕ(x), and that ϕ has a closed graph. Thus by Kakutani’s fixed point theorem, ∃x∗ : x∗ ∈ ϕ(x∗). Now we have 
+
+U1(x∗, · · · , x ∗) = max  
+
+> x′′
+
+U1(x′′ , x ∗, · · · , x ∗) > 0,
+
+which contradicts with the assumption that the game is zero-sum and symmetric. Consequently, we prove the equation. As a result, we have 
+
+min  
+
+> x2,··· ,x n
+
+max 
+
+> x1
+
+U1(x1, · · · , x n) ≤ min  
+
+> x
+
+max 
+
+> x1
+
+U1(x1, x ⊗n−1) = 0 .
+
+To show the second inequality can be strict, we consider a 3-player minority game. If the other two players act 0 and 1,respectively, then the learner always receive −1/2 payoff, which is strictly less than 0. We then finish the proofs. 
+
+B.2. Proof of Proposition 4.2 
+
+In this section, we will prove (2), where the inequality can be made strict in certain games. 
+
+Proof of Proposition 4.2. In the proof of Proposition 4.1, we have already shown that min x max x1 U1(x1, x ⊗n−1) = 0 .Thus, it remains to prove the inequality in (2). Note that for any x1, x ∈ ∆( A), we have 
+
+U1(x1, x ⊗n−1) ≤ max  
+
+> x1∈∆( A)
+
+U1(x1, x ⊗n−1),
+
+which implies for any x1 ∈ ∆( A)min  
+
+> x∈∆( A)
+
+U1(x1, x ⊗n−1) ≤ min  
+
+> x∈∆( A)
+
+max  
+
+> x1∈∆( A)
+
+U1(x1, x ⊗n−1).
+
+By further taking maximum over x1 ∈ ∆( A), we show that 
+
+max  
+
+> x1∈∆( A)
+
+min  
+
+> x∈∆( A)
+
+U1(x1, x ⊗n−1) ≤ min  
+
+> x∈∆( A)
+
+max  
+
+> x1∈∆( A)
+
+U1(x1, x ⊗n−1).
+
+To show that the inequality can be strict, we consider the scenario where the learner is involved in a 3-player majority game and plays a mixed strategy (β, 1 − β) (i.e. play 0 w.p. β; play 1 w.p. 1 − β). And the two opponents adopt an identical mixed strategy (p, 1 − p) (i.e. play 0 w.p. p; play 1 w.p. 1 − p). Then, we can calculate the payoff of the learner as 
+
+U1(β, p, p ) = β(−(1 − p)2 + p(1 − p)) + (1 − β)( −p2 + p(1 − p)) . It then follows that max β∈[0 ,1] min p∈[0 ,1] U1(β, p, p ) ≤
+
+max β∈[0 ,1] min p∈{ 0,1} U1(β, p, p ) = −1/2, which is strictly less than 0. Thus, we finish the proofs. 13 Securing Equal Share: A Principled Approach for Learning Multiplayer Symmetric Games 
+
+B.3. Proof of Proposition 4.3 
+
+Proof of Proposition 4.3. Let Pw/o (i1, . . . , i n−1) denote the probability of observing (i1, . . . , i n−1) when sampling n − 1
+
+points from N without replacement, and let Pw(i1, . . . , i n−1) denote the probability of observing (i1, . . . , i n−1) when sampling n − 1 points from N with replacement. For any a, we then have 
+
+Ex−1 [U1(a, x −1)] = X
+
+> (i1,...,i n−1)
+
+Pw/o (i1, . . . , i n−1)U1(a, x i1 , . . . , x in−1 )
+
+U1(a, ¯x⊗n−1) = X
+
+> (i1,...,i n−1)
+
+Pw(i1, . . . , i n−1)U1(a, x i1 , . . . , x in−1 ).
+
+Note that ∥U1∥∞ ≤ 1. Thus, we have 
+
+Ex−1 [U1(a, x −1)] − U1(a, ¯x⊗n−1)
+
+≤ X
+
+> (i1,...,i n−1)
+
+Pw/o (i1, . . . , i n−1) − Pw(i1, . . . , i n−1)
+
+= X 
+
+> (i1,...,i n−1)has repeated value
+
+Pw(i1, . . . , i n−1) − Pw/o (i1, . . . , i n−1)+ X 
+
+> (i1,...,i n−1)no repeated value
+
+Pw/o (i1, . . . , i n−1) − Pw(i1, . . . , i n−1)= 2 X 
+
+> (i1,...,i n−1)has repeated value
+
+Pw(i1, . . . , i n−1) − Pw/o (i1, . . . , i n−1)= 2 
+
+
+
+1 − N (N − 1) . . . (N − n + 2) 
+
+N n−1
+
+
+
+= 2 
+
+
+
+1 −
+
+
+
+1 − 1
+
+N
+
+  
+
+1 − 2
+
+N
+
+
+
+. . . 
+
+
+
+1 − n − 2
+
+N
+
+ 
+
+≤ 2 1 −
+
+
+
+1 − n − 2
+
+N
+
+n−2!
+
+≤ 2( n − 2) 2
+
+N .
+
+# C. Proofs for Section 5 
+
+In Section C.1, we establish guarantees for the Hedge algorithm, SAOL H, and behavior cloning. In Section C.2, we provide a detailed discussion of the matching lower bounds and prove Theorem 5.4 and Theorem 5.5. 
+
+C.1. Guarantees for efficient algorithms 
+
+In the sequel, we establish guarantees for the Hedge algorithm by proving Theorem 5.1 in Section C.1.1, for SAOL H by proving Theorem 5.2 in Section C.1.2, and for behavior cloning by proving Theorem 5.3 in Section C.1.3. C.1.1. P ROOF OF THEOREM 5.1 In this section, we establish guarantees for the Hedge algorithm when facing fixed opponents. 
+
+Proof of Theorem 5.1. Let a⋆ ∈ arg max a∈A U1(·, y ⊗n−1). We then have 
+
+u⋆ − 1
+
+T
+
+> T
+
+X
+
+> t=1
+
+ut(xt)
+
+14 Securing Equal Share: A Principled Approach for Learning Multiplayer Symmetric Games 
+
+= U1(a⋆, y ⊗n−1) − 1
+
+T
+
+> T
+
+X
+
+> t=1
+
+ut(xt)= U1(a⋆, y ⊗n−1) − 1
+
+T
+
+> T
+
+X
+
+> t=1
+
+U1(a⋆, a t
+
+> −1
+
+)
+
+| {z }
+
+> (i)
+
++ 1
+
+T
+
+> T
+
+X
+
+> t=1
+
+U1(a⋆, a t
+
+> −1
+
+) − 1
+
+T
+
+> T
+
+X
+
+> t=1
+
+U1(xt, a t
+
+> −1
+
+)
+
+| {z }
+
+> (ii)
+
++ 1
+
+T
+
+> T
+
+X
+
+> t=1
+
+U1(xt, a t
+
+> −1
+
+) − 1
+
+T
+
+> T
+
+X
+
+> t=1
+
+ut(xt)
+
+| {z }
+
+> (iii)
+
+For (i), by Hoeffding’s inequality and union bound, we have with probability at least 1 − δ that 
+
+(i) ≤ O(
+
+r log( A/δ )
+
+T )
+
+For (ii), by Hedge algorithm, we have 
+
+(ii) ≤ O(
+
+r log( A)
+
+T )
+
+For (iii), note that {U1(xt, a t
+
+> −1
+
+) − ut(xt)}Tt=1 is a martingale difference sequence, thus by Azuma–Hoeffding inequality, we have with probability at least 1 − δ that 
+
+(iii) ≤ O(
+
+r log(1 /δ )
+
+T ).
+
+Combining the above results, we have 
+
+u⋆ − 1
+
+T
+
+> T
+
+X
+
+> t=1
+
+ut(xt) ≤ C
+
+r log( A/δ )
+
+T
+
+for some absolute constant C > 0. Thus we finish the proofs. C.1.2. P ROOF OF THEOREM 5.2 In this section, we establish guarantees for SAOL H when facing adaptive opponents. The basic idea behind SAOL H is to execute H in parallel over each interval within a carefully selected set. This algorithm dynamically adjusts the weight of each interval based on the previously observed regret. In each round, SAOL H selects an interval in proportion to its assigned weight, applies H to each time slot within this interval, and follows its advice. Through this mechanism, SAOL H achieves a near-optimal performance on every time interval. We will leverage the strong adaptivity of SAOL H in our proofs. 
+
+Proof of Theorem 5.2. Let I be any fixed interval in [0 , T ], a0 ∈ arg max a∈A 
+
+P  
+
+> t∈I
+
+ut(a) and ut,⋆ := max a∈A ut(a).It holds that 
+
+X
+
+> t∈I
+
+ ut,⋆ − ut(xt)
+
+= X
+
+> t∈I
+
+ ut,⋆ − ut(a0)| {z }
+
+> (i)
+
++ X
+
+> t∈I
+
+ ut(a0) − U1(a0, a t
+
+> −1
+
+)
+
+15 Securing Equal Share: A Principled Approach for Learning Multiplayer Symmetric Games 
+
++ X
+
+> t∈I
+
+ U1(a0, a t
+
+> −1
+
+) − U1(xt, a t
+
+> −1
+
+)| {z }
+
+> (ii)
+
++ X
+
+> t∈I
+
+ U1(xt, a t
+
+> −1
+
+) − ut(xt) .
+
+For (i), it can be seen that 
+
+(i) = X
+
+> t∈I
+
+ ut,⋆ − ut(a0) ≤ |I| max 
+
+> t∈I
+
+ut,⋆ − ut(a0) ≤ 2VI |I| .
+
+Here the last inequality follows from the following argument: otherwise there exists t0 ∈ I such that ut0,⋆ −ut0 (a0) > 2VI .Let a1 ∈ arg max a∈A ut0 (a). For all t ∈ I , it then holds that ut(a1) ≥ ut0 (a1) − VI = ut0,⋆ − VI > u t0 (a0) + VI ≥
+
+ut(a0). Contradict to the definition of a0!For (ii), we have 
+
+(ii) ≤ max 
+
+> a∈A
+
+X
+
+> t∈I
+
+ U1(a, a t
+
+> −1
+
+) − U1(xt, a t
+
+> −1
+
+) ≤ C(plog A + log T )p|I| ,
+
+where the last inequality follows from Theorem 1 in (Daniely et al., 2015). Combining the upper bound of (i) and (ii), we have for any fixed interval I ⊂ [0 , T ],
+
+X
+
+> t∈I
+
+ ut,⋆ − ut(xt)
+
+≤ 2VI |I| + X
+
+> t∈I
+
+ ut(a0) − U1(a0, a t
+
+> −1
+
+) + C(plog A + log T )p|I| 
+
++ X
+
+> t∈I
+
+ U1(xt, a t
+
+> −1
+
+) − ut(xt) .
+
+We segment the time horizon T into T / |I| batches {I j } with each length |I| . It then holds for all j that 
+
+X
+
+> t∈I j
+
+ ut,⋆ − ut(xt)
+
+≤ 2VIj |I| + X
+
+> t∈I j
+
+ ut(a0) − U1(a0, a t
+
+> −1
+
+) + C(plog A + log T )p|I| 
+
++ X
+
+> t∈I j
+
+ U1(xt, a t
+
+> −1
+
+) − ut(xt) .
+
+Sum over j gives D-Reg (T )
+
+≤ 2VT |I| +
+
+> T
+
+X
+
+> t=1
+
+ ut(a0) − U1(a0, a t
+
+> −1
+
+)| {z }
+
+> (iii)
+
++C(T / p|I| ) · (plog A + log T )+
+
+> T
+
+X
+
+> t=1
+
+ U1(xt, a t
+
+> −1
+
+) − ut(xt)| {z }
+
+> (iv)
+
+.
+
+For (iii), note that {ut(a) − U1(a, a t
+
+> −1
+
+)}Tt=1 is a martingale difference sequence, we have with probability at least 1 − δ
+
+that 
+
+(iii) ≤ max 
+
+> a∈A
+> T
+
+X
+
+> t=1
+
+ ut(a) − U1(a, a t
+
+> −1
+
+) ≤ O
+
+p T log( A/δ )
+
+
+
+,
+
+16 Securing Equal Share: A Principled Approach for Learning Multiplayer Symmetric Games 
+
+where the last inequality follows from Azuma–Hoeffding inequality and union bound. For (iv), note that {U1(xt, a t
+
+> −1
+
+) − ut(xt)}Tt=1 is a martingale difference sequence, thus by Azuma–Hoeffding inequality, we have with probability at least 1 − δ that 
+
+(iv) ≤ O
+
+p T log(1 /δ )
+
+
+
+.
+
+Consequently we have with probability at least 1 − δ that D-Reg (T ) ≤ 2VT |I| + C(T / p|I| ) · (plog A + log T ) + O
+
+p T log( A/δ )
+
+
+
+.
+
+Choosing |I| = ( T /V T )2/3, we have with probability at least 1 − δ that D-Reg (T ) ≤ O
+
+
+
+V 1/3 
+
+> T
+
+T 2/3(plog( A/δ ) + log T )
+
+
+
+.
+
+Finally, by the definition of uavg (T ) and u†, we show that 
+
+uavg (T ) ≥ u† − CV 1/3 
+
+> T
+
+T −1/3
+
+plog( A/δ ) + log T
+
+
+
+for some absolute constant C.C.1.3. P ROOF OF THEOREM 5.3 In this section, we establish guarantees for behavior cloning (Algorithm 2) when facing adaptive opponents. 
+
+Proof of Theorem 5.3. Note that 
+
+E
+
+" TX
+
+> t=1
+
+ut(xt)
+
+#
+
+≥ − 1 + E
+
+" TX
+
+> t=2
+
+ut(xt)
+
+#
+
+= −1 + E
+
+" TX
+
+> t=2
+
+U1(at−12 , (yt)⊗n−1)
+
+#
+
+≥ − 1 − VT − E
+
+" TX
+
+> t=2
+
+U1(at−12 , (yt−1)⊗n−1)
+
+#
+
+(by the defition of VT )
+
+= −1 − VT − E
+
+" TX
+
+> t=2
+
+U1(yt−1, (yt−1)⊗n−1)
+
+#
+
+(since at−12 ∼ yt−1)
+
+= −1 − VT (since the game is symmetric and zero-sum) Finally, by the definition of uavg (T ), we finish the proofs. 
+
+C.2. Matching lower bounds 
+
+Upon examining Theorem 5.2 alongside Theorem 5.3, it becomes apparent that Theorem 5.2 benchmarks against a more stringent standard (i.e., the dynamic oracle) and incurs a larger error of V 1/3 
+
+> T
+
+T −1/3, while Theorem 5.3 sets its comparison against a baseline metric (i.e., the average payoff) and attains a smaller error of VT /T . Regarding this observation, one might aspire to devise an algorithm whose payoff satisfies: uavg (T ) ≥ u† − ˜O(VT /T ). However, Theorem 5.4 and Theorem 5.5 demonstrate that such a goal is unattainable, by exploring the fundamental limits faced when competing against non-stationary opponents. Theorem 5.4 shows, when contending with non-stationary opponent, the optimal algorithm must incur a dynamic regret at least order of V 1/3 
+
+> T
+
+T 2/3, closing off the possibility of attaining a better VT rate. It’s noteworthy that a similar lower bound 17 Securing Equal Share: A Principled Approach for Learning Multiplayer Symmetric Games 
+
+for dynamic regret has already been established under broader conditions (Besbes et al., 2014). The distinction of Theorem 5.4 lies in further restricting the hard problems to be symmetric games, implying that the structure of symmetric game does not offer an advantage in improving dynamic regret in the worst case. By comparing this lower bound with Theorem 5.2, it is evident that SAOL H is demonstrated to be minimax optimal, albeit with the inclusion of some logarithmic factors. Theorem 5.5 establishes the fundamental limit when comparing to average payoff 0. The guarantees achieved by Theorem 5.3 can not be improved in the worst case, showing behavior cloning is demonstrated to be optimal upto some constant. C.2.1. P ROOF OF THEOREM 5.4 
+
+Proof of Theorem 5.4. We define 
+
+U (3) 1 (a, b, c ) := 
+
+
+
+payoff for 3-player majority game if a, b, c ∈ { 0, 1}−1 if a / ∈ { 0, 1}, b, c ∈ { 0, 1}
+
+defined by symmetric o.w. which is basically the payoff function for 3-player majority game with extra dummy actions. We then define 
+
+U (n)1 (a, a 2, . . . , a n) := 1(n − 1)( n − 2) 
+
+X 
+
+> 2≤i̸=j≤n
+
+U (3) 1 (a, a i, a j ).
+
+We consider a game that evolves stochastically, with n players, action space A = {0, 1, . . . , A −1}, and the payoff function of the first player given by U (n)1 . We segment the decision horizon T into T / ∆T batches {T j }, with each batch comprising 
+
+∆T episodes. We consider two distinct scenarios: • Case1: All the other players employ a mixture strategy (1 /2 − ϵ, 1/2 + ϵ) (i.e., playing 0 with probability 1/2 − ϵ,playing 1 with probability 1/2 + ϵ); • Case 2: All the other players employ a mixture strategy (1 /2 + ϵ, 1/2 − ϵ) (i.e., playing 0 with probability 1/2 + ϵ,playing 1 with probability 1/2 − ϵ); At the beginning of each batch, one of these scenarios is randomly selected (with equal probability) and remains constant throughout that batch. Let m = T / ∆T represent total number of batches. We fix some algorithm and a batch j ∈ { 1, . . . , m }. Let δj ∈ { 1, 2}
+
+indicate batch j belongs to Case1 or Case2. We denote by Pjδj the probability distribution conditioned on batch j belongs to Case δj , and by P0 the probability distribution when all the other players employ a mixture strategy (1 /2, 1/2) . We further denote by Ejδj [·] and E0[·] the corresponding expectations. We denote by N ja the number of times action a was played in batch j. If the batch j belongs to Case δj , then the optimal action in the batch is −δj + 2 . We first present a useful lemma. 
+
+Lemma C.1. Let f : {− 1, 0, 1/2}|T j |× A → [0 , M ] be any bounded real function defined on the payoff matrices R. Then, for any δj ∈ { 1, 2}, ϵ ≤ 1/4:
+
+Ejδj [f (R)] − E0[f (R)] ≤ M
+
+2
+
+q
+
+−2|T j | ln (1 − 4ϵ2) ≤ 2M ϵ p∆T .
+
+By Lemma C.1 with f = N j 
+
+> −δj+2
+
+, we have 
+
+Ejδj [N j 
+
+> −δj+2
+
+] − E0[N j 
+
+> −δj+2
+
+] ≤ 2ϵ|T j |p∆T . (4) Note that 
+
+Ejδj [ut(xt)] = −Pjδj (xt /∈ { 0, 1}) + ( −ϵ − 2ϵ2)Pjδj (xt = δj − 1) + ( ϵ − 2ϵ2)Pjδj (xt = −δj + 2) 
+
+≤ (−ϵ − 2ϵ2)Pjδj (xt̸ = −δj + 2) + ( ϵ − 2ϵ2)Pjδj (xt = −δj + 2) 
+
+18 Securing Equal Share: A Principled Approach for Learning Multiplayer Symmetric Games 
+
+= −ϵ − 2ϵ2 + 2 ϵ · Pjδj (xt = −δj + 2) ,
+
+therefore, 
+
+Ejδj
+
+ X
+
+> t∈T j
+
+ut(xt)
+
+ ≤ (−ϵ − 2ϵ2)|T j | + 2 ϵ · Ejδj [N j 
+
+> −δj+2
+
+]
+
+≤ (−ϵ − 2ϵ2)|T j | + 2 ϵ · Ej
+
+> 0
+
+[N j 
+
+> −δj+2
+
+] + 4 ϵ2|T j |p∆T . (by (4)) Consequently, we have 
+
+12 Ej
+
+> 1
+
+ X
+
+> t∈T j
+
+ut(xt)
+
+ + 12 Ej
+
+> 2
+
+ X
+
+> t∈T j
+
+ut(xt)
+
+ ≤ (−ϵ − 2ϵ2)|T j | + ϵ|T j | + 4 ϵ2|T j |p∆T . (5) It then holds that 
+
+EAlg 
+
+
+
+> m
+
+X
+
+> j=1
+
+X
+
+> t∈T j
+
+ut(xt)
+
+ =
+
+> m
+
+X
+
+> j=1
+
+EAlg 
+
+ X
+
+> t∈T j
+
+ut(xt)
+
+
+
+=
+
+> m
+
+X
+
+> j=1
+
+EAlg 
+
+ 12 Ej
+
+> 1
+
+ X
+
+> t∈T j
+
+ut(xt)
+
+ + 12 Ej
+
+> 2
+
+ X
+
+> t∈T j
+
+ut(xt)
+
+
+
+≤
+
+> m
+
+X
+
+> j=1
+
+(( −ϵ − 2ϵ2)|T j | + ϵ|T j | + 4 ϵ2|T j |p∆T )= −2ϵ2T + 4 ϵ2T p∆T .
+
+Set ϵ = min {1/(8 √∆T ), V T ∆T /T }. We then have 
+
+EAlg [D-Reg (T )] = ( ϵ − 2ϵ2)T − EAlg 
+
+" TX
+
+> t=1
+
+ut(xt)
+
+#
+
+≥ (ϵ − 2ϵ2)T − (−2ϵ2T + 4 ϵ2T p∆T )= ϵT − 4ϵ2T p∆T
+
+= ϵT (1 − 4ϵp∆T )
+
+≥ 12 ϵT 
+
+= 12 min 
+
+ 18√∆T
+
+, VT ∆T
+
+T
+
+
+
+T. 
+
+Choosing ∆T = ( T /V T )2/3, we then have 
+
+EAlg [D-Reg (T )] ≥ CV 1/3 
+
+> T
+
+T 2/3.
+
+Recall the definition of uavg (T ) and u†, we then finish the proofs. We prove Lemma C.1 in the following. 
+
+Proof of Lemma C.1. We have that 
+
+Ejδj [f (R)] − E0[f (R)] = X
+
+> R
+
+f (R)
+
+
+
+Pjδj (R) − P0(R)
+
+
+
+19 Securing Equal Share: A Principled Approach for Learning Multiplayer Symmetric Games 
+
+≤ X 
+
+> R:Pjδj(R)≥P0(R)
+
+f (R)
+
+
+
+Pjδj (R) − P0(R)
+
+
+
+≤ M X 
+
+> R:Pjδj(R)≥P0(R)
+
+
+
+Pjδj (R) − P0(R)
+
+
+
+= M
+
+2 ∥Pjδj − P0∥TV 
+
+≤ M
+
+2
+
+q
+
+2KL (P0 ∥ Pjδj ), (6) where the last ineqaulity follows from Pinsker’s inequality. Let Rt ∈ RA be a random vector denoting the payoff for each action at time t, and let Rt ∈ Rt×A denote the payoff matrix received upon time t: Rt = [ R1, . . . , R t]T . By the chain rule for the relative entropy, we have 
+
+KL (P0 ∥ Pjδj ) =  
+
+> |T j|
+
+X
+
+> t=1
+
+ERt−1
+
+h
+
+KL 
+
+
+
+P0(Rt | Rt−1) ∥ Pjδj (Rt | Rt−1)
+
+i 
+
+. (7) Note that 
+
+P0(Rt = [ −1, 0, −1, . . . , −1] | Rt−1) = P0(Rt = [0 , −1, −1, . . . , −1] | Rt−1) = 1 /4
+
+P0(Rt = [1 /2, 1/2, −1, . . . , −1] | Rt−1) = 1 /2.
+
+In the case δj = 1 , we have 
+
+Pjδj (Rt = [ −1, 0, −1, . . . , −1] | Rt−1) = (1 /2 + ϵ)2
+
+Pjδj (Rt = [0 , −1, −1, . . . , −1] | Rt−1) = (1 /2 − ϵ)2
+
+Pjδj (Rt = [1 /2, 1/2, −1, . . . , −1] | Rt−1) = 2(1 /2 + ϵ)(1 /2 − ϵ).
+
+In the case δj = 2 , we have 
+
+Pjδj (Rt = [ −1, 0, −1, . . . , −1] | Rt−1) = (1 /2 − ϵ)2
+
+Pjδj (Rt = [0 , −1, −1, . . . , −1] | Rt−1) = (1 /2 + ϵ)2
+
+Pjδj (Rt = [1 /2, 1/2, −1, . . . , −1] | Rt−1) = 2(1 /2 + ϵ)(1 /2 − ϵ).
+
+Thus, we have 
+
+KL 
+
+
+
+P0(Rt | Rt−1) ∥ Pjδj (Rt | Rt−1)
+
+
+
+(8) 
+
+= 14 ln 1/4(1 /2 + ϵ)2 + 14 ln 1/4(1 /2 − ϵ)2 + 12 ln 1/22(1 /2 + ϵ)(1 /2 − ϵ)= − ln  1 − 4ϵ2 . (9) Combining (6), (7) and (8), we have 
+
+Ejδj [f (R)] − E0[f (R)] ≤ M
+
+2
+
+q
+
+−2|T j | ln (1 − 4ϵ2).
+
+If we further have ϵ ≤ 1/4, it then holds that − ln  1 − 4ϵ2 ≤ 16 ln(4 /3) ϵ2 and consequently 
+
+Ejδj [f (R)] − E0[f (R)] ≤ M
+
+2
+
+q
+
+−2|T j | ln (1 − 4ϵ2) ≤ 2M ϵ 
+
+q
+
+|T j | ≤ 2M ϵ p∆T .
+
+20 Securing Equal Share: A Principled Approach for Learning Multiplayer Symmetric Games 
+
+C.2.2. P ROOF OF THEOREM 5.5 
+
+Proof of Theorem 5.5. We consider a game that evolves stochastically, with n players, action space A = {0, 1, . . . , A −1},and the same payoff function U (n)1 as outlined in Theorem 5.4. We segment the decision horizon T into T / ∆T batches 
+
+{T j }, with each batch comprising ∆T episodes. We consider two distinct scenarios: • Case1: All the other players play 0; • Case 2: All the other players play 1. In Case 1, we have ut(0) = 0 and ut(a) = −1 for all a̸ = 0 . In Case 2, we have ut(1) = 0 and ut(a) = −1 for all a̸ = 1 .At the beginning of each batch, one of these scenarios is randomly selected (with equal probability) and remains constant throughout that batch. Let m = T / ∆T represent total number of batches. We fix some algorithm. Let δj ∈ { 1, 2} indicate batch j belongs to Case1 or Case2. We denote by Pjδj the probability distribution conditioned on batch j belongs to Case δj , and by Ejδj [·] the corresponding expectation. It then holds that 
+
+EAlg 
+
+
+
+> m
+
+X
+
+> j=1
+
+X
+
+> t∈T j
+
+ut(xt)
+
+ =
+
+> m
+
+X
+
+> j=1
+
+EAlg 
+
+ X
+
+> t∈T j
+
+ut(xt)
+
+
+
+=
+
+> m
+
+X
+
+> j=1
+
+EAlg 
+
+ 12 Ej
+
+> 1
+
+ X
+
+> t∈T j
+
+ut(xt)
+
+ + 12 Ej
+
+> 2
+
+ X
+
+> t∈T j
+
+ut(xt)
+
+
+
+≤
+
+> m
+
+X
+
+> j=1
+
+EAlg 
+
+ 12 Ej
+
+> 1
+
+h
+
+utj, 1
+
+(xtj, 1
+
+)
+
+i
+
++ 12 Ej
+
+> 2
+
+h
+
+utj, 1
+
+(xtj, 1
+
+)
+
+i
+
+,
+
+where tj, 1 represents the first episode of batch j and the inequality follows from the fact that ut ≤ 0. Note that 
+
+12 Ej
+
+> 1
+
+h
+
+utj, 1
+
+(xtj, 1
+
+)
+
+i
+
++ 12 Ej
+
+> 2
+
+h
+
+utj, 1
+
+(xtj, 1
+
+)
+
+i
+
+= − 12
+
+
+
+Pj
+
+> 1
+
+(xtj, 1̸ = 0) + Pj
+
+> 2
+
+(xtj, 1̸ = 1) 
+
+
+
+= − 12
+
+
+
+P(xtj, 1̸ = 0) + P(xtj, 1̸ = 1) 
+
+
+
+≤ − 12 ,
+
+where the second equation follows from the fact that xtj, 1
+
+is independent of δj . Thus, we have 
+
+EAlg 
+
+
+
+> m
+
+X
+
+> j=1
+
+X
+
+> t∈T j
+
+ut(xt)
+
+ ≤ − m
+
+2 = − T
+
+2∆ T
+
+.
+
+Choosing ∆T = T /V T , we have 
+
+EAlg 
+
+
+
+> m
+
+X
+
+> j=1
+
+X
+
+> t∈T j
+
+ut(xt)
+
+ ≤ − VT /2.
+
+Recall the definition of uavg (T ), we then finish the proofs. 
+
+# D. Experiments Details 
+
+In this section, we provide additional details for our experiments. 
+
+D.1. Algorithms 
+
+We refer readers to Algorithm 3-6 for detailed implementation of algorithms in the experiment. For MV , we choose η = 1 .For SDG , we choose η = 2 .
+
+D.2. Computation Resources 
+
+The experiments are conducted on a server with 256 CPUs. Each experiment can be completed in a few minutes. 21 Securing Equal Share: A Principled Approach for Learning Multiplayer Symmetric Games 
+
+Algorithm 1 Self-play meta-algorithm 
+
+1: Initialize learner’s mixed strategy x1.
+
+2: for t = 1 , . . . , T do 
+
+3: Sample action ati ∼ xt for all player i ∈ [n].
+
+4: Update strategy xt+1 using the gradient information U1(·, a t
+
+> −1
+
+).
+
+Algorithm 2 Behavior Cloning 
+
+1: In the first round, play a ∼ Uniform( A).
+
+2: for t = 2 , . . . , T do 
+
+3: Play at−12 , i.e. the action played by Player 2 in the last round. 
+
+Algorithm 3 Self-Play 
+
+Require: Number of iterations T , action space A, learning rate ηt = η
+
+q log |A|  
+
+> t
+
+, number of players n, and initialize strategy x0.
+
+1: for t = 1 to T do 
+
+2: Sample actions at−1 
+
+> i
+
+∼ xt−1 for i = 2 , . . . , n . Denote at−1 
+
+> −1
+
+:= ( at−12 , . . . , a t−1 
+
+> n
+
+).
+
+3: Update 
+
+xt(a) ∝ xt−1(a)exp {ηtU1(a, a t−1 
+
+> −1
+
+)}, ∀a ∈ A .
+
+Algorithm 4 Self-Play with Regularization 
+
+Require: Number of iterations T , action space A, learning rate ηt = η
+
+q log |A|  
+
+> t
+
+, number of players n, initialize strategy 
+
+x0, meta-strategy ymeta , and regularization parameter λ.
+
+1: for t = 1 to T do 
+
+2: Sample actions at−1 
+
+> i
+
+∼ xt−1 for i = 2 , . . . , n . Denote at−1 
+
+> −1
+
+:= ( at−12 , . . . , a t−1 
+
+> n
+
+).
+
+3: Update 
+
+xt(a) ∝ exp 
+
+ log x0(a) + P 
+
+> τ <t
+
+ητ U1(a, a τ
+
+> −1
+
+) + λ P 
+
+> τ <t
+
+ητ log ymeta (a)1 + λ P 
+
+> τ <t
+
+ητ
+
+
+
+, ∀a ∈ A .
+
+Algorithm 5 Hedge 
+
+Require: Number of iterations T , action space A, learning rate ηt = η
+
+q log |A|  
+
+> t
+
+, number of players n, and initialize strategy x0.
+
+1: for t = 1 to T do 
+
+2: Sample actions at−1 
+
+> i
+
+∼ ymeta for i = 2 , . . . , n . Denote at−1 
+
+> −1
+
+:= ( at−12 , . . . , a t−1 
+
+> n
+
+).
+
+3: Update 
+
+xt(a) ∝ xt−1(a)exp {ηtU1(a, a t−1 
+
+> −1
+
+)}, ∀a ∈ A .
+
+Algorithm 6 Exploiter for strategy x
+
+Require: Number of iterations T , action space A, learning rate ηt = η
+
+q log |A|  
+
+> t
+
+, number of players n, and initialize strategy x0.
+
+1: for t = 1 to T do 
+
+2: Sample actions at−11 ∼ x.
+
+3: Sample actions at−1 
+
+> i
+
+∼ xt−1 for i = 2 , . . . , n . Denote at−1 
+
+> −1
+
+:= ( at−12 , . . . , a t−1 
+
+> n
+
+).
+
+4: Update 
+
+xt(a) ∝ xt−1(a)exp 
+
+(
+
+− ηt
+
+n − 1
+
+> n
+
+X
+
+> i=2
+
+U1
+
+ at−11 , a t−1 
+
+> −1
+
+[: i − 1] , a, a t−1 
+
+> −1
+
+[i + 1 :] )
+
+, ∀a ∈ A .
+
+22

@@ -1,0 +1,3700 @@
+Title: Prediction-aware Learning in Multi-agent Systems
+
+URL Source: https://openreview.net/pdf?id=GQ6epWZqdS
+
+Number of Pages: 27
+
+Markdown Content:
+# Prediction-aware Learning in Multi-agent Systems 
+
+Aymeric Capitaine 1 Etienne Boursier 2 Eric Moulines 1 Michael I. Jordan 3 Alain Durmus 1
+
+## Abstract 
+
+The framework of uncoupled online learning in multiplayer games has made significant progress in recent years. In particular, the development of 
+
+time-varying games has considerably expanded its modeling capabilities. However, current re-gret bounds quickly become vacuous when the game undergoes significant variations over time, even when these variations are easy to predict. Intuitively, the ability of players to forecast fu-ture payoffs should lead to tighter guarantees, yet existing approaches fail to incorporate this aspect. This work aims to fill this gap by intro-ducing a novel prediction-aware framework for time-varying games, where agents can forecast future payoffs and adapt their strategies accord-ingly. In this framework, payoffs depend on an underlying state of nature that agents predict in an online manner. To leverage these predictions, we propose the POMWU algorithm, a contextual ex-tension of the optimistic Multiplicative Weight Update algorithm, for which we establish theo-retical guarantees on social welfare and conver-gence to equilibrium. Our results demonstrate that, under bounded prediction errors, the pro-posed framework achieves performance compara-ble to the static setting. Finally, we empirically demonstrate the effectiveness of POMWU in a traffic routing experiment. 
+
+## 1. Introduction. 
+
+The framework of uncoupled online learning in multiplayer games has sparked a lot of interest for its ability to realisti-cally model the interactions of rational players engaged in a         
+
+> 1Centre de Mathématiques Appliquées – CNRS – École polytechnique – Palaiseau, 91120, France 2Inria Saclay, Uni-versité Paris Saclay, LMO - Orsay, 91400, France 3Inria Paris, Ecole Normale Supérieure, PSL Research University - Paris, 75, France. Correspondence to: Aymeric Capitaine <first-name.lastname@polytechnique.edu>.
+> Proceedings of the 42 nd International Conference on Machine Learning , Vancouver, Canada. PMLR 267, 2025. Copyright 2025 by the author(s).
+
+dynamic game. Since the seminal works of Foster and Vohra (1997); Freund and Schapire (1999); Hart and Mas-Colell (2000a), progress has been made towards obtaining fast con-vergence rates for different equilibrium concepts, including coarse correlated equilibrium (Syrgkanis et al., 2015; Foster et al., 2016; Daskalakis et al., 2021; Piliouras et al., 2022; Farina et al., 2022) correlated equilibrium (Chen and Peng, 2020; Anagnostides et al., 2022a;b; Peng and Rubinstein, 2023) and Nash equilibrium (Anagnostides et al., 2022c). However, most of these works assume that the game remains constant over time. Only recent studies have begun to consider time-varying games, in both two-player zero-sum games (Zhang et al., 2022) and multiplayer general-sum games (Duvocelle et al., 2018; Anagnostides et al., 2024). Following methods ini-tially developed by the online optimization community (Chi-ang et al., 2012; Rakhlin and Sridharan, 2013), these studies bound the dynamic regret incurred by players with measures of the time-variation of the underlying game. While this approach looks satisfactory at first glance, it is not hard to come up with simple examples for which the variation is important–making the above mentioned bounds vacuous– yet very simple to predict. In Example 1, we exhibit a simple instance of time-varying game where the regret bounds de-rived in Zhang et al. (2022) grow linearly with the horizon 
+
+T > 0. However, the dynamic underlying the payoff matri-ces is entirely deterministic, and knowing it would result in a constant regret. This highlights that the current time-varying framework fails to account for any predictive capacity of the agents. This is all the more surprising as predictive models become ubiquitous in numerous economic sectors (Jordan and Mitchell, 2015; Gogas and Papadimitriou, 2021; Hin-ton and Jordan, 2024), making it likely for strategic agents to possess a forecasting ability regarding their future pay-offs. This work aims to fill the gap, by asking the following question: How does the quality of predictions made by ratio-nal agents in time-varying games regarding their future payoffs affects social welfare, as well as the convergence to equilibrium ? 
+
+Contributions. We address this question with the follow-ing contributions. 1Prediction-aware Learning in Multi-agent Systems 
+
+• First, we introduce the new prediction-aware learning framework, where players forecast future payoffs in an online fashion and design their strategies accord-ingly. In a nutshell, we build on the contextual set-ting proposed by Sessa et al. (2021) by introducing an underlying state of nature, either adversarially or stochastically drawn, which determines the payoff of all agents. They play a time-varying game which can be decomposed into three stages. First, each player forecasts the current state of nature based on their local predictor before picking an action in the game. Then, they observe their payoff and the actual state of nature. Finally, they update their policy and predictor based on these new observations. Augmenting uncoupled learn-ing in games with contexts and predictions requires to introduce new regret and equilibrium concepts. In particular, we extend correlated equilibrium (Aumann, 1987) to our framework. • Second, we propose an algorithm called POMWU —which a contextual extension of the optimistic Mul-tiplicative Weight Update algorithm (Daskalakis et al., 2021)—allowing players to leverage their prediction about the state of nature. In particular, we show that if all players use POMWU , we match the results of Syrgka-nis et al. (2015) established for static games, regarding social welfare (Corollary 3), equilibrium convergence (Corollary 2) and robustness in the adversarial setting (Proposition 8) up to a factor that depends polynomially on the number of prediction errors by players. Thus, when predictions errors are bounded by a constant (which is the case under realizability, see Daniely et al., 2014), our bounds match the guarantees on social wel-fare and equilibrium convergence for static games. Our analysis builds upon a new notion of contextual Regret bounded by Variation Utility (RVU) which bounds con-textual regret by the sum of the length of the context-specific sequences of feedbacks and strategies. Indeed, a naive application of the standard RVU framework results in looser bounds. 
+
+Additional related works. The problem tackled in this work relates with several lines of research in game theory and online optimization. On the one hand, the contextual optimization literature (Donti et al., 2019; Elmachtoub and Grigas, 2020; Bennouna et al., 2024) has considered the problem of minimizing an objective function defined by an unobserved random context, which the optimizer can predict via a regression function. This idea has also been studied in the contextual bandit framework (Lattimore and Szepesvári, 2020) with noisy contexts (Kirschner and Krause, 2019; Yang and Ren, 2021; Nelson et al., 2022; Guo et al., 2024). However, none of these works consider the multi-agent set-ting, where the optimizer interacts with other agents during the learning process. On the other hand, recent studies in game theory have incorporated the idea of an underlying state of nature jointly determining the payoffs of players. While Sessa et al. (2021); Maddux and Kamgarpour (2024) studies the contextual version of uncoupled learning in mul-tiplayer games, Lauffer et al. (2023); Harris et al. (2024) focuses on Stackelberg games with side information. How-ever, these works assume that the context is revealed to players at the beginning of each period, unlike ours where players have to predict the context before moving. In the end, the social learning framework might be the one that relates the most to ours. Pioneered by the work of Banerjee (1992); Bikhchandani et al. (1992); Smith and Sørensen (2000), it features agents receiving private signals about a true, unobserved state of nature. These agents are able to learn from both their signal and the actions played by other players, which reflect their signals Chamley (2004). Most of the social learning literature has been devoted to ana-lyzing the resulting collective behaviors, such as cascading and herding phenomena (Mossel et al., 2020). While re-cent studies have broadened the analytical toolbox of social learning by considering for instance time-varying states of nature (Frongillo et al., 2011; Boursier et al., 2022; Levy et al., 2024), it mostly relies on very strong assumptions (e.g. a binary state and binary actions, Mossel et al., 2020) and a Bayesian modeling where all agents share a common prior about the state of nature’s distribution. In contrast, we believe that the uncoupled learning framework (Hart and Mas-Colell, 2000b; 2003; Daskalakis et al., 2011) upon which our work relies is a more general setting for studying this question, and allows to study more natural equilibrium concepts such as correlated equilibria (Aumann, 1987) with stronger guarantees. 
+
+Organization. This work is organized as follows. In Sec-tion 2, we present our model, notion of regret and main assumptions. In Section 3, we introduce the POMWU algo-rithm and establish the convergence of social welfare and individual utilities. In Section 4, we empirically demon-strate the performance of POMWU on the Sioux Falls routing problem (LeBlanc et al., 1975). 
+
+Example 1. Consider the two-players setting in (Zhang et al., 2022) where X ∈ Rn and Y ∈ Rm are respectively the strategy spaces of player x and y, At ∈ [−1, 1] n×m is their time-varying payoff matrix and Et ⊂ X × Y is the set of Nash equilibria at time t ∈ [T ]. The two measures of variations considered in (Zhang et al. 2022, and up to minor modifications Anagnostides et al. 2024) are 
+
+PT = min 
+
+> E1×... ×E T
+
+X 
+
+> t∈[T]
+
+  x⋆t − x⋆t−1 1 + y⋆t − y⋆t−1 1
+
+ ,
+
+and 
+
+VT = X 
+
+> t∈[T]
+
+∥At − At−1∥2 
+
+> ∞
+
+,
+
+2Prediction-aware Learning in Multi-agent Systems 
+
+which are respectively the variation of Nash equilibria and the variation of payoff matrices. Zhang et al. (2022, Theo-rem 6) show that the dynamic regret can be bounded by 
+
+eO(min( p(1 + PT )(1 + VT ) + PT , 1 + WT )) , (1) 
+
+where WT = P  
+
+> t∈[T]
+
+At − T −1 P   
+
+> τ∈[T]
+
+Aτ ∞
+
+= Ω( VT ).On the other hand, if we consider for any t ∈ [T ], At =
+
+B + ( −1) tC where 
+
+B = 12
+
+1 11 1
+
+
+
+, C = 12
+
+ 1 1
+
+−1 −1
+
+
+
+,
+
+it is not hard to check that 
+
+Et =
+
+(
+
+{(1 , 0) , ( 12 , 12 )} if t is even 
+
+{(0 , 1) , ( 12 , 12 )} otherwise .
+
+This implies that PT = 2T . Likewise, one can verify that VT = T , so the bound in (1) grows linearly with 
+
+T . At the same time, we remark that Yt = −Yt−1 with 
+
+Yt = At − At−1. This shows that (At)t∈[T ] is a determin-istic process (more precisely, a deterministic ARIMA(1,1,0) process (Hamilton, 2020)). 
+
+## 2. Model. 
+
+Notation. In what follows, we denote the ℓ-th coordi-nate of any vector x ∈ Rd by x[ℓ] ∈ R. Likewise, the ℓ-th row of any matrix X ∈ Rd×K is denoted by 
+
+X[ℓ] ∈ RK . For any vectors (x, y ) ∈ Rd × Rd, we write ⟨x, y ⟩ = xTy the standard euclidian inner product and x.y = ( x[1] y[1] , . . . , x [d] y[d]) T the Hadamard product. 
+
+P(A) denotes the set of probability measures over a mea-surable space A, and ∆K = {w ∈ RK : ∀ℓ ∈ [K], w j [ℓ] ⩾
+
+0 and PKℓ=1 wj [ℓ] = 1 } the simplex of dimension K > 0.When A = A1 × . . . × A J is the product of J > 0 spaces, we write A−j = A1 × . . . × A j−1 × A j+1 × . . . AJ for any j ∈ [J], so A = Aj × A −j . For any w ∈ P(A),we write Ea∼w[a] = R a dw(a) the associated expecta-tion. When the context is clear, we rather write Ew in-stead of Ea∼w. When w = w1 ⊗ . . . ⊗ wJ is a prod-uct of J > 0 measures, we define for any j ∈ [J]
+
+w−j = w1 ⊗ . . . w j−1 ⊗ wj+1 ⊗ . . . ⊗ wJ and Ew−j the associated expectation operator. 
+
+Setting. We consider a set of J > 0 agents denoted by 
+
+[J]. We suppose that each agent has access to an action set Aj = {aj
+
+> 1
+
+, . . . , a jK } with |A j | = K. In addition, we assume that the cost function of agent j ∈ [J] is given for 
+
+Z ∈ Z ⊆ Rd and ϕj : A → Rd by: 
+
+cj (w, Z ) = Ea∼w
+
+ ϕj (a), Z  , (2) where w ∈ P(A). Typically, we will consider w = w1 ⊗
+
+. . . ⊗ wJ where wj ∈ ∆K is a mixed strategy played by 
+
+j ∈ [J]. This cost function is flexible and is customary in contextual optimization (Sadana et al., 2024) and contextual bandit (Li et al., 2010; Lattimore and Szepesvári, 2020). (2) ,
+
+ϕj represents a standard payoff function, while Z ∈ Z can be interpreted as a state of nature that linearly influences preferences. Note that a time-varying game can easily be constructed by considering a sequence of states of nature 
+
+(Z1, . . . , Z T ) ∈ Z T for T > 0. We rewrite (2) in a more compact way with the following lemma. 
+
+Lemma 1. Let j ∈ [J], w ∈ P(A) with w = wj ⊗ w−j
+
+and Φj (w−j ) = ( Ew−j [ϕj (ajk, a−j )[ ℓ]]) ℓ,k ∈ Rd×K . We have: 
+
+cj (w, Z ) = Z, Φj (w−j )wj .
+
+In Lemma 1, Φj (w−j ) is a matrix whose column k contains the cost of playing the pure action ajk when opponents play their mixed-strategy w−j . This quantity appears naturally in online learning for games (Syrgkanis et al., 2015). Note that by Lemma 1, Φj (w−j ) entirely determines cj , so having access to this matrix is equivalent to having access to cj .Moreover, Lemma 1 stresses that cj is conveniently linear in wj ∈ ∆K for any j ∈ [J].We introduce the two following assumptions for the rest of the analysis. 
+
+H1. For any j ∈ [J], a ∈ A and Z ∈ Z , Z, ϕ j (a) ⩽ 1.
+
+This boundedness assumption is usual in learning in games and more generally in online learning (Hazan et al., 2014). In particular, H1 ensures that for any j ∈ [J], w ∈ P(A)
+
+and Z ∈ Z , cj (w, Z ) ⩽ 1.
+
+H2. The set Z is finite: Z = {z1, . . . , z m} for m > 0.
+
+Assuming a finite context set is customary in bandit theory (Lattimore and Szepesvári, 2020; Slivkins et al., 2019) and game theory (Kamenica and Gentzkow, 2011; Kamenica, 2019), and is often relevant in practical settings. We believe that the analysis to an infinite context set is possible, but such an extension falls outside the scope of the current pa-per, as it would require introducing fundamentally different concepts and proof techniques, see Appendix B for further discussion. We assume that agents play a time-varying game, which is determined by a sequence of states of nature 
+
+(Z1, . . . , Z T ) ∈ Z T of length T > 0. At the beginning of each period t ∈ [T ], nature draws a state of nature Zt ∈ Z ,which is not revealed to agents, while each player j ∈ [J]
+
+receives a signal ˆZjt ∈ Z about this state. They then select a strategy wjt ∈ ∆K based on this signal. Finally, each agent 
+
+j get as a feedback the cost matrix Φj (w−jt ) as well as the actual state of nature Zt.
+
+Remark 1. In many practical settings, the private signals 
+
+ˆZjt ∈ Z for j ∈ [J] and t ∈ [T ] are predictions made by 
+
+3Prediction-aware Learning in Multi-agent Systems 
+
+supervised learning algorithms. In this case, at the begin-ning of each round t ∈ [T ], each agent j ∈ [J] observes covariates Xjt ∈ X and makes a prediction 
+
+ˆZjt = gjt (Xjt ) ,
+
+where gjt ∈ G ⊂ { g : X → Z} is some prediction al-gorithm based on the history of observations up to time t.Under H2, this situation corresponds to multiclass online learning, for which several theoretical results are avail-able in the litterature (Daniely et al., 2014; Daniely and Shalev-Shwartz, 2014). 
+
+To formally describe the game, we define Πj as the set of policies πj : ( ∪t∈[T ]Hjt ) × Z → ∆K for player j ∈ [J],where Hjt is the set of histories at time t ∈ [T ] with elements 
+
+hjτ = {Φj (w−jτ ), Z t}1⩽τ ⩽t. At the beginning of the game, 
+
+hj 
+
+> 0
+
+= ∅. Then for any t ∈ [T ],1. Each agent j ∈ [J] observes a private signal ˆZjt ∈ Z ,and picks a mixed strategy wjt ∈ ∆K where wjt is the output of a policy πjt = πj (hjt−1, · ) : Z → ∆K , that is wjt = πjt ( ˆZjt ).2. Each agent j incurs a cost ⟨Zt, Φj (w−jt )wjt ⟩, and gets as a feedback (Zt, Φj (w−jt )) . They then update ht =
+
+ht−1 ∪ { Φj (w−jt ), Z t}.
+
+Remark 1 (continuing from p. 3) . In the case where private signals are predictions from an online algorithm, agents train policies κj : X → ∆K mapping covariates to strate-gies. Indeed, for any j ∈ [J] and t ∈ [T ]:
+
+wjt = πjt ( ˆZjt ) = ( πjt ◦ gjt )( Xjt ) = κjt (Xjt ) .
+
+We consider the standard full-information feedback setting, where each player j ∈ [J] observes Φj (wjt ). We believe that extending our results to bandit feedback – i.e., when agents only observe the reward from their realized action– (Foster et al., 2016) is feasible, though it would require additional technical refinements. 
+
+Regrets. We now present the two regret concepts used in this paper to quantify the optimality of a policy πj ∈
+
+Πj . They are essentially contextual versions of the classic external (Zinkevich, 2003) and swap (Blum and Mansour, 2007) regrets. In what follows, T z = {t ∈ [T ] : Zt = z}
+
+denotes the timesteps at which z ∈ Z .First, following Sessa et al. (2021), we introduce a con-textual external regret. For any j ∈ [J], given a fixed sequence of opponent strategies (w−jt )t∈[T ], we denote by 
+
+πj⋆ : Z → ∆K the static comparator which satisfies 
+
+X 
+
+> t∈Tz
+
+cj (πj⋆(z), w−jt , Z t) ⩽ X 
+
+> t∈Tz
+
+cj (w, w−jt , Z t) , (3) for any z ∈ Z and w ∈ P (Aj ). The comparator πj⋆ maps each context z to the best action in hindsight on the time steps when z was observed. Denoting wjt = πjt ( ˆZjt ) the strategy of agent j for any t ∈ [T ], we then define the following contextual external regret: 
+
+RjT = X 
+
+> t∈[T]
+
+h
+
+cj (wjt , w−jt , Z t) − cj (πj⋆(Zt), w−jt , Z t)
+
+i
+
+.
+
+(4) Note that RjT is not fully static as the comparator is allowed to vary from a context to another. In this sense, (4) can be viewed as an intermediary between external regret and dynamic regret (Hall and Willett, 2013; Besbes et al., 2015). The existing literature on time-varying games typically fo-cuses on dynamic regret (Duvocelle et al., 2018; Zhang et al., 2022; Anagnostides et al., 2024), which is the most stringent notion of regret. However, the resulting bounds often include a path length term. This term captures the intrinsic variation of the comparator sequence, such as PT
+
+and VT in Example 1. In contrast, we will show that bounds on regret (4) depend only on a prediction error term, which vanishes if agents are able to accurately predict the states of nature. While external regret has been a cornerstone measure of performance in online learning for games, swap regret has recently aroused a lot of interest since it sets a more de-manding learning benchmark and leads to tighter equilib-rium concepts (Anagnostides et al., 2022b; Peng and Rubin-stein, 2024; Dagan et al., 2024). We therefore supplement our analysis of regret Equation (4) by a similar study of contextual swap regret, which we introduce below. Let 
+
+Λ = {λ : ∆ K → ∆K } be the set of swap deviation maps, and define for any j ∈ [J], λj⋆ : ∆ K ×Z → ∆K the optimal swap comparator, which satisfies for any z ∈ Z and any 
+
+λ ∈ Λ:
+
+X 
+
+> t∈Tz
+
+cj (λj⋆(wjt , z ), w−jt , z ) ⩽ X 
+
+> t∈Tz
+
+cj (λ(wjt ), w−jt , z ) .
+
+Given a context z, the swap comparator λj⋆ maps any played strategy wjt to an alternative strategy that would have achieved better performance on the time steps when z
+
+was observed. Importantly, competing against λj⋆ is strictly more demanding than competing against πj⋆ from (3) . While 
+
+πj⋆ assigns a fixed optimal action to each context z, inde-pendent of the strategies actually played, λj⋆(w, z ) adapts to the specific strategy w used. This flexibility allows λj⋆ to identify better-performing alternatives conditioned on past decisions, making it a stronger—and thus more challeng-ing—benchmark. With wjt = πjt ( ˆZjt ) being the strategy played by agent j at 4Prediction-aware Learning in Multi-agent Systems 
+
+time t, we define the following contextual swap regret: 
+
+RjT = X 
+
+> t∈[T]
+
+h
+
+cj (wjt , w−j , Z t) − cj (λj⋆(wjt , Z t), w−jt , Z t)
+
+i
+
+.
+
+(5) Finally, in the non-contextual case, the Blum-Mansour re-duction (Blum and Mansour, 2007) is a convenient proce-dure which allows to design a no-swap regret algorithm from any no-external regret one. A natural question is whether a similar reduction exists in our setting, that is, whether an algorithm minimizing (5) can be obtained from an algo-rithm minimizing (4) . We answer by the positive with the following proposition. 
+
+Proposition 1. Assume that player j ∈ [J] plays an al-gorithm πj ∈ Πj achieving RjT ⩽ f (J, T, K, m ) for some 
+
+f : N4+ → R+. Then, one can design an algorithm πj ∈ Πj
+
+achieving 
+
+RjT ⩽ Kf (J, T, K, m ) .
+
+The explicit procedure to design ¯πj from πj is described in Algorithm 2, and the proof of Proposition 1 is deferred to Appendix G. A direct consequence of Proposition 1 is that any algorithm with a guarantee on external regret (4) can be converted into another algorithm with a guarantee on swap regret (5) , at the cost of an additional K factor. This will be particularly useful to extend the analysis from external to swap regret. Note that more recent procedures (Dagan et al., 2024; Peng and Rubinstein, 2023) allow to deal with larger action spaces by reducing the dependence of K, yet at the cost of a degraded dependence on T .
+
+Equilibrium. We consider two equilibrium concepts, which naturally relates to the two regrets previously defined. First, we focus on the classic contextual coarse-correlated equilibrium (Sessa et al., 2021; Maddux and Kamgarpour, 2024), whose definition is recalled below. 
+
+Definition 1. [Sessa et al. 2021] Let ε > 0. An ε-contextual coarse-correlated equilibrium is a joint policy ν : Z → 
+
+P(A) such that for any j ∈ [J] and πj ∈ Πj :
+
+T −1 X 
+
+> t∈[T]
+
+cj (νj (Zt), ν−j (Zt), Z t)
+
+⩽ T −1 X 
+
+> t∈[T]
+
+cj (πj (Zt), ν−j (Zt), Z t) + ε . 
+
+Note that Definition 1 extends the classic coarse correlated equilibrium concept (Foster and Vohra, 1998) to the case where the underlying state of nature changes over time. A more detailed interpretation of Definition 1 is provided in Appendix C. While coarse-correlated equilibrium has been extensively studied, it is arguably weak in the sense that it only prevents coarse deviations. On the other hand, correlated equilibrium (Aumann, 1987) is a tighter equilibrium concept which pre-vents swap deviations, see Appendix C for more discussion. We introduce below an equivalent concept adapted to our framework. In the following definition, ϱj : Aj × Z → A j
+
+is any swap deviation function, which given an action and context (aj , z ) returns an alternative action ˜aj .
+
+Definition 2. Let ε > 0. An ε-contextual correlated equilibrium is a joint policy ν : Z → P(A) such that for any j ∈ [J] and ϱj : Aj × Z → A j :
+
+T −1 X 
+
+> t∈[T]
+
+Ea∼ν(Zt)
+
+ ϕj (a), Z t
+
+
+
+⩽ T −1 X 
+
+> t∈[T]
+
+Ea∼ν(Zt)
+
+ ϕj (ϱj (aj , Z t), a−j ), Z t
+
+ + ε . 
+
+Definition 2 extends the classic correlated equilibrium no-tion (Aumann, 1987) to the contextual case, by letting the swap functions ϱj ( · , z ) depend on the state of nature. In the non-contextual case, there exists a well-known and powerful connection between external regret minimization and coarse-correlated equilibrium. If all players use no-external regret algorithms, their empirical average strategy is an approximate coarse correlated equilibrium. Crucially, we show that the same property holds in our contextual framework. In the following proposition, nz = |T z | de-notes the number of time state z ∈ Z occurs. 
+
+Proposition 2. Assume that for any j ∈ [J], agent j uses a policy πj ∈ Πj incurring an external regret RjT as in 
+
+(4) , and denote by wjt = πjt ( ˆZjt ) for any t ∈ [T ]. Let 
+
+ˆνT : Z → P(A) be such that for any z ∈ Z ,
+
+ˆνT (z) = 
+
+(
+
+n−1
+
+> z
+
+P  
+
+> t∈Tz
+
+w1 
+
+> t
+
+⊗ . . . ⊗ wJt if nz > 0 ,
+
+(K−1, . . . , K −1) otherwise .
+
+Then, ˆνT is an ε-contextual coarse correlated equilibrium with 
+
+ε = max  
+
+> j∈[J]
+
+T −1RjT .
+
+The proof of Proposition 2 is deferred to Appendix G. It is clear from this proposition that if RjT = o(T ) for every 
+
+j ∈ [J], ˆνT asymptotically convergences to an exact coarse-correlated equilibrium. Moreover, the same connection exists for swap regret and correlated equilibrium in the non-contextual setting. We also retrieve this property in our contextual setting, as showed by the following proposition. 
+
+Proposition 3. Assume that for any j ∈ [J], agent j uses a policy ¯πj ∈ Πj incurring a swap regret ¯RjT defined as in (5) . Let ˆνT : Z → P(A) be defined as in Definition 1. Then, ˆνT is an ε-contextual correlated equilibrium with 
+
+ε = max  
+
+> j∈[J]
+
+T −1 ¯RjT .
+
+5Prediction-aware Learning in Multi-agent Systems 
+
+The proof of this result can be found in Appendix G. It shows that if all players use algorithms incurring a sub-linear swap regret, their empirical average strategy converges to an exact correlated equilibrium. Both Proposition 2 and Proposition 3 are key to our analysis, since they convert individual regret guarantees into convergence rates to equi-librium. Hence, bounding individual regrets is our first objective. 
+
+Social welfare. On top of convergence to equilibrium, we study social welfare, and in particular whether no-regret strategies may result in a welfare close to the optimal one. In non-contextual games, the so-called Roughgarden smooth-ness condition (Roughgarden, 2015) is particularly conve-nient to address this question (Syrgkanis et al., 2015). This condition—which is satisfied by a wide class of games, in-cluding congestion games (Roughgarden and Tardos, 2002; Christodoulou and Koutsoupias, 2005), facility games and second price auctions (Roughgarden, 2015)—states that even when players deviate from the optimal strategy, the total cost in a game doesn’t increase too much. Under this condition, it can be shown that the average social cost con-verges to the optimal one times the price of anarchy. Here, we assume that our game satisfies the contextual coun-terpart to the Roughgarden smoothness condition. 
+
+H3. There exist δ > 0 and μ > 0 such that for any a ∈ A ,
+
+a⋆ ∈ A and z ∈ Z ,
+
+X
+
+> j∈[J]
+
+z, ϕ j (aj⋆, a−j ) ⩽ X
+
+> j∈[J]
+
+[δ⟨z, ϕ j (a⋆)⟩ + μ⟨z, ϕ j (a)⟩] .
+
+It is well known that under H3, γ = δ(1 − μ)−1 is an upper bound on the price of anarchy (Roughgarden, 2015). In what follows, 
+
+Ct(wt) = X
+
+> j∈[J]
+
+cj (wt, Z t) ,
+
+denotes the social cost at time t ∈ [T ] and 
+
+C⋆ = min  
+
+> ρ:Z→A
+
+T −1 X 
+
+> t∈[T]
+
+X
+
+> j∈[J]
+
+cj (ρ(Zt), Z t) ,
+
+the optimal average social cost in pure strategy. The follow-ing proposition shows that under H3, the distance between the average social cost and the optimal one is bounded by the sum of external contextual regrets. 
+
+Proposition 4. Assume H3. Then with γ = δ(1 − μ)−1,
+
+1
+
+T
+
+X 
+
+> t∈[T]
+
+Ct(wt) ⩽ γC ⋆ + 1(1 − μ)T
+
+X
+
+> j∈[J]
+
+RjT .
+
+The proof of Proposition 4 can be found in Appendix G. In particular, when P 
+
+> j∈[J]
+
+RjT = o(T ), the average social cost is guaranteed to converge to a fraction of the optimal one. Therefore, bounding P 
+
+> j∈[J]
+
+RjT will be our second objective. 
+
+## 3. Prediction-aware learning. 
+
+Algorithm. In the non-contextual case, the optimistic Mul-tiplicative Weight Update ( OMWU ) algorithm has proven par-ticularly effective for controlling individual and social re-grets in uncoupled multiplayer games. We propose below the predictive-OMWU algorithm, abbreviated POMWU , which is an extension of OMWU to our framework. Broadly speaking, 
+
+POMWU maintains one OMWU instance per context. At the beginning of each round, agents predict the context and use the corresponding OMWU to play. Once the actual state of nature has been revealed, they update the algorithm based on the cost feedback for future rounds. The pseudo-code of 
+
+POMWU is displayed in Algorithm 1. 
+
+Algorithm 1 Optimistic MWU with predicted contexts (POMWU ) for agent j ∈ [J]. 
+
+> 1:
+
+Initialize ρz1 = . . . = ρzm = ( K−1, . . . , K −1) and 
+
+Ψz1 = . . . = Ψ zm = 0d×K . 
+
+> 2:
+
+for each t ∈ [T ] do  
+
+> 3:
+
+Predict ˆZjt ∈ Z , set M jt = Ψ ˆZjt
+
+and gjt = ρ ˆZjt
+
+. 
+
+> 4:
+
+Play wjt ∈ ∆K where for each ℓ ∈ { 1, . . . , K },
+
+wjt [ℓ] = gjt [ℓ] exp( −ηM jt [ℓ] ˆZjt )
+
+P 
+
+> k∈[K]
+
+gjt [k] exp( −ηM jt [k] ˆZjt ) 
+
+> 5:
+
+Observe Zt ∈ Rd and Φj (w−jt ). 
+
+> 6:
+
+Update ΨZt ← Φj (w−jt ) 
+
+> 7:
+
+Update ρZt ← ρZt . exp( −ηΦj (w−jt )TZt) . 
+
+> 8:
+
+end for RVU analysis. The Regret bounded by Variation in Util-ity (RVU) bound (Syrgkanis et al., 2015) is an effective method for deriving guarantees regarding individual regrets in multiplayer games. Intuitively, this approach ties play-ers’ utilities to the variation in observed utilities and played strategies. The RVU ensures that players’ regrets remain low when they efficiently adapt their strategy to counter the variation in payoffs. In the following key lemma, we estab-lish a contextual RVU bound adapted to our framework. In what follows, we write T z = {tz
+
+> 1
+
+, . . . , t znz } for any z ∈ Z ,and LjT = P  
+
+> t∈[T]
+
+1{ ˆZjt̸ = Zt} the total number of mis-predictions made by agent j ∈ [J] throughout of the game. 
+
+Proposition 5. Assume H1 and H2 . Any j ∈ [J] applying Algorithm 1 with learning rate η > 0 has an external regret 
+
+6Prediction-aware Learning in Multi-agent Systems 
+
+bounded as follows: 
+
+RjT ⩽ (5 + ln( K)) LjT + m ln( K)
+
+η
+
++ η
+
+X
+
+> z∈Z
+
+X
+
+> i⩽nz
+
+
+
+Φj (w−jtzi ) − Φj (w−jtzi−1
+
+)
+
+T
+
+z
+
+> 2
+> ∞
+
++ 4 LjT
+
+
+
+− 116 η
+
+X
+
+> z∈Z
+
+X
+
+> i⩽nz
+
+wjtzi
+
+− wjtzi−1
+
+> 21
+
+.
+
+Contrary to the classic RVU approach (Syrgkanis et al., 2015), the bound in Proposition 5 depends on the lengths of the context-specific paths Φj (w−jtz 
+
+> 1
+
+), . . . , Φj (w−jtznz 
+
+) and 
+
+wjtz 
+
+> 1
+
+, . . . , w jtznz 
+
+. The need for this new contextual RVU stems from the fact that players may mispredict states of nature at different periods, preventing the naive use of a classic RVU, see Appendix G for more details. Note that in its current form, Proposition 5 holds for any arbitrary sequence of strategies by other agents, and does not provide an explicit bound for individual regrets. 
+
+Remark 1 (continuing from p. 3) . It is possible to quantify 
+
+LjT under H2 when agents use an online algorithm for predicting (Zt)t∈[T ]. Indeed, this boils down to multiclass online classification problem, for which bounds on LjT have been established by Daniely et al. (2014). Assume that G has a finite Littlestone dimension dim L (G) < ∞ (Littlestone, 1988). In the realizable case, that is when for every j ∈ [J],there exists g⋆j ∈ G such that Zt = g⋆j (Xjt ) for any t ∈ [T ],there exists an online algorithm gjt : X → Z such that 
+
+LjT = P  
+
+> t∈[T]
+
+1{gjt (Xjt )̸ = Zt} satisfies: 
+
+Ljt ⩽ dim L (G) . (6) 
+
+In the agnostic case, denoting L⋆j T =min gj ∈G 
+
+PTt=1 1{gj (Xjt )̸ = Zt}, there exists an al-gorithm such that 
+
+LjT ⩽ L⋆j T +
+
+r 12 dim L (G)T ln( T m ) . (7) 
+
+The algorithms leading to (6) and (7) , namely Algorithm 3 and Algorithm 4, are both recalled in Appendix D. 
+
+Equilibrium. Equipped with Proposition 5, we first fo-cus on convergence to equilibrium. As discussed in Sec-tion 2, this only requires bounding individual regrets. The following proposition, which follows from Proposition 5, establishes this bound. 
+
+Proposition 6. Define LT = max j∈[J] LjT and assume H1and H2. If all agents use Algorithm 1 with a learning rate 
+
+η > 0, then for any j ∈ [J]:
+
+RjT ⩽ (5 + ln( K)) LT + m ln( K)
+
+η
+
++ η(J − 1) 2(9 T η 2 + 4 LT ) + 4 LT
+
+ .
+
+In particular if T = Ω( J2LT ), setting η⋆ =Θ( J−1/2T −1/4[ln( K)( LT + m)] 1/4) leads to: 
+
+RjT = O( [ln( K)( LT + m)] 3/4T 1/4J1/2 ) .
+
+In the realizable case of Remark 1 where LT = OT (1) , we recover the result RjT = O(T 1/4J1/2) from Syrgkanis et al. (2015). We also observe that setting the learning rate to η⋆
+
+requires agents to know LjT . This is reasonable if they use the same hypothesis class, since uniform bounds on LT are known (see e.g., Remark 1). 
+
+Remark 1 (continuing from p. 3) . Recently, collaborative and federated learning has emerged as a topic of prime importance in Machine learning (Blum et al., 2017; Kairouz et al., 2021). One may wonder whether agents sharing a common model, so ˆZjt = ˆZt ∈ Z for any j ∈ [J], may im-prove Proposition 6. Indeed, even though agents play uncou-pled strategies, policies πjt ( ˆZt) are implicitly coordinated as they rely on a same signal. We show in Proposition 9 in Appendix G that in this case, we can drop the assumption 
+
+T = Ω( J2LT ) and still recover the guarantee of Proposi-tion 6 by a direct improvement of the proof. Studying the impacts of collaborative learning in games more broadly is an interesting topic for future research. 
+
+It is now possible to obtain an explicit convergence rate to coarse-correlated equilibrium by combining Proposition 2 with Proposition 6. 
+
+Corollary 1. Assume H1, H2 and T = Ω( J2LT ). If all agents use Algorithm 1 with η⋆ > 0 as defined in Propo-sition 6, then ˆνT (as defined as in Proposition 2) is an 
+
+ε-coarse correlated equilibrium, with 
+
+ε = O( [ln( K)( LT + m)] 3/4T −3/4J1/2 ) .
+
+In addition, it is possible to obtain a convergence rate for the more demanding contextual correlated equilibrium concept defined in Definition 2. As a matter of fact, the reduction described in Algorithm 2 allows to transform POMWU , which enjoys the guarantee on RjT presented in Proposition 6, into an algorithm ¯πj with a guarantee on RjT —see Proposition 1. Then, applying Proposition 3 leads to the following corol-lary. 
+
+Corollary 2. Assume H1, H2 and T = Ω( J2LT ). If all agents use Algorithm 1 in conjonction with Algorithm 2 and η⋆ > 0 as in Proposition 6, then ˆνT is an ¯ε-correlated equilibrium, with 
+
+¯ε = O( [ K ln( K)( LT + m)] 3/4T −3/4J1/2 ) .
+
+7Prediction-aware Learning in Multi-agent Systems 
+
+Social welfare. We now turn our attention to social wel-fare when agents use POMWU . As discussed in Section 2, this requires bounding the sum of regrets. A first, naive approach would be to sum the bound of individual regrets obtained in Proposition 6. However, we show below that another choice of η leads to a much better guarantee. 
+
+Proposition 7. Let LT = P 
+
+> j∈[J]
+
+LjT , and assume H1, 
+
+H2. If all agents use Algorithm 1 with a learning rate 
+
+η = (4( J − 1)) −1, then 
+
+X
+
+> j∈[J]
+
+RjT ⩽ 4J[(5 + ln( K)) LT + mJ ln( K)] + LT
+
+J − 1= O(J ln( K)( LT + mJ )) .
+
+Note that in the setting of Remark 1 under the realizable assumption, LT = OT (1) and hence we recover the classic result P 
+
+> j∈[J]
+
+RjT = OT (1) of Syrgkanis et al. (2015) in the static setting. The bound in Proposition 7 can immediately be converted into a convergence rate of social cost to a fraction of the optimal one via Proposition 4. 
+
+Corollary 3. Assume H1, H2 and H3. If Assume all agents use Algorithm 1 with η = (4( J − 1)) −1, then 
+
+1
+
+T
+
+X 
+
+> t∈[T]
+
+Ct(wt) ⩽ γC ⋆ + O(J ln( K)T −1(LT + mJ )) .
+
+Robustness. Finally, we turn our attention to the adver-sarial regime where not all agents use POMWU . Specifically, we ask whether the regret of POMWU remains low against any arbitrary sequence of cost feedback. This robustness property is a common desiderata in the literature (Syrgkanis et al., 2015; Foster et al., 2016). 
+
+Proposition 8. Assume H1 and H2. If player j ∈ [J] uses Al-gorithm 1 with η = Θ([ln( K)( LjT + m)] 1/2(LjT + T )−1/2),then for any sequence (w−j 
+
+> 1
+
+, . . . , w−jT ) ∈ P(A−j )T :
+
+RjT = O
+
+q 
+
+ln( K)( LjT + m)( LjT + T )
+
+
+
+.
+
+Here again, in the setting of Remark 1 under realizability, 
+
+LjT = OT (1) and therefore we recover the guarantee RjT =
+
+O(√T ).
+
+## 4. Experiments. 
+
+Setting. We illustrate the performances of POMWU on the Sioux Falls routing problem from LeBlanc et al. (1975) with the parameters from Sessa et al. (2019). We consider a network of cities connected by roads. In each city, there is one agent willing to send a given quantity of goods to each other city. Agents want to minimize their travel time, which is determined by both congestion on the network, and external factors such as weather and road condition. Formally, we consider a graph (V, E) with J = |V| (|V| − 1) 
+
+agents, each of whom wants to send qj > 0 units from 
+
+nj ∈ V to mj ∈ V . For any j ∈ [J], we let Aj be the set of K > 0 shortest paths connecting nj to mj , that is any 
+
+aj ∈ A j can be written as aj = ( ij
+
+> 1
+
+, . . . , i jR) with ij 
+
+> 1
+
+= nj ,
+
+ijR = mj , and (ir , i r+1 ) ∈ E for any r ∈ { 1, . . . , R − 1}.For any profile of actions a = ( a1, . . . , a J ) ∈ A and pair of nodes (p, ℓ ) ∈ E , we denote by 
+
+ϕjp,ℓ (a) = 
+
+( P 
+
+> i∈[J]
+
+1{(p, ℓ ) ∈ ai}q4 
+
+> i
+
+if (p, ℓ ) ∈ aj
+
+0 otherwise ,
+
+the total congestion 1 faced by j ∈ [J] on (p, ℓ ), and 
+
+ϕj (a) = ( ϕjp,ℓ (a)) p,ℓ ∈ R|V|×|V| the corresponding ma-trix. Agents are allowed to randomize over routes, so they play wj ∈ ∆K . To each pair (p, ℓ ) ∈ V × V , we also as-sociate a cost coefficient zp,ℓ > 0 related to road condition or weather, and we denote by Z = ( zp,ℓ )p,ℓ ∈ R|V|×|V| 
+
+the corresponding matrix. Then for any w ∈ P(A) and 
+
+Z ∈ R|V|×|V| , the cost for any j ∈ [J] is given by: 
+
+cj (w, Z ) = Ew
+
+ Z, ϕ j (a) F
+
+ ,
+
+where ⟨A, B ⟩F = Tr( ATB) = P 
+
+> i,j
+
+Ai,j Bi,j is the Frobe-nius inner product. cj captures the expected travel time of player j ∈ [J] when they pick routes according to wj ∈ ∆K
+
+and other agents according to w−j ∈ P(A−j ) under con-text Z ∈ Z . Additional experimental details can be found in Appendix A. 
+
+Supervised learning. In our experiment, there are m > 0
+
+random contexts denoted Z = {z1, . . . , z m}. For any z ∈Z, there exists β⋆z ∈ Rb such that 
+
+P(Z = z|X0) = ζ(β⋆z , X 0) = exp( β⋆z X0)
+
+P 
+
+> z′∈Z
+
+exp( β⋆z′ X0) ,
+
+where X0 ∈ Rb is a vector of covariates (which can be thought of as a meteorogical or a traffic forecast) drawn from a standard Normal multivariate distribution. At each round 
+
+t ∈ [T ], agents observe X0 
+
+> t
+
+∈ Rb and predict with a logistic regression ˆZt ∈ Z , that is ˆZt = argmax z∈Z ζ( ˆβz , X 0 
+
+> t
+
+).They then update ˆβz1 , . . . , ˆβzm in an online fashion with a stochastic gradient descent. More details can be found in Appendix A. 
+
+> 1
+
+In Sessa et al. (2019), the congestion is of form ˜ϕp,ℓ (a) = (P 
+
+> k∈[J]
+
+1{(p, ℓ ) ∈ ak }qk )4. We only keep the term q4 
+
+> k
+
+in this sum so ϕk,q is linear in a ∈ A , which is necessary to compute expectations given the size of action space |A| = m|V| (|V|− 1) .
+
+8Prediction-aware Learning in Multi-agent Systems 
+
+Figure 1: Average repartition of agents on the network for each context under a 10 −3-coarse correlated equilibrium. 
+
+Figure 2: Average regret over agents for 
+
+POMWU and OMWU .
+
+Figure 3: Average prediction error from the online logistic regression. 
+
+Figure 4: Proportion of average regret incurred under mispredicted contexts. 
+
+Game. There are T > 0 rounds. At each t ∈ [T ], A pair 
+
+(X0 
+
+> t
+
+, Z t) is drawn, each agent j ∈ [J] observe X0 
+
+> t
+
+, predict 
+
+ˆZjt , and play wjt ∈ ∆K according to Algorithm 1. They then receive Zt and (Ew−jt
+
+[ϕj (ajt,k , a−jt )]) k∈[K] as a feedback, which they use to update POMWU and their logistic regression. The parameters used in our experiment are summarized in Appendix A. 
+
+Results. Figure 2 displays the the regret averaged over players 2 for a naive OMWU algorithm which ignores states of nature, and POMWU . The effectiveness of POMWU in adapting to time-varying payoffs is clear, especially when compared to the classic OMWU , whose contextual regret grows linearly due to its inability to account for states of nature. Inter-estingly, Figure 4 shows that rounds where contexts are mispredicted contributes to a large and growing share of regret over time for POMWU . This illustrates the convergence of the algorithm on each context. The fact that average prediction error of the online logistic regression (Figure 3) decreases at a slow rate thus explains most of the regret trend of POMWU in late rounds. Finally, Figure 1 depicts the average proportion of agents occupying each edge of the network in different contexts under the empirical policy ˆν
+
+defined in Proposition 2. By Proposition 2, this is a depic-tion of a 10 −3-approximate coarse correlated equilibrium of the game. 
+
+> 2Shaded areas correspond to standard error computed over multiple runs.
+
+## 5. Conclusion 
+
+The recent extension of uncoupled learning to time-varying games marks a significant progress, as it enables the mod-eling of non-stationary payoff environments. However, ex-isting literature overlooks the fact that they may be able to forecast future variations of the game. In this work, we introduce prediction-aware learning, a framework in which agents can leverage predictions about future payoffs to in-form their strategies. Specifically, we propose the POMWU 
+
+algorithm, inspired by the classic OMWU approach, which incorporates the predicted state of nature into the optimism step. We provide explicit guarantees on both individual re-grets and social welfare, and demonstrate the effectiveness of POMWU in a simulated contextual game. We believe that these findings provide a strong foundation for incorporating predictive capabilities into dynamic game-theoretic settings, with significant implications for strategic decision-making in economic and industrial applications. There are several avenues for future work to improve and expand upon this framework. First, it would be valuable to weaken the feedback provided to players—for instance, by restricting it to bandit feedback—and analyze the impact on theoretical guarantees. Second, extending the model to accommodate an infinite number of contexts presents a challenging but important direction. Finally, exploring how collaborative inference influences the game dynamics and designing algorithms that account for this interplay remains an essential question from a game-theoretic perspective. 9Prediction-aware Learning in Multi-agent Systems 
+
+## Impact Statement 
+
+This paper presents work whose goal is to advance the under-standing of multi-agent systems. There are many potential societal consequences of our work, none which we feel must be specifically highlighted here. 
+
+## Acknowledgment 
+
+Funded by the European Union (ERC, Ocean, 101071601). Views and opinions expressed are however those of the author(s) only and do not necessarily reflect those of the European Union or the European Research Council Execu-tive Agency. Neither the European Union nor the granting authority can be held responsible for them. 
+
+## References 
+
+Ioannis Anagnostides, Constantinos Daskalakis, Gabriele Farina, Maxwell Fishelson, Noah Golowich, and Tuo-mas Sandholm. Near-optimal no-regret learning for correlated equilibria in multi-player general-sum games. In Proceedings of the 54th Annual ACM SIGACT Symposium on Theory of Computing , pages 736–749, 2022a. Ioannis Anagnostides, Gabriele Farina, Christian Kroer, Chung-Wei Lee, Haipeng Luo, and Tuomas Sandholm. Uncoupled learning dynamics with o (log t) swap regret in multiplayer games. Advances in Neural Information Processing Systems, 35:3292–3304, 2022b. Ioannis Anagnostides, Gabriele Farina, Ioannis Panageas, and Tuomas Sandholm. Optimistic mirror descent either converges to nash or to strong coarse correlated equilibria in bimatrix games, 2022c. URL https://arxiv.org/ abs/2203.12074 .Ioannis Anagnostides, Ioannis Panageas, Gabriele Farina, and Tuomas Sandholm. On the convergence of no-regret learning dynamics in time-varying games. Advances in Neural Information Processing Systems, 36, 2024. Peter Auer, Nicolo Cesa-Bianchi, Yoav Freund, and Robert E Schapire. The nonstochastic multiarmed ban-dit problem. SIAM journal on computing, 32(1):48–77, 2002. Robert J Aumann. Correlated equilibrium as an expression of bayesian rationality. Econometrica: Journal of the Econometric Society, pages 1–18, 1987. Abhijit V Banerjee. A simple model of herd behavior. The quarterly journal of economics, 107(3):797–817, 1992. Omar Bennouna, Jiawei Zhang, Saurabh Amin, and Asuman Ozdaglar. Addressing misspecification in contextual opti-mization, 2024. URL https://arxiv.org/abs/2409. 10479 .Omar Besbes, Yonatan Gur, and Assaf Zeevi. Non-stationary stochastic optimization. Operations research, 63(5):1227–1244, 2015. Sushil Bikhchandani, David Hirshleifer, and Ivo Welch. A theory of fads, fashion, custom, and cultural change as informational cascades. Journal of political Economy ,100(5):992–1026, 1992. Avrim Blum and Yishay Mansour. From external to inter-nal regret. Journal of Machine Learning Research, 8(6), 2007. Avrim Blum, Nika Haghtalab, Ariel D Procaccia, and Mingda Qiao. Collaborative pac learning. Advances in Neural Information Processing Systems, 30, 2017. Etienne Boursier, Vianney Perchet, and Marco Scarsini. Social learning in non-stationary environments. In San-joy Dasgupta and Nika Haghtalab, editors, Proceedings of The 33rd International Conference on Algorithmic Learning Theory , volume 167 of Proceedings of Machine Learning Research , pages 128–129. PMLR, 29 Mar–01 Apr 2022. URL https://proceedings.mlr. press/v167/boursier22a.html .Christophe Chamley. Rational herds: Economic models of social learning. Cambridge University Press, 2004. Xi Chen and Binghui Peng. Hedging in games: Faster convergence of external and swap regrets. Advances in Neural Information Processing Systems , 33:18990– 18999, 2020. Chao-Kai Chiang, Tianbao Yang, Chia-Jung Lee, Mehrdad Mahdavi, Chi-Jen Lu, Rong Jin, and Shenghuo Zhu. On-line optimization with gradual variations. In Conference on Learning Theory , pages 6–1. JMLR Workshop and Conference Proceedings, 2012. George Christodoulou and Elias Koutsoupias. The price of anarchy of finite congestion games. In Proceedings of the thirty-seventh annual ACM symposium on Theory of computing, pages 67–73, 2005. Yuval Dagan, Constantinos Daskalakis, Maxwell Fishel-son, and Noah Golowich. From external to swap re-gret 2.0: An efficient reduction for large action spaces. In Proceedings of the 56th Annual ACM Symposium on Theory of Computing, pages 1216–1222, 2024. Amit Daniely and Shai Shalev-Shwartz. Optimal learn-ers for multiclass problems. In Conference on Learning Theory, pages 287–316. PMLR, 2014. 10 Prediction-aware Learning in Multi-agent Systems 
+
+Amit Daniely, Sivan Sabato, Shai Ben-David, and Shai Shalev-Shwartz. Multiclass learnability and the erm principle, 2014. URL https://arxiv.org/abs/1308. 2893 .Constantinos Daskalakis, Alan Deckelbaum, and Anthony Kim. Near-optimal no-regret algorithms for zero-sum games. In Proceedings of the twenty-second annual ACM-SIAM symposium on Discrete Algorithms , pages 235–254. SIAM, 2011. Constantinos Daskalakis, Maxwell Fishelson, and Noah Golowich. Near-optimal no-regret learning in general games. Advances in Neural Information Processing Systems, 34:27604–27616, 2021. Priya L. Donti, Brandon Amos, and J. Zico Kolter. Task-based end-to-end model learning in stochastic opti-mization, 2019. URL https://arxiv.org/abs/1703. 04529 .Benoit Duvocelle, Panayotis Mertikopoulos, Mathias Staudigl, and Dries Vermeulen. Learning in time-varying games. arXiv preprint arXiv:1809.03066, page 17, 2018. Adam N. Elmachtoub and Paul Grigas. Smart "predict, then optimize", 2020. URL https://arxiv.org/abs/ 1710.08005 .Gabriele Farina, Christian Kroer, Chung-Wei Lee, and Haipeng Luo. Clairvoyant regret minimization: Equiv-alence with nemirovski’s conceptual prox method and extension to general convex games. arXiv preprint arXiv:2208.14891, 2022. Dean P Foster and Rakesh V Vohra. Calibrated learning and correlated equilibrium. Games and Economic Behavior, 21(1-2):40–55, 1997. Dean P Foster and Rakesh V Vohra. Asymptotic calibration. Biometrika, 85(2):379–390, 1998. Dylan J Foster, Zhiyuan Li, Thodoris Lykouris, Karthik Srid-haran, and Eva Tardos. Learning in games: Robustness of fast convergence. Advances in Neural Information Processing Systems, 29, 2016. Yoav Freund and Robert E Schapire. Adaptive game play-ing using multiplicative weights. Games and Economic Behavior, 29(1-2):79–103, 1999. Rafael M. Frongillo, Grant Schoenebeck, and Omer Tamuz. Social learning in a changing world. In Ning Chen, Edith Elkind, and Elias Koutsoupias, editors, Internet and Network Economics , pages 146–157, Berlin, Heidel-berg, 2011. Springer Berlin Heidelberg. ISBN 978-3-642-25510-6. Periklis Gogas and Theophilos Papadimitriou. Ma-chine Learning in Economics and Finance. Computational Economics , 57(1):1–4, January 2021. doi: 10.1007/s10614-021-10094-. URL 
+
+https://ideas.repec.org/a/kap/compec/ v57y2021i1d10.1007_s10614-021-10094-w.html .Yongyi Guo, Ziping Xu, and Susan Murphy. On-line learning in bandits with predicted context. In International Conference on Artificial Intelligence and Statistics, pages 2215–2223. PMLR, 2024. Eric Hall and Rebecca Willett. Dynamical models and tracking regret in online convex programming. In International Conference on Machine Learning , pages 579–587. PMLR, 2013. James D Hamilton. Time series analysis. Princeton univer-sity press, 2020. Keegan Harris, Zhiwei Steven Wu, and Maria-Florina Bal-can. Regret minimization in stackelberg games with side information. arXiv preprint arXiv:2402.08576, 2024. Sergiu Hart and Andreu Mas-Colell. A simple adaptive pro-cedure leading to correlated equilibrium. Econometrica, 68(5):1127–1150, 2000a. Sergiu Hart and Andreu Mas-Colell. A simple adaptive pro-cedure leading to correlated equilibrium. Econometrica, 68(5):1127–1150, 2000b. Sergiu Hart and Andreu Mas-Colell. Uncoupled dynamics do not lead to nash equilibrium. American Economic Review, 93(5):1830–1836, 2003. Elad Hazan and Nimrod Megiddo. Online learning with prior knowledge. In Learning Theory: 20th Annual Conference on Learning Theory, COLT 2007, San Diego, CA, USA; June 13-15, 2007. Proceedings 20 , pages 499– 513. Springer, 2007. Elad Hazan, Tomer Koren, and Kfir Y. Levy. Logistic regres-sion: Tight bounds for stochastic and online optimization, 2014. URL https://arxiv.org/abs/1405.3843 .Geoffrey Hinton and Michael I. Jordan. Advancing health-care, e-commerce, and computational analysis with ai- ap-plications in diagnostics, market insights, and efficiency. AlgoVista: Journal of AI and Computer Science , 3(2), Nov. 2024. URL https://algovista.org/index. php/AVJCS/article/view/28 .Michael Jordan and T.M. Mitchell. Machine learning: Trends, perspectives, and prospects. Science (New York, N.Y.) , 349:255–60, 07 2015. doi: 10.1126/science. aaa8415. 11 Prediction-aware Learning in Multi-agent Systems 
+
+Peter Kairouz, H Brendan McMahan, Brendan Avent, Au-rélien Bellet, Mehdi Bennis, Arjun Nitin Bhagoji, Kallista Bonawitz, Zachary Charles, Graham Cormode, Rachel Cummings, et al. Advances and open problems in fed-erated learning. Foundations and trends® in machine learning, 14(1–2):1–210, 2021. Emir Kamenica. Bayesian persuasion and information design. Annual Review of Economics, 11(1):249–272, 2019. Emir Kamenica and Matthew Gentzkow. Bayesian persua-sion. American Economic Review, 101(6):2590–2615, 2011. Johannes Kirschner and Andreas Krause. Stochastic bandits with context distributions, 2019. URL https://arxiv. org/abs/1906.02685 .Tor Lattimore and Csaba Szepesvári. Bandit algorithms .Cambridge University Press, 2020. Niklas Lauffer, Mahsa Ghasemi, Abolfazl Hashemi, Yagiz Savas, and Ufuk Topcu. No-regret learning in dynamic stackelberg games. IEEE Transactions on Automatic Control, 2023. Larry J LeBlanc, Edward K Morlok, and William P Pier-skalla. An efficient approach to solving the road network equilibrium traffic assignment problem. Transportation research, 9(5):309–318, 1975. Raphaël Levy, Marcin P˛ eski, and Nicolas Vieille. Stationary social learning in a changing environment. Econometrica, 92(6):1939–1966, 2024. Lihong Li, Wei Chu, John Langford, and Robert E Schapire. A contextual-bandit approach to personalized news ar-ticle recommendation. In Proceedings of the 19th international conference on World wide web , pages 661– 670, 2010. Nick Littlestone. Learning quickly when irrelevant attributes abound: A new linear-threshold algorithm. Machine learning, 2:285–318, 1988. Anna M. Maddux and Maryam Kamgarpour. Multi-agent learning in contextual games under unknown constraints, 2024. URL https://arxiv.org/abs/2310.14685 .Elchanan Mossel, Manuel Mueller-Frank, Allan Sly, and Omer Tamuz. Social learning equilibria. Econometrica, 88(3):1235–1267, 2020. Elliot Nelson, Debarun Bhattac harjya, Tian Gao, Miao Liu, Djallel Bouneffouf, and Pascal Poupart. Lineariz-ing contextual bandits with latent state dynamics. In Uncertainty in Artificial Intelligence , pages 1477–1487. PMLR, 2022. Binghui Peng and Aviad Rubinstein. Fast swap regret mini-mization and applications to approximate correlated equi-libria, 2023. URL https://arxiv.org/abs/2310. 19647 .Binghui Peng and Aviad Rubinstein. Fast swap regret minimization and applications to approximate correlated equilibria. In Proceedings of the 56th Annual ACM Symposium on Theory of Computing , pages 1223–1234, 2024. Georgios Piliouras, Ryann Sim, and Stratis Skoulakis. Be-yond time-average convergence: Near-optimal uncoupled online learning via clairvoyant multiplicative weights update. Advances in Neural Information Processing Systems, 35:22258–22269, 2022. Alexander Rakhlin and Karthik Sridharan. Online learning with predictable sequences. In Conference on Learning Theory, pages 993–1019. PMLR, 2013. Alexander Rakhlin, Karthik Sridharan, and Ambuj Tewari. Online learning via sequential complexities. J. Mach. Learn. Res., 16(1):155–186, 2015. Tim Roughgarden. Intrinsic robustness of the price of anar-chy. Journal of the ACM (JACM), 62(5):1–42, 2015. Tim Roughgarden and Éva Tardos. How bad is selfish routing? Journal of the ACM (JACM) , 49(2):236–259, 2002. Utsav Sadana, Abhilash Chenreddy, Erick Delage, Alexan-dre Forel, Emma Frejinger, and Thibaut Vidal. A survey of contextual optimization methods for decision-making under uncertainty. European Journal of Operational Research, 2024. Pier Giuseppe Sessa, Ilija Bogunovic, Maryam Kamgarpour, and Andreas Krause. No-regret learning in unknown games with correlated payoffs. Advances in Neural Information Processing Systems, 32, 2019. Pier Giuseppe Sessa, Ilija Bogunovic, Andreas Krause, and Maryam Kamgarpour. Contextual games: Multi-agent learning with side information, 2021. URL https:// arxiv.org/abs/2107.06327 .Aleksandrs Slivkins et al. Introduction to multi-armed ban-dits. Foundations and Trends® in Machine Learning, 12 (1-2):1–286, 2019. Lones Smith and Peter Sørensen. Pathological outcomes of observational learning. Econometrica, 68(2):371–398, 2000. Vasilis Syrgkanis, Alekh Agarwal, Haipeng Luo, and Robert E. Schapire. Fast convergence of regularized 12 Prediction-aware Learning in Multi-agent Systems 
+
+learning in games, 2015. URL https://arxiv.org/ abs/1507.00407 .Jianyi Yang and Shaolei Ren. Bandit learning with predicted context: Regret analysis and selective context query. In IEEE INFOCOM 2021-IEEE Conference on Computer Communications, pages 1–10. IEEE, 2021. Mengxiao Zhang, Peng Zhao, Haipeng Luo, and Zhi-Hua Zhou. No-regret learning in time-varying zero-sum games. In International Conference on Machine Learning, pages 26772–26808. PMLR, 2022. Martin Zinkevich. Online Convex Programming and Generalized Infinitesimal Gradient Ascent. In Machine Learning, Proceedings of the Twentieth International Conference (ICML 2003), August 21-24, 2003, Washington, DC, USA, 2003. 13 Prediction-aware Learning in Multi-agent Systems 
+
+## A. Experiment. 
+
+Additional information about the setting of the experiment. The graph used to model the Sioux Falls road network from LeBlanc et al. (1975) has |N | = 24 nodes and |E| = 76 edges. The network topology, the cost coefficients zp,ℓ > 0
+
+as well as the quantities qj > 0 to be sent are downloaded from https://github.com/sessap/contextualgames/ tree/main/SiouxFallsNet . In the experiment, we consider m = 5 states of nature. Each state of nature i ∈ [m] is generated by adding a noise εip,ℓ > 0 drawn from an exponential distribution with scale parameter λ = 10 −2 to each edge (p, ℓ ) ∈ E . For each player j ∈ [J], we let Aj be the K = 5 shortest paths connecting nj ∈ N to mj ∈ N . While there are |N | (|N | − 1) = 552 agents in total on the network, we exclude agents for whom the lengths of the longest path exceeds the length of the shortest path by more than 2. This is because the optimal action tends to trivially be the shortest path irrespective of the state of nature for these agents. With this choice, we are left with J = 91 agents having actions generating rewards of the same order of magnitude. The simulation is run over T = 2 .10 4 timesteps. The displayed regrets for predMWU and OMWU are averaged over agents. 
+
+Online supervised learning in the experiment. As explained in the main text, for any t ∈ [T ],
+
+P(Zt = z|X0 
+
+> t
+
+) = ζ(β⋆z , X 0) = exp( β⋆z X0)
+
+P 
+
+> z′∈Z
+
+exp( β⋆z′ X0) ,
+
+where X0 ∈ Rb with b = 10 . In the experiment, for any t ∈ [T ], X0 
+
+> t
+
+∼ N (m, 5Ib) with m ∈ [1 , 4] b. All agents receive the same covariates from sack of simplicity. For any z ∈ Z , β⋆z ∈ Rb is drawn before the simulation according to a Normal distribution N (0 , 5Ib).
+
+## B. Discussion of H2. 
+
+In this appendix, we briefly outline two possible approaches to carry our analysis without H2. More precisely, we assume in this section that Z ⊂ a compact context set. 1. One first natural strategy involves discretizing Z using an ε-net and projecting each incoming context z ∈ Z to its nearest neighbor on the net. Under suitable smoothness conditions on the loss or reward functions, this could enable a reduction to the finite context case. However, this method typically results in regret bounds with exponential dependence on the dimension d, which can severely limit its applicability in high-dimensional settings (see, e.g., Theorem 4 in Hazan and Megiddo (2007)). 2. Alternatively, one could seek to work directly with the continuous context space. However, without placing restrictions on the policy class, it is possible to construct problem instances where both external and swap regrets grow linearly in the number of rounds. This highlights the necessity of controlling model complexity, for example by (i) restricting to a finite policy class (as in Auer et al. (2002)), or (ii) assuming linear structure in the policies (cf. LinUCB-style approaches), possibly combined with complexity measures such as sequential Rademacher complexities (Rakhlin et al., 2015). Each of these directions would require introducing new assumptions, proof techniques, and analytical frameworks, and therefore warrants a dedicated study. 
+
+## C. Discussion on Definition 1 and Definition 2. 
+
+In this section, we provide further interpretation about the equilibrium concepts defined in Definition 1 and Definition 2. First, of all, recall that ε-contextual coarse correlated equilibrium is defined as follows: 
+
+Definition 1. [Sessa et al. 2021] Let ε > 0. An ε-contextual coarse-correlated equilibrium is a joint policy ν : Z → P(A)
+
+such that for any j ∈ [J] and πj ∈ Πj :
+
+T −1 X 
+
+> t∈[T]
+
+cj (νj (Zt), ν−j (Zt), Z t)
+
+⩽ T −1 X 
+
+> t∈[T]
+
+cj (πj (Zt), ν−j (Zt), Z t) + ε . 
+
+14 Prediction-aware Learning in Multi-agent Systems 
+
+For any z ∈ Z , the distribution ν(z) can be interpreted as a correlation device that generates and recommends pure actions to agents. We say that ν(z) is an equilibrium in the sense of Definition 1 if no player can decrease their expected cost by ignoring the recommendations from ν before they have even been drawn on average over time. Note that contrary to the classic coarse correlated equilibrium (Foster and Vohra, 1998), ν : z ∈ Z 7 → ν(z) ∈ P (A) is a policy that maps contexts to distributions over joint actions. Second, a ε-correlated equilibrium is defined as follows. 
+
+Definition 2. Let ε > 0. An ε-contextual correlated equilibrium is a joint policy ν : Z → P(A) such that for any j ∈ [J]
+
+and ϱj : Aj × Z → A j :
+
+T −1 X 
+
+> t∈[T]
+
+Ea∼ν(Zt)
+
+ ϕj (a), Z t
+
+
+
+⩽ T −1 X 
+
+> t∈[T]
+
+Ea∼ν(Zt)
+
+ ϕj (ϱj (aj , Z t), a−j ), Z t
+
+ + ε . 
+
+Just as before, ν can be regarded as a correlation device. It is an equilibrium in the sense of Definition 2 if no player can decrease their expected cost by deviating from their recommended action after it has been drawn, on average over time. From this point of view, being a correlated equilibrium is more demanding than a coarse correlated equilibrium. Note that Definition 2 extends the classic correlated equilibrium notion (Aumann, 1987) to the contextual case, by letting the swap functions ϱj ( · , z ) depend on the state of nature. 
+
+## D. Useful algorithms. 
+
+Algorithm 2 Contextual Blum-Mansour algorithm. 
+
+1: Input: a no-external regret policy πj ∈ Πj .
+
+2: Initialize hjk, 0 = ∅ for any k ∈ { 1, . . . , K } .
+
+3: for each t ∈ { 1, . . . , T }: do 
+
+4: Predict ˆZjt ∈ Z .
+
+5: For every k ∈ { 1, . . . , K }, get pjk,t = πj (hjk,t −1, ˆZjt ), and define P jt = ( pj 
+
+> 1,t
+
+| . . . | pjK,t ) ∈ RK×K .
+
+6: Play wjt ∈ ∆K such that 
+
+P jt wjt = wjt .
+
+7: Observe Zt ∈ Z and Φj (w−jt ) ∈ Rd×K ,
+
+8: Update hjk,t = hjk,t −1 ∪ { wjt [k]Φ j (w−jt ), Z t} for ay k ∈ { 1, . . . , K } .
+
+9: end for Algorithm 3 Standard Optimal Algorithm (SOA) from Daniely et al. (2014). 
+
+1: Input: An hypothesis class G ⊂ { g : X → Z} with Littlestone dimension dim L (G) < ∞.
+
+2: Initialize V0 = G.
+
+3: for each t ∈ { 1, . . . , T }: do 
+
+4: Receive Xt ∈ X and define V (z) 
+
+> t
+
+= {g ∈ Vt−1 : g(Xt) = z} for any z ∈ Z .
+
+5: Predict ˆZt ∈ argmax z∈Z dim L (V (z) 
+
+> t
+
+) .
+
+6: Receive Zt ∈ Z and update Vt ← V (Zt) 
+
+> t
+
+.
+
+7: end for 
+
+## E. Notations 
+
+For the proofs, we use the following notations and shorthands. • For any z ∈ Z , T z = {t ∈ [T ] : Zt = z} = {tz
+
+> 1
+
+, . . . , t znz } where nz = |T z | .
+
+15 Prediction-aware Learning in Multi-agent Systems 
+
+Algorithm 4 Learning with Expert Advice (LEA) from Daniely et al. (2014). 
+
+1: Input: An hypothesis class G ⊂ { g : X → Y} with Littlestone dimension dim L (G) < ∞, N > 0 experts using Algorithm 3 with N ⩽ (mT )dim L (G).
+
+2: Set η = p8 ln( N )/T . 
+
+3: for each t ∈ { 1, . . . , T }: do 
+
+4: Observe Xt ∈ X , receive expert advices (f 1 
+
+> t
+
+(Xt), . . . , f Nt (Xt)) ∈ Z N .
+
+5: Predict ˆZt = f it (Xt) with probability proportional to exp( −η P 
+
+> τ <t
+
+1{f iτ (Xτ )̸ = Zτ }).
+
+6: Receive Zt ∈ Z and send it to all experts as a feedback. 
+
+7: end for Algorithm 5 Optimistic Mirror Descent with predicted context. 
+
+1: Initialize Ψz1 = . . . = Ψ zm = 0d×K and ρz1 = . . . = ρzm = argmin ew∈∆K R( ew).
+
+2: for each t ∈ [T ] do 
+
+3: Observe ˆZjt ∈ Z , set fM jt = Ψ ˆZjt
+
+and egjt = ρ ˆZjt
+
+.
+
+4: Play ewjt = argmin ew∈∆K η
+
+D fM jT 
+
+> t
+
+ˆZjt , ew
+
+E
+
++ DR( ew, egjt ) ,
+
+5: Observe Zt ∈ Rd and Φj (w−jt ) ∈ Rd×K .
+
+6: Compute ˜ρt = argmin g∈∆K
+
+D
+
+Φj (w−jt )TZt, g 
+
+E
+
++ DR(g, egjt ) ,
+
+7: Update ΨZt ← Φj (w−jt ) and ρZt ← ˜ρt.
+
+8: end for Algorithm 6 Optimistic FTRL with predicted context. 
+
+1: Initialize w0 = argmin w∈∆K R(w) and Ψz1 = . . . = Ψ zm = 0d×K .
+
+2: for each t ∈ [T ] do 
+
+3: Observe ˆZjt ∈ Z and set fM jt = Ψ ˆZjt
+
+.
+
+4: Play wjt = argmin w∈∆K
+
+DPt−1  
+
+> τ=1
+
+1{Zτ = Zjt }Φj (w−jτ )TZτ + fM jT 
+
+> t
+
+Zjt , w 
+
+E
+
++ DR(w) 
+
+> η
+
+,
+
+5: Observe Zt ∈ Rd and Φj (w−jt ), update ΨZt ← Φj (w−jt ) .
+
+6: end for 
+
+• For any j ∈ [J], z ∈ Z and i ∈ { 1, . . . , n z }:
+
+Φj (w−jtzi
+
+) = Φ jz,i wjtzi
+
+= wjz,i 
+
+M jtzi
+
+= M jz,i gjtzi
+
+= gjz,i 
+
+˜ρjtzi
+
+= ˜ ρjz,i ˆZjtzi
+
+= ˆZjz,i .
+
+## F. Technical lemmas. 
+
+Lemma 1. Let j ∈ [J], w ∈ P(A) with w = wj ⊗ w−j and Φj (w−j ) = ( Ew−j [ϕj (ajk, a−j )[ ℓ]]) ℓ,k ∈ Rd×K . We have: 
+
+cj (w, Z ) = Z, Φj (w−j )wj .
+
+Proof. Let j ∈ [J], Z ∈ Z and w ∈ P(A) with w = wj ⊗ w−j . By Fubini theorem, 
+
+cj (w, Z ) = Ewj
+
+Ew−j
+
+ Z, ϕ j (aj , a−j )  =
+
+> K
+
+X
+
+> k=1
+
+wj [k] Ew−j
+
+hD 
+
+Z, ϕ j (ajk, a−j )
+
+Ei 
+
+=
+
+*
+
+Z, 
+
+> K
+
+X
+
+> k=1
+
+wj [k]Ew−j
+
+h
+
+ϕj (ajk, a−j )
+
+i+
+
+= Z, Φj (w−j )wj .
+
+16 Prediction-aware Learning in Multi-agent Systems 
+
+Lemma 2. Let j ∈ [J]. For given sequences (Z1, . . . , Z T ) ∈ Z T , ( ˆZj 
+
+> 1
+
+, . . . , ˆZjT ) ∈ Z T and (w−j 
+
+> 1
+
+, . . . , . . . , w−jT ) ∈
+
+P(A−j )T , Algorithm 1 and Algorithm 5 with R : w 7 → P 
+
+> k∈[K]
+
+w[k] ln w[k] − w[k] produce the same iterates: ewjt = wjt
+
+for any t ∈ [T ].Proof. Observe that the Bregman divergence DR(w, v ) = R(w) − R (v) − ⟨∇R (v), w − v⟩ generated by R : w 7 →P 
+
+> k∈[K]
+
+w[k] ln w[k] − w[k] is for any w, v ∈ ∆K :
+
+DR(w, v ) = KL( w, v ) ,
+
+where KL denotes the the Kullback-Leibler divergence. Therefore, in this proof we write KL instead of DR. Algorithm 1 produces an iterate wjt ∈ ∆K such that for any ℓ ∈ [K]:
+
+wjt [ℓ] = exp 
+
+h
+
+−η
+
+
+
+M jt [ℓ] ˆZjt + Pt−1  
+
+> τ=1
+
+1{Zτ = ˆZjt }Φj (w−jτ )[ ℓ] ˆZjt
+
+i P 
+
+> k∈[K]
+
+exp 
+
+h
+
+−η
+
+
+
+M jt [k] ˆZjt + Pt−1  
+
+> τ=1
+
+1{Zτ = ˆZjt }Φj (w−jτ )[ k] ˆZjt
+
+i . (8) We will show that the iterate of Algorithm 5, ewjt = argmin w∈∆K η
+
+D fM jT 
+
+> t
+
+ˆZjt , w 
+
+E
+
++ KL( w, egjt ) is equal to (8) . To this end, we define 
+
+Pjt = {τ ∈ { 1, . . . , t − 1} : Zτ = ˆZjt } ,
+
+and we write Pjt = {τ1, . . . , τ N jt
+
+} where N jt = P 
+
+> τ <t
+
+1{Zτ = ˆZjt }. We prove with a recursion that for any r ∈{1, . . . , N jt }, we have for any ℓ ∈ [K]:
+
+˜gjτr [ℓ] = exp 
+
+h
+
+−η Pr−1 
+
+> i=1
+
+Φj (w−jτi )[ ℓ] ˆZjt
+
+iP 
+
+> k∈[K]
+
+˜gjτi [k] exp 
+
+h
+
+−η Pr−1 
+
+> i=1
+
+Φj (w−jτi )[ k]
+
+i ˆZjt
+
+, (9) For r = 1 , by definition of Algorithm 5, ˜gjτ1 = argmin g∈∆K R(g) = m−11m where 1m = (1 , . . . , 1) T, so (9) is true by the convention P 
+
+> i∈∅
+
+ki = 0 . Suppose now that (9) holds true for some r ∈ { 1, . . . , N jt − 1}. By definition, 
+
+˜gjτr+1 = argmin 
+
+> w∈∆K
+
+η
+
+D
+
+Φj (w−jτr )T ˆZjτr , g 
+
+E
+
++ KL( w, ˜gjτr ) .
+
+Equivalently, it is the solution to 
+
+min  
+
+> g∈Rm
+
+max  
+
+> λ∈R
+
+L(g, λ ) with L(g, λ ) = η
+
+D
+
+Φj (w−jτr )T ˆZjτr , g 
+
+E
+
++ KL( g, ˜gjτr ) + λ( X
+
+> ℓ∈[K]
+
+g[ℓ] − 1) .
+
+In particular ∇L (˜ gjτr+1 , λ ) = 0 , that is for any ℓ ∈ [K]:
+
+ηΦj (w−jτr )[ ℓ] ˆZjτr + ln(˜ gjτr+1 [ℓ]) − ln(˜ gjτr [ℓ]) + λ = 0 so ˜gjτr+1 [ℓ] = ˜ gjτr [ℓ] exp 
+
+
+
+−ηΦj (w−jτr )[ ℓ] ˆZjτr − λ
+
+
+
+. (10) Using the fact that P 
+
+> k∈[K]
+
+˜gjτr+1 [k] = 1 , we obtain from (10) exp( λ) = P 
+
+> k∈[K]
+
+˜gjτr [k] exp( −ηΦj (w−jτr )[ k] ˆZjτr ), so: 
+
+˜gjτr+1 [ℓ] = ˜gjτr [ℓ] exp( −ηΦj (w−jτr )[ ℓ] ˆZjτr )
+
+P 
+
+> k∈[K]
+
+˜gjτr [k] exp( −ηΦj (w−jτr )[ k] ˆZjτr ) (11) and using the recursion assumption establishes the result. Finally, observe that 
+
+˜wjt = argmin 
+
+> w∈∆K
+
+η
+
+D fM jt ˆZjt , w 
+
+E
+
++ KL( w, ˜gjt ) ,
+
+By the same lines of computation as previously, we obtain that for any ℓ ∈ [K]:
+
+˜wjt [ℓ] = ˜gjt exp 
+
+h
+
+−η fM jt [ℓ] ˆZjt
+
+iP 
+
+> k∈[K]
+
+˜gjt exp 
+
+h
+
+−η fM jt [k] ˆZjt
+
+i ,
+
+17 Prediction-aware Learning in Multi-agent Systems 
+
+Finally, by definition of Algorithm 5, ˜gjt ∝ ˜gjN jt
+
+exp( −ηΦj (w−jτN jt
+
+)) , hence by (9): 
+
+˜wjt =exp 
+
+h
+
+−η
+
+PN jt 
+
+> i=1
+
+Φj (w−jτi )[ ℓ] + fM jt [ℓ]
+
+ ˆZjt
+
+iP 
+
+> k∈[K]
+
+˜gjτi [k] exp 
+
+h
+
+−η
+
+PN jt 
+
+> i=1
+
+Φj (w−jτi )[ k] + fM jt [k]
+
+ ˆZjt
+
+i ,
+
+Observing that fM jt = M jt by definition for any t ∈ [T ], we obtain the desired result. 
+
+Lemma 3. For given sequences (Z1, . . . , Z T ) ∈ Z T , ( ˆZj 
+
+> 1
+
+, . . . , ˆZjT ) ∈ Z T and (w−j 
+
+> 1
+
+, . . . , . . . , w−jT ) ∈ P(A−j ), Algo-rithm 1 and Algorithm 6 produce the same iterates. Proof. The proof proceeds as the one of Lemma 2: writing the first order condition of step 4 in Algorithm 6 leads to the expression (8) of the iterate of Algorithm 1. 
+
+## G. Proofs. 
+
+Proposition 1. Assume that player j ∈ [J] plays an algorithm πj ∈ Πj achieving RjT ⩽ f (J, T, K, m ) for some 
+
+f : N4+ → R+. Then, one can design an algorithm πj ∈ Πj achieving 
+
+RjT ⩽ Kf (J, T, K, m ) .
+
+Proof. Let j ∈ [J]. Assume that there exists πj ∈ Πj and f : N4 → R+ such that the regret RjT ∈ R of πj satisfies: 
+
+RjT ⩽ f (J, T, K, m ) . (12) We consider the policy πjT ∈ Πj described in Algorithm 2. In this proof, we define for any k ∈ { 1, . . . , K }:
+
+rjk = X 
+
+> t∈[T]
+
+D
+
+wjt [k]Φ j (w−jt )TZt, p jt,k 
+
+E
+
+− min  
+
+> πk:Z→ ∆K
+
+X 
+
+> t∈[T]
+
+D
+
+wjt [k]Φ j (w−jt )TZt, π k(Zt)
+
+E
+
+,
+
+the regret incurred by πj when fed with the histories hjk, 1, . . . , h jk,T ∈ H j . The swap-regret of πj reads: 
+
+RjT = X 
+
+> t∈[T]
+
+D
+
+Φj (w−jt ), w jt − λj⋆(wjt , Z t)
+
+E
+
+Note by linearity of cj in wj ∈ ∆K (Lemma 1), defining Λj⋆ : z ∈ Z 7 → (λj⋆(aj
+
+> 1
+
+, z ) | . . . | λj⋆(ajK , z )) ∈ { 0, 1}K×K allows to rewrite λj⋆(wjt , Z t) = Λ j⋆(Zt)wjt , hence: 
+
+= X 
+
+> t∈[T]
+
+D
+
+Φj (w−jt )TZt, P jt wjt
+
+E
+
+−
+
+D
+
+Φj (w−jt )TZt, Λj⋆(Zt)wjt
+
+E
+
+(because wjt = P jt wjt )
+
+= X 
+
+> t∈[T]
+
+ X
+
+> k∈[K]
+
+D
+
+wjt [k] Φ j (w−jt )TZt, p jk,t 
+
+E
+
+− X
+
+> k∈[K]
+
+D
+
+wjt [k] Φ j (w−jt )TZt, λ j⋆(ajk, Z t)
+
+E
+
+⩽ X
+
+> k∈[K]
+
+rjk,T ⩽ Kf (J, T, K, m ) .
+
+Proposition 4. Assume H3. Then with γ = δ(1 − μ)−1,
+
+1
+
+T
+
+X 
+
+> t∈[T]
+
+Ct(wt) ⩽ γC ⋆ + 1(1 − μ)T
+
+X
+
+> j∈[J]
+
+RjT .
+
+18 Prediction-aware Learning in Multi-agent Systems 
+
+Proof. Let ρ : Z → A be an optimal pure strategy policy, which satisfies P  
+
+> t∈[T]
+
+Ct(ρ(Zt)) = C⋆. For any j ∈ [J] and 
+
+z ∈ Z , we denote by δj⋆(Zt) the distribution which puts a mass 1 on the optimal action ρ(Zt)[ j] for agent j ∈ [J]. For any 
+
+(w1, . . . , wT ) ∈ P(A)T , we have 
+
+> T
+
+X
+
+> t=1
+
+Ct(wt) = 
+
+> J
+
+X
+
+> j=1
+> T
+
+X
+
+> t=1
+
+D
+
+Zt, Φj (w−jt )wjt
+
+E
+
+⩽
+
+> J
+
+X
+
+> j=1
+
+RjT +
+
+> J
+
+X
+
+> j=1
+> T
+
+X
+
+> t=1
+
+D
+
+Zt, Φj (w−jt )δj⋆(Zt)
+
+E
+
+=
+
+> J
+
+X
+
+> j=1
+
+RjT +
+
+> J
+
+X
+
+> j=1
+> T
+
+X
+
+> t=1
+
+D
+
+Zt, Ew−jt
+
+ϕj (ρj⋆(Zt)[ j], a−j )E
+
+⩽
+
+> J
+
+X
+
+> j=1
+
+RjT + δT C ⋆ + μ
+
+> T
+
+X
+
+> t=1
+
+Ct(wt) ,
+
+where we used the (δ, μ )-smoothness assumption in the last line. Re-arranging the terms allows to conclude. 
+
+Proposition 2. Assume that for any j ∈ [J], agent j uses a policy πj ∈ Πj incurring an external regret RjT as in (4) , and denote by wjt = πjt ( ˆZjt ) for any t ∈ [T ]. Let ˆνT : Z → P(A) be such that for any z ∈ Z ,
+
+ˆνT (z) = 
+
+(
+
+n−1
+
+> z
+
+P  
+
+> t∈Tz
+
+w1 
+
+> t
+
+⊗ . . . ⊗ wJt if nz > 0 ,
+
+(K−1, . . . , K −1) otherwise .
+
+Then, ˆνT is an ε-contextual coarse correlated equilibrium with 
+
+ε = max  
+
+> j∈[J]
+
+T −1RjT .
+
+Proof. Let j ∈ [J] and πj ∈ Πj . By definition, for any z ∈ Z such that nz > 0,
+
+T −1 X 
+
+> t∈[T]
+
+EˆνT (Zt)
+
+ϕj (a) = T −1 X
+
+> z∈Z
+
+X 
+
+> t∈Tz
+
+n−1
+
+> z
+
+X 
+
+> t∈Tz
+
+Ewt
+
+ϕj (a) = T −1 X 
+
+> t∈[T]
+
+Ewt
+
+ϕj (a) .
+
+This observation and Lemma 1 lead to: 
+
+T −1 X 
+
+> t∈[T]
+
+ cj ( ˆ ν(Zt), Z t) − cj (πj (Zt), ˆν−j (Zt), Z t)
+
+= T −1 X 
+
+> t∈[T]
+
+EˆνT (Zt)
+
+ Zt, ϕ j (at)  − T −1 X 
+
+> t∈[T]
+
+Eπj (Zt)⊗ ˆνT −j (Zt)
+
+hD 
+
+Zt, ϕ j (ajt , a−jt )
+
+Ei 
+
+= T −1 X 
+
+> t∈[T]
+
+Ewt
+
+ Zt, ϕ j (at)  − T −1 X 
+
+> t∈[T]
+
+Eπj (Zt)⊗w−jt
+
+hD 
+
+Zt, ϕ j (ajt , a−jt )
+
+Ei 
+
+= T −1 X 
+
+> t∈[T]
+
+D
+
+Zt, Φj (w−jt )wjt
+
+E
+
+− T −1 X 
+
+> t∈[T]
+
+D
+
+Zt, Φj (w−jt )πj (Zt)
+
+E
+
+⩽ T −1 X 
+
+> t∈[T]
+
+D
+
+Zt, Φj (w−jt )wjt
+
+E
+
+− T −1 X 
+
+> t∈[T]
+
+D
+
+Zt, Φj (w−jt )πj⋆(Zt)
+
+E
+
+= T −1RjT .
+
+Proposition 3. Assume that for any j ∈ [J], agent j uses a policy ¯πj ∈ Πj incurring a swap regret ¯RjT defined as in (5) .Let ˆνT : Z → P(A) be defined as in Definition 1. Then, ˆνT is an ε-contextual correlated equilibrium with 
+
+ε = max  
+
+> j∈[J]
+
+T −1 ¯RjT .
+
+19 Prediction-aware Learning in Multi-agent Systems 
+
+Proof. Let j ∈ [J] and ϱj : A × Z → A . We have: 
+
+T −1 X 
+
+> t∈[T]
+
+Eˆν(Zt)
+
+ Zt, ϕ j (a) − Zt, ϕ j (ϱj (aj , Z t), a−j ) 
+
+= T −1 X
+
+> z∈Z
+
+X 
+
+> t∈Tz
+
+Ewt
+
+ z, ϕ j (a) − ϕj (ϱj (aj , z ), a−j ) 
+
+And denoting eΦjz (wjt ) = ( Ew−jt
+
+[ϕj (ϱj (ajℓ , z ), a−j )[ r]]) rℓ ∈ Rd×K for any t ∈ T z , by Lemma 1: 
+
+= T −1 X
+
+> z∈Z
+
+X 
+
+> t∈Tz
+
+zT
+
+
+
+Φj (w−jt ) − eΦjz (w−jt )
+
+
+
+wjt
+
+For any z ∈ Z , define the matrix Bjz ∈ { 0, 1}K×K with coefficients (Bjz )k,ℓ = 1{ϱj (ajk, z ) = ajℓ }. Observe that 
+
+eΦjz (w−jt ) = Φ j (w−jt )Bjz , so: 
+
+= T −1 X
+
+> z∈Z
+
+X 
+
+> t∈Tz
+
+
+
+zTΦj (w−jt )wjt − zTΦj (w−jt )Bjz wjt
+
+
+
+Denoting ˜wjt = Bjz wjt ∈ ∆K :
+
+= T −1 X
+
+> z∈Z
+
+X 
+
+> t∈Tz
+
+zTΦj (w−jt )wjt − X 
+
+> t∈Tz
+
+zTΦj (w−jt ) ˜ wjt
+
+!
+
+⩽ T −1 X
+
+> z∈Z
+
+X 
+
+> t∈Tz
+
+zTΦj (w−jt )wjt − X 
+
+> t∈Tz
+
+zTΦj (w−jt )λj⋆(wjt , z )
+
+!
+
+= T −1RjT .
+
+Proposition 5. Assume H1 and H2 . Any j ∈ [J] applying Algorithm 1 with learning rate η > 0 has an external regret bounded as follows: 
+
+RjT ⩽ (5 + ln( K)) LjT + m ln( K)
+
+η
+
++ η
+
+X
+
+> z∈Z
+
+X
+
+> i⩽nz
+
+
+
+Φj (w−jtzi
+
+) − Φj (w−jtzi−1
+
+)
+
+T
+
+z
+
+> 2
+> ∞
+
++ 4 LjT
+
+
+
+− 116 η
+
+X
+
+> z∈Z
+
+X
+
+> i⩽nz
+
+wjtzi
+
+− wjtzi−1
+
+> 21
+
+.
+
+Proof. By Lemma 2, it is equivalent to show the result holds when players use Algorithm 5 with R : w 7 →P 
+
+> ℓ∈[K]
+
+wℓ ln( wℓ) − wℓ. We assume that this is the case for the rest of the proof. To lighten notation, we drop the tilde on ˜g, ˜M and ˜w as compared to the pseudo-code Algorithm 5. Let j ∈ [J]. We denote by ℓjT (z) = P  
+
+> t∈Tz
+
+1{ ˆZjt̸ = z} the number of mispredictions of player j on the context z ∈ Z . We will prove the following inequality for any z ∈ Z :
+
+X 
+
+> t∈Tz
+
+D
+
+Φj (w−jt )Tz, w jt − πj⋆(z)
+
+E
+
+⩽ (5 + ln( K)) ℓjT (z) + ln( K)
+
+η + η
+
+> nz
+
+X
+
+> i=1
+
+
+
+Φjz,i − Φjz,i −1
+
+T
+
+z
+
+> 2
+> ∞
+
++ 4 ℓjT (z)
+
+!
+
+− 18η
+
+> nz
+
+X
+
+> i=1
+
+wjz,i − wjz,i −1
+
+> 21
+
+. (13) 20 Prediction-aware Learning in Multi-agent Systems 
+
+Let z ∈ Z . For any t ∈ T z , the instantaneous regret decomposes as: 
+
+D
+
+Φj (w−jt )Tz, w jt − πj⋆(z)
+
+E
+
+=
+
+D
+
+(Φ j (w−jt ) − M jt )Tz, w jt − ˜ρt
+
+E| {z }
+
+> (a)
+
++
+
+D
+
+M jT 
+
+> t
+
+z, w jt − ˜ρt
+
+E| {z }
+
+> (b)
+
++
+
+D
+
+Φj (w−jt )Tz, ˜ρt − πj⋆(z)
+
+E| {z }
+
+> (c)
+
+,
+
+(14) where ˜ρt = argmin g∈∆K
+
+D
+
+Φj (w−jt )Tz, g 
+
+E
+
++ DR(g, g jt ) (see Algorithm 5). We bound each of these three terms. First, because ∥ · ∥1 and ∥ · ∥∞ are dual, 
+
+(a) ⩽ (Φ j (w−jt ) − M jt )Tz ∞
+
+wjt − ˜ρt 1
+
+. (15) For the second and third term, we use the following classic lemma, whose proof relies on the definition of the Bregman divergence and the first order condition. 
+
+Lemma 4 (Rakhlin and Sridharan (2013)) . let b ∈ Rm and c ∈ Rm, and define a⋆ = argmin a∈Rm ⟨a, c ⟩ + DR(a, b ). Then for any d ∈ Rm,
+
+⟨c, a ⋆ − d⟩ ⩽ DR(d, b ) − DR(d, a ⋆) − DR(a⋆, b )
+
+Since wjt = argmin w∈∆K η
+
+D
+
+M jT 
+
+> t
+
+ˆZjt , w 
+
+E
+
++ DR(w, g jt ), applying Lemma 4 to (b) gives 
+
+(b) ⩽ 1
+
+η
+
+D
+
+M jT 
+
+> t
+
+(z − ˆZjt ), w jt − ˜ρt
+
+E
+
++ 1
+
+η
+
+
+
+DR(˜ ρt, g jt ) − DR(˜ ρt, w jt ) − DR(wjt , g jt )
+
+
+
+,
+
+Observe that with R(p) = P 
+
+> ℓ∈[K]
+
+pℓ ln pℓ − pℓ, we have DR(p, q ) = KL( p, q ). Hence by Pinsker’s inequality, 
+
+⩽ 1
+
+η
+
+D
+
+M jT 
+
+> t
+
+(z − ˆZjt ), w jt − ˜ρt
+
+E
+
++ 1
+
+η
+
+
+
+DR(˜ ρt, g jt ) − 12
+
+
+
+˜ρt − wjt
+
+> 21
+
++ wjt − gjt
+
+> 21
+
+)
+
+ 
+
+. (16) Likewise, ˜ρt = argmin g∈∆K
+
+D
+
+Φ(j)T 
+
+> t
+
+Zt, g 
+
+E
+
++ DR(g, g jt ) so by Lemma 4: 
+
+(c) ⩽ 1
+
+η
+
+
+
+DR(πj⋆(z), g jt ) − DR(πj⋆(z), ˜ρt) − DR(˜ ρt, g jt )
+
+
+
+, (17) Plugging (15), (16), (17) in (14) and summing over T z yields 
+
+X 
+
+> t∈Tz
+
+D
+
+Φj (w−jt )Tz, w jt − πj⋆(z)
+
+E
+
+⩽ X 
+
+> t∈Tz
+
+(Φ j (w−jt ) − M jt )Tz ∞
+
+wjt − ˜ρt 1
+
+− 12η
+
+X 
+
+> t∈Tz
+
+
+
+wjt − ˜ρt
+
+> 21
+
++ wjt − gjt
+
+> 21
+
+
+
++ 1
+
+η
+
+X 
+
+> t∈Tz
+
+D
+
+M jT 
+
+> t
+
+(z − ˆZjt ), w jt − ˜ρt
+
+E
+
++ 1
+
+η
+
+X 
+
+> t∈Tz
+
+(DR(πj⋆(z), g jt ) − DR(πj⋆(z), ˜ρt)) 
+
+Now, since ∥a∥∞∥b∥1 ⩽ μ 
+
+> 2
+
+∥a∥2 
+
+> ∞
+
++ 12μ ∥b∥21 for any μ > 0,
+
+⩽ μ
+
+2
+
+X 
+
+> t∈Tz
+
+(Φ j (w−jt ) − M jt )Tz 2
+
+> ∞
+
+−
+
+ 12η − 12μ
+
+ X 
+
+> t∈Tz
+
+wjt − ˜ρt
+
+> 21
+
+− 12η
+
+X 
+
+> t∈Tz
+
+wjt − gjt
+
+> 21
+
++ 1
+
+η
+
+X 
+
+> t∈Tz
+
+D
+
+M jT 
+
+> t
+
+(z − ˆZjt ), w jt − ˜ρt
+
+E
+
++ 1
+
+η
+
+X 
+
+> t∈Tz
+
+DR(πj⋆(z), g jt ) − DR(πj⋆(z), ˜ρt) (18) Setting μ = 2 η and noticing that −1/2η < −1/4η leads to 
+
+⩽ η X 
+
+> t∈Tz
+
+(Φ j (w−jt ) − M jt )Tz 2
+
+> ∞
+> (i)
+
+− 14η
+
+X 
+
+> t∈Tz
+
+
+
+wjt − ˜ρt
+
+> 21
+
++ wjt − gjt
+
+> 21
+
+
+
+> (ii)
+
++ 1
+
+η
+
+X 
+
+> t∈Tz
+
+DR(πj⋆(z), g jt ) − DR(πj⋆(z), ˜ρt)
+
+> (iii)
+
++ 1
+
+η
+
+X 
+
+> t∈Tz
+
+D
+
+M jT 
+
+> t
+
+(z − ˆZjt ), w jt − ˜ρt
+
+E
+
+> (iv)
+
+. (19) 21 Prediction-aware Learning in Multi-agent Systems 
+
+We now bound each sum. First for term (i), writing T z = {tz
+
+> 1
+
+, . . . , t znz } (and using the shorthands defined in Appendix E): 
+
+X 
+
+> t∈Tz
+
+
+
+Φj (w−jt ) − M jt
+
+T
+
+z
+
+> 2
+> ∞
+
+=
+
+> nz
+
+X
+
+> i=1
+
+
+
+Φjz,i − M jz,i 
+
+T
+
+z
+
+> 2
+> ∞
+
+,
+
+By definition of Algorithm 5 for any i ∈ { 1, . . . , n z } we have M jz,i = Φ jz,i −1 if ˆZjz,i = z, so: 
+
+=
+
+> nz
+
+X
+
+> i=1
+
+1{ ˆZjz,i = z}
+
+
+
+Φjz,i − Φjz,i −1
+
+T
+
+z
+
+> 2
+> ∞
+
++
+
+> nz
+
+X
+
+> i=1
+
+1{ ˆZjz,i ̸ = z}
+
+
+
+Φjz,i − M jz,i 
+
+T
+
+z
+
+> 2
+> ∞
+
+By H1: 
+
+⩽
+
+> nz
+
+X
+
+> i=1
+
+1{ ˆZjz,i = z}
+
+
+
+Φjz,i − Φjz,i −1
+
+T
+
+z
+
+> 2
+> ∞
+
++ 4 
+
+> nz
+
+X
+
+> i=1
+
+1{ ˆZjz,i ̸ = z}
+
+⩽
+
+> nz
+
+X
+
+> i=1
+
+
+
+Φjz,i − Φjz,i −1
+
+T
+
+z
+
+> 2
+> ∞
+
++ 4 ℓjT (z) . (20) For the term (ii), observe that for any i ∈ { 1, . . . , n z },
+
+wjz,i − wjz,i −1
+
+> 21
+
+⩽ 4 wjz,i − gjz,i 
+
+> 21
+
++ 4 gjz,i − ˜ρjz,i −1
+
+> 21
+
++ 4 wjz,i −1 − ˜ρjz,i −1
+
+> 21
+
+. (21) We then have: 
+
+X 
+
+> t∈Tz
+
+
+
+wjt − ˜ρt
+
+> 21
+
++ wjt − gjt
+
+> 21
+
+
+
+=
+
+> nz
+
+X
+
+> i=1
+
+
+
+wjz,i − ˜ρz,i 
+
+> 21
+
++ wjz,i − gjz,i 
+
+> 21
+
+
+
+=
+
+> nz
+
+X
+
+> i=1
+
+
+
+wjz,i −1 − ˜ρz,i −1
+
+> 21
+
++ wjz,i −1 − gjz,i −1
+
+> 21
+
+
+
++
+
+
+
+wjz,n z − ˜ρz,n z 
+
+> 21
+
+− wjz, 0 − ˜ρz, 0
+
+> 21
+
+| {z }
+
+> ⩾0
+
+⩾
+
+> nz
+
+X
+
+> i=1
+
+wjz,i − wjz,i −1
+
+> 21
+
+− gjz,i − ˜ρjz,i −1
+
+> 21
+
+(by (21) )
+
+Moreover, by definition of Algorithm 5, gjz,i = ˜ ρjz,i −1 whenever ˆZjz,i = z, so: 
+
+⩾ 14
+
+> nz
+
+X
+
+> i=1
+
+wjz,i − wjz,i −1
+
+> 21
+
+−
+
+> nz
+
+X
+
+> i=1
+
+1{ ˆZjz,i ̸ = z} gjz,i − ˜ρjz,i −1
+
+> 21
+
+⩾ 14
+
+> nz
+
+X
+
+> i=1
+
+wjz,i − wjz,i −1 
+
+> 21
+
+− 4ℓjT (z) (22) Regarding the term (iii), we can use the same reasoning by writing for any i ∈ { 1, . . . , n z }:
+
+DR(πj⋆(z), g jz,i ) − DR(πj⋆(z), ˜ρjz,i ) = DR(πj⋆(z), g jz,i ) − DR(πj⋆(z), ˜ρjz,i −1)+ DR(πj⋆(z), ˜ρjz,i −1) − DR(πj⋆(z), ˜ρz,i ) ,
+
+Since gjz,i = ˜ ρjz,i −1 if ˆZjz,i = z, summing over T z gives: 
+
+> nz
+
+X
+
+> i=1
+
+DR(πj⋆(z), g jz,i ) − DR(πj⋆(z), ˜ρjz,i ) = 
+
+> nz
+
+X
+
+> i=1
+
+1{ ˆZjz,i ̸ = z}
+
+
+
+DR(πj⋆(z), g jz,i ) − DR(πj⋆(z), ˜ρjz,i −1)
+
+
+
++
+
+> nz
+
+X
+
+> i=1
+
+DR(πj⋆(z), ˜ρjz,i −1) − DR(πj⋆(z), ˜ρz,i ) ,
+
+22 Prediction-aware Learning in Multi-agent Systems 
+
+Observing that 0 ⩽ DR(p, q ) ⩽ ln( K) for any (p, q ) ∈ ∆2 
+
+> K
+
+and that the second sum is telescoping: 
+
+> nz
+
+X
+
+> i=1
+
+DR(πj⋆(z), g jz,i ) − DR(πj⋆(z), ˜ρjz,i ) ⩽ (ℓjT (z) + 1) ln( K) . (23) Finally for the term (iv), observe that for any t ∈ T z we have by H1: 
+
+D
+
+M jT 
+
+> t
+
+(z − ˆZjt ), w jt − ˜ρt
+
+E
+
+⩽ 41{ ˆZjt̸ = z} so X 
+
+> t∈Tz
+
+D
+
+M jT 
+
+> t
+
+(z − ˆZjt ), w jt − ˜ρt
+
+E
+
+⩽ 4ℓjt (z) . (24) Then, plugging (20) , (22) , (23) and (24) in (19) establishes Equation (13), and summing (13) over Z gives the desired result. 
+
+Proposition 7. Let LT = P 
+
+> j∈[J]
+
+LjT , and assume H1, H2. If all agents use Algorithm 1 with a learning rate η =(4( J − 1)) −1, then 
+
+X
+
+> j∈[J]
+
+RjT ⩽ 4J[(5 + ln( K)) LT + mJ ln( K)] + LT
+
+J − 1= O(J ln( K)( LT + mJ )) .
+
+Proof. Our proof follows from Syrgkanis et al. (2015) with our new RVU bound. Let (t, t ′) ∈ [T ]2 and j ∈ [J]. Observe that: 
+
+
+
+Φj (w−jt ) − Φj (w−jt′ )
+
+T
+
+z
+
+> ∞
+
+= max  
+
+> ℓ∈[K]
+
+Ew−jt
+
+hD 
+
+ϕj (aℓ, a−jt ), z 
+
+Ei 
+
+− Ew−jt′
+
+hD 
+
+ϕj (aℓ, a−jt′ ), z 
+
+Ei 
+
+And since ⟨ϕj (a), z ⟩ ⩽ 1 for any a ∈ A by H1, with TV denoting the total variation: 
+
+⩽ TV( w−jt , w−jt′ ) = TV 
+
+O 
+
+> k̸=j
+
+wkt , O 
+
+> k̸=j
+
+wkt′
+
+
+
+⩽ X 
+
+> k̸=j
+
+TV( wkt , w kt′ ) = X 
+
+> k̸=j
+
+wkt − wkt′ 1 .
+
+Squaring the previous inequality and applying Cauchy-Schwarz leads to 
+
+
+
+Φj (w−jt ) − Φj (w−jt′ )
+
+T
+
+z
+
+> 2
+> ∞
+
+⩽
+
+X 
+
+> k̸=j
+
+wkt − wkt′ 1
+
+
+
+> 2
+
+⩽ (J − 1) X 
+
+> k̸=j
+
+wkt − wkt′ 
+
+> 21
+
+, (25) This implies: 
+
+X
+
+> j∈[J]
+
+
+
+Φj (w−jt ) − Φj (w−jt′ )
+
+T
+
+z
+
+> 2
+> ∞
+
+⩽ (J − 1) X
+
+> j∈[J]
+
+X 
+
+> k̸=j
+
+wkt − wkt′ 
+
+> 21
+
+= ( J − 1) 2 X
+
+> j∈[J]
+
+wjt − wjt′
+
+> 21
+
+. (26) On the other hand, summing the RVU bounds featured in Proposition 5 over players gives: 
+
+X
+
+> j∈[J]
+
+RjT ⩽ (5 + ln( K)) LT + mJ ln( K)
+
+η + η
+
+X
+
+> z∈Z
+
+X 
+
+> i∈[nz]
+
+X
+
+> j∈[J]
+
+
+
+Φjz,i − Φjz,i −1
+
+T
+
+z
+
+> 2
+> ∞
+
++ 4 LT
+
+
+
+− 116 η
+
+X
+
+> z∈Z
+
+X 
+
+> i∈[nz]
+
+X
+
+> j∈[J]
+
+wjz,i − wjz,i −1
+
+> 21
+
+Plugging (26) for any z ∈ Z , t = tzi and t′ = tzi−1 for i ∈ { 1, . . . , n z } gives: 
+
+⩽ (5 + ln( K)) LT + mJ ln( K)
+
+η + 4 ηL T +
+
+
+
+η(J − 1) 2 − 116 η
+
+ X
+
+> z∈Z
+
+X 
+
+> i∈[nz]
+
+X
+
+> j∈[J]
+
+wjz,i − wjz,i −1
+
+> 21
+
+Then, picking η = (4( J − 1)) −1 yields the desired result. 23 Prediction-aware Learning in Multi-agent Systems 
+
+Lemma 5. If player j ∈ [J] uses Algorithm 1 with a learning rate η > 0, for any i ∈ { 1, . . . , n z }:
+
+wjz,i − wjz,i −1 1
+
+⩽ 3η1{ ˆZjt = z} + 2(1 − 1{ ˆZjt = z}) .
+
+Proof. Let j ∈ [J] and i ∈ { 1, . . . , n z }. By Lemma 3, it is sufficient to prove that the claim holds true for Algorithm 6. First if ˆZjz,i ̸ = z, ∥wjz,i − wjz,i −1∥1 ⩽ 2. Second, assume that ˆZjz,i = z. We define for any i′ ∈ { 1, . . . , n z } fi′ : w 7 →
+
+D
+
+w, Pi′−1 
+
+> r=1
+
+ΦjT 
+
+> z,r
+
+z + M jT 
+
+> z,i ′
+
+z
+
+E
+
++ η−1R(w) and gi′ : w 7 →
+
+D
+
+w, Pi′ 
+
+> r=1
+
+ΦjT 
+
+> z,r
+
+z
+
+E
+
++ η−1R(w). Observe that for any w ∈ ∆K ,
+
+fi(w) − gi(w) = 
+
+D
+
+w, (M jz,i − Φjz,i )Tz
+
+E
+
+and fi(w) − gi−1(w) = 
+
+D
+
+w, M jT
+
+> z,i
+
+z
+
+E
+
+. (27) We also define vi−1 = argmin v∈∆K gi−1(v). We have: 
+
+wjz,i − wjz,i −1 1
+
+⩽ wjz,i − vi−1 1
+
++ vi−1 − wjz,i −1 1
+
+. (28) One the one hand, by η−1-strong convexity of fi with respect to ∥ · ∥1, we have 
+
+12η wjz,i − vi−1 1
+
+⩽ fi(vi−1) − fi(wjz,i ) + 
+
+D
+
+∇fi(wjz,i ), w jz,i − vi−1
+
+E
+
+And since wjz,i = argmin w∈∆K fi(w) by definition in Algorithm 6, the first order condition gives: 
+
+12η wjz,i − vi−1 1
+
+⩽ fi(vi−1) − fi(wjz,i ) (29) Since vi−1 = argmin v∈∆K gi−1(v), we obtain by the same reasoning, 
+
+12η wjz,i − vi−1 1
+
+⩽ gi−1(wjz,i ) − gi−1(vi−1) . (30) Summing (29) with (30) and applying remark (27) leads to: 
+
+wjz,i − vi−1
+
+> 21
+
+⩽ η
+
+D
+
+vi−1 − wjz,i , M jT
+
+> z,i
+
+z
+
+E
+
+⩽ η wjz,i − vi−1 1
+
+M jT
+
+> z,i
+
+z ∞
+
+Dividing on both sides by ∥wjz,i − vi−1∥1 gives: 
+
+wjz,i − vi−1 1
+
+⩽ η M jT
+
+> z,i
+
+z ∞
+
+⩽ η . (31) Similarly, it is easy to check that 
+
+12η vi−1 − wjz,i −1
+
+> 21
+
+⩽ fi−1(vi−1) − fi−1(wjz,i −1) and 12η wjz,i −1 − vi−1
+
+> 21
+
+⩽ gi−1(wjz,i −1) − gi−1(vi−1) .
+
+So once again summing these two inequalities and making use of remark (27) leads to 
+
+wjz,i −1 − vi−1
+
+> 21
+
+⩽ η
+
+D
+
+vi−1 − wjz,i −1, (M jz,i − Φjz,i )Tz
+
+E
+
+⩽ η wjz,i −1 − vi−1 1
+
+(M jz,i − Φjz,i )Tz ∞
+
+,
+
+Dividing both sides by wjz,i −1 − vi−1 1
+
+gives: 
+
+wjz,i −1 − vi−1 1
+
+⩽ η (M jz,i − Φjz,i )Tz ∞
+
+⩽ 2η . (32) Finally, plugging (31) and (32) in (28) yields the result. 24 Prediction-aware Learning in Multi-agent Systems 
+
+Proposition 6. Define LT = max j∈[J] LjT and assume H1 and H2. If all agents use Algorithm 1 with a learning rate η > 0,then for any j ∈ [J]:
+
+RjT ⩽ (5 + ln( K)) LT + m ln( K)
+
+η
+
++ η(J − 1) 2(9 T η 2 + 4 LT ) + 4 LT
+
+ .
+
+In particular if T = Ω( J2LT ), setting η⋆ = Θ( J−1/2T −1/4[ln( K)( LT + m)] 1/4) leads to: 
+
+RjT = O( [ln( K)( LT + m)] 3/4T 1/4J1/2 ) .
+
+Proof. Let j ∈ [J]. By Proposition 5 we know that 
+
+RjT ⩽ (5 + ln( K)) LjT + m ln( K)
+
+η + η
+
+X
+
+> z∈Z
+
+X 
+
+> i∈[nz]
+
+
+
+Φjz,i − Φjz,i −1
+
+T
+
+z
+
+> 2
+> ∞
+
++ 4 LjT
+
+ . (33) Moreover, we proved in (25) that for any z ∈ Z and i ∈ { 1, . . . , n z }, ∥(Φ jz,i − Φjz,i −1)Tz∥2 
+
+> ∞
+
+⩽ (J − 1) P  
+
+> k̸=j
+
+∥wkz,i −
+
+wkz,i −1∥21, so summing over contexts and timesteps gives: 
+
+X
+
+> z∈Z
+
+X 
+
+> i∈[nz]
+
+(Φ jz,i − Φjz,i −1)Tz 2
+
+> ∞
+
+⩽ (J − 1) X
+
+> z∈Z
+
+X 
+
+> i∈[nz]
+
+X 
+
+> k̸=j
+
+wkz,i − wkz,i −1
+
+> 21
+
+
+
+Applying Lemma 5 yields: 
+
+⩽ (J − 1) X
+
+> z∈Z
+
+X 
+
+> i∈[nz]
+
+X 
+
+> k̸=j
+
+
+
+3η1{ ˆZkz,i = z} + 2 1{ ˆZkz,i ̸ = z}
+
+2
+
+= ( J − 1) X
+
+> z∈Z
+
+X 
+
+> k̸=j
+
+ X 
+
+> i∈[nz]
+
+9η21{ ˆZkz,i = z} + 4 1{ ˆZkz,i ̸ = z}
+
+
+
+⩽ (J − 1) X 
+
+> k̸=j
+
+X
+
+> z∈Z
+
+9nz η2 + 4 ℓkT (z)
+
+!
+
+Therefore, 
+
+X
+
+> z∈Z
+
+X 
+
+> i∈[nz]
+
+(Φ jz,i − Φjz,i −1)Tz 2
+
+> ∞
+
+⩽ (J − 1) X 
+
+> k̸=j
+
+(9 T η 2 + 4 LkT ) ⩽ (J − 1) 2(9 T η 2 + 4 LT ) . (34) Plugging (34) into (33) establishes the first part of the proposition. For the second part of the proposition, define for any 
+
+η > 0:
+
+h(η) = (5 + ln( K)) LT + m ln( K)
+
+η + η(J − 1) 2(9 T η 2 + 4 LT ) + 4 LT
+
+
+
+= aη + bη 3 + cη with 
+
+
+
+a = (5 + ln( K)) LT + m ln( K)
+
+b = 9( J − 1) 2Tc = 4[( J − 1) 2 + 1] LT ..
+
+We are looking for a minimizer of h to make the bound tight. Since h is continuous and lim η→0 h(η) = lim η→∞ h(η) = +∞, it admits a minimum on (0 , ∞), which is also unique by strict convexity. By the first order condition, h is minimized for 
+
+η⋆ =
+
+s √12 ab + c2 − c
+
+6b .
+
+25 Prediction-aware Learning in Multi-agent Systems 
+
+We now determine the order of magnitude of η⋆. On the one hand, by sub-additivity of x 7 → √x:
+
+η⋆ ⩽ (12 ab )1/4(6 b)−1/2 = O(( ab )1/4b−1/2) . (35) On the other hand, observe that by assumption T = Ω( J2LT ), so ab = Ω( c2). Consequently, for T > 0 large enough there exists γ > 0 such that 12 ab ⩾ γc 2 and it follows that 
+
+pc2 + 12 ab − c =
+
+Z c2+12 ab c2
+
+dt 
+
+2√t ⩾ 12 ab 
+
+2√c2 + 12 ab ⩾ 12 ab 
+
+2p1 + γ−1√12 ab ⩾
+
+√12 ab 
+
+2p1 + γ−1 ,
+
+so we deduce that for T > 0 large enough, 
+
+η⋆ ⩾
+
+s √12 ab 
+
+12 p1 + γ−1b that is η⋆ = Ω(( ab )1/4b−1/2) .
+
+Therefore, η⋆ = Θ(( ab )1/4b−1/2). Plugging this value in h finally gives: 
+
+h(η⋆) = Θ( b1/4a3/4 + a1/4cb −1/4) = O(b1/4a3/4) ,
+
+because c = O(a1/2b1/2) by assumption. Replacing a and b with their actual values yields the claimed bound. 
+
+Proposition 8. Assume H1 and H2. If player j ∈ [J] uses Algorithm 1 with η = Θ([ln( K)( LjT + m)] 1/2(LjT + T )−1/2),then for any sequence (w−j 
+
+> 1
+
+, . . . , w−jT ) ∈ P(A−j )T :
+
+RjT = O
+
+q 
+
+ln( K)( LjT + m)( LjT + T )
+
+
+
+.
+
+Proof. Let j ∈ [J] and (w−j 
+
+> 1
+
+, . . . , w−jT ) ∈ P(A−j )T be any sequence of competitor strategies. We have for any 
+
+(t, t ′) ∈ [T ]2 and z ∈ Z :
+
+
+
+Φj (w−jt ) − Φj (w−jt′ )
+
+T
+
+z
+
+> 2
+> ∞
+
+⩽ 2 Φj (w−jt )Tz 2
+
+> ∞
+
++ 2 Φj (w−jt′ )Tz 2
+
+> ∞
+
+⩽ 2
+
+
+
+max 
+
+> k∈[d]
+
+D
+
+Ew−jt
+
+h
+
+ϕj (ajℓ , a−j )
+
+i
+
+, z 
+
+E2
+
++ 2 
+
+
+
+max 
+
+> k∈[d]
+
+D
+
+Ew−jt′
+
+h
+
+ϕj (ajℓ , a−j )
+
+i
+
+, z 
+
+E2
+
+= 2 
+
+
+
+max  
+
+> k∈[d]
+
+Ew−jt
+
+hD 
+
+ϕj (ajℓ , a−j ), z 
+
+Ei 2
+
++ 2 
+
+
+
+max  
+
+> k∈[d]
+
+Ew−jt′
+
+hD 
+
+ϕj (ajℓ , a−j ), z 
+
+Ei 2
+
+⩽ 4 ,
+
+where we have used H1 in the last line. Therefore by Proposition 5, we have: 
+
+RjT ⩽ (5 + ln( K)) LjT + m ln( K)
+
+η + 4 η(T + LjT ) = O ln( K)( LjT + m)
+
+η + η(LjT + T )
+
+!
+
+.
+
+Then, setting η = Θ([ln( K)( LjT + m)] 1/2(LjT + T )−1/2) leads to 
+
+RjT = O([ln( K)( LjT + m)] j1/2(LjT + T )1/2) .
+
+Proposition 9. Suppose that for any t ∈ [T ], there exists ˆZt ∈ Z such that ˆZjt = ˆZt for any j ∈ [J], and let LT = P  
+
+> t∈[T]
+
+1{ ˆZt̸ = Zt}. Assume H 1 and H 2. If all agents use Algorithm 1 with a learning rate η⋆ =Θ( J−1/2T −1/4[ln( K)( LT + m)] 1/4), then: 
+
+RjT = O( [ln( K)( LT + m)] 3/4T 1/4J1/2 ) .
+
+26 Prediction-aware Learning in Multi-agent Systems 
+
+Proof. In this proof, we write for any z ∈ Z and i ∈ { 1, . . . , n z }, ˆZtzi = ˆZz,i . By Proposition 5 we know that 
+
+RjT ⩽ (5 + ln( K)) LT + m ln( K)
+
+η + η X
+
+> z∈Z
+> nz
+
+X
+
+> i=1
+
+
+
+Φjz,i − Φjz,i −1
+
+T
+
+z
+
+> 2
+> ∞
+
++ 4 LT
+
+!
+
+. (36) For any z ∈ Z , we define ℓT (z) = P  
+
+> t∈Tz
+
+1{ ˆZt̸ = z} and C z = {i ∈ { 1, . . . , n z } : ˆZz,i = z and ˆZz,i −1 = z}. We have: 
+
+X
+
+> z∈Z
+> nz
+
+X
+
+> i=1
+
+
+
+Φjz,i − Φjz,i −1
+
+T
+
+z
+
+> 2
+> ∞
+
+= X
+
+> z∈Z
+
+X 
+
+> i∈Cz
+
+
+
+Φjz,i − Φjz,i −1
+
+T
+
+z
+
+> 2
+> ∞
+
++ X 
+
+> i / ∈Cz
+
+
+
+Φjz,i − Φjz,i −1
+
+T
+
+z
+
+> 2
+> ∞
+
+!
+
+Note that T z \ C z = {i ∈ { 1, . . . , n z } : ˆZz,i ̸ = z or ˆZz,i −1̸ = z} so |T z \ C z | ⩽ 2ℓT (z). Together with the fact that 
+
+∥(Φ jz,i − Φjz,i −1)Tz∥ ⩽ 4 for any j ∈ [J] and i ∈ T z \ C z , this implies: 
+
+⩽ X
+
+> z∈Z
+
+X 
+
+> i∈Cz
+
+
+
+Φjz,i − Φjz,i −1
+
+T
+
+z
+
+> 2
+> ∞
+
++ 8 ℓT (z)
+
+!
+
+We proved in (25) that for any z ∈ Z and i ∈ { 1, . . . , n z }, ∥(Φ jz,i − Φjz,i −1)Tz∥2 
+
+> ∞
+
+⩽ (J − 1) P  
+
+> k̸=j
+
+∥wkz,i − wkz,i −1∥21, so 
+
+⩽ X
+
+> z∈Z
+
+(J − 1) X 
+
+> t∈Cz
+
+X 
+
+> k̸=j
+
+wkz,i − wkz,i −1 
+
+> 21
+
++ 8 ℓT (z)
+
+
+
+And by Lemma 5: 
+
+⩽ X
+
+> z∈Z
+
+ 9( J − 1) 2|C z |η2 + 8 ℓT (z)
+
+⩽ 9( J − 1) 2T η 2 + 8 LT .
+
+Plugging this bound in (36) yields: 
+
+RjT ⩽ ˜h(η) = ˜aη + ˜bη 3 + ˜ cη with 
+
+
+
+˜a = (5 + ln( K)) LT + m ln( K)˜b = 9( J − 1) 2T
+
+˜c = 12 LT .
+
+We observe that ˜c ∝ J−2c, where c > 0 is defined in the proof of Proposition 6. In particular, since LT ⩽ T , we have 
+
+˜a˜b = Ω(˜ c2), hence we do not need it as an assumption. The rest of the proof follows exactly as in Proposition 6. 27

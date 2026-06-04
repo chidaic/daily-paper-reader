@@ -1,0 +1,3043 @@
+Title: Exploring Large Action Sets with Hyperspherical Embeddings  using von Mises-Fisher Sampling
+
+URL Source: https://openreview.net/pdf?id=Fk8yB6uSJy
+
+Number of Pages: 35
+
+Markdown Content:
+# Exploring Large Action Sets with Hyperspherical Embeddings using von Mises-Fisher Sampling 
+
+Walid Bendada 1 2 Guillaume Salha-Galvan 3 Romain Hennequin 1
+
+Th´ eo Bontempelli 1 Thomas Bouabc ¸a 1 Tristan Cazenave 2
+
+## Abstract 
+
+This paper introduces von Mises-Fisher explo-ration (vMF-exp), a scalable method for explor-ing large action sets in reinforcement learning problems where hyperspherical embedding vec-tors represent these actions. vMF-exp involves initially sampling a state embedding representa-tion using a von Mises-Fisher distribution, then exploring this representation’s nearest neighbors, which scales to virtually unlimited numbers of candidate actions. We show that, under theoretical assumptions, vMF-exp asymptotically maintains the same probability of exploring each action as Boltzmann Exploration (B-exp), a popular alter-native that, nonetheless, suffers from scalability issues as it requires computing softmax values for each action. Consequently, vMF-exp serves as a scalable alternative to B-exp for exploring large action sets with hyperspherical embeddings. Experiments on simulated data, real-world public data, and the successful large-scale deployment of vMF-exp on the recommender system of a global music streaming service empirically validate the key properties of the proposed method. 
+
+## 1. Introduction 
+
+Exploration is a fundamental component of the reinforce-ment learning (RL) paradigm (Amin et al., 2021; McFar-lane, 2018; Sutton & Barto, 2018). It allows RL agents to gather valuable information about their environment and identify optimal actions that maximize rewards (Amin et al., 2021; Chiappa et al., 2023; Dulac-Arnold et al., 2015; Jin et al., 2020; Ladosz et al., 2022; McFarlane, 2018; Reynolds,       
+
+> 1Deezer Research, Paris, France. 2LAMSADE, Universit ´eParis Dauphine, PSL, Paris, France. 3SPEIT, Shanghai Jiao Tong University, Shanghai, China. Correspondence to: Walid Bendada
+> <bendadaw@gmail.com >.
+> Proceedings of the 42 nd International Conference on Machine Learning , Vancouver, Canada. PMLR 267, 2025. Copyright 2025 by the author(s).
+
+2002; Slivkins et al., 2019; Sutton & Barto, 2018; Tang et al., 2017). However, as the set of actions to explore grows larger, the exploration process becomes increasingly challenging. Indeed, large action sets can lead to higher computational costs, longer learning times, and the risk of inadequate ex-ploration and suboptimal policy development (Amin et al., 2021; Chen et al., 2021; Dulac-Arnold et al., 2015; Lillicrap et al., 2016; Sutton & Barto, 2018; Tomasi et al., 2023). As an illustration, consider a recommender system on a music streaming service like Apple Music or Spotify, curat-ing playlists of songs “inspired by” an initial selection to help users discover music (Bendada et al., 2023a). In prac-tice, these services often generate such playlists all at once, using efficient nearest neighbor search systems (Johnson et al., 2019; Li et al., 2019) to retrieve songs most similar to the initial one, in a song embedding vector space learned using collaborative filtering or content-based methods (Ben-dada et al., 2023a;b; Bontempelli et al., 2022; Jacobson et al., 2016; Schedl et al., 2018; Zamani et al., 2019). Al-ternatively, one could formalize this task as an RL prob-lem (Tomasi et al., 2023), where the recommender system (i.e., the agent) would adaptively select the next song to recommend (i.e., the next action) based on user feedback on previously recommended songs (i.e., the rewards, such as likes or skips). Using an RL approach instead of generating the playlist at once would have the advantage of dynamically learning from user feedback to identify the best recommen-dations (Afsar et al., 2022; Tomasi et al., 2023). However, music streaming services offer access to large catalogs with several millions of songs (Bendada et al., 2020; Jacobson et al., 2016; Schedl et al., 2018). Therefore, the agent would need to consider millions of possible actions for exploration, increasing the complexity of this task. In particular, Boltzmann Exploration (B-exp) (Cesa-Bianchi et al., 2017; Sutton & Barto, 2018), one of the prevalent exploration strategies to sample actions based on embed-ding similarities, would become practically intractable as it would require computing softmax values over millions of elements (see Section 2). Furthermore, in large action sets, many actions are often irrelevant; in our example, most songs would constitute poor recommendations (Tomasi 1Exploring Large Action Sets with Hyperspherical Embeddings using von Mises-Fisher Sampling 
+
+et al., 2023). Therefore, random exploration methods like ε-greedy (Dann et al., 2022; Sutton & Barto, 2018), although more efficient than B-exp, would also be unsuitable for pro-duction use. Since these methods ignore song similarities, each song, including inappropriate ones, would have an equal chance of being selected for exploration. This could result in negative user feedback and a poor perception of the service (Tomasi et al., 2023). Lastly, deterministic explo-ration strategies would also be ineffective. Systems serving millions of users often rely on batch RL (Lange et al., 2012) since updating models after every trajectory is impractical. Batch RL, unlike on-policy learning, requires exploring ac-tions non-deterministically given a state, and deterministic exploration would result in redundant trajectories and slow convergence (Bendada et al., 2020). In summary, exploration remains challenging in RL prob-lems characterized by large action sets and where account-ing for embedding similarities is crucial, like our recom-mendation example. Overall, although a growing body of scientific research has been dedicated to adapting RL models for recommendation (see, e.g., the survey by Afsar et al. (2022)), evidence of RL adoption in commercial rec-ommender systems exists but remains limited (Chen et al., 2019; 2021; 2022; Tomasi et al., 2023). The few existing solutions typically settle for a workaround by using a trun-cated version of B-exp (TB-exp). In TB-exp, a small subset of candidate actions is first selected, e.g., using approximate nearest neighbor search (a framework sometimes referred to as the Wolpertinger architecture (Dulac-Arnold et al., 2015)). Softmax values are then computed among those candidates only (Chen et al., 2019; 2021; 2022). YouTube, for instance, employs this technique for video recommen-dation (Chen et al., 2019). TB-exp allows for exploration in the close embedding neighborhood of a given state; how-ever, it restricts the number of candidate actions based on technical considerations rather than optimal convergence properties. Although exploring beyond this restricted neigh-borhood might be beneficial, finding the best way to do so in large-scale settings remains an open research question. In this paper 1, we propose to address this important question with a focus on its theoretical foundations. Our work ex-amines the specific setting where actions are represented by embedding vectors with unit Euclidean norm, i.e., vectors lying on a unit hypersphere. As detailed in Section 2, this setting aligns with many real-world applications. Specifi-cally, our contributions in this paper are as follows: • We present von Mises-Fisher exploration (vMF-exp), a scalable sampling method for exploring large sets 
+
+> 1Parts of the content published in this ICML 2025 conference paper were previously presented at two non-archival workshops: ICML 2024 ARLET (Bendada et al., 2024) and ICLR 2025 FPI (Bendada et al., 2025).
+
+of actions represented by hyperspherical embedding vectors. vMF-exp involves initially sampling a state embedding vector on the unit hypersphere using a von Mises-Fisher distribution (Fisher, 1953), then explor-ing the approximate nearest neighbors of this repre-sentation. This strategy effectively scales to large sets with millions of candidate actions to explore. • We provide a comprehensive mathematical analysis of the behavior of vMF-exp, demonstrating that it ex-hibits desirable properties for effective exploration in large-scale RL problems. Notably, vMF-exp does not restrict exploration to a specific neighborhood and ef-fectively preserves order while leveraging information from embedding vectors to assess action relevance. • We also show that, under some theoretical assumptions, vMF-exp asymptotically maintains the same proba-bility of exploring each action as the popular B-exp method while overcoming its scalability issues. This positions vMF-exp as a scalable alternative to B-exp. • The primary objective of this paper is the introduction and mathematical analysis of the theoretical properties of vMF-exp. Nonetheless, as a complement to this analysis, we also report empirical validations of the method, including experiments on simulated data, on real-world publicly available data, and a discussion of the recent and successful deployment of vMF-exp on a global music streaming service to recommend music to millions of users daily. These experiments validate the key properties of the proposed method and its potential. • We publicly release a Python implementation of vMF-exp on GitHub to enable reproducibility of our experiments and to encourage future use of the method: https://github.com/deezer/ vMF-exploration .The remainder of this paper is organized as follows. Sec-tion 2 formalizes the problem. Section 3 introduces vMF-exp, Section 4 details our theoretical analysis, Section 5 discusses our experiments, and Section 6 concludes. 
+
+## 2. Preliminaries 
+
+We begin this section by formally introducing the problem addressed in this paper, followed by an explanation of the limitations of existing and popular RL exploration strategies. 
+
+2.1. Problem Formulation Notation Throughout this paper, we consider an RL agent sequentially selecting actions within a set of n ∈ N⋆ actions: 
+
+In = {1, 2, . . . , n }. (1) 2Exploring Large Action Sets with Hyperspherical Embeddings using von Mises-Fisher Sampling 
+
+Each action i ∈ In is represented by a distinct low-dimensional vectorial representation Xi ∈ Rd, i.e., by an embedding vector or simply an embedding 2, for some fixed dimension d ∈ N with d ≥ 2 and d ≪ n. Addition-ally, we assume all vectors have a unit Euclidean norm, i.e., ∥Xi∥2 = 1 , ∀i ∈ I n. They form a set of embeddings noted Xn = {Xi}1≤i≤n ∈ (Sd−1)n, where Sd−1 is the 
+
+d-dimensional unit hypersphere (Fisher, 1953): 
+
+Sd−1 =
+
+n
+
+x ∈ Rd : ∥x∥2 = 1 
+
+o
+
+. (2) We also assume the availability of an approximate nearest neighbor (ANN) (Johnson et al., 2019; Li et al., 2019) search engine. Using this engine, for any vector V ∈ S d−1, the nearest neighbor of V among Xn in terms of inner prod-uct similarity (equal to the cosine similarity, for unit vec-tors (Tan et al., 2016)), called Xi⋆V , can be retrieved in a sublinear time complexity with respect to n. Although ANN engines are parameterized based on a trade-off between effi-ciency and accuracy, we make the simplifying assumption that Xi⋆V is the actual nearest neighbor of V , which we later discuss in Section 4.3. Formally: 
+
+i⋆V = arg max 
+
+> i∈I n
+
+⟨V, X i⟩. (3) Returning to the illustrative example of Section 1, Xn would represent embeddings associated with each song of the cat-alog In of the music streaming service. In this case, n
+
+would be on the order of several millions (Bendada et al., 2020; Briand et al., 2021; Jacobson et al., 2016). The RL agent would be the recommender system sequentially rec-ommending these songs to users. Normalizing embeddings is a common practice in both academic and industrial rec-ommender systems (Afchar et al., 2023; Bontempelli et al., 2022; Kim et al., 2023; Schedl et al., 2018) to mitigate popularity biases, as vector norms often encode popularity information on items (Afchar et al., 2023; Chen et al., 2023). Normalizing embeddings also prevents inner products from being unbounded, avoiding overflow and underflow numeri-cal instabilities (LeCun et al., 2015). At time t, the agent considers a state vector Vt ∈ S d−1,noted V for brevity. It selects the next action in In, whose relevance is evaluated by a reward provided by the envi-ronment. In our example, the agent would recommend the next song to continue the playlist, based on the previous song whose embedding V acts as the current state. In this case, the reward might be based on user feedback, such as liking or skipping the song (Bontempelli et al., 2022). The agent may select i⋆V , i.e., exploit i⋆V (Sutton & Barto, 2018). 
+
+> 2At this stage, we do not make assumptions regarding the specific methods used to learn these embedding vectors, nor the in-terpretation of proximity between vectors in the embedding space.
+
+Alternatively, it may rely on an exploration strategy to select another In element. Formally, an exploration strategy P is a policy function (Sutton & Barto, 2018) that, given V , selects each action i ∈ I n with a probability P (i | V ) ∈ [0 , 1] .
+
+Objective Our goal in this paper is to develop a suitable exploration strategy for our specific setting, where hyper-spherical embedding vectors represent actions, and the num-ber of actions can reach millions. Precisely, we aim to obtain an exploration scheme meeting the following properties: • Scalability ( P1 ): we consider an exploration scalable if the time required to sample actions given a vector V is at most the time needed for the ANN engine to retrieve the nearest neighbor, which is typically achieved in a sublinear time complexity with respect to n. Scalability is a mandatory requirement for exploring large action sets with millions of elements. • Unrestricted radius ( P2 ): Radius (P | V ) is the num-ber of actions with a non-zero probability of being explored given a state V . While exploring actions too far from V might be suboptimal (e.g., resulting in poor recommendations), it is crucial that exploration is not restricted to a specific radius by construction. Such a restriction could prevent the agent from exploring relevant actions that lie beyond this radius. An un-restricted radius ensures that the exploration strategy remains flexible and capable of adapting to various con-texts, allowing for the exploration of relevant actions regardless of their embedding position. • Order preservation ( P3 ): order is preserved when the probability of selecting the action i given the state 
+
+V is a strictly increasing function of ⟨V, X i⟩. More formally, order preservation requires that, ∀(i, j ) ∈ I 2
+
+> n
+
+,
+
+⟨V, X i⟩ > ⟨V, X j ⟩ =⇒ P (i | V ) > P (j | V ). (4) 
+
+P3 ensures that the exploration strategy properly lever-ages the information captured in the embedding vectors to assess the relevance of an action given a state. 
+
+2.2. Limitations of Existing Exploration Strategies 
+
+Finding an strategy that simultaneously meets the three prop-erties P1 , P2 and P3 is essential for effective exploration in RL problems with large action sets and embedding repre-sentations. Nonetheless, existing exploration methods fail to achieve this, which motivates our work in this paper. 
+
+Random and ε-greedy Exploration The most straight-forward example of an action exploration strategy would be the random (uniform) policy, where: 
+
+∀i ∈ I n, P rand (i | V ) = 1
+
+n . (5) 3Exploring Large Action Sets with Hyperspherical Embeddings using von Mises-Fisher Sampling 
+
+A popular variant is the ε-greedy strategy (Sutton & Barto, 2018). With a probability ε ∈ [0 , 1] , the agent would choose the next action uniformly at random. With a probability 
+
+1 − ε, it would exploit the most relevant action based on its knowledge. Random and ε-greedy exploration strate-gies are scalable ( P1 ), as elements of In can be uniformly sampled in O(1) time (Cormen et al., 2022). Additionally, they verify P2 . Indeed, Radius (Prand |V ) = n since every action can be selected. However, these strategies ignore embeddings at the sampling phase and do not achieve order preservation ( P3 ). This is a significant limitation, reinforced by the fact that these policies have a maximal radius. As explained in Section 1, in large action sets, many actions are often irrelevant, e.g., most songs from the musical cata-log would constitute poor recommendations given an initial state (Tomasi et al., 2023). Exploring each action/song with equal probability, including inappropriate ones, could re-sult in negative user feedback and a poor perception of the service (Tomasi et al., 2023). 
+
+Boltzmann Exploration To overcome the limitations of random exploration, actions can be sampled based on their embedding similarity with V , typically measured using dot products. The prevalent approach in RL is Boltzmann Explo-ration (B-exp) (Amin et al., 2021; Cesa-Bianchi et al., 2017; Chen et al., 2021; Sutton & Barto, 2018), which employs the Boltzmann distribution for action sampling: 
+
+∀i ∈ I n, P B-exp (i | V, Xn, κ ) = eκ⟨V,X i⟩
+
+Pnj=1 eκ⟨V,X j ⟩ , (6) where the hyperparameter κ ∈ R+ controls the entropy of the distribution. B-exp samples actions according to a strictly increasing function of their inner product similarity with V for κ > 0, guaranteeing order preservation ( P3 ). By carefully tuning κ, one can ensure that irrelevant actions are practically never selected while maintaining a non-zero probability of recommending actions with less than maximal similarity, thereby indirectly controlling the radius of the policy ( P2 ). Unfortunately, B-exp does not satisfy P1 , i.e., it is not scalable to large action sets. Indeed, evaluating Equation (6) requires explicitly computing the probability of sampling each individual action before actually sampling from them, which is prohibitively expensive for large values of n (Chen et al., 2021). Note that, while we focus on B-exp, these concerns would remain valid for any other sampling distribution requiring explicitly computing similarities and probabilities for each of the n actions (Amin et al., 2021). 
+
+Truncated Boltzmann Exploration Due to these scal-ability concerns, previous work sometimes settled for a workaround consisting in sampling actions from a Trun-cated version of B-exp (Chen et al., 2021), which we refer to as TB-exp. A small number m ≪ n of candidate actions, usually around hundreds or thousands, is first retrieved us-ing the ANN search engine, leading to a candidate action set Im(V ). The sampling step is subsequently performed only within Im(V ). More formally, for all i ∈ I m(V ):
+
+PTB-exp ,m (i | V, Xn, κ ) = eκ⟨V,X i⟩
+
+P  
+
+> j∈I m(V)
+
+eκ⟨V,X j ⟩ . (7) TB-exp performs action selection in a time that depends on 
+
+m instead of n, and has been successfully deployed in pro-duction environments involving millions of actions (Chen et al., 2019; 2021; 2022). While it still satisfies P3 , TB-exp also meets P1 for small values of m. However, it no longer satisfies P2 . This method restricts the radius, i.e., the number of candidate actions, based on technical consid-erations rather than exploration efficiency. This restriction can potentially hinder model convergence by neglecting the exploration of relevant actions beyond this fixed radius. This highlights the difficulty of designing a method that simultaneously satisfies P1 , P2 , and P3 – ideally, one with properties akin to B-exp but with greater scalability. 
+
+## 3. From Boltzmann to vMF Exploration 
+
+In this section, we present our proposed solution for explor-ing large action sets with hyperspherical embeddings. 
+
+3.1. von Mises–Fisher Exploration 
+
+The inability of B-exp to scale arises from its need to com-pute all n sampling probabilities explicitly. In this paper, we propose von Mises-Fisher Exploration (vMF-exp), an alter-native strategy that overcomes this constraint. Specifically, given an initial state vector V , vMF-exp consists in: • Firstly, sampling an hyperspherical vector ˜V on the unit hypersphere Sd−1, according to a von Mises-Fisher distribution (Fisher, 1953) centered on V .• Secondly, selecting ˜V ’s nearest neighbor action in the embedding space for exploration. In directional statistics, the vMF distribution (Fisher, 1953) is a continuous vector probability distribution defined on the unit hypersphere Sd−1. It has recently been used in RL to assess the uncertainty of gradient directions (Zhu et al., 2024). For all ˜V ∈ S d−1, its probability density function (PDF) is defined as follows: 
+
+fvMF ( ˜V | κ, V, d ) = Cd(κ)eκ⟨V, ˜V ⟩, (8) with: 
+
+Cd(κ) = 1
+
+R ˜V ∈S d−1 eκ⟨V, ˜V ⟩ d ˜V = κ d 
+
+> 2−1
+
+(2 π) d 
+
+> 2
+
+I d 
+
+> 2−1
+
+(κ) . (9) 4Exploring Large Action Sets with Hyperspherical Embeddings using von Mises-Fisher Sampling V
+
+# A
+
+> 0.5
+> 1.0
+> 1.5
+> 2.0
+> 2.5
+
+(a) A    
+
+> V
+> V
+> O
+> <V,A>
+
+(b) 0 
+
+> X1
+> X2
+> X3
+> X4
+> X5
+> X6X7
+> X8
+> X9
+> X10
+
+O
+
+V  
+
+> V
+> 0
+> 1
+> 0+1
+> 2
+
+AA (c) 
+
+Figure 1. (a) Probability density function (PDF) of a 3-dimensional vMF distribution. (b) vMF-exp explores the action a represented by the embedding vector A when the sampled vector ˜V lies in A’s Vorono ¨ı cell, shown in red in 3D. (c) Same as (b) in a 2-dimensional setting. 
+
+and where κ ∈ R+. The function I d  
+
+> 2−1
+
+designates the mod-ified Bessel function of the first kind (Baricz, 2010) at order 
+
+d/ 2 − 1. Figure 1(a) illustrates the PDF of a vMF distribu-tion on the 3-dimensional unit sphere. For any ˜V ∈ S d−1,
+
+fvMF ( ˜V | κ, V, d ) is proportional to eκ⟨V, ˜V ⟩, which is remi-niscent of the B-exp sampling probability of Equation (6) .The hyperparameter κ controls the entropy of the distribu-tion. In particular, for κ = 0 , the vMF distribution boils down to the uniform distribution on Sd−1.
+
+3.2. Properties P1 vMF-exp only requires sampling a d-dimensional vec-tor instead of handling a discrete distribution with n pa-rameters, allowing ˜V to be sampled in constant time with respect to n. Therefore, vMF-exp is a scalable exploration strategy. Efficient sampling algorithms for vMF distribu-tions have been well-studied (Kang & Oh, 2024; Pinz ´on & Jung, 2023) (see Appendix F for practical details). As shown in the following sections, we successfully explored sets of millions of actions without scalability issues, using the Python vMF sampler from Pinz ´on & Jung (2023) for simulations in Section 4 and a custom implementation for the recommendation application in Section 5. 
+
+P2 The probability of sampling i ∈ I n given V for explo-ration is the probability that Xi is the nearest neighbor of ˜V
+
+within Xn, i.e., that ˜V lies in SVorono¨ ı(Xi | X n), the Vorono ¨ıcell of Xi in the Vorono ¨ı tessellation of Sd−1 defined by 
+
+Xn (Du et al., 1999; 2010) (see Figures 1(b), 1(c)). We have: 
+
+SVorono¨ ı(Xi | X n) = { ˜V ∈ S d−1, ∀j ∈ I n,
+
+⟨ ˜V , X i⟩ ≥ ⟨ ˜V , X j ⟩} , (10) and: [
+
+> i∈I n
+
+SVorono¨ ı(Xi | X n) = Sd−1. (11) Thus, vMF-exp’s sampling probabilities can be written as: 
+
+∀i ∈ I n, P vMF-exp (i | V, Xn, κ ) = 
+
+Z 
+
+> ˜V∈S Vorono¨ ı(Xi|X n)
+
+fvMF ( ˜V | κ, V, d ) d ˜V , (12) which is always strictly positive. Therefore, vMF-exp satis-fies the unrestricted radius property ( P2 ). Similar to B-exp, adjusting κ ensures that actions with low similarity have negligible sampling probabilities in practice. 
+
+P3 PvMF-exp (i | V, X n, κ ) increases due to two factors: the average fvMF ( ˜V | κ, V, d ) value for ˜V ∈ S Vorono¨ ı(Xi | X n),correlated to ⟨Xi, V ⟩ and contributing to order preservation, and the surface area of SVorono¨ ı(Xi | X n), which measures 
+
+Xi’s dissimilarity to other Xn elements. Actions in a low-density subspace of Sd−1 have larger Vorono ¨ı cells and may be selected more often than those near V but in high-density regions. Thus, vMF-exp favors actions similar to 
+
+V and dissimilar to others, with order preservation being dependent on Xn’s distribution. Section 4 focuses on a setting where B-exp and vMF-exp asymptotically share similar probabilities. Consequently, vMF-exp, like B-exp, will verify order preservation ( P3 ). In conclusion, in this setting, vMF-exp will verify P1 , P2 , and P3 simultaneously. 
+
+## 4. Theoretical Comparison: vMF-exp vs B-exp 
+
+We now provide a mathematical comparison of vMF-exp and B-exp. We focus on the theoretical setting presented in Section 4.1. We show that, in this setting, vMF-exp maintains the same probability of exploring each action as B-exp, while overcoming its scalability issues. As noted above, this implies that vMF-exp verifies P1 , P2 , and P3 
+
+simultaneously and, therefore, acts as a scalable alternative to the popular but unscalable B-exp for exploring large action sets with hyperspherical embeddings. 5Exploring Large Action Sets with Hyperspherical Embeddings using von Mises-Fisher Sampling 
+
+4.1. Setting and Assumptions 
+
+We focus on the setting where embeddings are independent and identically distributed (i.i.d.) and follow a uniform distribution on the unit hypersphere, i.e., 
+
+Xn ∼ U (Sd−1). (13) For convenience in our proofs, we consider the action set to be the union of In, the set of n actions, and another ac-tion a with a known embedding A ∈ S d−1. The resulting entire action set In+1 and embedding set Xn+1 are defined as In+1 = In ∪ { a} and Xn+1 = Xn ∪ { A} . In this sec-tion, we are interested in the probability of each exploration scheme, B-exp and vMF-exp, to sample a among all actions of In+1 given a state embedding vector V ∈ S d−1. These probabilities are defined respectively as: 
+
+PB-exp (a | n, d, V, κ ) = 
+
+E Xn∼U (Sd−1)
+
+h
+
+PB-exp (a | V, Xn+1 , κ )
+
+i
+
+, (14) and: 
+
+PvMF-exp (a | n, d, V, κ ) = 
+
+E Xn∼U (Sd−1)
+
+h
+
+PvMF-exp (a | V, Xn+1 , κ )
+
+i
+
+.
+
+(15) 
+
+4.2. Results 
+
+We now present and discuss our main theoretical results. For brevity, we report all intermediary lemmas and math-ematical proofs in the Appendices A, B, C and D of this paper. Our first and most general result links the asymptotic behavior of B-exp and vMF-exp as the action set grows. 
+
+Proposition 4.1. In the setting of Section 4.1, we have: 
+
+lim 
+
+> n→+∞
+
+PB-exp (a | n, d, V, κ )
+
+PvMF-exp (a | n, d, V, κ ) = 1 . (16) Proposition 4.1 states that, for large values of n, the probabil-ity of sampling the action a for exploration is asymptotically the same using either B-exp or vMF-exp. This result follows from the respective asymptotic characterizations of PB-exp 
+
+and PvMF-exp , detailed below. Importantly, it implies that, for large values of n, vMF-exp shares the same properties as B-exp ( P2 , P3 ), including order preservation. However, as noted in Section 3, vMF-exp offers greater scalability since its implementation only requires sampling a vector of a fixed size d, an operation independent of n (P1 ). Next, we present a common approximate analytical expres-sion for both methods, denoted P0 and defined as follows: 
+
+P0(a | n, d, V, κ ) = fvMF (A | V, κ )A(Sd−1)
+
+n , (17) with A(Sd−1) denoting the surface area of the hypersphere 
+
+Sd−1. The following two propositions describe the rate at which this asymptotic behavior is reached by B-exp and vMF-exp, respectively, as n grows. 
+
+Proposition 4.2. In the setting of Section 4.1, we have: 
+
+PB-exp (a | n, d, V, κ ) = P0(a | n, d, V, κ )+ o( 1
+
+n√n ). (18) 
+
+Proposition 4.3. In the setting of Section 4.1, we have: 
+
+PvMF-exp (a | n, d, V, κ ) = P0(a | n, d, V, κ )+
+
+(O( 1 
+
+> n2
+
+) if d = 2 ,
+
+O( 1 
+
+> n1+ 2
+> d−1
+
+) if d > 2.
+
+(19) In essence, when n is large, the probability of sampling a
+
+can be approximated by the PDF of the vMF distribution evaluated at A multiplied by the average surface area of A’s Vorono ¨ı cell, for both methods. As n grows, this Vorono ¨ıcell shrinks until fvMF becomes nearly constant across its entire surface. Figure 2(f) illustrates this interpretation. The rate at which the two exploration methods reach their asymptotic behavior differs. Specifically, the shrinking rate of the Voronoi cell depends on the dimension of the hyper-sphere, explaining why the second term in Equation (19) depends on d. This dependency does not occur with B-exp. Consequently, for large values of d, one may require a higher number of actions n before the asymptotic behavior of Equa-tion (16) is observed. For this reason, it is useful to obtain a more precise approximation of PvMF-exp (a | n, d, V, κ )
+
+when d increases, which we provide in the next section. 
+
+4.3. Discussion High Dimension Building on the above discussion, Proposition 4.4 provides a more precise expression for 
+
+PvMF-exp (a | n, V, κ ) when d increases (approximately 
+
+d ≥ 20 in our experiments). This expression is derived by examining the first two terms of the Taylor expan-sion (Abramowitz & Stegun, 1948) of fvMF near A, rather than relying solely on the zero-order term. The second term becomes increasingly significant as d grows. Despite its apparent complexity, the expression has a straightforward interpretation: the negative sign before ⟨V, A ⟩ indicates that, when A is similar to V , it is sampled less often than with B-exp for the same κ and d. Conversely, when A is on the opposite side of the hypersphere, the term positively contributes to PvMF-exp (a | n, V, κ ). In summary, for larger 
+
+d, vMF-exp is expected to explore more extensively than B-exp with the same κ.
+
+Proposition 4.4. Let B : ( z1, z 2) 7 → R 10 tz1−1(1 − t)z2−1 dt 
+
+denote the Beta function, and Γ : z 7 → R ∞ 
+
+> 0
+
+tz−1e−t dt
+
+6Exploring Large Action Sets with Hyperspherical Embeddings using von Mises-Fisher Sampling 0.2 0.4 0.6 0.8 1.0      
+
+> n1e6
+> 0.00
+> 0.25
+> 0.50
+> 0.75
+> 1.00
+> 1.25
+> 1.50
+> 1.75
+> P(a)
+> 1e 5= 1.0, <V,A>=0.5, d=4
+> P0(a)
+> P1(a)
+> PBexp (a)
+> PvMF exp (a)
+
+(a) 0.2 0.4 0.6 0.8 1.0       
+
+> n1e6
+> 0.00
+> 0.25
+> 0.50
+> 0.75
+> 1.00
+> 1.25
+> 1.50
+> 1.75
+> P(a)
+> 1e 5= 1.0, <V,A>=0.5, d=8
+> P0(a)
+> P1(a)
+> PBexp (a)
+> PvMF exp (a)
+
+(b) 0.2 0.4 0.6 0.8 1.0       
+
+> n1e6
+> 0.00
+> 0.25
+> 0.50
+> 0.75
+> 1.00
+> 1.25
+> 1.50
+> 1.75
+> P(a)
+> 1e 5= 1.0, <V,A>=0.5, d=16
+> P0(a)
+> P1(a)
+> PBexp (a)
+> PvMF exp (a)
+
+(c) 0.2 0.4 0.6 0.8 1.0      
+
+> n1e6
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> 1.2
+> 1.4
+> 1.6
+> P(a)
+> 1e 5= 1.0, <V,A>=0.5, d=32
+> P0(a)
+> P1(a)
+> PBexp (a)
+> PvMF exp (a)
+
+(d) 0.2 0.4 0.6 0.8 1.0       
+
+> n1e6
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> 1.2
+> 1.4
+> 1.6
+> P(a)
+> 1e 5= 1.0, <V,A>=0.5, d=64
+> P0(a)
+> P1(a)
+> PBexp (a)
+> PvMF exp (a)
+
+(e) 50 
+
+> 100
+> 1000
+
+A
+
+O (f) 
+
+Figure 2. (a) to (e): Validation of the key properties discussed in Sections 4.2 and 4.3 using Monte Carlo simulations, as further elaborated in Section 4.3. (f) Illustration of the 3-dimensional Vorono¨ ı cell of a vector A, for action numbers n ∈ { 50 , 100 , 1000 }.
+
+denote the Gamma function (Abramowitz & Stegun, 1948). In the setting of Section 4.1 with d ≥ 3, we have: 
+
+PvMF-exp (a | n, V, κ ) = P1(a | n, V, κ )+ O( 1
+
+n 2
+
+> d−1
+
+), (20) 
+
+with: 
+
+P1(a | n,V, κ ) = P0(a | n, V, κ )
+
+−
+
+h fvMF (A | V, κ )A(Sd−1)
+
+nκ⟨V, A ⟩Γ( d+1 
+
+d−1 )2
+
+× (d − 1) B( 12 , d−12 )
+
+n
+
+! 2 
+
+> d−1
+
+i
+
+.
+
+(21) 
+
+The case d = 2 In 2 dimensions, Vorono ¨ı cells are arcs of a circle and are delimited by the perpendicular bisectors of two neighboring points, as shown in Figure 1(c). Inter-estingly, in this specific case, PvMF-exp (a | n, d = 2 , V, κ )
+
+can be computed using geometric arguments. A comprehen-sive mathematical analysis is provided in Appendix B. This analysis confirms that, when d = 2 , vMF-exp approaches its asymptotic behavior faster than B-exp, as indicated by the O( 1
+
+n2 ) term in Proposition 4.3. 
+
+Validation of Theoretical Properties via Monte Carlo Simulations Using the efficient Python sampler of Pinz ´on & Jung (2023), we repeatedly sampled vectors Xn ∼U(Sd−1) and ˜V ∼ vMF (V, κ ), for various values of d, κ,and ⟨V, A ⟩. Figure 2 reports, for κ = 1 .0, ⟨V, A ⟩ = 0 .5 and growing values of d, the PvMF-exp (a) sampling probability depending on the number of actions n, as well as PB-exp (a)
+
+with similar parameters and our approximations P0(a) and 
+
+P1(a). We repeated all experiments 8 million times and re-ported 95% confidence intervals. The results are consistent with our key theoretical findings in this paper. Firstly, in line with Proposition 4.2, PB-exp (a) and P0(a)
+
+are indistinguishable for this range of n values. Secondly, for small d values (Figures 2(a), 2(b), 2(c)), PvMF-exp is also tightly aligned with PB-exp (a) and P0(a), consistently with Proposition 4.1 and 4.3. Note that the y-axis is on a 1e-5 scale; hence, probabilities are extremely close. Thirdly, when d ≥ 16 (Figures 2(d), 2(e)), P1(a) becomes more distinguishable from P0(a) and constitutes a better approx-imation of PvMF-exp (a) than P0(a), as per Proposition 4.4. Lastly, since ⟨V, A ⟩ > 0, Proposition 4.4 predicts that 
+
+PB-exp (a) ≥ PvMF-exp (a) for large d, which our experiments confirm. We provide comparable simulations with other 
+
+(d, κ, ⟨V, A ⟩) combinations in Appendix G. All simulations are reproducible using our source code (see Section 5). 7Exploring Large Action Sets with Hyperspherical Embeddings using von Mises-Fisher Sampling  
+
+> Figure 3. Interface of the “Mixes Inspired By” recommender system on the music streaming service Deezer. This system presents a personalized shortlist of songs liked by the user. Clicking on a song generates a playlist “inspired by” this song. As detailed in Section 5 and Appendix I, vMF-exp has been employed for months on the production environment of this service to generate playlists, exploring songs from a catalog containing millions of candidates.
+
+Link with Thompson Sampling One might notice inter-esting similarities between vMF-exp and bandit arm explo-ration with the Thompson Sampling method (Chapelle & Li, 2011). We refer the interested reader to our Appendix E for a detailed comparison of the two approaches. 
+
+Limitations and Future Work While we believe our study provides valuable insights into vMF-exp, several limi-tations must be acknowledged. Our theoretical guarantees are currently restricted to the distributions described in Sec-tion 4.1. Although vMF-exp can be applied in practice with hyperspherical embeddings from any other distributions, we have not yet extended our guarantees to such cases 3.For instance, studying vMF-exp in clustered embedding settings, as is sometimes the case with music recommen-dation embeddings (where clusters can, e.g., summarize music genres (Salha-Galvan et al., 2022)), could be insight-ful. We believe that future research should benefit from the approach we proposed in this paper to derive the full (non-trivial) demonstration for the uniform distribution case. Our future work will also investigate the second-order term from Proposition 4.4, which may be significant for large κ,as well as the impact of ANN errors. Although our analysis assumes exact neighbor retrieval, this assumption may break down for extremely large action sets (Johnson et al., 2019), potentially causing minor exploration perturbations. 
+
+## 5. vMF-exp in the Real World 
+
+As explained in Section 1, the primary objective of this paper was to introduce vMF-exp and provide a rigorous mathe-matical analysis of its theoretical properties for exploring large action sets represented by hyperspherical embedding   
+
+> 3Nonetheless, results from Section 5 will tend to confirm the practical usefulness of our propositions on real-world embedding vectors that do not strictly satisfy assumptions from Section 4.1.
+
+vectors. Nonetheless, as an opening to our work and a com-plement to this mathematical analysis, we describe in this section several empirical validations of vMF-exp, further detailed in Appendices G, H, and I. Taken together, these experiments validate the claimed scalability and theoretical properties of the proposed method, as well as its potential and impact for real-world applications. Specifically: • To begin with, we recall that, as explained in Sec-tion 4.3, a more comprehensive outline of the Monte Carlo simulations discussed in that section is provided in Appendix G. The additional results presented in this appendix are consistent with those shown in Figure 2 of Section 4.3. To ensure the reproducibility of these experiments and to encourage future use of the vMF-exp method, we have released a Python implementa-tion of vMF-exp on GitHub with this paper: https: //github.com/deezer/vMF-exploration .• To go further, we recognize that some readers may wish to explore our topic through reproducible experiments on real-world data. Therefore, in Appendix H, we em-pirically validate the main properties of vMF-exp using a large-scale, publicly available dataset of one mil-lion GloVe word embedding vectors (Pennington et al., 2014). We demonstrate that vMF-exp simultaneously satisfies P1 , P2 , and P3 on this GloVe dataset. Further-more, this study on GloVe vectors shows the accuracy of our approximations of PB-exp (a) and PvMF-exp (a)
+
+from Propositions 4.2, 4.3, and 4.4, despite the fact that GloVe vectors do not strictly meet the i.i.d. and uniform assumptions of our theoretical study. This additional study is fully reproducible using the code provided in the GitHub repository mentioned above. • The final appendix of this paper, Appendix I, show-cases a real-world application of vMF-exp. We present its successful large-scale deployment in the private 8Exploring Large Action Sets with Hyperspherical Embeddings using von Mises-Fisher Sampling 
+
+production system of the global music streaming ser-vice Deezer (Bendada et al., 2023a). On this service, vMF-exp has been employed for months to recom-mend playlists of songs inspired by an initial selection to millions of users (see Figure 3), exploring a cata-log of millions of candidate songs. This application, validated by a positive worldwide online A/B test, con-firms the practical relevance of our work. As vMF-exp was successfully deployed in production, achieving a sampling latency of just a few milliseconds, it also confirms the scalability of the method. 
+
+## 6. Conclusion 
+
+This paper introduced vMF-exp, a scalable method for ex-ploring large action sets in RL problems where hyperspher-ical embedding vectors represent these actions. vMF-exp scales effectively to large sets with millions of actions, ex-hibits desirable properties, and, under theoretical assump-tions, even asymptotically preserves the same exploration probabilities as B-exp, a prevalent RL exploration method that suffers from scalability limitations. This establishes vMF-exp as a scalable and practical alternative to B-exp. While the primary focus of this paper is on the theoretical foundations of vMF-exp, extensive experiments on simu-lated data, real-world public data, and the successful deploy-ment of vMF-exp on a music streaming service validated the scalability and practical relevance of the proposed method. 
+
+## Impact Statement 
+
+This paper introduces a scalable method for exploring large action sets in reinforcement learning problems, with appli-cations including recommender systems. While our work is primarily methodological and theoretical, its integration into real-world systems, such as personalized music recom-mender systems, can influence user experience, engagement, and exposure to information. We highlight the potential for both positive outcomes (e.g., improved personalization and efficiency) and risks such as over-personalization or bias am-plification if used without appropriate fairness and diversity constraints. We encourage careful deployment and further study when applying this method to sensitive domains in-volving social or behavioral data. 
+
+## References 
+
+Abramowitz, M. and Stegun, I. A. Handbook of Mathemati-cal Functions with Formulas, Graphs, and Mathematical Tables , volume 55. US Government Printing Office, 1948. Afchar, D., Hennequin, R., and Guigue, V. Of spiky svds and music recommendation. In Proceedings of the 17th ACM Conference on Recommender Systems , pp. 926–932, 2023. Afsar, M. M., Crump, T., and Far, B. Reinforcement learn-ing based recommender systems: A survey. ACM Com-puting Surveys , 55(7):1–38, 2022. Amin, S., Gomrokchi, M., Satija, H., van Hoof, H., and Pre-cup, D. A survey of exploration methods in reinforcement learning. arXiv preprint arXiv:2109.00157 , 2021. Aum ¨uller, M., Bernhardsson, E., and Faithfull, A. Ann-benchmarks: A benchmarking tool for approximate near-est neighbor algorithms. In Proceedings of the 10th In-ternational Conference on Similarity Search and Applica-tions , pp. 34–49. Springer, 2017. Banerjee, A., Dhillon, I. S., Ghosh, J., Sra, S., and Ridge-way, G. Clustering on the unit hypersphere using von mises-fisher distributions. Journal of Machine Learning Research , 6(9), 2005. Banerjee, S. and Roy, A. Linear Algebra and Matrix Analy-sis for Statistics . CRC Press, 2014. Baricz, ´A. Generalized Bessel Functions of the First Kind .Springer, 2010. Bendada, W., Salha, G., and Bontempelli, T. Carousel personalization in music streaming apps with contextual bandits. In Proceedings of the 14th ACM Conference on Recommender Systems , pp. 420–425, 2020. Bendada, W., Bontempelli, T., Morlon, M., Chapus, B., Cador, T., Bouab c¸ a, T., and Salha-Galvan, G. Track mix generation on music streaming services using transform-ers. In Proceedings of the 17th ACM Conference on Recommender Systems , pp. 112–115, 2023a. Bendada, W., Salha-Galvan, G., Bouab c¸ a, T., and Cazenave, T. A scalable framework for automatic playlist continua-tion on music streaming services. In Proceedings of the 46th International ACM SIGIR Conference on Research and Development in Information Retrieval , pp. 464–474, 2023b. Bendada, W., Salha-Galvan, G., Hennequin, R., Bontem-pelli, T., Bouab c¸ a, T., and Cazenave, T. vmf-exp: von mises-fisher exploration of large action sets with hyper-spherical embeddings. In ICML 2024 Workshop on Align-ing Reinforcement Learning Experimentalists and Theo-rists , 2024. Bendada, W., Salha-Galvan, G., Hennequin, R., Bontem-pelli, T., Bouab c¸ a, T., and Cazenave, T. von mises-fisher sampling of glove vectors. In ICLR 2025 Workshop on Frontiers in Probabilistic Inference: Learning meets Sam-pling , 2025. 9Exploring Large Action Sets with Hyperspherical Embeddings using von Mises-Fisher Sampling 
+
+Billingsley, P. Convergence of Probability Measures . John Wiley & Sons, 2013. Bontempelli, T., Chapus, B., Rigaud, F., Morlon, M., Lorant, M., and Salha-Galvan, G. Flow moods: Recommending music by moods on deezer. In Proceedings of the 16th ACM Conference on Recommender Systems , pp. 452–455, 2022. Boytsov, L. and Naidan, B. Engineering efficient and ef-fective non-metric space library. In Proceedings of the 6th International Conference on Similarity Search and Applications , pp. 280–293. Springer, 2013. Briand, L., Salha-Galvan, G., Bendada, W., Morlon, M., and Tran, V.-A. A semi-personalized system for user cold start recommendation on music streaming apps. In Proceed-ings of the 27th ACM SIGKDD conference on knowledge discovery & data mining , pp. 2601–2609, 2021. Briand, L., Bontempelli, T., Bendada, W., Morlon, M., Rigaud, F., Chapus, B., Bouab c¸ a, T., and Salha-Galvan, G. Let’s get it started: Fostering the discoverability of new releases on deezer. In European Conference on In-formation Retrieval , pp. 286–291. Springer, 2024. Cesa-Bianchi, N., Gentile, C., Lugosi, G., and Neu, G. Boltzmann exploration done right. Advances in Neural Information Processing Systems , 30, 2017. Chapelle, O. and Li, L. An empirical evaluation of thompson sampling. Advances in Neural Information Processing Systems , 24, 2011. Chen, J., Wu, J., Wu, J., Cao, X., Zhou, S., and He, X. Adap-τ : Adaptively modulating embedding magnitude for recommendation. In Proceedings of the ACM Web Conference 2023 , pp. 1085–1096, 2023. Chen, M., Beutel, A., Covington, P., Jain, S., Belletti, F., and Chi, E. H. Top-k off-policy correction for a rein-force recommender system. In Proceedings of the 12th ACM International Conference on Web Search and Data Mining , pp. 456–464, 2019. Chen, M., Chang, B., Xu, C., and Chi, E. H. User response models to improve a reinforce recommender system. In 
+
+Proceedings of the 14th ACM International Conference on Web Search and Data Mining , pp. 121–129, 2021. Chen, M., Xu, C., Gatto, V., Jain, D., Kumar, A., and Chi, E. Off-policy actor-critic for recommender systems. In Pro-ceedings of the 16th ACM Conference on Recommender Systems , pp. 338–349, 2022. Chiappa, A. S., Marin Vargas, A., Huang, A., and Mathis, A. Latent exploration for reinforcement learning. Advances in Neural Information Processing Systems , 36, 2023. Coolidge, J. L. The story of the binomial theorem. The American Mathematical Monthly , 56(3):147–157, 1949. Cormen, T. H., Leiserson, C. E., Rivest, R. L., and Stein, C. 
+
+Introduction to Algorithms . MIT Press, 2022. Dann, C., Mansour, Y., Mohri, M., Sekhari, A., and Srid-haran, K. Guarantees for epsilon-greedy reinforcement learning with function approximation. In Proceedings of the 39th International Conference on Machine Learning ,pp. 4666–4689. PMLR, 2022. Douze, M., Guzhva, A., Deng, C., Johnson, J., Szilvasy, G., Mazar ´e, et al. The faiss library. arXiv preprint arXiv:2401.08281 , 2024. Du, Q., Faber, V., and Gunzburger, M. Centroidal voronoi tessellations: Applications and algorithms. SIAM Review ,41(4):637–676, 1999. Du, Q., Gunzburger, M., and Ju, L. Advances in studies and applications of centroidal voronoi tessellations. Numeri-cal Mathematics: Theory, Methods and Applications , 3 (2):119–142, 2010. Dulac-Arnold, G., Evans, R., van Hasselt, H., Sunehag, P., Lillicrap, T., Hunt, J., Mann, T., Weber, T., Degris, T., and Coppin, B. Deep reinforcement learning in large discrete action spaces. arXiv preprint arXiv:1512.07679 , 2015. Fischer, H. A History of the Central Limit Theorem: from Classical to Modern Probability Theory . Springer, 2011. Fisher, R. A. Dispersion on a sphere. Proceedings of the Royal Society of London. Series A. Mathematical and Physical Sciences , 217(1130):295–305, 1953. Gentle, J. E. Computational Statistics , volume 308. Springer, 2009. Gnedenko, B. Sur la distribution limite du terme maximum d’une serie aleatoire. Annals of Mathematics , pp. 423– 453, 1943. Guo, R., Sun, P., Lindgren, E., Geng, Q., Simcha, D., Chern, F., and Kumar, S. Accelerating large-scale inference with anisotropic vector quantization. In Proceedings of the 37th International Conference on Machine Learning , pp. 3887–3896, 2020. Iwasaki, M. and Miyazaki, D. Optimization of indexing based on k-nearest neighbor graph for proximity search. 
+
+arXiv preprint arXiv:1810.07355 , 2018. Jacobson, K., Murali, V., Newett, E., Whitman, B., and Yon, R. Music Personalization at Spotify. pp. 373–373, 2016. Jacod, J. and Protter, P. Probability Essentials . Springer Science & Business Media, 2004. 10 Exploring Large Action Sets with Hyperspherical Embeddings using von Mises-Fisher Sampling 
+
+Jin, C., Krishnamurthy, A., Simchowitz, M., and Yu, T. Reward-free exploration for reinforcement learning. In 
+
+Proceedings of the 37th International Conference on Ma-chine Learning , pp. 4870–4879. PMLR, 2020. Johnson, J., Douze, M., and J ´egou, H. Billion-scale similar-ity search with gpus. IEEE Transactions on Big Data , 7 (3):535–547, 2019. Kang, S. and Oh, H.-S. Novel sampling method for the von mises–fisher distribution. Statistics and Computing , 34 (3):106, 2024. Kim, D., Park, J., and Kim, D. Test-time embedding normal-ization for popularity bias mitigation. In Proceedings of the 32nd ACM International Conference on Information and Knowledge Management , pp. 4023–4027, 2023. Konda, V. and Tsitsiklis, J. Actor-critic algorithms. Ad-vances in Neural Information Processing Systems , 12, 1999. Koren, Y. and Bell, R. Advances in Collaborative Filtering. 
+
+Recommender Systems Handbook , pp. 77–118, 2015. Ladosz, P., Weng, L., Kim, M., and Oh, H. Exploration in deep reinforcement learning: A survey. Information Fusion , 85:1–22, 2022. Lange, S., Gabel, T., and Riedmiller, M. Batch reinforce-ment learning. In Reinforcement Learning: State-Of-The-Art , pp. 45–73. Springer, 2012. LeCun, Y., Bengio, Y., and Hinton, G. Deep learning. Na-ture , 521(7553):436–444, 2015. Li, W., Zhang, Y., Sun, Y., Wang, W., Li, M., Zhang, W., and Lin, X. Approximate nearest neighbor search on high dimensional data — experiments, analyses, and im-provement. IEEE Transactions on Knowledge and Data Engineering , 32(8):1475–1488, 2019. Lillicrap, T. P., Hunt, J. J., Pritzel, A., Heess, N., Erez, T., Tassa, Y., Silver, D., and Wierstra, D. Continuous control with deep reinforcement learning. In Proceedings of the 4th International Conference on Learning Representation ,2016. Malkov, Y. A. and Yashunin, D. A. Efficient and robust approximate nearest neighbor search using hierarchical navigable small world graphs. IEEE Transactions on Pattern Analysis and Machine Intelligence , 42(4):824– 836, 2018. Mardia, K. V. and Jupp, P. E. Directional Statistics . John Wiley & Sons, 2009. McFarlane, R. A survey of exploration strategies in rein-forcement learning. McGill University , 3:17–18, 2018. Mikolov, T., Sutskever, I., Chen, K., Corrado, G. S., and Dean, J. Distributed representations of words and phrases and their compositionality. Advances in Neural Informa-tion Processing Systems , 26, 2013. Oehlert, G. W. A note on the delta method. The American Statistician , 46(1):27–29, 1992. Pennington, J., Socher, R., and Manning, C. D. Glove: Global vectors for word representation. In Proceedings of the 2014 Conference on Empirical Methods in Natural Language Processing , pp. 1532–1543, 2014. Pinz ´on, C. and Jung, K. Fast python sampler for the von mises fisher distribution. HAL Id: hal-04004568 , 2023. Reynolds, S. I. Reinforcement learning with exploration. 
+
+Ph.D. Thesis, University of Birmingham , 2002. Salha-Galvan, G., Lutzeyer, J. F., Dasoulas, G., Hennequin, R., and Vazirgiannis, M. Modularity-aware graph autoen-coders for joint community detection and link prediction. 
+
+Neural Networks , 153:474–495, 2022. Schedl, M., Zamani, H., Chen, C.-W., Deldjoo, Y., and Elahi, M. Current challenges and visions in music recommender systems research. International Journal of Multimedia Information Retrieval , 7:95–116, 2018. Simhadri, H. V., Aum ¨uller, M., Ingber, A., Douze, M., Williams, G., Manohar, M. D., Baranchuk, D., Lib-erty, E., Liu, F., Landrum, B., et al. Results of the big ann: Neurips’23 competition. arXiv preprint arXiv:2409.17424 , 2024. Slivkins, A. et al. Introduction to multi-armed bandits. Foun-dations and Trends in Machine Learning , 12(1-2):1–286, 2019. Sra, S. A short note on parameter approximation for von mises-fisher distributions: And a fast implementation of is(x). Computational Statistics , 27:177–190, 2012. Sutton, R. S. and Barto, A. G. Reinforcement Learning: An Introduction . MIT Press, 2018. Tan, P.-N., Steinbach, M., and Kumar, V. Introduction to Data Mining . Pearson Education India, 2016. Tang, H., Houthooft, R., Foote, D., Stooke, A., Xi Chen, O., Duan, Y., Schulman, J., DeTurck, F., and Abbeel, P. # exploration: A study of count-based exploration for deep reinforcement learning. Advances in Neural Information Processing Systems , 30, 2017. Tomasi, F., Cauteruccio, J., Kanoria, S., Ciosek, K., Rinaldi, M., and Dai, Z. Automatic music playlist generation via simulation-based reinforcement learning. In Proceedings of the 29th ACM SIGKDD Conference on Knowledge Discovery and Data Mining , pp. 4948–4957, 2023. 11 Exploring Large Action Sets with Hyperspherical Embeddings using von Mises-Fisher Sampling 
+
+Zamani, H., Schedl, M., Lamere, P., and Chen, C.-W. An analysis of approaches taken in the acm recsys chal-lenge 2018 for automatic music playlist continuation. 
+
+ACM Transactions on Intelligent Systems and Technology (TIST) , 10(5):1–21, 2019. Zhu, Y., Liu, J., Wei, W., Fu, Q., Hu, Y., Fang, Z., An, B., Hao, J., Lv, T., and Fan, C. vmfer: von mises-fisher experience resampling based on uncertainty of gradient directions for policy improvement of actor-critic algo-rithms. In Proceedings of the 23rd International Confer-ence on Autonomous Agents and Multiagent Systems , pp. 2621–2623, 2024. 12 Exploring Large Action Sets with Hyperspherical Embeddings using von Mises-Fisher Sampling 
+
+## Appendix 
+
+This appendix supplements the article “ Exploring Large Action Sets with Hyperspherical Embeddings using von Mises-Fisher Sampling ” and is organized as follows: • Appendices A, B, C, and D provide detailed proofs and discussions for all theoretical results presented in the paper. • Appendix E explores the connection between vMF-exp and Thompson Sampling. • Appendix F explains practical methods for sampling from the vMF distribution. • Appendix G presents the complete results of our Monte Carlo simulations. • Appendix H details an additional experimental study using a large-scale, publicly available GloVe dataset. • Appendix I highlights the successful large-scale deployment of vMF-exp in the private production system of the global music streaming service Deezer for large-scale music recommendation. 
+
+## A. Asymptotic Behavior of Boltzmann Exploration (Proof of Proposition 4.2) 
+
+We begin with the proof of Proposition 4.2 claiming that, in the setting of Section 4.1, we have: 
+
+PB-exp (a | n, d, V, κ ) = fvMF (A | V, κ )A(Sd−1)
+
+n| {z } 
+
+> denoted P0(a|n,d,V,κ )
+
++o( 1
+
+n√n ), (22) with fvMF the probability density function (PDF) of the von Mises-Fisher (vMF) (Fisher, 1953) distribution: 
+
+∀A ∈ S d−1, f vMF (A | V, κ ) = Cd(κ)eκ⟨V,A ⟩, (23) where A(Sd−1) is the surface area of Sd−1, the d-dimensional unit hypersphere, and Cd(κ) is the normalizing constant. 
+
+Proof. By definition, 
+
+PB-exp (a | n, d, V, κ ) = E Xn∼U (Sd−1)
+
+ eκ⟨V,A ⟩
+
+eκ⟨V,A ⟩ + Pni=1 eκ⟨V,X i⟩
+
+
+
+= eκ⟨V,A ⟩
+
+n E Xn∼U (Sd−1)
+
+"
+
+1 
+
+> eκ⟨V,A ⟩
+> n
+
++ Pni=1 eκ⟨V,X i⟩
+
+> n
+
+#
+
+= eκ⟨V,A ⟩
+
+n E Xn∼U (Sd−1)
+
+ 1
+
+Dn
+
+
+
+.
+
+(24) We use Dn to denote the denominator of the expression inside the above expectation. Dn is the empirical average of n
+
+independent and identically distributed (i.i.d.) random variables (plus a constant). Therefore, by applying the Central Limit Theorem (CLT) (Fischer, 2011), we know that as n grows it will be asymptotically distributed according to a Normal distribution with the following expectation: 
+
+E Xn∼U (Sd−1) [Dn] = E Xn∼U (Sd−1)
+
+"
+
+eκ⟨V,A ⟩
+
+n +
+
+> n
+
+X
+
+> i=1
+
+eκ⟨V,X i⟩
+
+n
+
+#
+
+= eκ⟨V,A ⟩
+
+n + E X∼U (Sd−1)
+
+h
+
+eκ⟨V,X ⟩i
+
+.
+
+(25) Moreover, we have: 
+
+E X∼U (Sd−1)
+
+h
+
+eκ⟨V,X ⟩i
+
+=
+
+Z
+
+> X∈S d−1
+
+eκ⟨V,X⟩
+
+A(Sd−1) dX
+
+= 1
+
+A(Sd−1)Cd(κ) ,
+
+(26) 13 Exploring Large Action Sets with Hyperspherical Embeddings using von Mises-Fisher Sampling 
+
+using the fact that Cd(κ) is the normalizing constant of a vMF distribution, ensuring that its PDF (Equation (23) ) sums to 1 when integrated on the unit hypersphere. Let us define σ = Var X∼U (Sd−1)
+
+eκ⟨V,X ⟩ Although we do not need an explicit expression for σ, we know it is finite. Additionally, let g : x 7 → 1
+
+x be the inverse function. The CLT ensures that: 
+
+√n
+
+h
+
+Dn − 1
+
+A(Sd−1)Cd(κ)
+
+i D
+
+−→ N (0 , σ 2), (27) where D
+
+−→ denotes convergence in distribution (Jacod & Protter, 2004). Moreover, since g is a differentiable function on 
+
+R∗
+
+> +
+
+, we use the Delta method (Oehlert, 1992) to infer that: 
+
+√n[g(Dn) − g( 1
+
+A(Sd−1)Cd(κ) )] D
+
+−→ N (0 , σ 2[g′( 1
+
+A(Sd−1)Cd(κ) )] 2). (28) Replacing g and g′ by their respective values, we obtain: 
+
+√n
+
+h 1
+
+Dn
+
+− Cd(κ)A(Sd−1)
+
+i D
+
+−→ N (0 , σ 2(A(Sd−1)Cd(κ)) 4). (29) Furthermore, recall that if a sequence Z1, Z 2, ... of random variables converges in distribution to a random variable Z, then for all bounded continuous function ϕ, lim  
+
+> n→+∞
+
+E [ϕ(Zn)] = E [ϕ(Z)] (Jacod & Protter, 2004). Since for every n the random variable Zn = √n[ 1 
+
+> Dn
+
+− Cd(κ)A(Sd−1)] has bounded values, we can simply chose the identity function for ϕ to conclude that : 
+
+lim  
+
+> n→+∞
+
+E Xn∼U (Sd−1)
+
+√n[ 1
+
+Dn
+
+− Cd(κ)A(Sd−1)] 
+
+
+
+= 0 , (30) which is equivalent to: 
+
+E Xn∼U (Sd−1)
+
+ 1
+
+Dn
+
+
+
+= Cd(κ)A(Sd−1) + o( 1
+
+√n ). (31) Finally, by multiplying Equation (31) by eκ⟨V,A ⟩ 
+
+> n
+
+, we obtain Equation (22), concluding the proof. 14 Exploring Large Action Sets with Hyperspherical Embeddings using von Mises-Fisher Sampling 
+
+## B. Asymptotic Behavior of vMF Exploration in d = 2 dimensions (Proof of Proposition 4.3, Part 1) 
+
+We now prove Proposition 4.3 when d = 2 . In 2 dimensions, the vMF distribution takes the special form of the von Mises (vM) distribution (Mardia & Jupp, 2009) which, instead of describing the distribution of the dot product between V and ˜V ,describes the distribution of their angle θ. The PDF of a von Mises distribution is defined as follows: 
+
+∀θ ∈ [−π, π ], f vM (θ | κ) = eκ cos( θ)
+
+2πI 0(κ) . (32) Let us define θ0 as the angle between V and A. In this section, we prove that: 
+
+PvMF-exp (A | n, d = 2 , κ ) = eκ cos( θ0)
+
+nI 0(κ) + O( 1
+
+n2 ). (33) 
+
+Proof. By definition, 
+
+PvMF-exp (A | n, d = 2 , κ ) = E Xn∼U (S1)
+
+h
+
+P( ˜V ∈ S Vorono¨ ı(A | X n+1 )
+
+
+
+], (34) where SVorono¨ ı(Xi | X n) = { ˜V ∈ S d−1, ∀j ∈ I n, ⟨ ˜V , X i⟩ ≥ ⟨ ˜V , X j ⟩} . Let us call Yn = {Yi} the result of the permutation of the indices of Xn such that the (signed) angles βi between A and Yi are sorted in increasing order. Since the {Xi} are i.i.d. and uniformly distributed on the circle, then the angles between A and the {Xi} are i.i.d. and uniformly distributed on 
+
+[0 , 2π]. Therefore, the set {βi} is the set of the order statistics of n i.i.d. random variables uniformly distributed on [0 , 2π].Consequently, the set { βi 
+
+> 2π
+
+} is the set of the order statistics of n i.i.d. random variables uniformly distributed on [0 , 1] , which are known to follow Beta distributions (Gentle, 2009) defined as follows: 
+
+∀1 ≤ i ≤ n, βi
+
+2π ∼ Beta( i, n + 1 −i). (35) As a consequence, we have: 
+
+E [β1] = 2πn + 1 , (36) 
+
+E [βn] = 2πn n + 1 , (37) Var [β1] = Var [βn] = 4π2n
+
+(n + 1) 2(n + 2) . (38) Moreover, for given values of Yi, we can see from Figure 4 that, in 2 dimensions, Vorono ¨ı cells are arcs of the circle and are delimited by perpendicular bisectors of two neighboring points. Specifically, the Vorono ¨ı cell of A is delimited by the perpendicular bisector of A and Y1 on one side, and the perpendicular bisector of A and Yn on the other side. By denoting θ
+
+the (signed) angle between V and ˜V , we have: 
+
+P
+
+ ˜V ∈ S Vorono¨ ı(A | X n+1 )
+
+
+
+= P
+
+
+
+θ ∈ [θ0 + βn − 2π
+
+2 , θ 0 + β1
+
+2 ] | θ ∼ vM (0 , κ ), β 1, β n
+
+
+
+=
+
+Z θ0+ β12 
+
+> θ=θ0+βn −2π
+> 2
+
+fvM (θ | κ) d θ. 
+
+(39) Therefore: 
+
+PvMF-exp (A | n, d = 2 , κ ) = E β1,β n
+
+"Z θ0+ β12 
+
+> θ=θ0+βn −2π
+> 2
+
+fvM (θ | κ) d θ
+
+#
+
+. (40) To get an asymptotic expression of the probability that θ lies between the considered bounds, we can first notice that as n
+
+grows, β1 will approach 0 and βn will approach 2π. This means that the integral we need to compute will have very narrow 15 Exploring Large Action Sets with Hyperspherical Embeddings using von Mises-Fisher Sampling 0
+
+## Y1
+
+## Y2
+
+## Y3
+
+## Y4
+
+## Y5
+
+## Y6Y7
+
+## Y8
+
+## Y9
+
+## Y10 
+
+# O
+
+# V
+
+## V
+
+0
+
+1
+
+0 + 1
+
+2
+
+# AA
+
+Figure 4. For d = 2 : vMF-exp explores the action A when ˜V lies in its Vorono¨ ı cell, shown in red. 
+
+bounds centered on θ0, and so we can leverage the Taylor series expansion (Abramowitz & Stegun, 1948) of fvM around θ0
+
+and obtain: 
+
+fvM (θ | κ) = fvM (θ0 | κ) + R0(θ), (41) where R0(θ) = P∞   
+
+> i=1
+> f(i)
+> vM (θ0|κ)
+> i!
+
+(θ − θ0)i is the zero order remainder term of the Taylor series expansion of fvM near θ0.We can now estimate the portion of the integral of Equation (40) corresponding to each term of the expansion separately, and show that when n becomes large: • the zero-order term gives a probability of selecting A that is the same as the asymptotic behavior of B-exp: 
+
+E β1,β n
+
+R θ0+ β12 
+
+> θ=θ0+βn −2π
+> 2
+
+fVM (θ0 | κ) d θ
+
+
+
+= eκ cos( θ0) 
+
+> nI 0(κ)
+
++ O( 1 
+
+> n2
+
+).• the expectation of the remainder term is bounded by a 1 
+
+> n2
+
+term: E β1,β n
+
+R θ0+ β12 
+
+> θ=θ0+βn −2π
+> 2
+
+R0(θ) d θ
+
+
+
+= O( 1 
+
+> n2
+
+).16 Exploring Large Action Sets with Hyperspherical Embeddings using von Mises-Fisher Sampling 
+
+B.1. Zero-Order Estimate 
+
+Let us study the zero-order approximation of fvM (θ | κ) near θ0:
+
+E β1,β n
+
+"Z θ0+ β12 
+
+> θ=θ0+βn −2π
+> 2
+
+fVM (θ0 | κ) d θ
+
+#
+
+= E β1,β n
+
+
+
+fVM (θ0 | κ)( θ0 + β1
+
+2 − (θ0 + βn − 2π
+
+2 )) 
+
+
+
+= E β1,β n
+
+
+
+fvM (θ0 | κ)( π − βn − β1
+
+2 )
+
+
+
+= πf vM (θ0 | κ) E β1,β n
+
+
+
+1 − βn − β1
+
+2π
+
+
+
+= eκ cos( θ)
+
+2I0(κ) (1 − E β1,β n
+
+ βn
+
+2π
+
+
+
++ E β1,β n
+
+ β1
+
+2π
+
+
+
+)= eκ cos( θ0)
+
+2I0(κ)
+
+n + 1 − n + 1 
+
+n + 1 = eκ cos( θ0)
+
+2I0(κ)2
+
+n + 1 = eκ cos( θ0)
+
+(n + 1) I0(κ)= eκ cos( θ0)
+
+nI 0(κ) − eκ cos( θ0)
+
+n(n + 1) I0(κ)= eκ cos( θ0)
+
+nI 0(κ) + O( 1
+
+n2 ).
+
+(42) This proves that, asymptotically, the contribution of the zero-order term of fvM to the probability of selecting A is equal to the probability of selecting A using B-exp with the same κ value. To understand how fast vMF-exp reaches its asymptotic behavior, we now need to study R0(θ), the remainder of the Taylor series expansion of fVM around θ0.
+
+B.2. Bounding of the Remainder Term 
+
+We start by computing the first derivative of fvM :
+
+∀θ ∈ [0 , 2π], |f ′
+
+> vM
+
+(θ | κ)|= | sin( θ)|κe κ cos( θ)
+
+I0(κ) , (43) which is bounded 4 on [0 , 2π] by M = κe κ 
+
+> I0(κ)
+
+. According to the Taylor-Lagrange inequality (Abramowitz & Stegun, 1948), this in turn bounds the remainder term as follows: 
+
+∀θ ∈ [0 , 2π], |R0(θ)| ≤ M |θ − θ0|. (44) 
+
+> 4
+
+We note that a tighter bound could be found by studying the second derivative, but will not be necessary for the purpose of this proof. 
+
+17 Exploring Large Action Sets with Hyperspherical Embeddings using von Mises-Fisher Sampling 
+
+In particular, this inequality holds for every θ ∈ [θ0 + βn−2π 
+
+> 2
+
+, θ 0 + β1 
+
+> 2
+
+], and so: 
+
+Z θ0+ β12 
+
+> θ=θ0+βn −2π
+> 2
+
+|R0(θ)| dθ ≤
+
+Z θ0+ β12 
+
+> θ=θ0+βn −2π
+> 2
+
+M |θ − θ0| dθ
+
+=
+
+Z θ0+ β12
+
+> θ=θ0
+
+M (θ − θ0) d θ +
+
+Z θ0 
+
+> θ=θ0+βn −2π
+> 2
+
+M (θ0 − θ) d θ
+
+=
+
+Z β12
+
+> θ=0
+
+M θ dθ −
+
+Z 0 
+
+> θ=βn −2π
+> 2
+
+M θ dθ
+
+= M β21 + ( βn − 2π)2
+
+8 .
+
+(45) The above inequality holds when considering the expected values over uniformly distributed Xi:
+
+E β1,β n
+
+"Z θ0+ β12 
+
+> θ=θ0+βn −2π
+> 2
+
+|R0(θ)| dθ
+
+#
+
+≤ M E β1,β n
+
+β21
+
+ + E β1,β n
+
+(βn − 2π)2
+
+8= M Var β1,β n [β1] + ( E β1,β n [β1]) 2 + Var β1,β n [( βn − 2π)] + ( E β1,β n [βn − 2π]) 2
+
+8= M
+
+8 ( 2 × 4π2n
+
+(n + 1) 2(n + 2) + 2 × 4π2
+
+(n + 1) 2 )= M π 2
+
+(n + 1)( n + 2) = O( 1
+
+n2 ).
+
+(46) Since E β1,β n
+
+R θ0+ β12 
+
+> θ=θ0+βn −2π
+> 2
+
+R0(θ) d θ
+
+
+
+≤ E β1,β n
+
+R θ0+ β12 
+
+> θ=θ0+βn −2π
+> 2
+
+|R0(θ)| dθ
+
+
+
+, we have shown: 
+
+E β1,β n
+
+"Z θ0+ β12 
+
+> θ=θ0+βn −2π
+> 2
+
+R0(θ) d θ
+
+#
+
+= O( 1
+
+n2 ). (47) In summary, when combining the asymptotic behavior of the zero-order term and the remainder term, we conclude that when d = 2 we have: 
+
+PvMF-exp (A | n, d = 2 , κ ) = eκ cos( θ0)
+
+nI 0(κ) + O( 1
+
+n2 ). (48) This proves Proposition 4.3 when d = 2 . Note that, comparing the asymptotic expressions for PB-exp (A | n, d = 2 , κ ) and 
+
+PvMF-exp (A | n, d = 2 , κ ), also gives us a proof for Proposition 4.1 when d = 2 .18 Exploring Large Action Sets with Hyperspherical Embeddings using von Mises-Fisher Sampling 
+
+## C. Asymptotic Behavior of vMF Exploration in d > 2 dimensions (Proofs of Proposition 4.3, Part 2, and of Proposition 4.4) 
+
+We now prove Proposition 4.3 when d > 2, starting with a series of intermediary lemmas. We subsequently justify the approximate expression of Proposition 4.4. 
+
+C.1. Intermediary Lemmas 
+
+We introduce a series of lemmas regarding the properties of the Vorono ¨ı cell of A when Xn ∼ U d−1. We recall that, for a given set of embedding vectors Xn, we use the notation Xn+1 = Xn ∪ { A}.
+
+Lemma C.1. Let d ∈ N, d ≥ 2, A ∈ S d−1 and n ∈ N∗. As before, let A(Sd−1) denote the surface area of Sd−1. Then: 
+
+E Xn∼U (Sd−1)
+
+h
+
+A(SVorono¨ ı(A | X n+1 )) 
+
+i
+
+= A(Sd−1)
+
+n + 1 . (49) 
+
+Proof. To compute this expectation, one can notice that: 
+
+E Xn∼U (Sd−1)
+
+h
+
+A(SVorono¨ ı(A | X n+1 )) 
+
+i
+
+= E Xn+1 ∼U (Sd−1)
+
+h
+
+A(SVorono¨ ı(Xn+1 | X n+1 )) | Xn+1 = A
+
+i
+
+. (50) Indeed, considering that A is known is equivalent to considering A as a random vector Xn+1 ∼ U (Sd−1) with the constraint 
+
+Xn+1 = A. We will now show that the right part of Equation (50) is actually independent of the value of A.Consider any point A′ ∈ S d−1. One can always define a (not necessarily unique) rotation RA,A ′ such that RA,A ′ (A) = A′.Since rotations preserve inner products, they also preserve areas of Voronoi cells, which means that for a given set of vectors 
+
+Xn+1 , we have: 
+
+A
+
+
+
+SVorono¨ ı(Xn+1 | X n+1 )
+
+
+
+= A
+
+
+
+SVorono¨ ı(RA,A ′ (Xn+1 ) | RA,A ′ (Xn+1 )) 
+
+
+
+. (51) Moreover, the image of the rotation of a random vector uniformly distributed on the hypersphere is also uniformly distributed, which means that: 
+
+Xn+1 ∼ U (Sd−1) ⇔ RA,A ′ (Xn+1 ) ∼ U (Sd−1). (52) Therefore: 
+
+E Xn+1 ∼U (Sd−1)
+
+h
+
+A(SVorono¨ ı(Xn+1 | X n+1 )) | Xn+1 = A
+
+i
+
+= E Xn+1 ∼U (Sd−1)
+
+h
+
+A(SVorono¨ ı(RA,A ′ (Xn+1 ) | RA,A ′ (Xn+1 ))) | Xn+1 = A
+
+i
+
+= E RA,A ′ (Xn+1 )∼U (Sd−1)
+
+h
+
+A(SVorono¨ ı(RA,A ′ (Xn+1 ) | RA,A ′ (Xn+1 ))) | RA,A ′ (Xn+1 ) = A′i
+
+= E RA,A ′ (Xn)∼U (Sd−1)
+
+h
+
+A(SVorono¨ ı(A′ | RA,A ′ (Xn))) 
+
+i
+
+= E Xn∼U (Sd−1)
+
+h
+
+A(SVorono¨ ı(A′ | X n)) 
+
+i
+
+.
+
+(53) This result proves that E Xn∼U (Sd−1)[A(SVorono¨ ı(A | X n+1 ))] is independent of A. Then, we use this information along with Equation (50) to obtain: 
+
+E Xn∼U (Sd−1)
+
+h
+
+A(SVorono¨ ı(A | X n+1 )) 
+
+i
+
+= E Xn+1 ∼U (Sd−1)
+
+h
+
+A(SVorono¨ ı(Xn+1 | X n+1 )
+
+i
+
+. (54) Since n+1 P
+
+> i=1
+
+A(SVorono¨ ı(Xi | X n+1 )) = A(Sd−1) (Du et al., 1999; 2010) and the Xi are i.i.d., we derive: 
+
+E Xn+1 ∼U (Sd−1)
+
+h
+
+A(SVorono¨ ı(Xn+1 | X n+1 )) 
+
+i
+
+= A(Sd−1)
+
+n + 1 . (55) Combining Equations (50) with Equation (55) leads to Equation (49), concluding the proof. 19 Exploring Large Action Sets with Hyperspherical Embeddings using von Mises-Fisher Sampling A
+
+# N(A n)
+
+# V
+
+# O
+
+Figure 5. The Vorono ¨ı cell of A, SVorono¨ ı(A | X n+1 ), along with the average normal vector of the cell N (A | n). On expectation, (A | n)
+
+and A are collinear. 
+
+Lemma C.2. Let d ∈ N, d ≥ 2, A ∈ S d−1 and n ∈ N∗. Then: 
+
+∃λ ∈ R, E Xn∼U (Sd−1)
+
+h Z 
+
+> ˜V∈S Vorono¨ ı(A|X n+1 )
+
+˜V d ˜V
+
+i
+
+= λA. (56) 
+
+Proof. We want to prove that the average normal vector of the Vorono ¨ı cell of A and A are collinear, as illustrated in Figure 5. To do so, we will show that this average normal vector is invariant to any rotation around A. For every θ ∈ [0 , 2π], we define 
+
+RA,θ as the rotation around A of the angle θ. As discussed in the proof of Lemma C.1, Xn ∼ U (Sd−1) ⇔ RA,θ (Xn) ∼U(Sd−1). Moreover, RA,θ (A) = A. Let us denote: 
+
+N (A | n) = E Xn∼U (Sd−1)
+
+h Z 
+
+> ˜V∈S Vorono¨ ı(A|X n+1 )
+
+˜V d ˜V
+
+i
+
+, (57) the expected normal vector of the Vorono¨ ı cell of A. Its image by the rotation RA,θ verifies: 
+
+RA,θ (N (A | n)) = RA,θ 
+
+
+
+E Xn∼U (Sd−1)
+
+h Z 
+
+> ˜V∈S Vorono¨ ı(A|X n+1 )
+
+˜V d ˜V
+
+i 
+
+= E Xn∼U (Sd−1)
+
+h Z   
+
+> ˜V∈S Vorono¨ ı(RA,θ (A)|RA,θ (Xn+1 ))
+
+˜V d ˜V
+
+i
+
+= E RA,θ (Xn)∼U (Sd−1)
+
+h Z  
+
+> ˜V∈S Vorono¨ ı(A|RA,θ (Xn+1 ))
+
+˜V d ˜V
+
+i
+
+= N (A | n).
+
+(58) This proves that N (A | n) and A are collinear. 
+
+Lemma C.3. With the same hypotheses as Lemma C.2: 
+
+λ = A(Sd−1)
+
+n + 1 E Xn∼U (Sd−1), ˜V ∼U (Sd−1)
+
+h
+
+max  
+
+> i
+
+⟨ ˜V , X i⟩
+
+i
+
+. (59) 20 Exploring Large Action Sets with Hyperspherical Embeddings using von Mises-Fisher Sampling 
+
+Proof. λ is defined as follows: 
+
+λA = E Xn∼U (Sd−1)
+
+h Z 
+
+> ˜V∈S Vorono¨ ı(A|X n+1 )
+
+˜V d ˜V
+
+i
+
+=⇒ ⟨ λA, A ⟩ = ⟨E Xn∼U (Sd−1)
+
+h Z 
+
+> ˜V∈S Vorono¨ ı(A|X n+1 )
+
+˜V d ˜V
+
+i
+
+, A ⟩⇔ λ = E Xn∼U (Sd−1)
+
+h Z 
+
+> ˜V∈S Vorono¨ ı(A|X n+1 )
+
+⟨ ˜V , A ⟩ d ˜V
+
+i
+
+⇔ λ = E Xn+1 ∼U (Sd−1)
+
+h Z 
+
+> ˜V∈S Vorono¨ ı(Xn+1 |X n+1 )
+
+⟨ ˜V , X n+1 ⟩ d ˜V | Xn+1 = A
+
+i
+
+⇔ λ = E Xn+1 ∼U (Sd−1)
+
+h Z 
+
+> ˜V∈S Vorono¨ ı(Xn+1 |X n+1 )
+
+max  
+
+> i
+
+⟨ ˜V , X i⟩ d ˜V | Xn+1 = A
+
+i
+
+.
+
+(60) Moreover, as done in the proof of Lemma C.1, we can leverage the invariance by any rotation of the above expression to infer that the conditional expectation is actually independent of A:
+
+λ = E Xn+1 ∼U (Sd−1)
+
+h Z 
+
+> ˜V∈S Vorono¨ ı(Xn+1 |X n+1 )
+
+max  
+
+> i
+
+⟨ ˜V , X i⟩ d ˜V
+
+i
+
+. (61) Since, in the above equation, Xn+1 has the same distribution as every element of Xn+1 , a similar expression for λ can be found using each Xn+1 element. By summing them together, we obtain: 
+
+(n + 1) λ =
+
+> n+1
+
+X
+
+> j=1
+
+E Xn+1 ∼U (Sd−1)
+
+h Z  
+
+> ˜V∈S Vorono¨ ı(Xj|X n+1 )
+
+max  
+
+> i
+
+⟨ ˜V , X i⟩ d ˜V
+
+i
+
+= E Xn+1 ∼U (Sd−1)
+
+h n+1 X
+
+> j=1
+
+Z  
+
+> ˜V∈S Vorono¨ ı(Xj|X n+1 )
+
+max  
+
+> i
+
+⟨ ˜V , X i⟩ d ˜V
+
+i
+
+= E Xn+1 ∼U (Sd−1)
+
+h Z 
+
+> ˜V∈S d−1
+
+max  
+
+> i
+
+⟨ ˜V , X i⟩ d ˜V
+
+i
+
+= E Xn+1 ∼U (Sd−1)
+
+h Z 
+
+> ˜V∈S d−1
+
+A(Sd−1) max i⟨ ˜V , X i⟩A(Sd−1) d ˜V
+
+i
+
+= A(Sd−1) E Xn+1 ∼U (Sd−1)
+
+h
+
+E ˜V ∼U (Sd−1)[max  
+
+> i
+
+⟨ ˜V , X i⟩]
+
+i
+
+,
+
+(62) which proves the lemma. The last two lemmas are useful to describe the distribution of max i⟨ ˜V , X i⟩ when ˜V is fixed, Xn+1 ∼ U (Sd−1), and n is large. 
+
+Lemma C.4. Let B : ( z1, z 2) 7 → R 10 tz1−1(1 − t)z2−1 dt denote the Beta function. Let d ≥ 3, ˜V ∈ S d−1 and X be a random vector with X ∼ U (Sd−1). Let Fradial be the cumulative distribution function (CDF) of ⟨ ˜V , X ⟩. The Taylor series expansion of Fradial near 1 is: 
+
+Fradial (t) = 1 − 2 d−12
+
+(d − 1) B( 12 , d−12 ) (1 − t) d−12 + o((1 − t) d−12 ). (63) 21 Exploring Large Action Sets with Hyperspherical Embeddings using von Mises-Fisher Sampling 
+
+Proof. The distribution of ⟨ ˜V , X ⟩ has been studied in directional statistics (Mardia & Jupp, 2009). Its PDF is known to be: 
+
+fradial (t) = (1 − t2) d−12 −1
+
+B( 12 , d−12 )= (1 − t) d−12 −1(1 + t) d−12 −1
+
+B( 12 , d−12 )= (1 − t) d−12 −1(2 − (1 − t)) d−12 −1
+
+B( 12 , d−12 )= 2 d−12 −1(1 − t) d−12 −1(1 − (1 −t)2 ) d−12 −1
+
+B( 12 , d−12 )= 2 d−12 −1(1 − t) d−12 −1
+
+B( 12 , d−12 ) (
+
+> =∞
+
+X
+
+> i=0
+
+ d−12 − 1
+
+i
+
+  1 − t
+
+2
+
+i
+
+).
+
+(64) The last line above was obtained using Newton’s generalized binomial theorem for real exponent (Coolidge, 1949). It involves the term   d−12 −1
+
+> i
+
+ = ( d−12 −1) i 
+
+> i!
+
+with (·)i the Pochhammer symbol used to designate a falling factorial (Abramowitz & Stegun, 1948). We have obtained an expression of fradial involving an infinite weighted sum of powers of (1 − t) with exponents greater or equal to 0 since d ≥ 3. Therefore, by uniqueness of the Taylor polynomial, we derive that the Taylor series expansion of fradial near 1 is: 
+
+fradial (t) = 2 d−12 −1(1 − t) d−12 −1
+
+B( 12 , d−12 ) + o((1 − t) d−12 −1). (65) Since by definition Fradial is the primitive of fradial on [−1, 1] and that Fradial (1) = 1 , we can integrate the above equation to get: 
+
+Fradial (t) = 1 − 2
+
+d − 12 d−12 −1(1 − t) d−12
+
+B( 12 , d−12 ) + o((1 − t) d−12 )= 1 − 2 d−12 (1 − t) d−12
+
+(d − 1) B( 12 , d−12 ) + o((1 − t) d−12 ).
+
+(66) Since this is exactly the Equation (63), this completes the proof. 
+
+Lemma C.5. Let d ≥ 3, ˜V ∈ S d−1 and let Fradial be defined as in Lemma C.4. For n ∈ N∗, let Xn ∼ U (Sd−1) be a set of 
+
+n i.i.d. random vectors uniformly distributed on Sd−1, and let Fn be the CDF of max i⟨ ˜V , X i⟩. Then, for u ∈ [−1, 1] :
+
+lim  
+
+> n→+∞
+
+Fn(anu + bn) = e(−(1+ γu ) −1 
+
+> γ)
+
+, (67) 
+
+where γ = − 2 
+
+> d−1
+
+, an = 12
+
+ (d−1) B( 12 , d−12 )
+
+> n
+
+ 2
+
+> d−1
+
+with B the Beta function, and bn = 1 − 2 
+
+> d−1
+
+an.Proof. The proof relies on the Fisher–Tippett–Gnedenko theorem (Gnedenko, 1943) which states that if there exists a couple of sequences an and bn such that the left term of Equation (67) converges, then its limit should be the CDF of a Generalized Extreme Value distribution (GEV) with shape parameter γ, which is the right term of Equation (67) . Theorem 5 of Gnedenko (1943) provides a necessary and sufficient convergence condition for a random variable with maximal value 
+
+xmax and CDF F, provided that γ < 0:
+
+lim 
+
+> t→0+
+
+1 − F ( xmax − u t )1 − F ( xmax − t ) = u 
+
+> −1
+> γ
+> 
+
+for all u > 0 . (68) 22 Exploring Large Action Sets with Hyperspherical Embeddings using von Mises-Fisher Sampling 
+
+Recall that Lemma C.4 gives us the Taylor expansion of Fradial near 1 : Fradial (t) = 1 − K(1 − t) d−12 + o((1 − t) d−12 ) with 
+
+K = 2 d−12     
+
+> (d−1) B(12,d−12)
+
+. Knowing that xmax = 1 , we obtain that, ∀u > 0:
+
+lim 
+
+> t→0+
+
+1 − Fradial (1 − u t )1 − Fradial (1 − t) = lim 
+
+> t→0+
+
+1 − (1 − K(ut ) d−12 ) + o(( t) d−12 )1 − (1 − K(t) d−12 ) + o(( t) d−12 )= lim 
+
+> t→0+
+
+K(ut ) d−12 + o(( t) d−12 )
+
+K(t) d−12 + o(( t) d−12 )= u 
+
+> d−12
+> 
+
+,
+
+(69) which guarantees convergence and in the same time gives the value of γ = − 2 
+
+> d−1
+
+.To find suitable sequences an and bn, we can use the fact that Fn(t) = Fradial (t)n and study the behavior of ln Fn(t) near 
+
+t = 1 :
+
+ln Fn(t) = ln ( Fradial (t)n)= n ln ( Fradial (t)) = n(ln (1 − K(1 − t) −1 
+
+> γ
+
++ o((1 − t) −1 
+
+> γ
+
+))) as t → 1−
+
+= −nK ((1 − t) −1 
+
+> γ
+
++ o((1 − t) −1 
+
+> γ
+
+)) as t → 1−.
+
+(70) By defining an = −γ(Kn )γ , bn = 1 − (Kn )γ and doing the change of variable u = t−bn 
+
+> an
+
+, we see that: 
+
+t = anu + bn
+
+= 1 − (1 + γu )( Kn )γ . (71) Since for every u, lim n→+∞(1 + γu )( Kn )γ = 0 (recall that γ < 0) , the term o((1 − x) −1 
+
+> γ
+
+) as x → 1− is equivalent to 
+
+o( 1 
+
+> n
+
+) as n → +∞. this means that: 
+
+ln ( Fn(anu + bn)) = −nK 
+
+
+
+((1 + γu )( Kn )γ ) −1 
+
+> γ
+
++ o
+
+
+
+( 1
+
+n )
+
+ 
+
+as n → +∞.
+
+= −(1 + γu ) −1 
+
+> γ
+
++ o(1) as n → +∞.
+
+(72) We can now consider the exponential of the above expression to get our asymptotic maximum distribution: 
+
+lim  
+
+> n→+∞
+
+Fn(anu + bn) = e−(1+ γu ) −1
+
+> γ
+
+, (73) which concludes the proof. 
+
+Corollary C.6. With Γ : z 7 → R ∞ 
+
+> 0
+
+tz−1e−t dt the Gamma function (Abramowitz & Stegun, 1948), we have: 
+
+E Xn∼U (Sd−1)
+
+h
+
+max  
+
+> i
+
+⟨ ˜V , X i⟩
+
+i
+
+= 1 − Γ( d+1  
+
+> d−1
+
+)2
+
+(d − 1)B( 12 , d−12 )
+
+n
+
+! 2
+
+> d−1
+
++ o( 1
+
+n 2
+
+> d−1
+
+). (74) 
+
+Proof. According to the Portmanteau theorem (Billingsley, 2013), Lemma C.5 is equivalent to: 
+
+max i⟨ ˜V , X i⟩ − bn
+
+anD
+
+−→ GEV (γ), (75) where GEV (γ) is a generalized extreme value distribution with shape parameter γ (Gnedenko, 1943). Recall that if a sequence Z1, Z 2, ... of random variables converges in distribution to a random variable Z, then for all bounded continuous 23 Exploring Large Action Sets with Hyperspherical Embeddings using von Mises-Fisher Sampling 
+
+function ϕ, lim  
+
+> n→+∞
+
+E [ϕ(Zn)] = E [ϕ(Z)] . Since max i⟨ ˜V ,X i⟩− bn 
+
+> an
+
+is bounded for every n, we can consider the identity function for ϕ and obtain: 
+
+lim  
+
+> n→+∞
+
+E Xn∼U (Sd−1)
+
+"
+
+max i⟨ ˜V , X i⟩ − bn
+
+an
+
+#
+
+= E [GEV (γ)] = Γ(1 − γ) − 1
+
+γ . (76) Replacing γ, an and bn by their respective expressions, it implies that: 
+
+lim 
+
+> n→+∞
+
+E Xn∼U (Sd−1)
+
+h
+
+max i⟨ ˜V , X i⟩
+
+i
+
+− 1 + ( Kn )− 2
+
+> d−1
+
+(Kn )− 2
+
+> d−1
+
++ Γ( d − 1
+
+d − 1 ) − 1 = 0 =⇒ lim 
+
+> n→+∞
+
+E Xn∼U (Sd−1)
+
+h
+
+max i⟨ ˜V , X i⟩
+
+i
+
+− 1 + K− 2 
+
+> d−1
+
+Γ( d−1 
+
+> d−1
+
+)
+
+n− 2
+
+> d−1
+
+= 0 .
+
+(77) Since K− 2 
+
+> d−1
+
+= 12
+
+ (d−1)B( 12 , d−12 )
+
+> n
+
+ 2
+
+> d−1
+
+, this is equivalent to writing: 
+
+E Xn∼U (Sd−1)
+
+h
+
+max  
+
+> i
+
+⟨ ˜V , X i⟩
+
+i
+
+− 1 + 12
+
+(d − 1)B( 12 , d−12 )
+
+n
+
+! 2
+
+> d−1
+
+Γ( d − 1
+
+d − 1 ) = o( 1
+
+n 2
+
+> d−1
+
+)
+
+⇔ E Xn∼U (Sd−1)
+
+h
+
+max  
+
+> i
+
+⟨ ˜V , X i⟩
+
+i
+
+= 1 − Γ( d − 1
+
+d − 1 ) 12
+
+(d − 1)B( 12 , d−12 )
+
+n
+
+! 2
+
+> d−1
+
++ o( 1
+
+n 2
+
+> d−1
+
+).
+
+(78) We have thus obtained Equation (74), concluding the proof of the corollary. 
+
+C.2. Proof of Proposition 4.3 
+
+We now return to Proposition 4.3. In this section we consider the case of vMF-exp when d > 2 and Xi embeddings are uniformly distributed on Sd−1. Under those assumptions: 
+
+PvMF-exp (a | n, d, V, κ ) = fvMF (A | V, κ )A(Sd−1)
+
+n + O( 1
+
+n1+ 2
+
+> d−1
+
+). (79) 
+
+Proof. Similarly to the 2 dimensional case, the definition of PvMF-exp (a | n, d, V, κ ) is: 
+
+PvMF-exp (A | n, d, V, κ ) = E Xn∼U (Sd−1)
+
+h
+
+P( ˜V ∈ S Vorono¨ ı(A | X n+1 ) | ˜V ∼ vMF (V, κ )) 
+
+i
+
+, (80) which can be written using the PDF of the vMF distribution: 
+
+PvMF-exp (A | n, d, V, κ ) = E Xn∼U (Sd−1)
+
+"Z 
+
+> ˜V∈S Vorono¨ ı(A|X n+1 )
+
+fvMF ( ˜V | V, κ ) d ˜V
+
+#
+
+. (81) As done in the 2D case, we study the Taylor expansion of fvMF near A:
+
+∀ ˜V ∈ S Vorono¨ ı(A | X n+1 ), f vMF ( ˜V | κ, V ) = Cd(κ)eκ⟨V, ˜V ⟩
+
+= Cd(κ)eκ⟨V,A ⟩eκ⟨V, ˜V −A⟩
+
+= fvMF (A | V, κ )
+
+> ∞
+
+X
+
+> i=0
+
+(κ⟨V, ˜V − A⟩)i
+
+i!= fvMF (A | V, κ )(1 + κ⟨V, ˜V − A⟩ + R1( ˜V )) .
+
+(82) 24 Exploring Large Action Sets with Hyperspherical Embeddings using von Mises-Fisher Sampling A
+
+# V
+
+# V
+
+# O
+
+< V, A >
+
+Figure 6. For d = 3 : vMF-exp explores the action A when ˜V lies in its Vorono¨ ı cell, shown in red. 
+
+with R1( ˜V ) = P∞   
+
+> i=2 (κ⟨V, ˜V−A⟩)i
+> i!
+
+. Leveraging the linearity property of both integration and expectation (Jacod & Protter, 2004), we can study PvMF-exp (A | n, d, V, κ ) by assessing separately the contribution of the different terms of the expansion of fvMF in: 
+
+PvMF-exp (A | n, d, V, κ ) = 
+
+E Xn∼U (Sd−1)
+
+"Z 
+
+> ˜V∈S Vorono¨ ı(A|X n+1 )
+
+fvMF (A | V, κ )(1 + κ⟨V, ˜V − A⟩ + R1( ˜V )) d ˜V
+
+#
+
+. (83) However, contrary to the 2D case where SVorono¨ ı(A | X n+1 ) is always defined as the arc between 2 angles on the circle, for 
+
+d > 2 the shape of SVorono¨ ı(A | X n+1 ) is highly dependent of the layout of the elements of Xn that share a frontier with A.Figure 6 provides an illustration of the complexity and diversity of the shapes of Vorono ¨ı cells for uniformly sampled points on the 3D sphere. As a consequence, expliciting the bounds of integration, as we did in the 2D case, can be somewhat tedious. Instead, we will leverage the geometrical properties of the problem at hand to estimate PvMF-exp (A | n, d, V, κ ). We start with the zero-order term. C.2.1. Z ERO -O RDER TERM 
+
+Since the zero-order term is constant, its integral over SVorono¨ ı(A | X n+1 ) can be expressed as: 
+
+Z 
+
+> ˜V∈S Vorono¨ ı(A|X n+1 )
+
+fvMF (A | V, κ ) d ˜V = fvMF (A | V, κ )A(SVorono¨ ı(A | X n+1 )) , (84) where A(SVorono¨ ı(A | X n+1 )) is the value of the surface area of SVorono¨ ı(A | X n+1 ). To assess the expected value of the above equation for uniformly distributed Xn, we use Lemma C.1 and obtain: 
+
+E Xn∼U (Sd−1)
+
+"Z 
+
+> ˜V∈S Vorono¨ ı(A|X n+1 )
+
+fvMF (A | V, κ ) d ˜V
+
+#
+
+= fvMF (A | V, κ )A(Sd−1)
+
+n + 1 (85) 
+
+= fvMF (A | V, κ )A(Sd−1)
+
+n + O( 1
+
+n2 ).
+
+25 Exploring Large Action Sets with Hyperspherical Embeddings using von Mises-Fisher Sampling 
+
+C.2.2. F IRST -O RDER TERM 
+
+We want to estimate the value of: 
+
+E Xn∼U (Sd−1)
+
+"Z 
+
+> ˜V∈S Vorono¨ ı(A|X n+1 )
+
+fvMF (A | V, κ )κ⟨V, ˜V − A⟩ d ˜V
+
+#
+
+(86) 
+
+= fvMF (A | V, κ )κ ⟨V, E Xn∼U (Sd−1)
+
+"Z 
+
+> ˜V∈S Vorono¨ ı(A|X n+1 )
+
+˜V d ˜V
+
+#
+
+⟩ − ⟨V, A ⟩A (Sd−1)
+
+n
+
+!
+
+.
+
+Using Lemmas C.2 and C.3 as well as Corollary C.6, the left term inside the parentheses is: 
+
+⟨V, E Xn∼U (Sd−1)
+
+"Z 
+
+> ˜V∈S Vorono¨ ı(A|X n+1 )
+
+˜V d ˜V
+
+#
+
+⟩
+
+= ⟨V, A ⟩ A(Sd−1)
+
+n + 1 E Xn∼U (Sd−1), ˜V ∼U (Sd−1)
+
+h
+
+max  
+
+> i
+
+⟨ ˜V , X i⟩
+
+i
+
+= ⟨V, A ⟩ A(Sd−1)
+
+n + 1 
+
+1 − Γ( d+1  
+
+> d−1
+
+)2
+
+(d − 1)B( 12 , d−12 )
+
+n
+
+! 2
+
+> d−1
+
++ o( 1
+
+n 2
+
+> d−1
+
+)
+
+ .
+
+(87) Re-injecting this expression into Equation (86) gives the following expression for the contribution of the first-order term to the probability of sampling A:
+
+E Xn∼U (Sd−1)
+
+"Z 
+
+> ˜V∈S Vorono¨ ı(A|X n+1 )
+
+fvMF (A | V, κ )κ⟨V, ˜V − A⟩ d ˜V
+
+#
+
+(88) 
+
+= −fvMF (A | V, κ ) A(Sd−1)
+
+n + 1 κ⟨V, A ⟩
+
+ Γ( d+1  
+
+> d−1
+
+)2
+
+(d − 1)B( 12 , d−12 )
+
+n
+
+! 2
+
+> d−1
+
++ o( 1
+
+n 2
+
+> d−1
+
+)
+
+ .
+
+C.2.3. R EMAINDER TERM 
+
+As done in the 2D proof, we leverage the Taylor-Lagrange inequality (Abramowitz & Stegun, 1948). The second derivative of the function f (x) = Cd(κ)eκx is f (x)(2) = κ2f (x), which is bounded on x ∈ [−1, 1] by M = κ2Cd(κ)eκx . This implies that: 
+
+|R1( ˜V )| ≤ M ⟨V, ˜V − A⟩2
+
+2
+
+≤ M ∥ ˜V − A∥22
+
+2 (according to the Cauchy-Schwarz inequality (Jacod & Protter, 2004)) 
+
+= M (1 − ⟨ ˜V , A ⟩).
+
+(89) This inequality holds for every ˜V ∈ S Vorono¨ ı(A | X n+1 ) when Xn ∼ U (Sd−1), which means that: 
+
+E Xn∼U (Sd−1)
+
+"Z 
+
+> ˜V∈S Vorono¨ ı(A|X n+1 )
+
+fvMF (A | V, κ )|R1( ˜V )| d ˜V
+
+#
+
+≤ fvMF (A | V, κ ) E Xn∼U (Sd−1)
+
+"Z 
+
+> ˜V∈S Vorono¨ ı(A|X n+1 )
+
+M (1 − ⟨ ˜V , A ⟩) d ˜V
+
+#
+
+= fvMF (A | V, κ ) A(Sd−1)
+
+n + 1 M (1 − E Xn+1 ∼U (Sd−1)
+
+Z  
+
+> ˜V∈S d−1
+
+max  
+
+> i
+
+⟨ ˜V , X i⟩ d ˜V
+
+
+
+)= fvMF (A | V, κ )M A(Sd−1)
+
+n + 1 
+
+ Γ( d+1  
+
+> d−1
+
+)2
+
+(d − 1)B( 12 , d−12 )
+
+n
+
+! 2
+
+> d−1
+
++ o( 1
+
+n 2
+
+> d−1
+
+)
+
+
+
+= O( 1
+
+n1+ 2
+
+> d−1
+
+).
+
+(90) 26 Exploring Large Action Sets with Hyperspherical Embeddings using von Mises-Fisher Sampling 
+
+We used Lemmas C.2 and C.3 to go from line 2 to 3, and Corollary C.6 to go from line 3 to 4. In essence, we have bounded the contribution of R1( ˜V ) to the probability of sampling A as follows: 
+
+E Xn∼U (Sd−1)
+
+"Z 
+
+> ˜V∈S Vorono¨ ı(A|X n+1 )
+
+fvMF (A | V, κ )|R1( ˜V )| d ˜V
+
+#
+
+= O( 1
+
+n1+ 2
+
+> d−1
+
+) (91) Finally, adding up Equations (85) , (89) , and (91) , we conclude the proof of Proposition 4.3 for d ≥ 3 and (via the first-order term) simultaneously justify the approximate probability P1(a | n, V, κ ) introduced in Proposition 4.4. 27 Exploring Large Action Sets with Hyperspherical Embeddings using von Mises-Fisher Sampling 
+
+## D. Similar Asymptotic Behavior of B-exp and vMF-exp for Large Action Sets (Proof of Proposition 4.1) 
+
+Finally, Propositions 4.2 and 4.3 allow us to derive Proposition 4.1, i.e., that in the setting of Section 4.1, we have: 
+
+lim 
+
+> n→+∞
+
+PB-exp (a | n, d, V, κ )
+
+PvMF-exp (a | n, d, V, κ ) = 1 . (92) 
+
+Proof. Acording to Proposition 4.2, we have: 
+
+PB-exp (a | n, d, V, κ ) = fvMF (A | V, κ )A(Sd−1)
+
+n + o( 1
+
+n√n ). (93) Moreover, according to Proposition 4.3, we have: 
+
+PvMF-exp (a | n, d, V, κ ) = fvMF (A | V, κ )A(Sd−1)
+
+n +
+
+(O( 1 
+
+> n2
+
+) if d = 2 ,
+
+O( 1 
+
+> n1+ 2
+> d−1
+
+) if d > 2. (94) Therefore: 
+
+lim 
+
+> n→+∞
+
+PB-exp (a | n, d, V, κ )
+
+PvMF-exp (a | n, d, V, κ ) = lim 
+
+> n→+∞
+
+nnPB-exp (a | n, d, V, κ )
+
+PvMF-exp (a | n, d, V, κ )= fvMF (A | V, κ )A(Sd−1) + 0 
+
+fvMF (A | V, κ )A(Sd−1) + 0 = 1 .
+
+(95) 
+
+## E. Link with Thompson Sampling 
+
+At first glance, one might draw some similarities between vMF-exp and Thompson Sampling (TS) with Gaussian prior for contextual bandits (Chapelle & Li, 2011). Admittedly, vMF-exp shares a common spirit with TS, where action selection is preceded by sampling individual weights according to a Normal distribution centered on an observed context/state vector. However, vMF-exp also presents two major differences: • Firstly, in vMF-exp, vector sampling is performed according to a vMF hyperspherical distribution, centered on the state embedding vector V . This choice of distribution ensures that vectors with the same inner product with the state vector have the same probability of being sampled, as illustrated in Figure 1(a). This aligns better with the similarity used to retrieve nearest neighbors and, as emphasized in this paper, leads to probabilities of exploring actions asymptotically comparable to Boltzmann Exploration (with better scalability) under the theoretical assumptions of Section 4.1. • Secondly, vMF-exp is not designed to maximize the expected reward of a policy in an RL or contextual bandit environment and does not impose any parameter update strategy. Instead, it serves as an action selection tool for any scenario where policy updates cannot be performed regularly (as in the batch RL setting commonly found in industrial applications), yet broad exploration must still be guaranteed between consecutive updates. 28 Exploring Large Action Sets with Hyperspherical Embeddings using von Mises-Fisher Sampling 
+
+## F. Sampling from the von Mises-Fisher Distribution 
+
+F.1. Radial-tangent decomposition 
+
+Given a vector ˜V ∈ S d−1 and a concentration κ ∈ R+, the algorithm described in (Pinz ´on & Jung, 2023) sample from a vMF (V, κ ) by leveraging the radial-tangent decomposition of the elements of Sd−1. For any ˜V ∈ S d−1, let us call 
+
+˜t = ⟨V, ˜V ⟩. Then we have: 
+
+˜V = ˜ tV +
+
+p
+
+1 − ˜t2 ˜VO (96) where the vector ˜VO has a unit norm and is orthogonal to V .
+
+F.2. vMF distribution 
+
+If, ˜V ∼ vMF (V, κ ), then : • ˜t is a scalar valued random variable. • ˜VO is a random vector uniformly distributed on the (d-2) dimensional sub-sphere that is centered at and perpendicular to V . For instance, for d = 3 , this would mean a circle centered around V .• ˜t and ˜VO are independent. Since the reciprocal is also true, t and ˜VO can thus be separately sampled to obtain ˜V .
+
+F.3. Sampling ˜t = ⟨V, ˜V ⟩
+
+The PDF of ˜t is known (Fisher, 1953) and follows: 
+
+fradial (t; κ, d ) = (κ/ 2) d 
+
+> 2−1
+
+Γ( 12 )Γ( d−12 )I d 
+
+> 2−1
+
+(κ) etκ (1 − t2) d−32 (97) This PDF can be used to sample r through rejection sampling (Gentle, 2009). 
+
+F.4. Sampling ˜VO
+
+˜VO can be obtained by following the steps of algorithm 1. 
+
+Algorithm 1 Sample ˜VO
+
+1 - Sample vector U uniformly from Sd−1;
+
+2 - Compute projection of U on V : W = ⟨U, V ⟩V ;
+
+3 - Subtract projection and normalize: ˜VO = U −W   
+
+> || U−W||
+
+;
+
+4 - return ˜VO
+
+Note that a simple way to sample U uniformly on Sd−1 is to sample d standard Gaussians independently (one for each dimension) and then normalize the resulting vector (Gentle, 2009). 
+
+F.5. Wrapping up 
+
+The vector ˜V can now be computed by summing the right term of equation 97. Overall, we see that sampling ˜V from vMF (V, κ ) is data-independent , hence the scalability of the approach. 29 Exploring Large Action Sets with Hyperspherical Embeddings using von Mises-Fisher Sampling 
+
+## G. Additional Monte Carlo Simulations 0.2 0.4 0.6 0.8 1.0 
+
+n 1e6 
+
+0.00 
+
+0.25 
+
+0.50 
+
+0.75 
+
+1.00 
+
+1.25 
+
+1.50 
+
+1.75 
+
+> P(a)
+
+1e 5 = 1.0, <V,A>=0.5, d=4 
+
+P0(a)
+
+P1(a)
+
+PB exp (a)
+
+PvMF exp (a)
+
+(a) 0.2 0.4 0.6 0.8 1.0 
+
+n 1e6 
+
+0.00 
+
+0.25 
+
+0.50 
+
+0.75 
+
+1.00 
+
+1.25 
+
+1.50 
+
+1.75 
+
+> P(a)
+
+1e 5 = 1.0, <V,A>=0.5, d=8 
+
+P0(a)
+
+P1(a)
+
+PB exp (a)
+
+PvMF exp (a) (b) 0.2 0.4 0.6 0.8 1.0 
+
+n 1e6 
+
+0.00 
+
+0.25 
+
+0.50 
+
+0.75 
+
+1.00 
+
+1.25 
+
+1.50 
+
+1.75 
+
+> P(a)
+
+1e 5 = 1.0, <V,A>=0.5, d=16 
+
+P0(a)
+
+P1(a)
+
+PB exp (a)
+
+PvMF exp (a) (c) 0.2 0.4 0.6 0.8 1.0 
+
+n 1e6 
+
+0.0 
+
+0.2 
+
+0.4 
+
+0.6 
+
+0.8 
+
+1.0 
+
+1.2 
+
+1.4 
+
+1.6 
+
+> P(a)
+
+1e 5 = 1.0, <V,A>=0.5, d=32 
+
+P0(a)
+
+P1(a)
+
+PB exp (a)
+
+PvMF exp (a)
+
+(d) 0.2 0.4 0.6 0.8 1.0 
+
+n 1e6 
+
+0.0 
+
+0.2 
+
+0.4 
+
+0.6 
+
+0.8 
+
+1.0 
+
+1.2 
+
+1.4 
+
+1.6 
+
+> P(a)
+
+1e 5 = 1.0, <V,A>=0.5, d=64 
+
+P0(a)
+
+P1(a)
+
+PB exp (a)
+
+PvMF exp (a) (e) 0.2 0.4 0.6 0.8 1.0 
+
+n 1e6 
+
+0.0 
+
+0.2 
+
+0.4 
+
+0.6 
+
+0.8 
+
+1.0 
+
+1.2 
+
+1.4 
+
+1.6 
+
+> P(a)
+
+1e 5 = 1.0, <V,A>=0.5, d=128 
+
+P0(a)
+
+P1(a)
+
+PB exp (a)
+
+PvMF exp (a) (f) 0.2 0.4 0.6 0.8 1.0 
+
+n 1e6 
+
+0.0 
+
+0.5 
+
+1.0 
+
+1.5 
+
+2.0 
+
+2.5 
+
+> P(a)
+
+1e 5 = 1.0, <V,A>=0.9, d=4 
+
+P0(a)
+
+P1(a)
+
+PB exp (a)
+
+PvMF exp (a)
+
+(g) 0.2 0.4 0.6 0.8 1.0 
+
+n 1e6 
+
+0
+
+1
+
+2
+
+3
+
+4
+
+> P(a)
+
+1e 5 = 2.0, <V,A>=0.9, d=4 
+
+P0(a)
+
+P1(a)
+
+PB exp (a)
+
+PvMF exp (a) (h) 0.2 0.4 0.6 0.8 1.0 
+
+n 1e6 
+
+0
+
+1
+
+2
+
+3
+
+4
+
+5
+
+> P(a)
+
+1e 5 = 2.0, <V,A>=0.9, d=8 
+
+P0(a)
+
+P1(a)
+
+PB exp (a)
+
+PvMF exp (a) (i) 0.2 0.4 0.6 0.8 1.0 
+
+n 1e6 
+
+0.0 
+
+0.5 
+
+1.0 
+
+1.5 
+
+2.0 
+
+2.5 
+
+> P(a)
+
+1e 5 = 1.0, <V,A>=0.9, d=8 
+
+P0(a)
+
+P1(a)
+
+PB exp (a)
+
+PvMF exp (a)
+
+(j) 0.2 0.4 0.6 0.8 1.0 
+
+n 1e6 
+
+0.0 
+
+0.5 
+
+1.0 
+
+1.5 
+
+2.0 
+
+> P(a)
+
+1e 5 = 2.0, <V,A>=0.5, d=8 
+
+P0(a)
+
+P1(a)
+
+PB exp (a)
+
+PvMF exp (a) (k) 0.2 0.4 0.6 0.8 1.0 
+
+n 1e6 
+
+0
+
+1
+
+2
+
+3
+
+4
+
+5
+
+> P(a)
+
+1e 5 = 2.0, <V,A>=0.9, d=32 
+
+P0(a)
+
+P1(a)
+
+PB exp (a)
+
+PvMF exp (a) (l) 
+
+Figure 7. We report complete results for the Monte Carlo simulations presented and discussed in Section 4.3, involving more combinations of d, κ, and ⟨V, A ⟩). We recall that PB-exp (a) and P0(a) are indistinguishable for this range of n values. We emphasize that the y-axis is on a 1e-5 scale; hence, all probabilities are extremely close. 
+
+30 Exploring Large Action Sets with Hyperspherical Embeddings using von Mises-Fisher Sampling 
+
+## H. Additional Experiments on a Real-World Dataset of GloVe Word Embedding Vectors 
+
+While our main contributions in this work are theoretical, we aimed in the main paper to validate our key findings with Monte Carlo simulations, which involved synthetic data. Understanding that some readers may wish to further explore our topic through reproducible experiments on real-world data, we present an additional study in this Appendix H. This study experimentally validates the main properties of vMF-exp on a large-scale, publicly available real-world dataset. 
+
+H.1. Experimental setting 
+
+We present vMF-exp experiments on real-world, publicly available data. Specifically, we compare the behaviors of B-exp and vMF-exp on the GloVe-25 dataset of 1 million GloVe word embedding vectors with dimension d = 25 (Pennington et al., 2014). Each vector, learned using word2vec (Mikolov et al., 2013) from 2 billion tweets, represents a word token. We subtract the set’s average from each vector and divide them by their norms. We obtain a vector set, denoted G, with all vectors lying on the unit hypersphere, making GloVe-25 a relevant large-scale dataset for our study. Our experiments follow the protocol outlined in Section 4.3 of the main paper. In this section, we compared the empirical probabilities PB-exp (a) and PvMF-exp (a) of sampling an action a represented by a vector A given a state vector V , for varying action numbers n and inner products ⟨V, A ⟩. While we relied on Monte Carlo simulations with uniformly drawn vectors 
+
+Xn ∼ U (Sd−1), in this Appendix H, vectors are sampled from G, with V and A also drawn from G such that ⟨V, A ⟩ matches the pre-selected values. Our goal is to empirically compare PB-exp (a) and PvMF-exp (a), while verifying the claims that P1 ,
+
+P2 , and P3 simultaneously hold for vMF-exp. Finally, in our Sections 4.2 and 4.3, we provided analytical approximations of PB-exp (a) and PvMF-exp (a) in the presence of independent and identically distributed (i.i.d.) uniform embedding vectors. We will assess the usefulness of these approximations on these GloVe vectors, which do not strictly satisfy these strong assumptions. Finally, regarding these experiments on GloVe-25, we note that: • The GloVe-25 dataset is available for download at: https://nlp.stanford.edu/projects/glove/ .• In our experiments, we use the Python vMF sampler from Pinz ´on & Jung (2023) to efficiently explore large action sets. • All results are reproducible using our source code: https://github.com/deezer/vMF-exploration .
+
+H.2. Results and Discussion On P1 We now discuss our results. We first focus on P1 . While B-exp requires computing ⟨V, X i⟩ and softmax values for all n vectors Xi ∈ X n, vMF-exp only involves sampling a d-dimensional vector (in constant time with respect to n) and finding its approximate nearest neighbor (ANN) in Xn.Table 1 compares the performance of four popular ANN algorithms on GloVe-25. Following standard ANN literature (Simhadri et al., 2024), our performance metric is the maximum throughput, measured in queries per second (QPS), for which the average recall of the exact top-10 neighbors exceeds 90%. We also report the throughput of exhaustive search, as an indicator of B-exp’s inefficiency. Table 1 shows that exhaustive search yields throughput 2 to 3 orders of magnitude lower than ANN methods. This confirms the significantly better scalability ( P1 ) of vMF-exp compared to B-exp.             
+
+> Table 1. Performance of popular ANN algorithms on GloVe-25, extracted from the benchmark of Aum ¨uller et al. (2017). Following Simhadri et al. (2024), our performance metric is the maximum throughput, measured in Queries Per Second (QPS), for which the average recall of the exact top-10 neighbors exceeds 90%. The evaluated algorithms include two implementations of HNSW (Malkov & Yashunin, 2018), one from the Faiss library (Douze et al., 2024) and the other from NMSLIB (Boytsov & Naidan, 2013), as well as ScaNN (Guo et al., 2020) and NGT-QG (Iwasaki & Miyazaki, 2018). Exhaustive search is 2 to 3 orders of magnitude slower than ANN methods.
+> Algorithm Exhaustive Search HNSW (Faiss) HNSW (NMSLIB) ScaNN NGT-QG
+> Maximum Throughput 34 6197 14080 23436 22733 in Queries Per Second (QPS)
+
+31 Exploring Large Action Sets with Hyperspherical Embeddings using von Mises-Fisher Sampling 
+
+On P2 and P3 Figure 8 compares PB-exp (a) and PvMF-exp (a) for increasing values of n and ⟨V, A ⟩. Figure 8(a) highlights the two properties that make B-exp popular in RL: the ability to sample actions with unrestricted radius ( P2 ) and the ordering of sampling probabilities based on action similarity to V (P3 ). Importantly, Figure 8(b) confirms that vMF-exp also satisfies both properties. In our tests, A always has a positive sampling probability, which strictly increases with ⟨V, A ⟩. Thus, vMF-exp also satisfies P2 and P3 on GloVe-25. 
+
+On Theoretical Approximations Finally, Figure 9 shows that, although GloVe vectors are not i.i.d. and uniform, the analytical approximations of the main paper for PB-exp (a) and PvMF-exp (a) often remain accurate, particularly for B-exp. Also, vMF-exp closely matches B-exp’s probabilities for low absolute values of ⟨V, A ⟩.However, as |⟨ V, A ⟩| increases, the gap between PvMF-exp (a) and PB-exp (a) grows more rapidly than predicted by approxi-mations, highlighting the limitations of the i.i.d. and uniform assumptions and opening the way for future research on more general expressions. 
+
+Conclusion This additional study confirmed the key theoretical and scalability properties of vMF-exp on a large-scale and publicly available real-world dataset. Our results highlight its potential as a practical solution for exploring large action sets when hyperspherical embedding vectors represent these actions. 20000 30000 40000 50000 60000 70000 80000 90000 100000   
+
+> n
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> 1.2
+> PB exp (a)
+> ×10 4
+> 0.9
+> 0.3
+> 0.0
+> -0.3
+> -0.9
+> =1 , <V,A> [-0.9,0.9]
+
+Glove-25, B-exp 
+
+(a) 20000 30000 40000 50000 60000 70000 80000 90000 100000   
+
+> n
+> 0
+> 1
+> 2
+> 3
+> 4
+> 5
+> 6
+> 7
+> PvMF  exp (a)
+> ×10 5
+> 0.9
+> 0.3
+> 0.0
+> -0.3
+> -0.9
+> =1 , <V,A> [-0.9,0.9]
+
+Glove-25, vMF-exp (b) 
+
+Figure 8. We report the empirical probabilities PB-exp (a) and PvMF-exp (a) of sampling an action a represented by a GloVe embedding vector 
+
+A, using B-exp and vMF-exp, respectively, given a state vector V , with 20000 ≤ n ≤ 100000 and ⟨V, A ⟩ ∈ { 0.9, 0.3, 0.0, −0.3, −0.9},and with d = 25 and κ = 1 . Sampling is repeated 30 million times and averaged to obtain precise estimates. For both methods, the probability of sampling a for exploration is strictly positive ( P2 ) and is a strictly increasing function of the inner product similarity ⟨V, A ⟩
+
+(P3 ). Results remain consistent when κ is modified. 
+
+32 Exploring Large Action Sets with Hyperspherical Embeddings using von Mises-Fisher Sampling 20000 40000 60000 80000 100000  
+
+> n
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> P(a)
+> ×10 4
+
+Glove-25 
+
+= 1.0, <V,A>=0.0: 
+
+P0(a)
+
+P1(a)
+
+PB exp (a)
+
+PvMF exp (a)
+
+(a) 20000 40000 60000 80000 100000  
+
+> n
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> 1.2
+> P(a)
+> ×10 4
+
+Glove-25 
+
+= 1.0, <V,A>=0.3: 
+
+P0(a)
+
+P1(a)
+
+PB exp (a)
+
+PvMF exp (a) (b) 20000 40000 60000 80000 100000  
+
+> n
+> 0
+> 1
+> 2
+> 3
+> 4
+> 5
+> 6
+> 7
+> 8
+> P(a)
+> ×10 5
+
+Glove-25 
+
+= 1.0, <V,A>=-0.3: 
+
+P0(a)
+
+P1(a)
+
+PB exp (a)
+
+PvMF exp (a) (c) 20000 40000 60000 80000 100000  
+
+> n
+> 0.0
+> 0.5
+> 1.0
+> 1.5
+> 2.0
+> 2.5
+> P(a)
+> ×10 4
+
+Glove-25 
+
+= 1.0, <V,A>=0.9: 
+
+P0(a)
+
+P1(a)
+
+PB exp (a)
+
+PvMF exp (a)
+
+(d) 20000 40000 60000 80000 100000  
+
+> n
+> 0
+> 1
+> 2
+> 3
+> 4
+> 5
+> 6
+> P(a)
+> ×10 5
+
+Glove-25 
+
+= 1.0, <V,A>=-0.9: 
+
+P0(a)
+
+P1(a)
+
+PB exp (a)
+
+PvMF exp (a) (e) 
+
+Figure 9. We compare PB-exp (a) and PvMF-exp (a) on GloVe-25 to the analytical approximations P0(a) and P1(a) stated in Propositions 4.1 to 4.4 of the main paper under the assumption of i.i.d. and uniformly distributed vectors. Our tests confirm the usefulness of these approximations on GloVe-25. The yellow curve ( P0(a)) is indistinguishable from the red curve ( PB-exp (a)), indicating that Proposition 4.2 holds across all configurations. Furthermore, PvMF-exp (a) (blue) remains close to PB-exp (a) (red) for low absolute values of ⟨V, A ⟩
+
+(Figures 9(a), 9(b), and 9(c)), as anticipated by Propositions 4.1 and 4.3. In Figures 9(b) and 9(c), the small difference between PvMF-exp (a)
+
+and PB-exp (a) aligns with the alternative expression P1(a) (green) derived in Proposition 4.4. However, as |⟨ V, A ⟩| increases (Figures 9(d) and 9(e)), the difference between vMF-exp and B-exp grows more rapidly than predicted by Proposition 4.4, highlighting the limitations of the i.i.d. and uniform assumptions. 
+
+33 Exploring Large Action Sets with Hyperspherical Embeddings using von Mises-Fisher Sampling 
+
+## I. Application to Large-Scale Music Recommendation 
+
+Our analysis of vMF-exp in this paper was intentionally general, as the method can be applied to various problem settings. In this Appendix I, we showcase a real-world application of vMF-exp. 
+
+I.1. Experimental Setting 
+
+We consider the “Mixes inspired by” feature of the global music streaming service Deezer 5. This recommender system is deployed at scale and available on the homepage of this service (Bendada et al., 2023a). As shown in Figure 10, it displays a personalized shortlist of songs, selected from those previously liked by each user. A click on a song generates a playlist of 40 songs “inspired by“ the initial one, with the aim of helping users discover new music within a catalog including several millions of recommendable songs.  
+
+> Figure 10. Interface of the “Mixes inspired by” recommender system on the music streaming service Deezer.
+
+To generate playlists, Deezer leverages a collaborative filtering model (Koren & Bell, 2015). This model learns unit norm song embedding representations of dimension d = 128 by factorizing a mutual information matrix based on song co-occurrences in various listening contexts, using singular value decomposition (SVD) (Banerjee & Roy, 2014; Briand et al., 2021; 2024). Inner product proximity in the resulting embedding space aims to reflect user preferences. When a user selects an initial song, the model retrieves its embedding, then (approximately) identifies its neighbors in the embedding space using the efficient Faiss library (Johnson et al., 2019) for ANN. Currently, Deezer generates the entire playlist at once in production. The service is considering RL approaches to, instead, recommend songs one by one while adapting to user feedback on previous songs of the playlist (likes, skips, etc.). However, as explained in Section 1, adopting such approaches would require exploring millions of possible actions/songs, significantly increasing the complexity of this task. In this Appendix I, we continue generating “Mixes inspired by” playlists all at once, but take a step towards RL by comparing three methods for exploring large action sets of millions of songs: • vMF-exp: we use the embedding of the user’s selected song as the initial state V . We sample a random state embedding 
+
+˜V according to the vMF distribution, using the estimator of Banerjee et al. (2005) to tune κ (see Equation (4) of Sra (2012)). Finally, we recommend the 40 nearest neighbors of ˜V in the embedding space according to the ANN engine. • TB-exp: comparing vMF-exp to full B-exp is practically intractable at this scale. We compare vMF-exp to TB-exp with a similar κ. We first retrieve the m = 500 nearest neighbors of the initial song in the embedding space, according to the ANN engine. Then, we generate the playlist by sampling 40 songs from these 500 using a truncated Boltzmann distribution. • Reference: we also compare vMF-exp to a baseline that retrieves the 500 nearest neighbors of the initial song using ANN, then shuffles them randomly to generate a playlist of 40 songs. In early 2024, we conducted an industrial-scale online A/B test on the music streaming service Deezer to compare these exploration strategies in real conditions. The test involved millions of users worldwide, randomly split and unaware of the test. 
+
+> 5https://www.deezer.com/en/
+
+34 Exploring Large Action Sets with Hyperspherical Embeddings using von Mises-Fisher Sampling 
+
+I.2. Results and Discussion 
+
+Firstly, it is important to highlight that we were able to successfully deploy vMF-exp in Deezer’s production environment, achieving a sampling latency of just a few milliseconds, comparable to the other methods. This industrial deployment on a service used by millions of users on a daily basis confirms the claimed scalability of vMF-exp and its practical relevance for large-scale applications. Using vMF-exp or TB-exp for exploration improved the daily number of recommended songs “liked” by users through “Mixes inspired by” (liking a song adds it to their list of favorites), compared to the reference baseline. For confidentiality, we do not report exact numbers of likes or users in each cohort, but present relative rates with respect to the reference. On average, users exposed to vMF-exp or TB-exp added 11% more recommended songs to their playlists than the reference cohort. These differences were statistically significant at the 1% level (p-value < 0.01). No apparent differences were observed between vMF-exp and TB-exp, showing that vMF-exp is competitive with TB-exp. In addition, vMF-exp, which does not suffer from the restricted radius of TB-exp, recommended more diverse playlists. We measured the average Jaccard similarity (Tan et al., 2016) of playlists generated from the same initial selection, to assess how similar the songs sampled from the same state embedding were, for each method. Results reveal that TB-exp had an average Jaccard similarity 35% higher (less diverse playlists) than vMF-exp, a statistically significant difference at the 1% level (p-value < 0.01). Therefore, vMF-exp allowed for a more substantial exploration, without compromising performance. At the time of writing, Deezer continues to use vMF-exp for “Mixes inspired by” recommendations. Playlists are still generated at once, but our work equips this service with an effective strategy to explore their large and embedded action set of millions of songs. This opens interesting avenues for further investigation of RL for recommendation. In the near future, Deezer will launch tests involving actor-critic RL models (Konda & Tsitsiklis, 1999; Sutton & Barto, 2018) to explore and generate songs sequentially based on user feedback. 35
