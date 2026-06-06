@@ -6,74 +6,65 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-05
-- 运行时间：2026-06-05 21:44:26 UTC
+- 最新运行日期：2026-06-06
+- 运行时间：2026-06-06 21:14:35 UTC
 - 运行状态：成功
-- 本次总论文数：18
-- 精读区：7
-- 速读区：11
+- 本次总论文数：15
+- 精读区：5
+- 速读区：10
 
 ### 今日简报（AI）
-今日推荐18篇论文，精读7篇，速读11篇，重点关注无训练LLM达专家级扑克水平与分层宏动作量化增强AI人类似性。最值得看的两篇：10分论文《PokerSkill》让LLM无需训练就能玩专家级扑克，9分论文《Enhancing Human-Likeness》提出分层宏动作量化提升强化学习智能体的人类似行为。建议读者优先精读这两篇，它们分别展示了LLM在博弈中的推理潜力与拟人化控制的创新方法。
-- 详情：[/202606/05/README](/202606/05/README)
+今日精选15篇论文，精读2篇均聚焦多智能体决策，速读涉及战略博弈与世界模型协同。最值得关注：层次化多智能体决策框架与博弈论强化学习的战略优先级分配，两者均达8.0分。建议优先阅读精读论文，理解如何用LLM协调多智能体交互及在资源竞争中实现纳什均衡。
+- 详情：[/202606/06/README](/202606/06/README)
 
 ### 精读区论文标签
-1. [PokerSkill: LLMs Can Play Expert-Level Poker without Training or Solvers](/202606/05/2605.30094v1-pokerskill-llms-can-play-expert-level-poker-without-training-or-solvers)  
-   标签：评分：10.0/10、query:player-ai
-   evidence：LLM使用基于规则的技能在不训练的情况下达到专家级扑克水平
-2. [Enhancing Human-Likeness in Reinforcement Learning Agents via Hierarchical Macro Action Quantization](/202606/05/2605.30928v1-enhancing-human-likeness-in-reinforcement-learning-agents-via-hierarchical-macro-action-quantization)  
-   标签：评分：9.0/10、query:player-ai
-   evidence：通过层次化宏观动作量化编码人类示范，生成类人强化学习智能体行为
-3. [Dreaming Of Others: Latent Teammate Modeling In World Models For Multi-Agent Reinforcement Learning](/202606/05/2605.31361v1-dreaming-of-others-latent-teammate-modeling-in-world-models-for-multi-agent-reinforcement-learning)  
-   标签：评分：9.0/10、query:player-ai
-   evidence：多智能体强化学习中世界模型的潜在队友建模，可应用于游戏AI智能体游玩
-4. [Fog of Love: Engineering Virtuous Agent Behavior with Affinity-based Reinforcement Learning in a Game Environment](/202606/05/2606.04750v1-fog-of-love-engineering-virtuous-agent-behavior-with-affinity-based-reinforcement-learning-in-a-game-environment)  
-   标签：评分：9.0/10、query:player-ai
-   evidence：在游戏环境中使用亲和力强化学习训练智能体
-5. [Extending the El Farol Bar Game with Partial Observability and Incentive Design](/202606/05/2606.04753v1-extending-the-el-farol-bar-game-with-partial-observability-and-incentive-design)  
-   标签：评分：9.0/10、query:player-ai
-   evidence：将经典酒吧游戏扩展至AI驱动学习智能体、部分可观测性和激励设计
-6. [CollabBench: Benchmarking and Unleashing Collaborative Ability of LLMs with Diverse Players via Proactive Engagement](/202606/05/2606.05793v1-collabbench-benchmarking-and-unleashing-collaborative-ability-of-llms-with-diverse-players-via-proactive-engagement)  
-   标签：评分：9.0/10、query:player-ai
-   evidence：合作游戏中的协作基准，包含多样化玩家画像模拟
-7. [DNQ: Deep Nash Q-Network for Partially Observable n-Player Games](/202606/05/2606.06480v1-dnq-deep-nash-q-network-for-partially-observable-n-player-games)  
-   标签：评分：9.0/10、query:player-ai
-   evidence：深度纳什Q网络用于多轮博弈中的竞价智能体训练
+1. [Multi$^2$: Hierarchical Multi-Agent Decision-Making with LLM-Based Agents in Interactive Environments](/202606/06/2606.03698v1-multi2-hierarchical-multi-agent-decision-making-with-llm-based-agents-in-interactive-environments)  
+   标签：评分：8.0/10、query:player-ai
+   evidence：提出面向交互环境中基于LLM代理的分层多智能体决策框架
+2. [GARL: Game-Theoretic Reinforcement Learning for Multi-Agent Strategic Prioritisation](/202606/06/2606.05002v1-garl-game-theoretic-reinforcement-learning-for-multi-agent-strategic-prioritisation)  
+   标签：评分：8.0/10、query:player-ai
+   evidence：博弈论强化学习用于多智能体战略优先级，直接相关游戏AI智能体
+3. [Continual Learning Bench: Evaluating Frontier AI Systems in Real-World Stateful Environments](/202606/06/2606.05661v1-continual-learning-bench-evaluating-frontier-ai-systems-in-real-world-stateful-environments)  
+   标签：评分：8.0/10、query:player-ai
+   evidence：基准包含策略游戏领域用于评估AI系统
+4. [Merging model-based control with multi-agent reinforcement learning for multi-agent cooperative teaming strategies](/202606/06/2606.06011v1-merging-model-based-control-with-multi-agent-reinforcement-learning-for-multi-agent-cooperative-teaming-strategies)  
+   标签：评分：8.0/10、query:player-ai
+   evidence：融合强化学习与模型预测控制的多智能体协作框架，适用于游戏AI
+5. [Regret Minimization with Adaptive Opponents in Repeated Games](/202606/06/2606.06486v1-regret-minimization-with-adaptive-opponents-in-repeated-games)  
+   标签：评分：8.0/10、query:player-ai
+   evidence：研究重复博弈中与自适应对手的遗憾最小化
 
 ### 速读区论文标签
-1. [PEAM: Parametric Embodied Agent Memory through Contrastive Internalization of Experience in Minecraft](/202606/05/2605.27762v2-peam-parametric-embodied-agent-memory-through-contrastive-internalization-of-experience-in-minecraft)  
-   标签：评分：8.0/10、query:player-ai
-   evidence：在Minecraft游戏环境中进行Agent游玩
-2. [Global Policy-Space Response Oracles for Two-Player Zero-Sum Games](/202606/05/2605.28273v1-global-policy-space-response-oracles-for-two-player-zero-sum-games)  
-   标签：评分：8.0/10、query:player-ai
-   evidence：使用深度强化学习和PSRO计算零和博弈均衡，直接适用于游戏AI
-3. [Gamma-World: Generative Multi-Agent World Modeling Beyond Two Players](/202606/05/2605.28816v1-gamma-world-generative-multi-agent-world-modeling-beyond-two-players)  
-   标签：评分：8.0/10、query:player-ai
-   evidence：生成式多智能体世界模型可生成多玩家交互仿真，支持玩家建模
-4. [Theoretical Foundations and Effective Algorithms for Policy-Aware Simulator Learning](/202606/05/2605.29032v1-theoretical-foundations-and-effective-algorithms-for-policy-aware-simulator-learning)  
-   标签：评分：8.0/10、query:player-ai
-   evidence：策略感知模拟器学习用于游戏环境中的RL代理训练
-5. [Mean-Field Diffuser: Scaling Offline MARL to Thousands of Agents](/202606/05/2605.30190v1-mean-field-diffuser-scaling-offline-marl-to-thousands-of-agents)  
+1. [A Sheaf Framework for Strategic Multi-Agent Systems: From Consensus to Nash Equilibria](/202606/06/2606.01663v1-a-sheaf-framework-for-strategic-multi-agent-systems-from-consensus-to-nash-equilibria)  
    标签：评分：7.0/10、query:player-ai
-   evidence：可扩展至数千智能体的离线多智能体强化学习框架，可用于多智能体游戏训练
-6. [Mean-Field Diffuser: Scaling Offline MARL to Thousands of Agents](/202606/05/2605.30190v2-mean-field-diffuser-scaling-offline-marl-to-thousands-of-agents)  
+   evidence：基于层论的战略多智能体系统框架，包含博弈论奖励结构
+2. [COMAP: Co-Evolving World Models and Agent Policies for LLM Agents](/202606/06/2606.02372v1-comap-co-evolving-world-models-and-agent-policies-for-llm-agents)  
    标签：评分：7.0/10、query:player-ai
-   evidence：面向大规模多智能体系统的离线规划方法，可应用于多智能体游戏场景
-7. [Early Prediction of Future Behavioral Strategy from Process Traces](/202606/05/2605.30550v1-early-prediction-of-future-behavioral-strategy-from-process-traces)  
+   evidence：世界模型与智能体策略在交互环境中的共同进化
+3. [From Prompt to Service: An SLM-Based Agent Orchestration Gateway for AI-Driven Virtual Worlds](/202606/06/2606.03557v1-from-prompt-to-service-an-slm-based-agent-orchestration-gateway-for-ai-driven-virtual-worlds)  
    标签：评分：7.0/10、query:player-ai
-   evidence：从过程痕迹早期预测玩家行为策略以用于游戏自适应
-8. [Fostering Emotional Perspective-Taking: An Exploration of Affective Face-Tracking Interactions in the VR Narrative Rekindle](/202606/05/2606.02425v1-fostering-emotional-perspective-taking-an-exploration-of-affective-face-tracking-interactions-in-the-vr-narrative-rekindle)  
+   evidence：基于SLM的智能体编排用于AI驱动虚拟世界，直接关联游戏AI
+4. [Cheating in Multiplayer Online Games: a Dataset](/202606/06/2606.06013v1-cheating-in-multiplayer-online-games-a-dataset)  
    标签：评分：7.0/10、query:player-ai
-   evidence：利用面部追踪识别玩家情绪状态以模拟行为
-9. [DynSess: Dynamic Session-Level Evaluation and Optimization Framework for Role-Playing Agents](/202606/05/2605.29256v1-dynsess-dynamic-session-level-evaluation-and-optimization-framework-for-role-playing-agents)  
+   evidence：多人游戏作弊行为数据集，用于玩家行为分析
+5. [From Reward-Hack Activations to Agentic Risk States: Context-Calibrated Mechanistic Monitoring in LLM Agents](/202606/06/2606.06223v1-from-reward-hack-activations-to-agentic-risk-states-context-calibrated-mechanistic-monitoring-in-llm-agents)  
+   标签：评分：7.0/10、query:player-ai
+   evidence：在可游戏环境ALFWorld和WebShop中研究ReAct风格代理的奖励黑客监控
+6. [Feat2Go: Visual Feature-Grounded Value Estimation for Embodied Reinforcement Learning](/202606/06/2605.30795v1-feat2go-visual-feature-grounded-value-estimation-for-embodied-reinforcement-learning)  
    标签：评分：6.0/10、query:player-ai
-   evidence：面向角色扮演智能体的会话级评估与优化框架，相关于游戏NPC建模
-10. [Agentic Transformers Provably Learn to Search via Reinforcement Learning](/202606/05/2606.00183v1-agentic-transformers-provably-learn-to-search-via-reinforcement-learning)  
+   evidence：面向具身代理的强化学习，可应用于游戏代理训练
+7. [CRAB-Bench: Evaluating LLM Agents under Complex Task Dependencies and Human-aligned User Simulation](/202606/06/2606.01815v1-crab-bench-evaluating-llm-agents-under-complex-task-dependencies-and-human-aligned-user-simulation)  
    标签：评分：6.0/10、query:player-ai
-   evidence：基于Transformer的策略通过RL学习树搜索，这是游戏智能体关键能力
-11. [Behavior-Invariant Task Representation Learning with Transformer-based World Models for Offline Meta-Reinforcement Learning](/202606/05/2606.00780v1-behavior-invariant-task-representation-learning-with-transformer-based-world-models-for-offline-meta-reinforcement-learning)  
+   evidence：用于评估智能体的逼真用户模拟引擎，适用于玩家行为模拟
+8. [Tracking the Behavioral Trajectories of Adapting Agents](/202606/06/2606.02536v1-tracking-the-behavioral-trajectories-of-adapting-agents)  
    标签：评分：6.0/10、query:player-ai
-   evidence：元强化学习与世界模型用于智能体适应，可应用于游戏游玩
+   evidence：通过技能文件编辑追踪自适应智能体行为轨迹的方法，可迁移至玩家行为模拟
+9. [An Exploration of Collision-based Enemy Morphology Generation](/202606/06/2606.02832v1-an-exploration-of-collision-based-enemy-morphology-generation)  
+   标签：评分：6.0/10、query:player-ai
+   evidence：基于玩家碰撞信息生成敌人形态，涉及游戏中玩家行为模拟
+10. [Autoregressive Diffusion World Models for Off-Policy Evaluation of LLM Agents](/202606/06/2606.05558v1-autoregressive-diffusion-world-models-for-off-policy-evaluation-of-llm-agents)  
+   标签：评分：6.0/10、query:player-ai
+   evidence：用于LLM代理离线策略评估的世界模型，可模拟游戏环境
 
 
 <div class="dpr-home-promo-card">

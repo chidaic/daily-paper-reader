@@ -1,0 +1,11226 @@
+Title: Regret Minimization with Adaptive Opponents in Repeated Games
+
+URL Source: https://arxiv.org/pdf/2606.06486v1
+
+Published Time: Fri, 05 Jun 2026 01:32:24 GMT
+
+Number of Pages: 71
+
+Markdown Content:
+# Regret Minimization with Adaptive Opponents in Repeated Games 
+
+Mingyang Liu ♮1 Asuman Ozdaglar 1 Tiancheng Yu 2 Kaiqing Zhang 31 Massachusetts Institute of Technology 
+
+2 OpenAI 
+
+3 University of Maryland, College Park 
+
+{liumy19,asuman }@mit.edu yutc14@gmail.com kaiqing@umd.edu 
+
+Abstract 
+
+In this paper, we study regret minimization in repeated games with adaptive opponents who can respond based on histories of play. The standard metric of external regret in online learning is known to fail to capture such adaptivity. To account for players’ counterfactual reasoning, we introduce Repeated Policy Regret (RP-Regret) , a game-theoretic metric that measures the difference between the realized and the best-in-hindsight accumulated utility when all players can respond to the history of play. Compared to existing regret notions in this setting, ours is native to repeated game playing, enabling stronger comparators and opponents with fewer constraints, while maintaining the possibility of finding better equilibria when all players minimize it. We first identify necessary conditions for obtaining RP-Regret sublinear in time, on the variation of the player’s comparator strategies in the regret definition and on the memories of both the comparator and opponents’ strategies. We then study additional conditions and provable algorithms to minimize RP-Regret , which is by definition non-convex 
+
+in the strategy space. To address this challenge, we propose three algorithms: (i) one based on an optimization oracle, as assumed in some prior work in online non-convex learning; (ii) one that minimizes a convex and linearized surrogate of RP-Regret at each iteration; (iii) one that directly minimizes RP-Regret when opponents change strategies slowly. Furthermore, when all players can run algorithms to minimize the RP-Regret (or its linearized variant), certain subgame perfect equilibria of the repeated game can be learned. We also provide experiments showing that minimizing our regret notions can lead to more cooperative solutions with higher utility in games such as Stag-Hunt. 1
+
+# 1 Introduction 
+
+Solving for equilibria has long been one of the core problems in algorithmic game theory. How-ever, an equilibrium may not correspond to a solution that yields a high utility 2 for all the players in the game. For example, in the well-known game of Prisoner’s Dilemma (PD), the only Nash equilibrium (NE) is defect-defect , which yields a relatively low utility for both players. Interestingly, however, when it comes to Iterated Prisoner’s Dilemma (IPD) (Axelrod and Hamilton, 1981), a 
+
+repeated version of PD, there exists an NE with a much higher utility for both players (cf. Exam- 
+
+> ♮
+
+Alphabetical Order 
+
+> 1
+
+Accepted for presentation at the Conference on Learning Theory (COLT) 2026. 
+
+> 2
+
+For the classical examples of (Iterated) Prisoner’s Dilemma and Stag-Hunt, we follow the convention of using the term utility ; later when defining regret notions, we will follow the convention from online learning and use the term 
+
+loss throughout. 
+
+1
+
+> arXiv:2606.06486v1 [cs.LG] 4 Jun 2026
+
+ple 1.1). Therefore, solving for equilibria in repeated games may have advantages over that in one-shot matrix games, in terms of possibly achieving higher utilities. More importantly, repeated games can also be employed to compute equilibria for one-shot games. In particular, one of the most efficient and scalable approaches for equilibrium com-putation is through no-regret learning/regret-minimization , which has been both theoretically (Cesa-Bianchi and Lugosi, 2006; Roughgarden, 2010) and empirically (Brown and Sandholm, 2019, 2018) supported. It is known that when all players in the game run a no-regret algorithm, their average strategy over time will converge to certain equilibria determined by the regret they minimize. At the heart of these approaches is a proper definition of regret , which by default usually means ex-ternal regret (Hannan, 1957; Hart and Mas-Colell, 2000), and measures the difference between the loss incurred by an online decision-maker (or a player in repeated games) and certain comparator decisions that they would have made, knowing the time-varying environments in hindsight. However, in this classical regret definition, the loss sequences are implicitly assumed to be only functions of timestep (de Farias and Megiddo, 2003). This is general enough and perfectly sensible in the online learning setting, but not in a game-theoretic one, where, by definition, the opponent players should be responsive to the player’s behavior during learning (Schlag and Zapechelnyuk, 2012). Hence, the classical regret cannot capture the adaptivity of the opponents, who can make decisions based on the history of the play, and the fact that a player’s action may affect the op-ponents’ decisions later. Such an inability may lead to sub-optimal equilibrium solutions ( e.g., 
+
+always “defect” for IPD, as in Example 1.1). In fact, it has been shown that when players are responsive, achieving no-(external-)regret is impossible (Schlag and Zapechelnyuk, 2012). To account for the responsiveness and adaptivity of the opponents/adversaries, several new no-tions of regret have been developed for both online learning and repeated game settings. How-ever, they are either not directly applicable to the repeated-game setting, or computationally intractable. For example, in the online learning setting, Merhav et al. (2002); Arora et al. (2012) introduced the notion of Policy Regret to model environments with memory, in which the loss at round t may depend on a history of past actions rather than only the current action. Their guarantees typically rely on an m-bounded-memory assumption, meaning that the loss at time t
+
+depends only on the most recent m actions. This assumption can be too restrictive in repeated games: a deviation in an early round ( e.g. , at t = 1) may alter the opponents’ observations later, and thereby change their subsequent play well beyond m rounds, even when each player uses a finite-memory strategy. In the repeated-game setting, Zinkevich (2005) proposed the notion of 
+
+Response Regret , which considered the mixed strategy space that depends on the whole history of the play, making the minimization of Response Regret convex . However, this is at the cost of exponentially large space in the history length to store the strategies, and thus computationally intractable. Subsequently, Arora et al. (2018) extended the Policy Regret notion in Arora et al. (2012) to the game setting. However, the comparator in the regret considered there is restricted to 
+
+constant actions and thus neither adaptive nor dynamic. Moreover, to achieve sublinear policy re-gret, Arora et al. (2018) assumed that the opponents’ strategies are insensitive to recent histories, which further restricted the adaptability and thus the power of opponents. For a more detailed related work discussion, we refer to Appendix B. Motivated by these prior studies, our paper focuses on the repeated-game setting, and aims at developing a regret notion that is natural and native to such a setting, while retaining as much generality as possible, e.g., allowing time-varying/dynamic comparator strategies and few constraints on all players’ strategy spaces, while maintaining computational tractability and the possibility of finding better equilibrium solutions by minimizing such a notion. We summarize 2our contributions as follows. 
+
+Our Contributions. Our main contributions are four-fold: (i) For repeated games, we advocate a new and natural notion of Repeated Policy Regret (RP-Regret) , as a performance metric that measures the difference between the realized and the best-in-hindsight accumulated utility when all players can respond to the history of play. It allows the opponents to be adaptive, and the com-parator strategies to be time-varying, i.e. , dynamic; (ii) We prove a series of necessary conditions for obtaining a sublinear RP-Regret , on the variation of the player’s comparator strategies in the regret definition, as well as the memories of both the comparator and the opponents’ strategies (cf. Table 1); (iii) In light of the non-convexity in minimizing RP-Regret , we propose three algo-rithms: (1) one that is based on a certain optimization oracle, as assumed in some prior work in online non-convex learning; (2) one that minimizes a linearized surrogate of RP-Regret at each timestep, Local Repeated Policy Regret (LRP-Regret) , that is convex; (3) one that directly mini-mizes RP-Regret when the opponents change strategies slowly; (iv) We establish the relationship between the minimization of our regret notions and the computation of certain equilibria of the repeated game. Additionally, we also provide experimental results to demonstrate the advantage of our new regret notions in finding better cooperative solutions with higher utility for the players in games like the Stag-Hunt. 
+
+Challenges & Our Techniques. Our notion of RP-Regret is general and particularly devised for the repeated-game setting, but at the cost of having a non-convex objective to minimize due to the memory of players’ strategies. To address the non-convexity issue, we develop several approaches for RP-Regret minimization: (i) we resort to certain non-convex optimization oracles as in Suggala and Netrapalli (2020); (ii) we linearize the expected loss at each timestep to convexify it; (iii) we lift the variable dimension by reformulating the repeated game as a Markov game , yielding a convex objective in the occupancy measure space for the regret-minimizer. In particular, for (iii) we have developed new techniques to address the following challenges: Firstly, the occupancy measure by nature incorporates the strategies of both the regret-minimizer and the opponents in the game, which does not align with our setting where the opponents are not controlled by the regret-minimizer. Therefore, we need to optimize the occupancy measure while keeping the opponents’ strategies extracted from the occupancy measure close to the actual ones. Due to the online nature of game-playing, we cannot know the opponents’ strategies at timestep t before we propose the occupancy measure at timestep t. Naively projecting to the occupancy measure space corresponding to the opponents’ strategies at the previous timestep t − 1 will cause the error to accumulate and eventually blow up. As a result, we carefully design constraints for the occupancy measure, which can provably keep the first-order difference between the extracted opponents’ strategies and the actual ones bounded, and then resort to the framework of online learning with time-varying constraints to solve it; Secondly, we convert the violation of constraints during online learning to the RP-Regret upper bound; Thirdly, the original constraint on the “forgetfulness” of the behavioral-form strategies is non-convex with respect to the occupancy measure, addressing which requires us to redesign the constraint for the behavioral-form strategies. 
+
+Motivating Examples. Now we present two examples to illustrate the advantages of our 
+
+RP-Regret and LRP-Regret over the classical notion of external regret in playing repeated games. Due to space constraints, Example 2 can be found in §A. 3Example 1.1 (Existence of A Better Strategy that is No-RP-Regret ). In Iterated Prisoner’s Dilemma (Axelrod and Hamilton, 1981) (cf. utility matrix in Figure 1), when both players are minimizing the ex-ternal regret (i.e., obtaining regret sublinear in time), the only strategy that the time-average strategies converge to is defect-defect (the only CCE of PD, since defect is a strictly dominant strategy for both players), with a utility of 0.2 for each player. Although the well-known tit-for-tat strategy (starting with Cooperate and mimicking the opponent’s action in the previous round) is an NE of the IPD with infinite rounds and enjoys a higher time-average utility of 0.6 , it, however, suffers linear external regret (cf. Ap-pendix C). In contrast, when both players always play tit-for-tat, they will enjoy sublinear regret in terms of our new regret notion, RP-Regret (to be formally defined in §3), with the higher time-average utility (of 0.6 ) (cf. Appendix C). In other words, our RP-Regret can better capture this effective and cooperation-promoting strategy of tit-for-tat in this case, than the classical external regret. 
+
+# 2 Preliminaries 
+
+Notation. We use Rn, Rn
+
+> ≥0
+
+, and Rn 
+
+> >0
+
+to denote the space of n-dimensional real vectors, real vectors with non-negative elements, and those with positive elements, respectively. For any in-teger n, let [n] B {1, 2, . . . , n}. For any vector x ∈ Rn, we use xi to denote the i-th element in 
+
+x = ( x1, · · · , xn)⊤ and ∥x∥p to denote the p-norm. By default, we use ∥x∥ to denote the ℓ2-norm of x. We define ∆m B {x ∈ [0, 1 ]m : ∑mi=1 xi = 1} as the (m − 1)-dimensional probability sim-plex. For a set S, we will use Sn to denote the Cartesian product of S for n times. For any convex and differentiable function ψS : S → R, we can define the associated Bregman divergence as DψS (x, y) = ψS(x) − ψS(y) − ∇ψS(y), x − y . When DψS (x, y) ≥ k 
+
+> 2
+
+∥x − y∥2, we will call ψS
+
+k-strongly convex. For any vector x and positive integers i < j, we will use xi:j to denote the slicing (xi, xi+1, ..., xj−1, xj) of x. For any finite set S, we will use |S| to denote its cardinality. We use ∅ to denote an empty set, and use N and N>0 to denote the set of non-negative and positive integers, respectively. For any argument, 1(argument ) = 1 when the argument holds, and equals 
+
+1(argument ) = 0 otherwise. For any two integers a ∈ N, b ∈ N>0, we use a%b to denote the remainder of a divided by b.
+
+Repeated (Matrix) Games. Let N = {1, 2, ..., N} denote the set of all players with N ≥ 2. Then, we use Ai to denote the action set of player i ∈ N , and A to denote the joint action set of all players, i.e. , A = ∏Ni=1 Ai. For any joint action a ∈ A , we also call it an action profile . We use A−i to denote the joint action set of all the players except player i. The game is repeated across timesteps 
+
+t ≥ 1. At every timestep t, each player i chooses an action at,i ∈ A i individually, and incurs a loss 3 Li(at) ∈ [0, 1 ], where at = ( at,1 , at,2 , ..., at,N ). Note that {L i}i∈N is referred to as the set of loss 
+
+matrices (which explains the name of repeated matrix games) when N = 2, and as the set of loss 
+
+tensors in general when N > 2. 
+
+History and Strategy. Throughout the paper, we use h to denote a vector of history actions, of which every element is a joint action of the N players. We may also refer to h as history 
+
+for short. We use L(h) to denote the length of h, and hk = ( ak,1 , ak,2 , ..., ak,N ) ∈ A to denote the kth element of h. Note that k ∈ { 1, 2, ..., L(h)}. Moreover, we use hs:k = ( hs, hs+1, ..., hk)
+
+to denote the slice of h for s ≤ k, which is ∅ if s > k. For notational convenience, we use 
+
+(h, a) or (h, h′) to denote the concatenation of a vector and an action profile/a vector. We use     
+
+> 3To follow the convention of online learning, we use loss instead of utility/payoff in the rest of the paper.
+
+4Hm B {h = ( h1, h2, ..., hm) | ∀ k = 1, 2, ..., m, hk ∈ A} to denote the set of all histories of length m.For convenience, we define H B S∞ 
+
+> i=0
+
+Hi, where H0 = {∅} contains the unique history h = ∅
+
+with length L(h) = 0. We use π(i) : H → ∆|A i | to denote the (history-dependent) strategy of player i. π(i)(ai | h)
+
+is the probability of choosing action ai ∈ A i conditioned on observing the history h. Let 
+
+X (i) B
+
+n
+
+π(i) | π(i) : H → ∆|A i |
+
+o
+
+be the space π(i) lies in and X B π | π : H → ∆|A| be the space of the joint strategy profile π lies in. Unless we specify π to be a correlated strategy explicitly, we use the notation of π(a | h) to denote π(a | h) = ∏Ni=1 π(i)(ai | h), i.e. , as a product strategy. For convenience, we also use π(−i) to denote the strategy profile of all players except player i, i.e. ,
+
+π(−i)(a−i | h) = ∏j,i π(j)(aj | h). In repeated games, at each timestep t, based on some history 
+
+h, each player i will draw their action at,i from their strategy at timestep t, denoted as π(i) 
+
+> t
+
+, i.e., 
+
+sampling from π(i) 
+
+> t
+
+(· | h). Note that h here could be either the full history from time 1 to t − 1, or some truncated portion of it. Lastly, we define π(i) 
+
+> p
+
+B
+
+
+
+∑ai ∈A i ,h∈H π(i)(ai | h) p1/ p
+
+.
+
+Expected Loss in Repeated Games. Firstly, for any history h ∈ H and a vector of strategies 
+
+π1: L(h) of length L(h), we define Pr (h | h′; π1: L(h)) B ∏L(h) 
+
+> s=1
+
+∏Ni=1 π(i) 
+
+> s
+
+(hs,i | (h′, h1: s−1)) as the proba-bility that h occurs when all players observe h′ ∈ H initially, and sample action profile hk ∈ A 
+
+according to πk for k ∈ { 1, 2, ..., L(h)}. For simplicity, we define Pr (h; π1: L) B Pr (h | ∅; π1: L) for 
+
+π1: L of any length L > 0. Then, we can define the expected loss of player i when all the players follow a sequence of strategies in π1: m+1 for m + 1 steps, and when observing some h′ ∈ H ini-tially, as f mi (π1: m+1 | h′) B ∑a∈A Li(a) ∑h∈H m Pr (( h, a) | h′; π1: m+1). Note that the input sequence of the strategy profiles π1: m+1 in f mi (π1: m+1 | h′) always has the length of m + 1, the same as the length of (h, a), where m = L(h). When h = ∅, we define m = L(h) = 0. Additionally, we de-fine f mi (π1: m+1) B f mi (π1: m+1 | ∅) for simplicity. Finally, we may denote π1: m+1 simply as π when the subscript is clear from the context. Unlike one-shot normal-form games, the expected loss in repeated games is non-convex with respect to the strategies π1: m+1. Therefore, to optimize the expected loss, we need to either assume a non-convex optimization oracle (Section G), or linearize and thus convexify the function (Section 4.1), or lift the dimension of the variables (Section 4.2). 
+
+# 3 A New Metric: Repeated Policy Regret (RP-Regret) 
+
+3.1 RP-Regret Definition 
+
+We consider the case in repeated games where the opponents are adaptive , i.e. , they can make decisions by responding to histories of play. The player is also aware that their deviations in action could trigger responses from the opponents. To handle this setting, we advocate a new metric of Repeated Policy Regret (RP-Regret) in repeated games. Without loss of generality, we will consider the player of interest as player 1 , and we refer to all other players as the opponents ,as the definition of RP-Regret applies to all players. Specifically, for player 1, we first define the 
+
+accumulated expected loss J T (π1: T ) of the joint strategy π1: T when playing T rounds of the game: 
+
+JT (π1: T ) :=
+
+> T
+
+# ∑
+
+> t=1
+
+f t−1(π1: t), (3.1) 5where, for notational simplicity, we omit the subscript 1 of f m 
+
+> 1
+
+(π1: m+1). Therefore, an intuitive measure of performance would be comparing JT (π1: T ) with the best-response expected loss of min ˆπ(1)    
+
+> 1: T∈(X(1))T
+
+JT (( ˆπ(1)
+
+> 1: T
+
+, π(−1) 
+
+> 1: T
+
+)) , where we recall that X (i) is the space in which the strategy of player i lies. In the following, we refer to ˆ π(1) 
+
+> 1: T
+
+as the comparator . Then, we can define the RP-Regret 
+
+as 
+
+RT := JT (π1: T ) − min  
+
+> ˆπ(1)
+> 1: T∈C (1)
+> T
+
+JT (( ˆπ(1)
+
+> 1: T
+
+, π(−1) 
+
+> 1: T
+
+)) (3.2) where T ∈ N>0 and C(i) 
+
+> T
+
+⊆ (X (i))T is the space that the comparator ˆπ(i) 
+
+> 1: T
+
+of player i lies in, subject to some constraints (to be specified later) that make C(i) 
+
+> T
+
+potentially smaller than (X (i))T, and thus lead to a weaker comparator for potentially better tractability, as we shall see later. 
+
+RP-Regret captures how much better we could have done if we had chosen ˆπ(1) 
+
+> 1: T
+
+when all players are adaptive (i.e., they are aware of the history). In contrast to external regret, the deviation to the comparator strategy ˆ π(1) 
+
+> t
+
+at timestep t will not only affect the expected loss at timestep t but also all expected losses afterward. This is because the distribution over histories has changed, and the adaptive opponents may change their strategies correspondingly. RP-Regret coincides with the 
+
+adaptive regret 4 defined in Loftin and Oliehoek (2022), when the strategies π(1) 
+
+> t
+
+for all t have no restrictions on the memory used, i.e. , can react arbitrarily differently when observing different histories. However, the regret is linear in the worst case, as shown in Lemma D.2 and Lemma D.3 (related but different hardness results also appeared in Schlag and Zapechelnyuk (2012); Loftin and Oliehoek (2022)). Therefore, we will set additional restrictions on the memory, so that players should behave similarly when observing similar histories (to be discussed in detail in §3.2). In this case, RP-Regret differs from the adaptive regret defined in Loftin and Oliehoek (2022), where the strategies of all players may now change over time. More relatedly, the policy regret in Arora et al. (2018) restricts the comparator ˆ π(1) 
+
+> 1: T
+
+to be a fixed action across all timesteps as in external regret. Moreover, for some m > 0 and any history 
+
+h ∈ H , ˜ h, ¯ h ∈ H m, they assume ∑Tt=m π(−1) 
+
+> t
+
+(·| (h, ˜ h)) − π(−1) 
+
+> t
+
+(·| (h, ¯ h)) is sublinear in T. In other words, the opponents’ strategies do not depend on recent history. This assumption further re-stricts the adaptability and thus the power of the opponents, limiting its applicability in repeated game playing, the focus of our paper. 
+
+3.2 When is Minimizing RP-Regret Possible? 
+
+Being fairly natural and native to repeated game playing, the notion of RP-Regret can be hard to minimize. To understand its fundamental limits, we first identify two basic conditions that can be proved necessary for achieving a RP-Regret sublinear in T. The first one is a variation condition, which restricts the comparator’s strategy from changing too fast across different timesteps. The second one concerns the imperfect memories of all the players and the comparator. 
+
+Condition 1 (Sublinear Variation) . For a given player i ∈ N , we say that the strategy π(i) 
+
+> 1: T
+
+of player i changes slowly with sublinear variation , when there exists a constant p ∈ [0, 1 ) such that 
+
+∑Tt=2
+
+ π(i)
+
+> t−1
+
+(ai | h) − π(i) 
+
+> t
+
+(ai | h)    
+
+> ai∈A i,h∈H ∞
+
+≤ O(Tp).    
+
+> 4We are aware that there is another definition of adaptive regret (Hazan et al., 2007; Daniely et al., 2015; Zhang et al., 2018c), which refers to the maximum external regret over all intervals [r,s]⊆[T]. However, given the context of this paper, we will only discuss the adaptive regret for repeated games.
+
+6Condition 1 on the comparator is a common assumption in the literature of dynamic regret mini-mization (Zinkevich, 2003; Zhang et al., 2018a,b; Zhao et al., 2022), which restricts the power of the comparator in order to achieve sublinear dynamic regret. Note that the well-known external regret also implicitly adopts such a condition with the variation of the comparator being zero. 
+
+Condition 2 (Imperfect Recall (Piccione and Rubinstein, 1997; Waugh et al., 2009)) . For a given player i ∈ N , we say that player i has imperfect recall , when they cannot remember all their histories perfectly. In particular, player i cannot perfectly differentiate the observed histories, and thus cannot choose arbitrarily distinct strategies of π(i) 
+
+> 1: T
+
+for each different history encountered. 
+
+As a surrogate to quantitatively characterize Condition 2, we propose Condition 3 below, which instantiates the “imperfect” recall as having finite-memory with an exponential decay property. 
+
+Condition 3 (Exponential Decay Memory (EDM)) . For a given player i ∈ N , the strategy π(i) 
+
+> 1: T
+
+of player i focuses on only the latest histories due to an exponential decay memory. Formally, for any timestep t ∈ [T]                       
+
+> ∀h, ¯ h, ˜ h∈ H ,ai∈ A i,1−γL(h)+ 1≤π(i)
+> t(ai|(˜h,h))
+> π(i)
+> t(ai|(¯h,h)) ≤11−γL(h)+ 1
+
+(3.3) 
+
+for some constant γ ∈ [0, 1 ). Let X (i) 
+
+> γ
+
+denote the space of all π(i) ∈ X (i) that satisfy the condition. 
+
+Condition 3 quantitatively bounds how sensitive the strategy is to the distant past: once the most recent suffix h is fixed, changing the earlier prefix from ˜ h to ¯ h can only change each conditional action probability by a multiplicative factor that approaches 1 at an exponential rate in the length of h, as denoted by L (h). Thus, for any target accuracy ϵ > 0, it suffices to retain a suffix of length L = O (log (1/ ϵ)) to make the effect of earlier history negligible. We adopt exponential (rather than polynomial) decay precisely to ensure that this effective memory length grows only logarithmically with 1/ ϵ, which ensures efficient computation. This assumption is satisfied by several regularized mirror-descent-type updates, see, e.g. , Cen et al. (2021); Liu et al. (2022); Sokota et al. (2023). An alternative to quantify imperfect recall is via bounded memory (Chakraborty and Stone, 2014), where strategies depend only on the last m rounds for a fixed constant m. However, bounded dependence on the last m observations does not prevent a player from using its actions as an in-formation carrier: by choosing actions according to a protocol, the player can encode information about earlier events into the recent suffix that future decisions can still access. As shown in the proof of Lemma D.1, this phenomenon can preclude sublinear regret even when m = 1. Condi-tion 3 rules out such near-perfect “state passing” by forcing policies that share the same recent suffix to be nearly indistinguishable regardless of the earlier prefix, with the indistinguishability improving exponentially in the suffix length. We summarize the hardness results in Table 1 and postpone the full statements to Appendix D. Although in Table 1 we only state the necessity of Condition 2, Condition 3 is “ almost necessary ”, as the difference between these two conditions only originates from those imperfect recall strategies with the choice of γ = 1 in Condition 3 (following the convention that 1/0 = + ∞). Given the results above, we now focus on minimizing the RP-Regret by assuming the necessary conditions summarized in Table 1 throughout, unless otherwise noted. 7Condition 1 Condition 2 Comparator ✓ Lemma D.1 ✓ Lemma D.2 Opponent — ✓ Lemma D.3 Table 1: Summary of the necessary conditions for RP-Regret minimization. The ✓denotes that the condition is required. The corresponding lemma proves that the condition is necessary. In Appendix G, we show that a nonconvex optimization oracle yields sublinear RP-Regret under these necessary conditions, with Condition 2 replaced by Condition 3. 
+
+# 4 RP-Regret Minimization 
+
+As mentioned before, unlike the traditional framework of online convex optimization with memory 
+
+(Merhav et al., 2002; Anava et al., 2015), which exclusively focuses on handling convex loss func-tions, our loss is non-convex with respect to the input argument due to the product of strategies in consecutive timesteps. Hence, it is hard to minimize RP-Regret directly due to the non-convexity. We now propose three different ways to minimize RP-Regret as follows: • Minimizing RP-Regret directly with an oracle that can optimize a non-convex function, where we only need the necessary conditions in Table 1, except that we use Condition 3 instead of Condition 2. This setting with a non-convex optimization oracle, though it may be computationally intractable, can still provide some insights into the players’ learning process, and has also been adopted in the literature (Suggala and Netrapalli, 2020). This part is presented in detail in Appendix G. • Minimizing a surrogate notion of RP-Regret , i.e. , Local RP-Regret (LRP-Regret ), by convexi-fying the RP-Regret locally around the implemented strategies during regret minimization, which will be discussed in §4.1. • Reformulating the problem as a Markov game (Shapley, 1953; Filar and Vrieze, 2012) under certain reparameterization, with an additional requirement that Condition 1 holds also for the opponent (not only for the comparator, as a necessary condition by Lemma D.1). This part will be introduced in §4.2. The first bullet justifies that Condition 1 on the comparator and Condition 3 on both the com-parator and the opponents are sufficient to achieve sublinear RP-Regret , when one leverages a non-convex optimization oracle, as in online non-convex learning (Suggala and Netrapalli, 2020). This sufficiency result mirrors the necessity of these conditions (and their variants) in §3.2. Here-after, we will focus on introducing the other two approaches above that account for computational efficiency. 
+
+4.1 Minimizing a Surrogate: Local Repeated Policy Regret 
+
+Motivated by the one-step deviation principle (Watson, 2002), which means that the strategy profile of a repeated game is a subgame perfect Nash equilibrium (SPNE) if and only if no player can decrease their expected loss by deviating from their original strategy via only a single action at one round of the game, we propose the notion of Local Repeated Policy Regret (LRP-Regret) .Specifically, instead of computing the regret by globally deviating from the strategy π(1) 
+
+> 1: T
+
+to ˆπ(1)
+
+> 1: T
+
+,we compute the regret when the player only locally deviates from π(1) 
+
+> 1: T
+
+at one timestep, which is 8formally given by 
+
+Rlocal  
+
+> T
+
+B max  
+
+> ˆπ(1)
+> 1: T∈C (1)
+> T
+> T
+
+# ∑
+
+> s=1
+
+ JT (π1: T ) − JT ( ˜π(1),s 
+
+> 1: T
+
+, π(−1) 
+
+> 1: T
+
+), where ˜π(1),st =
+
+(
+
+ˆπ(1) 
+
+> t
+
+t = s
+
+π(1) 
+
+> t
+
+t , s, (4.1) and C(1) 
+
+> T
+
+⊆
+
+
+
+X (1)
+
+> γ
+
+T
+
+is the space of the comparator ˆπ(1)
+
+> 1: T
+
+, which satisfies Condition 1 and Con-dition 3 with γ ≤ 12(N+2) . lim T→∞ Rlocal  
+
+> T
+> T
+
+= 0 implies that when player 1 deviates to ˆπ(1) 
+
+> 1: T
+
+at only one timestep t ∈ { 1, 2, ..., T}, the accumulated loss JT upon averaging over all timesteps will not decrease. Interestingly, one can verify that Lemmas D.1, D.2, and D.3 still hold for this weaker regret notion, which implies that the necessary conditions in Table 1 are still necessary for LRP-Regret 
+
+minimization. We defer the formal results and proofs to Appendix H.1. For the LRP-Regret given in (4.1), it is easy to verify that the expected loss at timestep t,
+
+f m,local  
+
+> t
+
+: ∆|H m |×|A 1| → R, can be written as 
+
+f m,local  
+
+> t
+
+( ¯π(1) 
+
+> 1: t
+
+) B (T − m − 1) f m(π(1)
+
+> t−m:t
+
+, π(−1)
+
+> t−m:t
+
+) + 
+
+> t
+
+# ∑
+
+> s=t−m
+
+f m(( π(1)
+
+> t−m:s−1
+
+, ¯ π(1) 
+
+> s
+
+, π(1)
+
+> s+1: t
+
+), π(−1)
+
+> t−m:t
+
+). (4.2) Moreover, for an arbitrary strategy vector ¯π(1) 
+
+> 1: T
+
+of length T, the corresponding expected loss at timestep t, f t−1,local  
+
+> t
+
+( ¯π(1) 
+
+> 1: t
+
+), is linear with respect to ¯ π(1) 
+
+> t
+
+. Therefore, one may update the strategy using the simple projected gradient descent (PGD) algorithm as: 
+
+π(1) 
+
+> t+1
+
+= Proj X (1)
+
+> γ
+
+
+
+π(1) 
+
+> t
+
+− η∇ f m,local  
+
+> t
+
+(π(1) 
+
+> 1: t
+
+)
+
+
+
+, (4.3) where η > 0 is the learning rate. 
+
+Theorem 4.1. Consider the update rule in (4.3) . By choosing learning rate η = Θ
+
+q PT
+
+> T
+
+
+
+and γ ≤ 
+
+> 12(N+2)
+
+, when all the opponents satisfy Condition 3, we have Rlocal  
+
+> T
+> T
+
+≤ ˜O  |A| m+1√PT /T + Cγ
+
+> m
+
+ , where P T
+
+is an upper bound of the variation of the comparator strategies, such that any sequence of the comparator 
+
+ˆπ(1) 
+
+> 1: T
+
+must satisfy ∑Tt=2 ˆπ(1) 
+
+> t−1
+
+− ˆπ(1)  
+
+> t∞
+
+≤ PT, and C γ 
+
+> m
+
+= ( 2N + 1)m+1γm+1.
+
+The proof is postponed to Appendix H.2. In Theorem 4.1, the ˜ O notation hides factors polynomial in m (and logarithmic in T). The exponential dependence on |A| m+1 stems from maintaining an 
+
+(m + 1)-step history. Consequently, if the comparator variation PT is sublinear in T, for any ϵ > 0,  
+
+> Rlocal
+> T
+> T
+
+≤ ϵ when m = Θ(log 1 
+
+> ϵ
+
+).
+
+4.2 Minimizing RP-Regret with Slowly-Changing Opponents 
+
+We also propose another approach that can directly minimize the original RP-Regret (3.2), under the additional condition that the opponent changes their strategies slowly, i.e. , Condition 1 also holds for the opponents’ strategies. 94.2.1 Reformulating Repeated Games with Bounded Memory as Markov Games 
+
+We will show that the expected loss at each timestep can be approximated by the expected loss of an infinite-horizon average-loss Markov/stochastic game (Shapley, 1953; Gillette, 1957; Filar and Vrieze, 2012), and develop a regret minimization algorithm based on this reformulation. Naively, one can use the whole history as the state of the Markov game. However, the state space will increase exponentially as the timestep increases. Hence, we will consider the case where all the players have an M-bounded memory with some fixed M, such that they only make decisions conditioned on the history of length M. In Lemma L.5, we will show that under Condition 3, we can convert the unbounded memory of all players to M-bounded memory, with a small approximation error. Particularly, for all players i ∈ N , we can convert a strategy π(i) with unbounded memory to a strategy π(i) with M-bounded memory by letting 
+
+∀ai ∈ A i, h ∈ H , π(i)(ai | h) = 
+
+(π(i)(ai | hL(h)−M+1: L(h)) L(h) ≥ M  
+
+> 1
+> |H M−L(h)|
+
+∑h′ ∈H M−L(h) π(i)(ai | (h′, h)) L(h) < M. (4.4) In the remainder of this section, we will only focus on strategies with M-bounded memory. 
+
+Definition 4.2 (Induced Markov Game) . For a fixed M ∈ N, and a repeated game given in §2, we can define the induced Markov game as follows: 
+
+• Number of players: N; 
+
+• State space: S B HM;
+
+• Action space (which coincides with the action space of the matrix game): Ai for player i; 
+
+• Transition probability: for any h′, h ∈ H M, and a ∈ A , Pr (h′ | h, a) B 1(h′ 
+
+> M
+
+= a and h′ 
+
+> 1: M−1
+
+=
+
+h2: M);
+
+• Stage loss: Li(h, a) B Li(a) for any i = 1, 2, ..., N. 
+
+By definition, the expected time-average loss of the Markov Game in Definition 4.2 5 is equivalent to the expected average loss of the infinitely repeated matrix game when the joint (Markov) strategy π is the same at each timestep: in particular, for player 1 lim  
+
+> T→∞
+
+Eht+1∼Pr (· | ht,at ),at ∼π(· | ht )
+
+"
+
+1
+
+T
+
+> T−1
+
+# ∑
+
+> t=0
+
+L1(ht, at)
+
+#
+
+= lim 
+
+> T→∞
+
+1
+
+T
+
+> T−1
+
+# ∑
+
+> t=0
+
+f t(( π, ..., π)
+
+| {z }
+
+> t+1
+
+) C f ∞(π), (4.5) where ht ∈ H M denotes the state at timestep t.
+
+4.2.2 Occupancy-Measure-based Regret Minimization in the Markov Game 
+
+The key challenge in learning in the induced Markov game is the non-convexity of the expected time-average loss with respect to the (stationary) strategy π. To convexify the problem, we propose to change the variable from the strategy to the occupancy measure of the MG. Thus, instead of updating the strategy π(1) 
+
+> t
+
+, we will update the occupancy measure qt at each timestep t.For an infinite-horizon MG, its expected loss can be represented as a linear function with respect to the occupancy measure (Puterman, 2014). Formally, for any history h ∈ H M and joint action 
+
+a ∈ A , the occupancy measure qπ that corresponds to joint strategy π can be written as 
+
+> 5The expected time-average loss always exists and does not depend on the initial distribution when strategies of all players satisfy Condition 3 (see Lemma L.4 for a formal proof).
+
+10 qπ(h, a) B Eh0∼μ0,π
+
+"
+
+lim 
+
+> T→∞
+
+1
+
+T
+
+> T−1
+
+# ∑
+
+> t=0
+
+1(ht = h)
+
+#
+
+· π(a | h) (4.6) where μ0 is the initial distribution over S = HM6. Moreover, it is known that the joint strat-egy can be recovered as π(a | h) = qπ (h,a)    
+
+> ∑a′ ∈A qπ(h,a′)
+
+, and there is a correspondence between π and 
+
+qπ (Puterman, 2014). We highlight that in the regret-minimization procedure concerned in this subsection, only the strategy π(1) 
+
+> t
+
+of player 1 is controlled by the (regret minimization) algorithm, which is determined by the occupancy measure, qt, at timestep t proposed by the algorithm. All other players are adaptive opponents. Hence, we define the strategy of player 1 at timestep t as 
+
+π(1) 
+
+> t
+
+(a1 | h) B ∑a′−1∈A −1 qt (h,(a1,a′−1))     
+
+> ∑a′ ∈A qt(h,a′)
+
+for any h ∈ H M and a1 ∈ A 1, where qt is controlled by the regret minimizer. To ensure that qt (h,a)    
+
+> ∑a′ ∈A qt(h,a′)
+
+can always be represented as π(1) 
+
+> t
+
+(a1 | h) ∏Ni=2 π(i) 
+
+> t
+
+(ai | h) for all h ∈HM, a ∈ A , we additionally need the following constraints on qt at timestep t, as characterized by a constraint function gt : R|H M |×|A| → R defined below: for any q ∈ R|H M |×|A| ,
+
+gt(q) B ∑
+
+> h∈H M,a∈A
+
+(−1)1(Dt (h,a,qt )≤0) Dt(h, a, q) ≤ 0, (4.7) where Dt(h, a, q) B q(h, a) − π(−1) 
+
+> t
+
+(a−1 | h) ∑
+
+> a′−1∈A −1
+
+q(h, (a1, a′−1)) .It is straightforward to see that gt(qt) ≤ 0, with equality if and only if qt (h,a)    
+
+> ∑a′ ∈A qt(h,a′)
+
+=
+
+π(1) 
+
+> t
+
+(a1 | h) ∏Ni=2 π(i) 
+
+> t
+
+(ai | h). Note that the constraint at timestep t, Dt(h, a, qπ ), is a linear con-straint on qπ determined after qt is proposed, which falls into the realm of online convex optimization with time-varying constraints (Paternain and Ribeiro, 2016; Chen et al., 2017; Cao and Liu, 2018), and it will be the core of our algorithm. Compared to simply letting 
+
+gt(q) = ∑h∈H M,a∈A |Dt(h, a, q)| ≤ 0, our novel constraints in (4.7) can avoid the non-differentiable issue of the absolute value function at zero. 
+
+4.2.3 Convexifying Condition 3 and the Overall Algorithm 
+
+The Markov game reformulation in §4.2.1 provides an alternative way to approximate the ex-pected loss under Conditions 1 and 3. However, the forgetful constraint in Condition 3 becomes 
+
+non-convex with respect to the occupancy measure. Therefore, instead of enforcing Condition 3, we propose to enforce the following weaker constraint, which is convex with respect to the occupancy measure and can be guaranteed when Condition 3 is satisfied. 
+
+Condition 4 (Convexification of Condition 3) . For a given player i ∈ [N], the strategy π(i) 
+
+> 1: T
+
+of player i has a bounded memory of length M ∈ N, and the player places at least probability γ ∈ (0, 1 ] on an exploration strategy ν(i), regardless of the observed history. Formally, for any timestep t ∈ [T], we have 
+
+∀h ∈ H M, ai ∈ A i, π(i) 
+
+> t
+
+(ai | h) ≥ γν(i)(ai) for some γ ∈ (0, 1 ], where ν(i) ∈ ∆|A i | is a distribution fixed for every history h ∈ H M of player i. 
+
+It is straightforward to see that when Condition 3 is satisfied, for every action ai ∈ A i, we must have either π(i)(ai | h) > 0 for all h ∈ H or equal to 0 for all h ∈ H . Then, Condition 4 is satisfied    
+
+> 6μ0is omitted here since qπis invariant to the initial distribution under Condition 3. Please refer to Appendix M.1 for a detailed discussion.
+
+11 since the ν(i) in the condition always exists (note that the γ in Condition 3 and Condition 4 are different). In the following lemma, whose proof is deferred to Appendix M.3, we show that the unary ex-pected loss f K (( π, ..., π)
+
+| {z }
+
+> K+1
+
+) can be further approximated by the average loss of the induced Markov game given by Definition 4.2. Therefore, we will solve the Markov game instead. 
+
+Lemma 4.3. When all the players satisfy Condition 4 7, the average loss of the induced Markov game given by Definition 4.2, i.e., f ∞(π) as defined in (4.5) , always exists and we have that for any K > 0  
+
+> fK
+
+(( π, ..., π)  
+
+> |{z }
+> K+1
+
+) − f ∞(π) ≤ 2 
+
+> 
+> 1
+
+− ( γN
+
+|A| )MC 1  
+
+> jKMC 1
+> k
+> ,
+
+(4.8) 
+
+where C 1 B log 22 |H M| + 4 log 2 |H M| + 3.
+
+For any initial distribution, the expected loss after K + 1 rounds equals that after infinite rounds, up to an exponentially decreasing error. Moreover, the expected loss after infinite rounds is irrelevant to the initial distribution, which implies that the dependence on history is exponentially decaying. We are now ready to introduce our algorithm, which is essentially online convex optimization over time-varying constraints (as depicted by (4.7)), as tabulated in Algorithm 2. 
+
+4.2.4 Theoretical Guarantees 
+
+We show next that Algorithm 2 achieves a sublinear RP-Regret and a sublinear accumulated constraint violation ∑Tt=1 gt(qt). A detailed version of the theorem and its proof are in Appendix I.2. 
+
+Theorem 4.4 (Informal) . Suppose player 1 follows Algorithm 2, and all the players and the comparator of player 1 satisfy Condition 4 with ν(i) being the uniform strategy over ∆|A i |, and suppose T is large enough such that T ≥ ˜Ω( ∆T 
+
+> ϵ4
+
+), where ∆T is the summation of all opponents’ and the comparator’s variations over time, then we can guarantee that RP-Regret satisfies RT 
+
+> T
+
+≤ ϵ.
+
+Note that to find a T as a polynomial in 1 
+
+> ϵ
+
+and satisfy T ≥ Ω( ∆T 
+
+> ϵ4
+
+) simultaneously, ∆T needs to be sublinear in T. Condition 4 is a linear constraint on the occupancy measure, which can be implemented efficiently in our algorithm by projection. 
+
+# 5 Equilibrium Computation via RP-Regret Minimization 
+
+In this section, we investigate one important implication of our new regret notion – equilibrium computation , in repeated games. We will focus on the infinitely repeated game setting, instead of the finitely repeated one. This is because, for a one-shot matrix game, when its NE is unique, the only subgame perfect Nash equilibrium of its finitely repeated version is playing the NE of the one-shot game at every timestep (Benoit and Krishna, 1985). Therefore, solving the NE 
+
+> 7In fact, this lemma also holds when all players satisfy a weaker condition (cf. Condition 5 in the Appendix).
+
+12 of the finitely repeated game degenerates to solving the NE of the one-shot matrix game. On the other hand, the uniqueness of NE for a one-shot matrix game is not uncommon — for two-player zero-sum matrix games, the set of games with non-unique NEs has Lebesgue measure zero (Van Damme, 1991; Bailey and Piliouras, 2018). Hence, we will hereafter direct our attention to the infinitely repeated general-sum game setting. 
+
+5.1 Equilibria in Repeated Games 
+
+In light of our RP-Regret definition, we first introduce the following notions of (subgame perfect) equilibria in infinitely repeated games. We start with the coarse correlated equilibrium. 
+
+Definition 5.1. (Approximate Subgame Perfect Coarse Correlated Equilibrium (SPCCE) with Bounded Deviation) A correlated strategy π1: ∞ is called an ϵ-approximate SPCCE with P T-bounded deviation in repeated games if it satisfies 
+
+lim sup 
+
+> T→+∞
+
+max  
+
+> i∈N
+
+sup 
+
+> t0∈N>0
+
+sup 
+
+> h0∈H t0−1
+
+1
+
+T
+
+> t0+T−1
+
+# ∑
+
+> t=t0
+
+
+
+f t−t0 
+
+> i
+
+(πt0:t | h0) − f t−t0 
+
+> i
+
+(( ˆπ(i)
+
+> t0:t
+
+, π(−i) 
+
+> t0:t
+
+) | h0)
+
+
+
+≤ ϵ
+
+where ˆπ(i) 
+
+> 1: T
+
+∈ C (i) 
+
+> T
+
+is an arbitrary strategy of player i satisfying ∑Tt=2 ˆπ(i) 
+
+> t
+
+− ˆπ(i)  
+
+> t−1∞
+
+≤ PT for any arbitrary T > 0, with P T being a function of T. Recall that f mi (π1: m+1 | h0) is the expected loss of player i at timestep m + 1 when observing h0 initially and executing π1: m+1 afterward. 
+
+Compared to standard subgame-perfect Nash equilibrium (SPNE), SPCCE admits correlated strategies. Moreover, SPNE (SPCCE) can be viewed as SPNE (SPCCE) with Θ(T)-bounded devi-ation, since there is no restriction on the comparator. Similarly, we can define the corresponding Nash equilibrium when the joint strategy π1: ∞ is a 
+
+product strategy conditioned on each history. 
+
+Definition 5.2. (Approximate Subgame Perfect Nash Equilibrium (SPNE) with Bounded De-viation) A non-correlated product strategy π1: ∞ is called an ϵ-approximate P T-robust SPNE in repeated games when it is an ϵ-approximate SPCCE with P T-bounded deviation and πt(a | h) = ∏Ni=1 π(i) 
+
+> t
+
+(ai | h)
+
+for some {π(i)
+
+> 1: ∞
+
+}i∈N at any timestep t = 1, 2, ... , and for any a ∈ A , h ∈ H .
+
+Remark 5.3 (Bounded Deviation) . Note that bounded deviation means that the set of strategies to which each player can deviate in the equilibrium definition, which corresponds to the comparator in the regret definition, is restricted to satisfy certain variation bound, characterized by P T. When P T = Θ(T),the notation is exactly the classical SPNE (or SPCCE) (Roughgarden, 2010). 
+
+5.2 Relationship between RP-Regret and Equilibria 
+
+We now discuss the relationship between RP-Regret and the aforementioned equilibrium notions. 
+
+Theorem 5.4 (Equilibrium and RP-Regret ). For a fixed T 0∈ N>0, when each player i ∈ N obtains a sublinear RP-Regret RT0 = O
+
+
+
+Tp 
+
+> 0
+
+P1−pT0
+
+
+
+with strategies ˜π(i) 
+
+> 1: T0
+
+for some p ∈ [0, 1 ) against the comparator with ∑T0 
+
+> t=2
+
+ˆπ(i) 
+
+> t
+
+− ˆπ(i)  
+
+> t−1∞
+
+≤ PT0 for all i ∈ N , and all the players and their comparators satisfy Condition 4 until T 0. Then, when T → +∞, for any timestep t ∈ N>0, we will choose π(i) 
+
+> t
+
+= ˜π(i)(t−1)%T0+1 for each 
+
+13 i ∈ N . Then, π1: ∞ is an O 
+
+ PT0
+
+> T0
+
+1−p
+
+approximate SPNE with O (PT )-bounded deviation, where P T is the upper bound of player i’s comparator variation for any i ∈ N : ∑Tt=2 ˆπ(i) 
+
+> t
+
+− ˆπ(i)  
+
+> t−1∞
+
+≤ PT.
+
+The proof of Theorem 5.4 is postponed to Appendix J.2. This theorem builds up the relationship between approximate robust SPNE (and thus SPCCE) and RP-Regret minimization. When all the players can obtain a sublinear RP-Regret against their comparators whose accumulated variations are bounded by PT0 , then we can build an approximate SPNE with PT-bounded deviation. 
+
+Theorem 5.5 (Equilibrium and LRP-Regret ). For a fixed T 0∈ N>0, when all the players can achieve a sublinear R local  
+
+> T0
+
+≤ O(Tp 
+
+> 0
+
+) with strategies ˜π(i) 
+
+> 1: T0
+
+for some p ∈ [0, 1 ) against any comparator satisfying 
+
+∑T0 
+
+> t=2
+
+ˆπ(i) 
+
+> t
+
+− ˆπ(i)  
+
+> t−1∞
+
+≤ PT0 = Θ(T0) for all i ∈ N , and all the players (including their comparators) satisfy Condition 4 with ν(i) as the uniform distribution over ∆|A i |. Then, when T → +∞, for any timestep t, we will choose π(i) 
+
+> t
+
+= ˜π(i)(t−1)%T0+1 for any i ∈ N . Therefore, we will obtain an O (Tp−10 ) approximate SPNE with O (T)-bounded deviation. 
+
+We defer the proof of the theorem to Appendix J.1. This theorem establishes the connection between equilibrium in repeated games and LRP-Regret . When all the players are running no-
+
+LRP-regret learning and achieve sublinear LRP-Regret , we can obtain an approximate SPNE. Compared to Theorem 5.4, Theorem 5.5 only holds when sublinear regret is obtained with respect to the comparator without variation budget ( PT = Θ(T)). We note that Theorem 5.5 only states the relationship between approximate O(T)-robust SPNE and LRP-Regret minimization, but does not provide an algorithm to achieve so. Indeed, directly running our regret minimization algorithm for LRP-Regret (§4.1) may not achieve the equilib-rium, since it requires the variation of the comparator PT0 to be sublinear in T0. We defer the development of such no-LRP-Regret algorithms as an immediate future work. 
+
+Remark 5.6. There are also counterparts of Theorem 5.5 and Theorem 5.4 for finitely repeated games. A strategy sequence π1: T (possibly correlated) that achieves sublinear RP-Regret (LRP-Regret ) is an approx-imate (coarse correlated) equilibrium (not subgame perfect anymore) of the T 0 repeated game, i.e. , for any player i ∈ N , we have 1 
+
+> T0
+
+∑T0
+
+> t=1
+
+
+
+f t−1 
+
+> i
+
+(π1: t | ∅) − f t−1 
+
+> i
+
+(( ˆπ(i) 
+
+> 1: t
+
+, π(−i) 
+
+> 1: t
+
+) | ∅)
+
+
+
+≤ R(i) 
+
+> T0
+
+, where R (i) is the upper bound of player i’s regret. 
+
+5.3 Computing the Equilibria 
+
+We now propose an algorithm to find an approximate SPCCE with O(T)-bounded deviation of infinitely repeated matrix games. The algorithm is proposed in Algorithm 3. Guarantee of the algorithm is provided below. 
+
+Theorem 5.7. For an infinitely repeated game, when all the players and their comparators satisfy Condition 4 with ν(i) being the uniform strategy over ∆|A i |, within T 0 ∈ N>0 iterations, the output of Algorithm 3 converges to an O 
+
+
+
+> 1
+> T2/7 0
+
+
+
+-approximate SPCCE with O (T)-bounded deviation of the infinitely repeated game. 
+
+The proof is deferred to Section K.1. The proof relies on modeling the repeated game as a Markov game as in §4.2.1, and then resorting to the existing result about solving CCE in Markov games (Jin et al., 2021; Song et al., 2022; Mao and Bas ¸ar, 2022; Daskalakis et al., 2023). 14 6 Conclusion 
+
+In this paper, we studied regret-minimization in repeated games with adaptive opponents who can respond based on the histories of play. To this end, we advocated a new metric, RP-Regret ,which is native to this setting, and identified a series of necessary conditions for obtaining 
+
+RP-Regret sublinear in time. We then developed additional conditions and provable algorithms to minimize RP-Regret , followed by the connection of RP-Regret minimization to certain known sub-game perfect equilibria computation. Our work opens new directions for future research, including the development of weaker equilibrium notions induced by RP-Regret minimization in §4, for which weaker assumptions may be required to compute. It also raises the possibility of obtaining provable equilibrium-selection results via RP-Regret minimization in games with particular payoff structures. 
+
+# Acknowledgement 
+
+M.L. was supported by the MathWorks Fellowship. A.O. was supported in part by the ONR grant N000142512296. K.Z. acknowledges the support from the Army Research Office (ARO) grant W911NF-24-1-0085, the NSF CAREER Award 2443704, the AFOSR YIP Award FA9550-25-1-0258, a Cisco Faculty Research Award, and a JP Morgan Faculty Research Award. 
+
+# References 
+
+Naman Agarwal, Brian Bullins, Elad Hazan, Sham M. Kakade, and Karan Singh. Online control with adversarial disturbances. In International Conference on Machine Learning (ICML) , 2019. Oren Anava, Elad Hazan, and Shie Mannor. Online learning for adversaries with memory: price of past mistakes. In Neural Information Processing Systems (NeurIPS) , 2015. Raman Arora, Ofer Dekel, and Ambuj Tewari. Online bandit learning against an adaptive adver-sary: from regret to policy regret. In International Conference on Machine Learning (ICML) , pages 1747–1754, 2012. Raman Arora, Michael Dinitz, Teodor Vanislavov Marinov, and Mehryar Mohri. Policy regret in repeated games. In Neural Information Processing Systems (NeurIPS) , 2018. Robert Aumann and Lloyd Shapley. Long term competition: A game theoretic analysis’, mimeo-graph. Hebrew University , 1976. Robert Axelrod and William D Hamilton. The evolution of cooperation. science , 211(4489):1390– 1396, 1981. James P Bailey and Georgios Piliouras. Multiplicative weights update in zero-sum games. In 
+
+ACM Conference on Economics and Computation (EC) , 2018. Jean-Pierre Benoit and Vijay Krishna. Finitely repeated games. Econometrica , 53(4):905–22, 1985. URL https://EconPapers.repec.org/RePEc:ecm:emetrp:v:53:y:1985:i:4:p:905-22 .Jeremiah Blocki, Nicolas Christin, Anupam Datta, and Arunesh Sinha. Adaptive regret minimiza-tion in bounded-memory games. In Decision and Game Theory for Security (GameSec) , 2013. 15 Christian Borgs, Jennifer Chayes, Nicole Immorlica, Adam Tauman Kalai, Vahab Mirrokni, and Christos Papadimitriou. The myth of the folk theorem. In ACM Symposium on Theory of Com-puting (STOC) , 2008. Noam Brown and Tuomas Sandholm. Superhuman ai for heads-up no-limit poker: Libratus beats top professionals. Science , 359(6374):418–424, 2018. Noam Brown and Tuomas Sandholm. Superhuman ai for multiplayer poker. Science , 365(6456): 885–890, 2019. Xi-Ren Cao. Single sample path-based optimization of markov chains. Journal of optimization theory and applications , 100:527–548, 1999. Xuanyu Cao and KJ Ray Liu. Online convex optimization with time-varying constraints and bandit feedback. IEEE Transactions on Automatic Control , 64(7):2665–2680, 2018. Shicong Cen, Yuting Wei, and Yuejie Chi. Fast policy extragradient methods for competitive games with entropy regularization. In Neural Information Processing Systems (NeurIPS) , 2021. Nicolo Cesa-Bianchi and G´ abor Lugosi. Prediction, Learning, and Games . Cambridge University Press, 2006. Doran Chakraborty and Peter Stone. Multiagent learning in the presence of memory-bounded agents. Autonomous agents and multi-agent systems , 28(2):182–213, 2014. Tianyi Chen, Qing Ling, and Georgios B Giannakis. An online convex optimization approach to proactive network resource allocation. IEEE Transactions on Signal Processing , 65(24):6350–6364, 2017. Xi Chen, Xiaotie Deng, and Shang-Hua Teng. Computing nash equilibria: Approximation and smoothed complexity. In Symposium on Foundations of Computer Science (FOCS) , 2006. Xi Chen, Shang-Hua Teng, and Paul Valiant. The approximation complexity of win-lose games. 2007. Amit Daniely, Alon Gonen, and Shai Shalev-Shwartz. Strongly adaptive online learning. In 
+
+International Conference on Machine Learning (ICML) , 2015. Constantinos Daskalakis, Paul W Goldberg, and Christos H Papadimitriou. The complexity of computing a nash equilibrium. Communications of the ACM , 52(2):89–97, 2009. Constantinos Daskalakis, Noah Golowich, and Kaiqing Zhang. The complexity of Markov equi-librium in stochastic games. In Conference on Learning Theory (COLT) , 2023. Daniela de Farias and Nimrod Megiddo. How to combine expert (and novice) advice when actions impact the environment? In Neural Information Processing Systems (NeurIPS) , volume 16, 2003. Jerzy Filar and Koos Vrieze. Competitive Markov decision processes . Springer Science & Business Media, 2012. Jakob N Foerster, Richard Y Chen, Maruan Al-Shedivat, Shimon Whiteson, Pieter Abbeel, and Igor Mordatch. Learning with opponent-learning awareness. arXiv preprint arXiv:1709.04326 ,2017. 16 Drew Fudenberg and Eric Maskin. The folk theorem in repeated games with discounting or with incomplete information. In A long-run collaboration on long-run games , pages 209–230. World Scientific, 2009. Dean Gillette. Stochastic games with zero stop probabilities. Contributions to the Theory of Games ,3(39):179–187, 1957. James Hannan. Approximation to bayes risk in repeated play. Contributions to the Theory of Games ,3:97–139, 1957. Sergiu Hart and Andreu Mas-Colell. A simple adaptive procedure leading to correlated equilib-rium. Econometrica , 68(5):1127–1150, 2000. Elad Hazan, Amit Agarwal, and Satyen Kale. Logarithmic regret algorithms for online convex optimization. Machine Learning , 69(2):169–192, 2007. Elad Hazan et al. Introduction to online convex optimization. Foundations and Trends® in Opti-mization , 2(3-4):157–325, 2016. Chi Jin, Zeyuan Allen-Zhu, Sebastien Bubeck, and Michael I Jordan. Is q-learning provably efficient? In Neural Information Processing Systems (NeurIPS) , 2018. Chi Jin, Qinghua Liu, Yuanhao Wang, and Tiancheng Yu. V-learning – A simple, efficient, decen-tralized algorithm for multiagent RL. arXiv preprint arXiv:2110.14555 , 2021. Ehud Kalai and William Stanford. Finite rationality and interpersonal complexity in repeated games. Econometrica: Journal of the Econometric Society , pages 397–410, 1988. Dong Ki Kim, Miao Liu, Matthew D Riemer, Chuangchuang Sun, Marwa Abdulhai, Golnaz Habibi, Sebastian Lopez-Cot, Gerald Tesauro, and Jonathan How. A policy gradient algorithm for learning to learn in multiagent reinforcement learning. In International Conference on Machine Learning (ICML) , 2021. Alistair Letcher, Jakob N. Foerster, David Balduzzi, Tim Rockt¨ aschel, and Shimon Whiteson. Sta-ble opponent shaping in differentiable games. In International Conference on Learning Represen-tations (ICLR) , 2019. Michael L Littman and Peter Stone. A polynomial-time nash equilibrium algorithm for repeated games. In ACM Conference on Electronic Commerce , 2003. Mingyang Liu, Asuman E Ozdaglar, Tiancheng Yu, and Kaiqing Zhang. The power of regular-ization in solving extensive-form games. In International Conference on Learning Representations (ICLR) , 2022. Robert Loftin and Frans A Oliehoek. On the impossibility of learning to cooperate with adaptive partner strategies in repeated games. In International Conference on Machine Learning (ICML) ,pages 14197–14209. PMLR, 2022. Christopher Lu, Timon Willi, Christian A Schroeder De Witt, and Jakob Foerster. Model-free opponent shaping. In International Conference on Machine Learning (ICML) , pages 14398–14411. PMLR, 2022. Weichao Mao and Tamer Bas ¸ar. Provably efficient reinforcement learning in decentralized general-sum markov games. Dynamic Games and Applications , pages 1–22, 2022. 17 Weichao Mao, Kaiqing Zhang, Ruihao Zhu, David Simchi-Levi, and Tamer Basar. Near-optimal model-free reinforcement learning in non-stationary episodic MDPs. In International Conference on Machine Learning (ICML) , 2021. Neri Merhav, Erik Ordentlich, Gadiel Seroussi, and Marcelo J Weinberger. On sequential strategies for loss functions with memory. IEEE Transactions on Information Theory , 48(7):1947–1958, 2002. Abraham Neyman. Bounded complexity justifies cooperation in the finitely repeated prisoners’ dilemma. Economics Letters , 19(3):227–229, 1985. James R Norris. Markov chains . Number 2. Cambridge university press, 1998. Santiago Paternain and Alejandro Ribeiro. Online learning of feasible strategies in unknown environments. IEEE Transactions on Automatic Control , 62(6):2807–2822, 2016. Michele Piccione and Ariel Rubinstein. On the interpretation of decision problems with imperfect recall. Games and Economic Behavior , 20(1):3–24, 1997. Martin L Puterman. Markov decision processes: Discrete stochastic dynamic programming . John Wiley & Sons, 2014. Roy Radner. Can bounded rationality resolve the Prisoner’s dilemma. Essays in honor of Gerard Debreu , pages 387–399, 1986. Tim Roughgarden. Algorithmic game theory. Communications of the ACM , 53(7):78–86, 2010. Karl Schlag and Andriy Zapechelnyuk. On the impossibility of achieving no regrets in repeated games. Journal of Economic Behavior & Organization , 81(1):153–158, 2012. Lloyd S Shapley. Stochastic games. Proceedings of the National Academy of Sciences , 39(10):1095–1100, 1953. Samuel Sokota, Ryan D’Orazio, J. Zico Kolter, Nicolas Loizou, Marc Lanctot, Ioannis Mitliagkas, Noam Brown, and Christian Kroer. A unified approach to reinforcement learning, quantal response equilibria, and two-player zero-sum games. In International Conference on Learning Representations (ICLR) , 2023. Ziang Song, Song Mei, and Yu Bai. When can we learn general-sum markov games with a large number of players sample-efficiently? In International Conference on Learning Representations (ICLR) , 2022. Arun Sai Suggala and Praneeth Netrapalli. Online non-convex learning: Following the perturbed leader is optimal. In International Conference on Algorithmic Learning Theory (ALT) , 2020. James J Sylvester. On subvariants, ie semi-invariants to binary quantics of an unlimited order. 
+
+American Journal of Mathematics , 5(1):79–136, 1882. Eric Van Damme. Stability and perfection of Nash equilibria , volume 339. Springer, 1991. Joel Watson. Strategy: an introduction to game theory , volume 139. WW Norton New York, 2002. Kevin Waugh, Martin Zinkevich, Michael Johanson, Morgan Kan, David Schnizlein, and Michael H Bowling. A practical use of imperfect recall. In SARA , 2009. 18 Timon Willi, Alistair Hp Letcher, Johannes Treutlein, and Jakob Foerster. Cola: consistent learn-ing with opponent-learning awareness. In International Conference on Machine Learning (ICML) ,pages 23804–23831. PMLR, 2022. Lijun Zhang, Shiyin Lu, and Zhi-Hua Zhou. Adaptive online learning in dynamic environments. In Neural Information Processing Systems (NeurIPS) , 2018a. Lijun Zhang, Tianbao Yang, Zhi-Hua Zhou, et al. Dynamic regret of strongly adaptive methods. In International Conference on Machine Learning (ICML) , pages 5882–5891. PMLR, 2018b. Lijun Zhang, Tianbao Yang, Zhi-Hua Zhou, et al. Dynamic regret of strongly adaptive methods. In International Conference on Machine Learning (ICML) , 2018c. Peng Zhao, Yu-Xiang Wang, and Zhi-Hua Zhou. Non-stationary online learning with memory and non-stochastic control. In International Conference on Artificial Intelligence and Statistics (AIS-TATS) , 2022. Martin Zinkevich. Online convex programming and generalized infinitesimal gradient ascent. In 
+
+International Conference on Machine Learning (ICML) , 2003. Martin Zinkevich. Response regret. In AAAI Fall Symposium: Coevolutionary and Coadaptive Sys-tems , page 41, 2005. 19 Supplementary Materials for “Regret Minimization with Adaptive Opponents in Repeated Games” 
+
+# Contents 
+
+1 Introduction 12 Preliminaries 43 A New Metric: Repeated Policy Regret (RP-Regret) 5
+
+3.1 RP-Regret Definition . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 53.2 When is Minimizing RP-Regret Possible? . . . . . . . . . . . . . . . . . . . . . . . . . 6
+
+4 RP-Regret Minimization 8
+
+4.1 Minimizing a Surrogate: Local Repeated Policy Regret . . . . . . . . . . . . . . . . 84.2 Minimizing RP-Regret with Slowly-Changing Opponents . . . . . . . . . . . . . . . 94.2.1 Reformulating Repeated Games with Bounded Memory as Markov Games . 10 4.2.2 Occupancy-Measure-based Regret Minimization in the Markov Game . . . . 10 4.2.3 Convexifying Condition 3 and the Overall Algorithm . . . . . . . . . . . . . . 11 4.2.4 Theoretical Guarantees . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 12 
+
+5 Equilibrium Computation via RP-Regret Minimization 12 
+
+5.1 Equilibria in Repeated Games . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 13 5.2 Relationship between RP-Regret and Equilibria . . . . . . . . . . . . . . . . . . . . . 13 5.3 Computing the Equilibria . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 14 
+
+6 Conclusion 15 A Motivating Example Details 22 B Detailed Related Work 22 C Proof for Example 1.1 24 D Full Statements of Hardness Results 25 
+
+D.1 Hardness Results in Table 1 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 25 D.1.1 Proofs of Results in Table 1 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 26 20 E Approximation of RP-Regret 27 F Bounding RmT by ¯RmT and Switching Cost 28 
+
+F.1 Mitigating the Dependence on Past Strategies . . . . . . . . . . . . . . . . . . . . . . 28 F.2 Bounding the difference between JmT and ¯ JmT . . . . . . . . . . . . . . . . . . . . . . . 29 
+
+G Minimization of Repeated Policy Regret with an Oracle 30 H Minimization of Local RP-Regret 32 
+
+H.1 Hardness Results . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 32 H.2 Proof of Theorem 4.1 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 33 
+
+I Proof of Theorem 4.4 36 
+
+I.1 Important Lemmas . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 36 I.2 Formal Version and Proof of Theorem 4.4 . . . . . . . . . . . . . . . . . . . . . . . . . 38 
+
+J Regret and Subgame Perfect Equilibrium 44 
+
+J.1 LRP-Regret and Subgame Perfect Equilibrium . . . . . . . . . . . . . . . . . . . . . . 44 J.2 RP-Regret and SPNE . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 47 
+
+K Finding Subgame Perfect Coarse Correlated Equilibrium in Repeated Games 47 
+
+K.1 Computation of SPCCE . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 47 
+
+L Auxiliary Lemmas 52 
+
+L.1 Proof of Lemma F.1 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 57 L.2 Lemma for Markov Game . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 59 L.3 Other Lemmas . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 60 L.4 Projected Gradient Descent ( PGD ) . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 60 L.5 Projected Gradient Descent with Time-varying Constraints . . . . . . . . . . . . . . . 62 
+
+M Auxiliary Lemmas for the Induced Markov Game 64 
+
+M.1 Milder Constraint . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 64 M.2 Fast Mixing . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 66 M.3 Contraction property with bounded memory of length M . . . . . . . . . . . . . . . 67 21 A Motivating Example Details 
+
+Prisoner’s Dilemma Cooperate ( C) Defect ( D)Cooperate ( C) 0.6, 0.6 0.0, 1.0 Defect ( D) 1.0, 0.0 0.2, 0.2 Stag Hunt Stag Hare Stag 1.0, 1.0 0.1, 0.8 Hare 0.8, 0.1 0.5, 0.5 PGD 1 2 3
+
+> 0.5
+> 0.55
+> 0.6
+> 0.65
+> 0.7
+> 0.75
+> Average Utility in Stag Hunt (LRP-Regret) Memory Length (M)
+> Average Utility
+
+Figure 1: Examples of the utility matrices for Prisoner’s Dilemma (upper left) and Stag Hunt (lower left). In each cell, the number on the left (right) is the utility for the row (column) player. The figure on the right plots the average utility across 10, 000 runs of the experiments when both players in Stag-Hunt (lower left) are minimizing LRP-Regret for 100, 000 iterations. In each run of the experiment, the initial strategy is randomly sampled uniformly. We choose the learning rate 
+
+η = 0.01 in (4.3) with different memory lengths M = 1, 2, 3. As shown in the figure, LRP-Regret 
+
+minimization can encourage players to converge to a better equilibrium in terms of utility. 
+
+Example A.1 (Finding a Better Equilibrium) . The Stag-Hunt game (cf. utility matrix in Figure 1) has two NEs, Stag-Stag and Hare-Hare. In Figure 1, we show that by minimizing LRP-Regret (a convexified version of our new regret metric, cf. §4.1), the algorithm converges to a better equilibrium more often (Stag-Stag, with utility 1.0 for both players). This is because the equilibria induced by minimizing our new notions of regret can potentially constitute a larger set than the set of equilibria in the one-shot game. 
+
+# B Detailed Related Work 
+
+Equilibrium Computation in Repeated Games. Learning and equilibrium computation in re-peated normal-form games is a well-studied area. One well-known folklore result is that when all the players run no-(external-)regret learning algorithms, the average iterates will converge to the coarse correlated equilibrium of the one-shot matrix game (Cesa-Bianchi and Lugosi, 2006). In playing repeated games, since the players could change their strategies based on past obser-vations, the equilibrium for the repeated game can be different from that of the one-shot game. In this regard, using the well-known folk theorem 8 (Aumann and Shapley, 1976; Fudenberg and Maskin, 2009), one can find the NE in infinitely repeated matrix games. Littman and Stone (2003) gave a polynomial-time algorithm based on the folk theorem to compute the NE of an infinitely repeated two-player general-sum game, which is known to be PPAD -hard for the one-shot case (Daskalakis et al., 2009; Chen et al., 2006). However, Borgs et al. (2008) showed that finding the minimax value is NP -hard in general-sum games with 3 or more players, which prevented the technique in Littman and Stone (2003) from being extended to the multi-player cases.     
+
+> 8Folk theorem gives a way to construct “trigger” strategies. Specifically, if one of the players deviates, say player 1, then other players will also change their strategy to the minimax one, to guarantee player 1 will suffer at least min π(−1)max π(1)
+
+L1(π(1), π(−1)) loss in every later timestep. Therefore, no player can benefit from deviation if all of them can obtain a lower loss than their minimax loss. 
+
+22 Impossibility Results. Borgs et al. (2008) proved that computing an NE for an N-player in-finitely repeated game with discount factors is as hard as computing an NE of an (N − 1)-player one-shot game. By Chen et al. (2007); Daskalakis et al. (2009); Chen et al. (2006), computing an NE of a 2-player general-sum one-shot game is PPAD -hard and thus computing an NE of a 3-player infinitely repeated game with discount factor is also PPAD -hard. The result does not conflict with this paper since in §5.3, we are computing a coarse correlated equilibrium (CCE) instead of an NE of the repeated game. Also, our result implies that directly minimizing RP-Regret without further assumptions may not be computationally tractable. Otherwise, if each player achieves a sublin-ear RP-Regret , by Theorem 5.4, the trajectory converges to a subgame perfect NE of an infinitely repeated game without discount factor. Schlag and Zapechelnyuk (2012); Loftin and Oliehoek (2022) gave impossibility results on minimizing regret in repeated games when the regret mini-mizer cannot observe the full strategy of the opponent. Therefore, to the best of our knowledge, it is still unclear under which conditions we can minimize regret, when the other players deviate themselves as a reaction to the deviation of one player, the setting our work focuses on. 
+
+Rationalizing Cooperation. Our study is also motivated by those of rationalizing cooperation 
+
+in Iterated Prisoner’s Dilemma with bounded rationality and strategy complexity (Axelrod and Hamilton, 1981; Neyman, 1985; Radner, 1986; Kalai and Stanford, 1988). These papers investi-gated the Nash equilibrium of the (finitely) repeated game when the strategies are modeled as an 
+
+automaton with finite states, and showed the existence of equilibrium with payoff close to the co-operative outcome. In this paper, we show, in contrast, that when players have unlimited memory power (automata with infinite states), our regret notion of RP-Regret cannot be minimized. 
+
+Opponent Shaping and Modeling. Our work also takes significant inspiration from the re-cent empirical literature of opponent shaping in multi-agent (reinforcement) learning (Foerster et al., 2017; Kim et al., 2021; Willi et al., 2022; Lu et al., 2022), which developed algorithms to shape the opponents’ future strategies, knowing that they will adapt to the actions of the learning agent/player. However, most of the algorithms do not enjoy theoretical guarantees, e.g., on the convergence, and/or on the quality of the strategies they converge to. Letcher et al. (2019) proved that their algorithm called Stable Opponent Shaping will converge. However, the guarantee only applies when assuming the opponents are naive learners 9, and there is no guarantee on the per-formance against general unknown opponents. By contrast, our method, through the lens of 
+
+regret-minimization , is more general and robust against any possible players/opponents satisfying some provably necessary conditions (see §3.2). 
+
+Online Learning. Our work is closely related to the problem of online convex optimization with memory , which was first studied in Merhav et al. (2002) and later generalized to developing the concept of Policy Regret and studied in Arora et al. (2012); Anava et al. (2015). Recently, Zhao et al. (2022) showed how to achieve sublinear policy regret when the comparator is allowed to choose a time-varying strategy with a sublinear variation budget. One of the applications of OCO with memory is Agarwal et al. (2019), which discussed how to fit the online control problem into the framework of OCO with memory. However, existing analyses along these lines typically either assume that the loss function is convex or impose an m-bounded-memory condition on the loss, namely that the loss at timestep t depends only on the recent action window [at−m, . . . , at]. In contrast, in repeated games the expected per-round loss induced by strategic interaction need 
+
+> 9At each timestep, the learner takes one step of gradient descent according to the loss at the last timestep.
+
+23 not be convex in the player’s decision variables, and it can depend on the entire history. Blocki et al. (2013) considered regret minimization in bounded-memory games. However, the k-adaptive regret considered in Blocki et al. (2013) will restart the game every k + 1 rounds ( i.e., the ad-versary will forget the history every k + 1 rounds), which is a different setting from classical repeated games, where the adversary plays repeated games and will remember the history from the beginning to the end. Another line of related work in online learning is dynamic regret minimization (Zinkevich, 2003). In this setup, the accumulated loss is compared with a comparator that can change over time, but usually with a sublinear variation budget. Therefore, dynamic regret is more suitable when the environment is non-stationary . To encourage the player’s strategy to adapt to the changes in the opponents’ strategies, we also consider dynamic comparators, but in game-theoretic settings, and with different regret notions. 
+
+# C Proof for Example 1.1 
+
+In Iterated Prisoner’s Dilemma, since the players are symmetric, we will focus on analyzing player 1 without loss of generality. Note that tit-for-tat (where both players start with C) promotes cooperation, since the players will stick to C and the time-average utility will be 0.6, higher than that of the one-shot Nash equilibrium (D, D).However, tit-for-tat may not be a good strategy in terms of external regret : mutually playing it will cause a linear external regret, because the regret of player 1 when compared to always playing D
+
+is (1.0 − 0.6 )T. In fact, for any player that achieves sublinear external regret in IPD for any T,the time-average strategy must converge to D as T → ∞, since otherwise the player will suffer a linear regret compared to the fixed action D, the strictly dominant strategy. On the other hand, for the RP-Regret defined in (3.2), consider the first timestep t that player 1 is going to deviate from deterministically choosing C (since the beginning of playing tit-for-tat mutually) to some comparator strategy. In this case, since the expected utility is a multi-linear function of the comparator strategy, and the comparator is in the Cartesian product of each timestep’s strategy space, there exists an optimal deviation strategy of RP-Regret in the comparator space that is deterministic – choosing either C or D at every timestep. Furthermore, at this timestep t when the comparator is different from deterministically choosing C for the first time, we can restrict the comparator strategy to be an oblivious (in addition to deterministic) one, since the history h1: t−1 has always been (C, C) before, deterministically. With a tit-for-tat opponent, their strategy is deterministic at timestep t + 1 as well. By induction, with such a deterministic history, it does not lose optimality to restrict the comparator at t + 1 to be oblivious as well. Next, we will show that at timestep t, the best deviation for the comparator is actually 
+
+C. Then, by induction, the comparator should choose C deterministically at all timesteps except possibly at the last timestep t = T.Suppose the comparator at timestep t is going to play action C with some probability w and 
+
+D with probability 1 − w, then they will receive an expected utility of w · u1(C, C) + ( 1 − w) ·
+
+u1(D, C) = 0.6 w + ( 1 − w) = 1 − 0.4 w, where u1(a1, a2) denotes the utility of player 1 when the actions of both players are a1, a2, respectively. When t < T, for timestep t + 1, suppose the com-parator will play action C with probability w′ and D with probability 1 − w′. Now, player 2, still following tit-for-tat, changes from playing C deterministically at timestep t, to playing C with probability w, due to the deviation of player 1 at timestep t. Therefore, the expected utility of 24 player 1 at timestep t + 1 now is ww ′ · u1(C, C) + w(1 − w′) · u1(D, C) + ( 1 − w)w′ · u1(C, D) + ( 1 −
+
+w)( 1 − w′) · u1(D, D) = 0.8 w − 0.2 ww ′ − 0.2 w′ + 0.2. The summation of the expected utility of player 1 at timestep t and t + 1 is thus 0.4 w − 0.2 ww ′ −
+
+0.2 w′ + 1.2 = 1.2 − 0.2 w′ + w(0.4 − 0.2 w′). Note that we analyze the deviation at timestep t by only looking at the expected utility at these two timesteps, since w will not affect the utility after t + 1(if exists), given player 2 following tit-for-tat. Noting that w′ ≤ 1, we know 0.4 − 0.2 w′ > 0, and further have that w should be 1.0 in order to maximize the summed expected utility (regardless of the choice of w′). Hence, the comparator should not deviate from C at this timestep t. Continuing the induction, we further know that the comparator has no incentive to deviate from C for t < T,until t = T. However, this will at most increase the utility by 1.0 − 0.6 = 0.4, leading to a constant (and thus sublinear) RP-Regret in terms of T.The key ingredient that differentiates these two regret notions is that RP-Regret considers the in-fluence of a deviation at the current timestep on future timesteps, by accounting for the adaptivity 
+
+of the opponents, while external regret assumes that the opponents are non-adaptive. 
+
+Remark C.1. In fact, the argument above is also aligned with the known result that tit-for-tat is an NE in an infinitely repeated Prisoner’s Dilemma: since we proved that deviating from tit-for-tat is beneficial only when t = T, such a final timestep is nonexistent in the infinitely repeated setting. Hence, there is in effect no incentive to deviate. 
+
+# D Full Statements of Hardness Results 
+
+D.1 Hardness Results in Table 1 
+
+We now present the full statements and proofs of the hardness results in Table 1. Coin Tossing Up Down Guess Up 0 1Guess Down 1 0Table 2: The loss matrix for player 1 (the row player) of a coin-tossing game. 
+
+Lemma D.1 (Comparator Should Have Sublinear Variation) . Without Condition 1 on the comparator, the player will have to suffer Ω(T) RP-Regret in the worst case, even if Condition 3 holds for both the comparator and the opponent. 
+
+Lemma D.2 (Comparator Should Not Have Perfect Recall) . When the comparator has perfect recall (i.e., without Condition 2), the player will have to suffer Ω(T) RP-Regret in the worst case, even if Condition 1 holds for the comparator and Condition 3 holds for the opponent. 
+
+Lemma D.3 (Opponent Should Not Have Perfect Recall) . When the opponent has perfect recall ( i.e., 
+
+without Condition 2), the player will have to suffer Ω(T) RP-Regret in the worst case, even if Condition 1 and Condition 3 hold for the comparator. 
+
+We note that since Condition 3 is stronger than Condition 2, the results in Lemmas D.1-D.3 above with “even if Condition 3 holds” remain true when replacing it with “even if Condition 2 holds”. This completes the statements in Table 1. We also note that Lemma D.3 holds even when the 25 opponent is further subject to a bounded memory length constraint as Chakraborty and Stone (2014) ( i.e. , only make decisions based on the past M-length histories where M is a constant), as our proof later will show. 
+
+D.1.1 Proofs of Results in Table 1 
+
+Proof of Lemma D.1. Consider a two-player coin-flipping game shown in Table 2. The opponent (the column player) can flip the coin to any side they want, and player 1 (the row player) needs to guess which side the coin is, with loss 0 for a correct guess and loss 1 for a wrong guess. For any strategy sequence of player 1, at each timestep, there exists a side that player 1 guesses with probability no larger than 0.5. Let the column player deterministically flip to that side. This fixes an oblivious deterministic opponent sequence against which player 1 incurs expected loss at least 0.5 at every timestep. Without Condition 1 on the comparator, there exists a comparator that deterministically guesses this fixed sequence correctly every time, so that the corresponding accumulated loss is 0, while player 1’s accumulated loss under any strategy sequence is no less than 0.5 T. Hence, player 1 will get a linear RP-Regret .In this case, both the opponent and the comparator only use deterministic strategies, and are 
+
+oblivious in the sense that at timestep t, they do not depend on the history before t. In particular, the ratio in Condition 3 is always 1 under any history. Hence, both the opponent and the comparator satisfy Condition 3, completing the proof. 
+
+Proof of Lemma D.2. We consider the same coin-flipping game in Table 2. The opponent still ad-versarially flips the coin as in the proof of Lemma D.1, so that player 1 will have to incur a loss of at least 0.5 in expectation every timestep, under any strategy sequences. At the same time, since the comparator is not subject to Condition 2 and has perfect recall, even a time-invariant 
+
+comparator strategy can still behave differently at different timesteps, by noticing the different lengths of the history at the time. In particular, the comparator can choose the fixed strategy 
+
+π(1)(g(L(h)) | h) ≡ 1 at all timesteps, where g : {1, 2, ..., T} → { Guess Up, Guess Down }. Back to the coin-flipping game, the comparator can arbitrarily and deterministically guess Up or Down at every timestep, by letting g(t) be the particular value to correctly guess the opponent’s choice at that timestep t. In this case, the RP-Regret is Ω(T). Note that the π(1) above satisfies Condi-tion 1 since given any h ∈ H , π(1)(· | h) remains unchanged over time. Moreover, the opponent’s strategy satisfies Condition 3, as shown in the proof of Lemma D.1. Augmented Prisoner’s Dilemma C D M1 M2
+
+C -3 0 0 0
+
+D -4 -1 0 0Table 3: The loss matrix for player 1 (the row player) of an augmented Prisoner’s Dilemma game. 
+
+C stands for cooperate and D stands for defect. 
+
+Proof of Lemma D.3. Consider a variant of the Prisoner’s Dilemma where the opponent (the col-umn player) has two additional actions called M1 and M2, with the loss matrix shown in Table 3. If losses are required to lie in [0, 1 ], replace every entry x in this matrix by (x + 4)/4; this positive affine transformation scales every regret gap below by 1/4 and therefore preserves the 
+
+Ω(T) lower bound. 26 • At timestep 1, the column player (the opponent) chooses M1 or M2 deterministically. • If M1 was chosen in the first timestep, then at timestep 2 the column player mimics the previous action of the row player. • If M2 was chosen in the first timestep, then at timestep 2 the column player plays the action different from the previous action of the row player. • From timestep 3 onward, the column player mimics its own previous action deterministi-cally. Note that the column player can implement the strategy above since the column player has perfect recall. In this case, the column player can adversarially choose M1 or M2 at the beginning to guarantee that they will always play D at all later timesteps with large probability, while playing against any strategies of the row player. Specifically, at timestep 1, if the row player chooses C
+
+with probability ≥ 0.5, they will choose M2; otherwise, they will choose M1. This way, in the next timestep onwards, the column player will play D with probability ≥ 0.5. However, when the column player chooses M1 at timestep 1, we let the comparator always play C
+
+at all timesteps; otherwise, if the column player chooses M2 at timestep 1, we let the comparator always play D at all timesteps. In this case, due to the adaptivity of the column player, they will always choose C in later timesteps, making the comparator suffer a loss of either −3 at each timestep with (C, C), or −4 with (D, C), from t = 2 to T. Meanwhile, the row player will suffer either a loss of −1 at each timestep with (D, D), or 0 at each timestep with (C, D) from t = 2 to 
+
+T, with probability at least 0.5, since following the above argument, the column player will play 
+
+D with probability ≥ 0.5. Therefore, a constant gap between the comparator’s and the row player’s expected losses is in-curred from timestep 2 to T: the comparator’s largest loss is −3 (from always encountering 
+
+(C, C)), whereas the row player’s smallest possible expected loss is −2.5 (from encountering 
+
+(D, D) with probability 0.5 and (D, C) with probability 0.5). This yields a linear RP-Regret . In fact, it can be seen that the opponent in the above example only needs to have perfect recall within the latest 1-step (or multi-step) bounded memory (the setting considered in Chakraborty and Stone (2014)), and the regret remains linear. Note that, this does not contradict our positive results later, since such a finite-memory perfect recall condition does not satisfy our Condition 3. This completes the proof. 
+
+# E Approximation of RP-Regret 
+
+Unfortunately, even under the necessary conditions given in Table 1, minimizing RP-Regret as defined in Eq. (3.2) can still be computationally challenging, since each f t−1 depends on every strategy from timestep 1 to t, and the number of optimization variables blows up as T becomes large. Hence, we further approximate the notion of RP-Regret by truncating the strategies far from the current timestep t. Specifically, instead of calculating the expected loss over all possible full histories from 1 to t, we only take the latest histories of length no more than m into account, where m is a constant. With Condition 3 satisfied for all the players, in Theorem E.1, we prove that such an approximation will only cause an error of 2 Cγ 
+
+> m
+
+that decays exponentially with respect 27 to m. Formally, we define 
+
+JmT (π1: T ) B
+
+> T
+
+# ∑
+
+> t=1
+
+f min {t−1, m}(πt−min {t−1, m}:t), RmT B JmT (π1: T ) − min  
+
+> ˆπ(1)
+> 1: T∈C (1)
+> T
+
+JmT (( ˆπ(1)
+
+> 1: T
+
+, π(−1) 
+
+> 1: T
+
+)) (E.1) where m ∈ N, and C(i) 
+
+> T
+
+⊆
+
+
+
+X (i)T
+
+is the set of all the strategies of player i with a bounded variation satisfying Conditions 1 and 3. Note that the expected loss f min {t−1, m}(πt−min {t−1, m}:t)
+
+is only related to the strategies from timestep t − m to t, which is more efficient to optimize compared to f t−1(π1: t).Next, we will verify that f min {t−1, m}(πt−min {t−1, m}:t) can be a good approximation of f t−1(π1: t). In this case, JmT and RmT will also approximate JT and RT well, respectively. 
+
+Lemma E.1. Suppose Condition 3 is satisfied for every player i ∈ N . At any timestep t, for any m ≤ t − 1,any history h′ ∈ H t−m−1 and a ∈ A , when γ ≤ 12(N+2) , we have 
+
+| f min {t−1, m}(πt−min {t−1, m}:t) − f t−1(π1: t)| ≤ 2Cγ
+
+> m
+
+, (E.2) 
+
+where C γ 
+
+> m
+
+B (2N + 1)m+1γm+1.
+
+Therefore, when γ ≤ 12(N+2) , the approximation error |RmT − RT | decays exponentially with respect to m. The proof is postponed to Appendix L. 
+
+# F Bounding RmT by ¯RmT and Switching Cost 
+
+F.1 Mitigating the Dependence on Past Strategies 
+
+The expected loss at timestep t in the online learning literature typically only depends on the strategy at that single timestep (Hazan et al., 2016). Therefore, to facilitate the analysis, we define the following vanilla RP-Regret over the unary loss, i.e., the expected loss f mt defined in the following only depends on π(1) 
+
+> t
+
+, instead of π(1)
+
+> t−m:t
+
+. Such a technique has also been exploited in the literature when memory is involved in online learning (Merhav et al., 2002; Arora et al., 2012, 2018; Anava et al., 2015; Zhao et al., 2022). Specifically, for any strategy profile π(1) ∈ X (1) (of length 1), any integer m ≥ 0, and any timestep t > m, we can define the unary expected loss: 
+
+f mt (π(1)) B f m((( π(1), π(−1) 
+
+> t−m
+
+), (π(1), π(−1)
+
+> t−m+1
+
+), ..., (π(1), π(−1) 
+
+> t
+
+))) . (F.1) Then, we can define the corresponding cumulative loss and regret as follows: ¯JmT (π1: T ) B
+
+> T
+
+# ∑
+
+> t=1
+
+f min {t−1, m} 
+
+> t
+
+(π(1) 
+
+> t
+
+), ¯RmT B ¯JmT (π1: T ) − min  
+
+> ˆπ(1)
+> 1: T∈C (1)
+> T
+
+¯JmT (( ˆπ(1)
+
+> 1: T
+
+, π(−1) 
+
+> 1: T
+
+)) . (F.2) Note that f mt (π(1) 
+
+> t
+
+) = f m((( π(1) 
+
+> t
+
+, π(1) 
+
+> t
+
+, ..., π(1)
+
+> t
+
+| {z }
+
+> m+1
+
+), π(−1)
+
+> t−m:t
+
+)) . Then, by the Lipschitz continuity (with some constant CLips > 0) of f m with respect to π(1) 
+
+> t−m:t
+
+(cf. Lemma F.1), we have 
+
+|RmT − ¯RmT | ≤ CLips m2 max  
+
+> ˆπ(1)
+> 1: T∈C (1)
+> T
+> T
+
+# ∑
+
+> t=2
+
+
+
+π(1) 
+
+> t−1
+
+− π(1)  
+
+> t∞
+
++ ˆπ(1) 
+
+> t−1
+
+− ˆπ(1) 
+
+> t∞
+
+
+
+. (F.3) 28 The right-hand side (RHS) is sublinear in T when we have Condition 1 on the comparator ˆ π(1)
+
+> 1: T
+
+,and the strategy of player 1, the regret minimizer, also satisfies Condition 1 10 . Hence, instead of minimizing RmT , we can minimize ¯ RmT using any online learning algorithm that can also guarantee 
+
+∑Tt=2 π(1) 
+
+> t−1
+
+− π(1)  
+
+> t∞
+
+to be sublinear in T.
+
+F.2 Bounding the difference between JmT and ¯JmT
+
+Following the framework of online convex optimization with memory (Anava et al., 2015; Zhao et al., 2022), we will use the Lipschitz continuity of f min {t−1, m} to remove the dependence on past strategies with an additional cost corresponding to the variation defined in Condition 1. We first show f m(π1: m+1) is Lipschitz with respect to π1: m+1 for any m ∈ N and joint strategy π1: m+1.
+
+Lemma F.1 (Lipschitz Continuity of f m). For any m ∈ N and two arbitrary strategy-profile vectors 
+
+¯π, ˜ π of length m + 1, we have 
+
+| f m( ¯π) − f m( ˜π)| ≤ CLips 
+
+> m+1
+
+# ∑
+
+> t=1
+
+∥ ¯πt − ˜πt∥∞ ≤ CLips 
+
+> N
+
+# ∑
+
+> i=1
+> m+1
+
+# ∑
+
+> t=1
+
+¯π(i) 
+
+> t
+
+− ˜π(i) 
+
+> t∞
+
+where we denote CLips B |A| 2, ∥ ¯πt − ˜πt∥∞ = max 
+
+> a∈A ,h∈H m
+
+| ¯πt(a | h) − ˜πt(a | h)| (F.4) 
+
+¯π(i) 
+
+> t
+
+− ˜π(i)  
+
+> t∞
+
+= max   
+
+> ai∈A i,h∈H m
+
+¯π(i) 
+
+> t
+
+(ai | h) − ˜π(i) 
+
+> t
+
+(ai | h) . (F.5) The proof is postponed to Appendix L.1. Then, we can bound RmT by ¯RmT with an additional switching cost (accumulated variation of π(1) 
+
+> t
+
+over time) by using Lemma F.1 and Lemma F.2 in the following. 
+
+Lemma F.2. For any sequence of vectors x1: T, integers 0 < K ≤ T and a real number p > 0 (p can be +∞
+
+for ease of notation), we have 
+
+> T
+
+# ∑
+
+> t=1
+> t−1
+
+# ∑
+
+> s=max {t−K,1 }
+
+∥xt − xs∥p ≤ K2 T
+
+# ∑
+
+> t=2
+
+∥xt − xt−1∥p . (F.6) The proof is postponed to Appendix L.3. By Lipschitz continuity of f m, for any strategy vector ˜ π ∈ (X )T of length T, we have 
+
+|JmT ( ˜π) − ¯JmT ( ˜π)| ≤ CLips 
+
+> T
+
+# ∑
+
+> t=2
+> t−1
+
+# ∑
+
+> s=max {t−m,1 }
+
+˜π(1) 
+
+> t
+
+− ˜π(1) 
+
+> s∞
+> (i)
+
+≤ CLips m2 T
+
+# ∑
+
+> t=2
+
+˜π(1) 
+
+> t−1
+
+− ˜π(1) 
+
+> t∞
+
+| {z }
+
+> Switching Cost
+
+where (i) is obtained directly from Lemma F.2. 
+
+> 10 Condition 1 on the strategy generated by the regret minimizer is neither an assumption nor a pre-defined condition, but a property that our regret minimization algorithm should have, as to be detailed later in §4.
+
+29 G Minimization of Repeated Policy Regret with an Oracle 
+
+In this section, we will extend the result in Suggala and Netrapalli (2020) to our setting where the comparator can change over time with a sublinear accumulated variation instead of a fixed comparator. We need the oracle O to achieve that. 
+
+Definition G.1 (Optimization Oracle (Suggala and Netrapalli, 2020)) . For a function f : X → R and a vector σ ∈ Rd, the optimization oracle O( f − σ ) returns x ∈ X so that f (x) − ⟨ σ , x⟩ ≤ inf   
+
+> x′∈X
+
+f (x′) − σ , x′ + α + β ∥σ ∥1 . (G.1) We can then design Algorithm 1 by using the oracle above. Note that all the strategies of player 1 are in the subspace of X (1) that satisfies Condition 3, which is denoted as X (1) 
+
+> γ
+
+.
+
+Algorithm 1 Minimizing Non-Convex Functions 
+
+for s = 1, 2, ..., T/K do for k = 1, 2, ..., K do 
+
+Sample 
+
+n
+
+σ(s−1)K+k,j
+
+o|A 1|·| Smm′ =0 Hm′ |
+
+> j=1
+> i.i.d.
+
+∼ Exp (η)
+
+▷ z ∼ Exp (η) means that Pr (z ≥ w) = exp (−ηw)
+
+Predict π(1)(s−1)K+k as 
+
+π(1)(s−1)K+k ← argmin   
+
+> π(1)∈X (1)
+> γ
+> k−1
+
+# ∑ 
+
+> k′=1
+
+f m(π(1), π(−1)(s−1)K+k′ −m:(s−1)K+k′ ) −
+
+D
+
+σ(s−1)K+k, π(1)E!
+
+(G.2) 
+
+▷ The argmin above is achieved by the oracle. 
+
+end for end for 
+
+Intuitively, we will divide all T timesteps into T/K episodes, with K timesteps in each episode ( K
+
+is the hyper-parameter that we will specify later). Then, for each episode, we will run (Suggala and Netrapalli, 2020, Algorithm 1) from scratch. This is similar to the restart techniques in the non-stationary MG literature Mao et al. (2021), to overcome the non-stationarity. Throughout this proof, when t ≤ m we interpret expressions such as f m(πt−m:t) and 
+
+f m(π(1), π(−1)
+
+> t−m:t
+
+) as their available-history versions f t−1(π1: t) and f t−1(π(1), π(−1) 
+
+> 1: t
+
+), respectively. Equivalently, one may start the displayed m-memory bounds after the first m rounds and absorb the first m losses into an additive O(m) term. 30 Firstly, we have 
+
+E[RT ] = E
+
+ sup 
+
+ˆπ(1) 
+
+> 1: T
+
+∈C T
+
+T
+
+# ∑
+
+t=1
+
+f t−1(π1: t) − f t−1( ˆπ(1)
+
+1: t , π(−1)
+
+1: t )
+
+
+
+(i)
+
+≤E
+
+ sup 
+
+ˆπ(1) 
+
+> 1: T
+
+∈C T
+
+T
+
+# ∑
+
+t=1
+
+f m(πt−m:t) − f m( ˆπ(1)
+
+t−m:t, π(−1)
+
+t−m:t)
+
+ + 4Cγ
+
+m T
+
+(ii )
+
+≤ E
+
+ sup 
+
+ˆπ(1) 
+
+> 1: T
+
+∈C T
+
+T
+
+# ∑
+
+t=1
+
+f m(π(1)
+
+t , π(−1)
+
+t−m:t) − f m( ˆπ(1)
+
+t , π(−1)
+
+t−m:t)
+
+ + 4Cγ
+
+m T
+
++ CLips m2 T
+
+# ∑
+
+t=2
+
+E
+
+h
+
+π(1)
+
+t − π(1)
+
+t−1 ∞
+
+i
+
++ CLips m2 sup 
+
+ˆπ(1) 
+
+> 1: T
+
+∈C T
+
+T
+
+# ∑
+
+t=2
+
+ˆπ(1)
+
+t − ˆπ(1)
+
+t−1 ∞
+
+(iii )
+
+≤ E
+
+ sup 
+
+ˆπ(1) 
+
+> 1: T
+
+∈C T
+
+T/K
+
+# ∑
+
+t=1
+
+t·K
+
+# ∑
+
+s=t·K−K+1
+
+f m(π(1)
+
+s , π(−1)
+
+s−m:s) − f m( ˆπ(1)
+
+t·K, π(−1)
+
+s−m:s)
+
+ + 4Cγ
+
+m T
+
++ CLips m2 T
+
+# ∑
+
+t=2
+
+E
+
+h
+
+π(1)
+
+t − π(1)
+
+t−1 ∞
+
+i
+
++ CLips (m2 + ( m + 1)K2) sup 
+
+ˆπ(1) 
+
+> 1: T
+
+∈C T
+
+T
+
+# ∑
+
+t=2
+
+ˆπ(1)
+
+t − ˆπ(1)
+
+t−1 ∞
+
+where we define f m(π(1), π(−1)
+
+t−m:t) B f m((( π(1), π(−1)
+
+t−m ), (π(1), π(−1)
+
+t−m+1), ..., (π(1), π(−1)
+
+t ))) . (i) is by Lemma E.1, and (ii ), (iii ) are by Lemma F.1 and Lemma F.2. Then, 
+
+E[RT ] ≤E
+
+
+
+T/K
+
+# ∑
+
+t=1
+
+sup 
+
+ˆπ(1) ∈X (1)
+
+> γ
+
+t·K
+
+# ∑
+
+s=t·K−K+1
+
+f m(π(1)
+
+s , π(−1)
+
+s−m:s) − f m( ˆπ(1), π(−1)
+
+s−m:s)
+
+| {z }
+
+1
+
+
+
++ 4Cγ
+
+m T
+
++ CLips m2 T
+
+# ∑
+
+t=2
+
+E
+
+h
+
+π(1)
+
+t − π(1)
+
+t−1 ∞
+
+i
+
++ CLips (m2 + ( m + 1)K2) sup 
+
+ˆπ(1) 
+
+> 1: T
+
+∈C T
+
+T
+
+# ∑
+
+t=2
+
+ˆπ(1)
+
+t − ˆπ(1)
+
+t−1 ∞ .Since 1 is exactly the external regret of a non-convex function as in Suggala and Netrapalli (2020), we can directly use (Suggala and Netrapalli, 2020, Theorem 1), then 
+
+E[RT ] ≤ηC2Lips |A| 2m+2(1 + m)2T + 2 |A| m+1
+
+η
+
+TK + 4Cγ
+
+m T + CLips (m2 + ( m + 1)K2)PT
+
++ αT + β|A| m+1
+
+ 1
+
+η + CLips (1 + m)
+
+
+
+T.31 By choosing η = 1√K and K =
+
+ TPT
+
+0.4 
+
+, we have 
+
+E [RT ]
+
+≤4Cγ 
+
+> m
+
+T + C2Lips |A| 2m+2(m + 1)2 P0.2  
+
+> T
+
+T0.8 + CLips m2 PT
+
++ CLips (m + 1)T0.8 P0.2  
+
+> T
+
++ T0.6 P0.4  
+
+> T
+
++ |A| m+1T0.8 P0.2 
+
+> T
+
++ αT + β|A| m+1
+
+ TPT
+
+0.2 
+
++ CLips (1 + m)
+
+!
+
+T
+
+=4Cγ 
+
+> m
+
+T +
+
+
+
+C2Lips |A| 2m+2(1 + m)2 + CLips (m + 1) + |A| m+1
+
+T0.8 P0.2  
+
+> T
+
++ CLips m2 PT + T0.6 P0.4 
+
+> T
+
++ αT + β|A| m+1
+
+ TPT
+
+0.2 
+
++ CLips (1 + m)
+
+!
+
+T.Therefore, we have 
+
+E [RT ] ≤ O
+
+
+
+T0.8 P0.2  
+
+> T
+
++ αT + β T1.2 
+
+P0.2 
+
+> T
+
++ Cγ 
+
+> m
+
+T
+
+
+
+.For any desired accuracy ϵ > 0, when the optimization oracle is accurate enough ( α, β small enough) and by picking m = O  log 1
+
+> ϵ
+
+, we can achieve E
+
+h RT
+
+> T
+
+i
+
+≤ ϵ.
+
+# H Minimization of Local RP-Regret 
+
+H.1 Hardness Results 
+
+Lemma H.1 (Lemma D.1 for Local RP-Regret ). When we only have Condition 2 on both the comparator and the opponent, we will get Ω(T) Local RP-Regret in the worst case. Proof. Consider a two-player coin-flipping game shown in Table 2. The opponent (the column player) can flip the coin to any side they want and our player (the row player) needs to guess which side the coin is, with loss 0 for a correct guess and loss 1 for a wrong guess. In this case, without Condition 1, the opponent can choose a deterministic sequence adversarially so that they flip the coin to a side that we guess with probability no larger than 0.5. Hence, we get linear regret. Because the comparator can guess this fixed sequence correctly every time, we have 
+
+JT (π1: T ) − JT ( ˜π(1),s 
+
+> 1: T
+
+, π(−1) 
+
+> 1: T
+
+) ≥ 0.5 for all s = 1, 2, ..., T so that Rlocal  
+
+> T
+
+≥ 0.5 T. In this case, neither the opponent nor the comparator needs any memory so that they both satisfy Condition 2. 
+
+Lemma H.2 (Lemma D.2 for Local RP-Regret ). With Condition 1 on the comparator and Condition 2 only for the opponent, we will get Ω(T) Local RP-Regret in the worst case. Proof. We consider the same coin-flipping game in Table 2. Since the comparator is not sub-ject to Condition 2, its fixed strategy can behave differently at different timesteps by notic-ing the different lengths of history. In particular, the comparator can choose the fixed strat-egy π(1)(g(L(h) + 1) | h) ≡ 1 where g : {1, 2, ..., T} → { Guess Up, Guess Down } at all timesteps. Back to the coin-flipping game, the comparator can deterministically guess up or down at every timestep by letting g(t) take different values. 32 At the same time, the opponent can adversarially flip the coin as in Lemma H.1 so that we will get JT (π1: T ) − JT ( ˜π(1),s 
+
+> 1: T
+
+, π(−1) 
+
+> 1: T
+
+) ≥ 0.5 for all s = 1, 2, ..., T as in the proof of Lemma H.1. In this case, the strategy of the comparator is fixed and the opponent is subject to Condition 2, but 
+
+Rlocal  
+
+> T
+
+≥ 0.5 T.
+
+Lemma H.3 (Lemma D.3 for Local RP-Regret ). When only the comparator satisfies both Condition 1 and Condition 2, there is Ω(T) Local RP-Regret .Proof. Consider the same augmented Prisoner’s Dilemma construction as in the proof of Lemma D.3. As noted there, the matrix may be affinely rescaled to [0, 1 ] without changing the linear-regret conclusion. At timestep 1, the opponent chooses M1 if player 1 plays C with probability less than 1/2, and chooses M2 otherwise. Then, against the actually played strategy of player 1, the opponent plays D with probability at least 1/2 at every timestep t ≥ 2, and player 1’s expected loss at each such timestep is at least −5/2. Now choose the comparator after the opponent strategy has been fixed: if the opponent chose M1,the comparator always plays C. If the opponent chose M2, the comparator always plays D. This comparator is time-invariant and history-independent, so it satisfies Condition 1 and Condition 2. Consider the single local deviation at timestep s = 1 to this comparator. Under this deviation, the opponent is driven to play C from timestep 2 onward, so the deviating player receives loss at most −3 at every timestep t ≥ 2. Hence 
+
+JT (π1: T ) − JT ( ˜π(1),1 1: T , π(−1) 
+
+> 1: T
+
+) ≥ 12 (T − 1),and therefore Rlocal  
+
+> T
+
+≥ Ω(T).
+
+H.2 Proof of Theorem 4.1 
+
+In this section, we will use π(1) 
+
+> 1: T
+
+as the strategy of player 1 generated by the regret minimizer and 
+
+π(−1) 
+
+> 1: T
+
+to denote the strategy generated by the adversary. Also, we will use π1: T to denote the joint strategy. Therefore, according to (4.2), 
+
+f t−1,local  
+
+> t
+
+( ¯π(1) 
+
+> 1: t
+
+) = ( T − t) f t−1(π(1) 
+
+> 1: t
+
+, π(−1) 
+
+> 1: t
+
+) + 
+
+> t
+
+# ∑
+
+> s=1
+
+f t−1(( π(1)
+
+> 1: s−1
+
+, ¯ π(1) 
+
+> s
+
+, π(1)
+
+> s+1: t
+
+), π(−1) 
+
+> 1: t
+
+).and f t−1,local  
+
+> t
+
+(π(1) 
+
+> 1: t
+
+) = T f t−1(π1: t). Then we have 
+
+Rlocal  
+
+> T
+
+=
+
+> T
+
+# ∑
+
+> t=1
+
+f t−1,local  
+
+> t
+
+(π(1) 
+
+> 1: t
+
+) − min  
+
+> ˆπ(1)
+> 1: T∈C (1)
+> T
+> T
+
+# ∑
+
+> t=1
+
+f t−1,local  
+
+> t
+
+( ˆπ(1) 
+
+> 1: t
+
+). (H.1) For any ˆ π(1) 
+
+> 1: t
+
+, we can still get 
+
+f t−1,local  
+
+> t
+
+(π(1) 
+
+> 1: t
+
+) − f t−1,local  
+
+> t
+
+( ˆπ(1) 
+
+> 1: t
+
+)=
+
+> t−m−1
+
+# ∑
+
+> s=1
+
+f t−1(π(1) 
+
+> 1: t
+
+, π(−1) 
+
+> 1: t
+
+) − f t−1(( π(1)
+
+> 1: s−1
+
+, ˆ π(1) 
+
+> s
+
+, π(1)
+
+> s+1: t
+
+), π(−1) 
+
+> 1: t
+
+) (H.2) 
+
++
+
+> t
+
+# ∑
+
+> s=t−m
+
+f t−1(π(1) 
+
+> 1: t
+
+, π(−1) 
+
+> 1: t
+
+) − f t−1(( π(1)
+
+> 1: s−1
+
+, ˆ π(1) 
+
+> s
+
+, π(1)
+
+> s+1: t
+
+), π(−1) 
+
+> 1: t
+
+). (H.3) 33 For (H.2), we have 
+
+t−m−1
+
+# ∑
+
+s=1
+
+f t−1(( π(1)
+
+1: s−1, ˆ π(1)
+
+s , π(1)
+
+s+1: t), π(−1)
+
+1: t ) − f t−1(π(1)
+
+1: t , π(−1)
+
+1: t )
+
+≤
+
+t−m−1
+
+# ∑
+
+s=1
+
+
+
+f t−1(( π(1)
+
+1: s−1, ˆ π(1)
+
+s , π(1)
+
+s+1: t), π(−1)
+
+1: t ) − f t−s(π(1)
+
+s+1: t, π(−1)
+
+s+1: t)
+
++ f t−s(π(1)
+
+s+1: t, π(−1)
+
+s+1: t) − f t−1(π(1)
+
+1: t , π(−1)
+
+1: t )
+
+
+
+(i)
+
+≤4
+
+t−m−1
+
+# ∑
+
+s=1
+
+Cγ
+
+t−s
+
+(ii )
+
+≤ 4NC γ
+
+m,where (i) is by Lemma E.1 and (ii ) is by the definition of Cγ
+
+m, and by the condition γ ≤ 12(N+2) ,which ensures Lemma E.1 holds. For (H.3), we have 
+
+t
+
+# ∑
+
+s=t−m
+
+f t−1(π(1)
+
+1: t , π(−1)
+
+1: t ) − f t−1(( π(1)
+
+1: s−1, ˆ π(1)
+
+s , π(1)
+
+s+1: t), π(−1)
+
+1: t )
+
+≤
+
+t
+
+# ∑
+
+s=t−m
+
+f m(π(1)
+
+t−m:t, π(−1)
+
+t−m:t) − f m(( π(1)
+
+t−m:s−1, ˆ π(1)
+
+s , π(1)
+
+s+1: t), π(−1)
+
+t−m:t)+
+
+t
+
+# ∑
+
+s=t−m
+
+f t−1(( π(1)
+
+1: s−1, ˆ π(1)
+
+s , π(1)
+
+s+1: t), π(−1)
+
+1: t ) − f m(( π(1)
+
+t−m:s−1, ˆ π(1)
+
+s , π(1)
+
+s+1: t), π(−1)
+
+t−m:t)
+
++
+
+t
+
+# ∑
+
+s=t−m
+
+f t−1(π(1)
+
+1: t , π(−1)
+
+1: t ) − f m(π(1)
+
+t−m:t, π(−1)
+
+t−m:t)
+
+≤
+
+t
+
+# ∑
+
+s=t−m
+
+f m(π(1)
+
+t−m:t, π(−1)
+
+t−m:t) − f m(( π(1)
+
+t−m:s−1, ˆ π(1)
+
+s , π(1)
+
+s+1: t), π(−1)
+
+t−m:t) + 4(m + 1)Cγ
+
+m.For notational simplicity, let ˆ π(1)
+
+1: T = argmin ¯π(1) 
+
+> 1: T
+
+∈C (1)
+
+> T
+
+∑Tt=1 f t−1,local 
+
+t ( ¯π(1)
+
+1: t ). Then, 
+
+Rlocal 
+
+T =
+
+T
+
+# ∑
+
+t=1
+
+f t−1,local 
+
+t (π(1)
+
+1: t ) −
+
+T
+
+# ∑
+
+t=1
+
+f t−1,local 
+
+t ( ˆπ(1)
+
+1: t )
+
+≤
+
+T
+
+# ∑
+
+t=m+1
+
+t
+
+# ∑
+
+s=t−m
+
+
+
+f m(π(1)
+
+t−m:t, π(−1)
+
+t−m:t) − f m(( π(1)
+
+t−m:s−1, ˆ π(1)
+
+s , π(1)
+
+s+1: t), π(−1)
+
+t−m:t)
+
+
+
++ 4(N + m + 1)Cγ
+
+m T
+
++
+
+m
+
+# ∑
+
+t=1
+
+f t−1,local 
+
+t (π(1)
+
+1: t ) − f t−1,local 
+
+t ( ˆπ(1)
+
+1: t )
+
+(i)
+
+≤
+
+T
+
+# ∑
+
+t=m+1
+
+t
+
+# ∑
+
+s=t−m
+
+
+
+f m(( π(1)
+
+t−m:s−1, π(1)
+
+t , π(1)
+
+s+1: t), π(−1)
+
+t−m:t) − f m(( π(1)
+
+t−m:s−1, ˆ π(1)
+
+t , π(1)
+
+s+1: t), π(−1)
+
+t−m:t)
+
+
+
++ 4(N + m + 1)Cγ
+
+m T + m2 + CLips 
+
+T
+
+# ∑
+
+t=m+1
+
+t−1
+
+# ∑
+
+s=t−m
+
+
+
+π(1)
+
+s − π(1)
+
+t ∞ + ˆπ(1)
+
+s − ˆπ(1)
+
+t ∞
+
+
+
+(ii )
+
+≤
+
+T
+
+# ∑
+
+t=m+1
+
+t
+
+# ∑
+
+s=t−m
+
+
+
+f m(( π(1)
+
+t−m:s−1, π(1)
+
+t , π(1)
+
+s+1: t), π(−1)
+
+t−m:t) − f m(( π(1)
+
+t−m:s−1, ˆ π(1)
+
+t , π(1)
+
+s+1: t), π(−1)
+
+t−m:t)
+
+
+
++ 4(N + m + 1)Cγ
+
+m T + m2 + CLips m2 T
+
+# ∑
+
+t=m+2
+
+
+
+π(1)
+
+t−1 − π(1)
+
+t ∞ + ˆπ(1)
+
+t−1 − ˆπ(1)
+
+t ∞
+
+
+
+34 where (i) uses Lemma F.1 and (ii ) uses Lemma F.2. Notice that ∑ts=t−m f m(( π(1)
+
+t−m:s−1, ¯ π(1)
+
+t , π(1)
+
+s+1: t), π(−1)
+
+t−m:t) is a linear function with respect to ¯ π(1)
+
+t . So, 
+
+T
+
+# ∑
+
+t=m+1
+
+t
+
+# ∑
+
+s=t−m
+
+
+
+f m(( π(1)
+
+t−m:s−1, π(1)
+
+t , π(1)
+
+s+1: t), π(−1)
+
+t−m:t) − f m(( π(1)
+
+t−m:s−1, ˆ π(1)
+
+t , π(1)
+
+s+1: t), π(−1)
+
+t−m:t)
+
+
+
+=
+
+T
+
+# ∑
+
+t=m+1
+
+D
+
+gt, π(1)
+
+t − ˆπ(1)
+
+t
+
+E
+
+where, for t ≥ m + 1, 
+
+gt B ∇ ¯π(1)
+
+t
+
+# ∑
+
+s=t−m
+
+f m(( π(1)
+
+t−m:s−1, ¯ π(1), π(1)
+
+s+1: t), π(−1)
+
+t−m:t)
+
+¯π(1) =π(1)
+
+> t
+
+.We set gt = 0 for t ≤ m.Therefore, by Lemma L.6, we have 
+
+Rlocal 
+
+T ≤ η
+
+2
+
+T
+
+# ∑
+
+t=m+1
+
+∥gt∥2 + 12η π(1)
+
+m+1 − ˆπ(1)
+
+m+1
+
+2
+
++ 2|H m+1|
+
+η
+
+T
+
+# ∑
+
+t=m+2
+
+∥ ˆπt−1 − ˆπt∥∞
+
++ 4(N + m + 1)Cγ
+
+m T + m2 + CLips m2 T
+
+# ∑
+
+t=m+2
+
+
+
+π(1)
+
+t−1 − π(1)
+
+t ∞ + ˆπ(1)
+
+t−1 − ˆπ(1)
+
+t ∞
+
+
+
+since D1 = 2| Smk=0 Hk| ≤ 2|H m+1|. By 
+
+∥gt∥ ≤ ∥ gt∥1
+
+= ∑
+
+h1∈Smk=0 Hk,a1∈A 1
+
+# ∑
+
+h2∈H m+1,h2,1: L(h1) =h1,h2, L(h1)+ 1,1 =a1
+
+L1(h2, m+1) Pr (h2|h2, L(h1)+ 1,1 = a1; πt−m:t)
+
+≤ ∑
+
+h2∈H m+1
+
+m
+
+# ∑
+
+s=0
+
+Pr (h2|h2, s+1,1 ; πt−m:t) = ( m + 1)|A 1|.Note that we use h2, s,1 ∈ A1 to denote the action player 1 played at timestep s and Pr (h2|h2, s+1,1 ; πt−m:t) means the probability that h2 occurs when playing πt−m:t conditioned on observing h2, s+1,1 ∈ A 1 at timestep s + 1. Then, for any ˆ π1: T, we have 
+
+Rlocal 
+
+T
+
+(i)
+
+≤ η
+
+2 (m + 1)2|A 1|2T + 2|H m+1|2
+
+η + 2|H m+1|
+
+η
+
+T
+
+# ∑
+
+t=m+2
+
+∥ ˆπt−1 − ˆπt∥∞
+
++ 4(N + m + 1)Cγ
+
+m T + m2 + CLips m2 T
+
+# ∑
+
+t=m+2
+
+ˆπ(1)
+
+t−1 − ˆπ(1)
+
+t ∞ + CLips m2(m + 1)|A 1|ηT
+
+where (i) is because π(1)
+
+t = Proj X (1)
+
+> γ
+
+
+
+π(1)
+
+t−1 − ηgt
+
+
+
+and ∥gt∥ ≤ (m + 1)|A 1|. Note that by definition of C(1)
+
+T and ˆπ(1)
+
+1: T ∈ C(1)
+
+T , ∑Tt=m+2 ˆπ(1)
+
+t−1 − ˆπ(1)
+
+t ∞ ≤ PT. By choosing η =
+
+r 2|H m+1|(|H m+1|+PT )
+
+(CLips m2(m+1)|A 1|+( m+1)2|A 1|2/2 )T , we have 
+
+Rlocal 
+
+T ≤2
+
+q
+
+(2|H m+1| (|H m+1| + PT ))    CLips m2(m + 1)|A 1| + ( m + 1)2|A 1|2/2  T
+
++ 4(N + m + 1)Cγ
+
+m T + m2 + CLips m2 PT.35 I Proof of Theorem 4.4 
+
+Algorithm 2 Regret Minimizer by Optimizing Occupancy Measure Initialize π(1) 
+
+> 0
+
+(· | h) ∈ ∆|A 1| as the uniform distribution over a1 ∈ A 1
+
+Initialize the corresponding q1 in the MG with strategies 
+
+n
+
+π(1) 
+
+> 0
+
+, π(2) 
+
+> 0
+
+, ..., π(N)
+
+> 0
+
+o
+
+.Initialize the Policy Gradient Descent with Constraints in Algorithm 5. Initialize the convex set X that q lies in. 
+
+∀q ∈ X ,
+
+
+
+∀i = 1, 2, ..., N, h ∈ H M, ai ∈ A i, γ  
+
+> |A i|
+
+∑a′ ∈A q(h, a′) − ∑a′−i ∈A −i q(h, (ai, a′−i)) ≤ 0
+
+∀h ∈ H M, γNM  
+
+> |A| M
+
+− ∑a∈A q(h, a) ≤ 0
+
+∑h∈H M,a∈A q(h, a) = 1, q ⪰ 0
+
+∀h ∈ H M, ∑a∈A q(h, a) = ∑a∈A q(( a, h1: M−1), hM)
+
+(I.1) 
+
+for t = 1, 2, ..., T do for i = 1, 2, ..., N do 
+
+We define the following approximate player strategy π[i] 
+
+> t
+
+at timestep t as, 
+
+▷ π[i] 
+
+> t
+
+≡ π(1) 
+
+> t
+
+since player 1’s strategy is determined by the algorithm 
+
+∀h ∈ H M, ai ∈ A i, π[i] 
+
+> t
+
+(ai | h) B ∑a′−i ∈A −i qt(h, (ai, a′−i)) 
+
+∑a′ ∈A qt(h, a′) (I.2) 
+
+end for 
+
+Receive constraint gt as 
+
+gt(q) B ∑
+
+> h∈H M,a∈A
+
+(−1)1(Dt (h,a,qt )≤0) Dt(h, a, q) ≤ 0 (I.3) 
+
+Dt(h, a, q) B q(h, a) − π(−1) 
+
+> t
+
+(a−1 | h) ∑
+
+> a′−1∈A −1
+
+q(h, (a1, a′−1)) .Run update-rule Eq. (L.8) and (L.9) in Algorithm 5 to obtain qt+1 from qt.
+
+end for 
+
+I.1 Important Lemmas 
+
+Here’s the performance difference lemma for average-reward MDPs. For convenience, we will use the shorthand Eπ to denote Eat ∼π(· | ht ),st+1∼Pr (· | ht,at ). Also, we define 
+
+ρπ B lim 
+
+> T→+∞
+
+1
+
+T Eπ
+
+"T−1
+
+# ∑
+
+> t=0
+
+L1(ht, at)
+
+#
+
+where Pr is the transition probability and L1 is the loss for player 1. It is easy to see from the proof of Lemma M.7, the initial state h0 does not affect the value of ρπ so we omit the initial state here. Also, in this section, we assume that we are controlling player 1 so we will omit the subscript 1 in the following. 36 Lemma I.1 (Performance Difference Lemma (Cao, 1999)) . Consider the MG which is aperiodic unichain. For any h0 ∈ S and strategies π1, π2, we have 
+
+ρπ2 − ρπ1 = ∑
+
+> h∈S
+
+dπ2 (h) ∑
+
+> a∈A
+
+π2(a | h)( Qπ1 (h, a) − Vπ1 (h)) (I.4) 
+
+= ∑
+
+> h∈S
+
+dπ2 (h) ∑
+
+> a∈A
+
+(π2(a | h) − π1(a | h)) Qπ1 (h, a),
+
+where Qπ(h, a) = Eh0=h,a0=a,π[
+
+> ∞
+
+# ∑
+
+> t=0
+
+ L(ht, at) − ρπ] (I.5) 
+
+Vπ(h) = ∑
+
+> a∈A
+
+π(a | h)Qπ(h, a) (I.6) 
+
+dπ(h) = lim 
+
+> T→+∞
+
+1
+
+T Eπ
+
+"T−1
+
+# ∑
+
+> t=0
+
+1(ht = h)
+
+#
+
+. (I.7) From Lemma M.5, the MG induced by M-bounded length memory defined in Definition 4.2 is aperiodic unichain. Under such a condition, dπ is fixed regardless of the initial state h0.
+
+Lemma I.2 (Upper Bound of Qπ(h, a)). The corresponding Q π(h, a) defined in Lemma I.1 is bounded by 
+
+|Qπ(h, a)| ≤ 1 + 2 MC 1
+
+δ C CQ
+
+for any policy π, where 
+
+δ = ( γN
+
+|A| )MC 1 .The proof is postponed to Appendix M.3. By Lemma I.1, we can prove that ρπ is Lipschitz continuous. 
+
+Lemma I.3 (Lipschitz Continuity of ρπ). For any two strategy profiles π1, π2, we have 
+
+|ρπ2 − ρπ1 | ≤ CQ max 
+
+> h∈H M
+
+∥π2(· | h) − π1(· | h)∥1 .
+
+Proof. 
+
+|ρπ2 − ρπ1 | = ∑
+
+> h∈H M
+
+dπ2 (h) ∑
+
+> a∈A
+
+π2(a | h) Qπ1 (h, a) − Vπ1 (h)
+
+= ∑
+
+> h∈H M
+
+dπ2 (h) ∑
+
+> a∈A
+
+ π2(a | h) − π1(a | h)  Qπ1 (h, a) − Vπ1 (h)
+
+= ∑
+
+> h∈H M
+
+dπ2 (h) ∑
+
+> a∈A
+
+ π2(a | h) − π1(a | h)Qπ1 (h, a)
+
+≤ max 
+
+> h∈H M
+
+# ∑
+
+> a∈A
+
+|π2(a | h) − π1(a | h)| CQ
+
+=CQ max 
+
+> h∈H M
+
+∥π2(· | h) − π1(· | h)∥1 .The second line is by definition of Vπ in (I.6). The third line is by the fact that ∀h ∈HM, ∑a∈A π1(a | h) = ∑a∈A π2(a | h) = 1. 37 Lemma I.4 (Lower Bound of qπ). When π(i)(ai | h) ≥ γ  
+
+> |A i|
+
+for all i = 1, 2, ..., N, we have 
+
+∀h ∈ H M, ∑
+
+> a∈A
+
+qπ(h, a) ≥ γNM 
+
+|A| M (I.8) 
+
+∀h ∈ H M, a ∈ A , qπ(h, a) ≥ γN(M+1)
+
+|A| M+1 . (I.9) 
+
+Proof. Firstly, we have π(a | h) ≥ γN 
+
+> |A|
+
+for any a ∈ A , h ∈ H M. Then, for any h ∈ H M, a ∈ A ,
+
+qπ(h, a) = π(a | h) ∑ 
+
+> a′∈A
+
+qπ(h, a′) = π(a | h)dπ(h) (i)
+
+≥ γN
+
+|A| 
+
+γNM 
+
+|A| M = γN(M+1)
+
+|A| M+1
+
+where (i) is because  (Pπ)M 
+
+> h1,h2
+
+≥
+
+ γN
+
+> |A|
+
+M
+
+, dπ(h) =  dπ(Pπ)M 
+
+> h
+
+≥
+
+ γN
+
+> |A|
+
+M
+
+∑h′ ∈H M dπ(h′) = 
+
+ γN
+
+> |A|
+
+M
+
+. Here, Pπ is the state transition matrix induced from strategy π. Specifically, we have 
+
+Pπh1,h2 = ∑a∈A π(a | h1) Pr (h2 | h1, a).
+
+I.2 Formal Version and Proof of Theorem 4.4 
+
+Theorem I.5 (Formal Version of Theorem 4.4) . Suppose player 1 runs Algorithm 2. All players (in-cluding the comparator) satisfy Condition 4 with ν(i) as the uniform strategy over ∆|A i |, respectively. Then, we have RT ≤U 1 + ( CQ + 2CLips K2) |A| M+1
+
+γN(M+1)|A −1| U2 + 2K + CLips K2∆T + 4 (1 − δ) 
+
+> jKMC 1
+> k
+
+T, (I.10) 
+
+where 
+
+δ B ( γN
+
+|A| )MC 1 (I.11) 
+
+CQ B 1 + 2 MC 1
+
+δ (I.12) 
+
+CLips B |A| 2 (I.13) 
+
+∆T B
+
+> N
+
+# ∑
+
+> i=2
+> T
+
+# ∑
+
+> t=2
+
+π(i) 
+
+> t
+
+− π(i)  
+
+> t−1∞
+
++ max  
+
+> ˆπ1: T∈C (1)
+> T
+> T
+
+# ∑
+
+> t=2
+
+ˆπ(1) 
+
+> t
+
+− ˆπ(1)  
+
+> t−1∞
+
+(I.14) 
+
+U1 B 52
+
+s
+
+T
+
+(CQ|H M| + 1)|A| ∆T
+
++ 5 + 4|A| M+1 + 8CLips K2 |A| 32 (M+1)
+
+γNM 
+
+! q
+
+(CQ|H M| + 1)|A| pT∆T
+
+(I.15) 
+
+U2 B
+
+vuut2 (8CLips K2 |A| 32 (M+1)
+
+γNM + 8|A| M+1 + 1)
+
+q
+
+(CQ|H M| + 1)|A| T∆T +
+
+s
+
+T
+
+(CQ|H M| + 1)|A| ∆T
+
+!
+
+×
+
+vuutT + 52
+
+s
+
+T
+
+(CQ|H M| + 1)|A| ∆T
+
++ 5 + 4|A| M+1 + 8CLips K2 |A| 32 (M+1)
+
+γNM 
+
+! q
+
+(CQ|H M| + 1)|A| T∆T.(I.16) 38 For any t ≥ K + 1, by the Lipschitz continuity proved in Lemma F.1, we have 
+
+f t−1(π1: t) − f t−1(π1: t−K−1, πt, πt, ..., πt
+
+| {z }
+
+K+1
+
+) ≤ CLips 
+
+t−1
+
+# ∑
+
+s=t−K
+
+∥πt − πs∥∞ ≤CLips 
+
+N
+
+# ∑
+
+i=1
+
+t−1
+
+# ∑
+
+s=t−K
+
+π(i)
+
+t − π(i)
+
+s ∞ .Then, by Corollary M.7, we have 
+
+f t−1(π1: t−K−1, πt, πt, ..., πt
+
+| {z }
+
+K+1
+
+) − ρπt
+
+= ∑
+
+h∈H M
+
+L1(hM)( μ(Pπt )K+1)h − ∑
+
+h∈H M
+
+L1(hM)( lim 
+
+T→+∞
+
+1
+
+T
+
+T−1
+
+# ∑
+
+s=0
+
+μ(Pπt )s)h
+
+≤2 (1 − δ)
+
+j KMC 1
+
+k
+
+.where μ ∈ ∆|H M | is the state distribution induced by π1: t−K−1 (which is common for the two terms above). Therefore, we have 
+
+RT =
+
+T
+
+# ∑
+
+t=1
+
+f t−1(π1: t) −
+
+T
+
+# ∑
+
+t=1
+
+f t−1( ˆπ(1)
+
+1: t , π(−1)
+
+1: t )
+
+≤
+
+T
+
+# ∑
+
+t=1
+
+ρπt −
+
+T
+
+# ∑
+
+t=1
+
+ρ( ˆπ(1) 
+
+> t
+
+,π(−1) 
+
+> t
+
+) +
+
+T
+
+# ∑
+
+t=1
+
+ρπt − f t−1(π1: t) +
+
+T
+
+# ∑
+
+t=1
+
+ρ( ˆπ(1) 
+
+> t
+
+,π(−1) 
+
+> t
+
+) − f t−1( ˆπ(1)
+
+1: t , π(−1)
+
+1: t )
+
+≤
+
+T
+
+# ∑
+
+t=1
+
+ρπt −
+
+T
+
+# ∑
+
+t=1
+
+ρ( ˆπ(1) 
+
+> t
+
+,π(−1) 
+
+> t
+
+) +
+
+K
+
+# ∑
+
+t=1
+
+ρπt − f t−1(π1: t) +
+
+K
+
+# ∑
+
+t=1
+
+ρ( ˆπ(1) 
+
+> t
+
+,π(−1) 
+
+> t
+
+) − f t−1( ˆπ(1)
+
+1: t , π(−1)
+
+1: t ) (I.17) 
+
++ CLips 
+
+T
+
+# ∑
+
+t=K+1
+
+t−1
+
+# ∑
+
+s=t−K
+
+∥πt − πs∥∞ + CLips 
+
+T
+
+# ∑
+
+t=K+1
+
+N
+
+# ∑
+
+i=2
+
+t−1
+
+# ∑
+
+s=t−K
+
+π(i)
+
+t − π(i)
+
+s ∞ + CLips 
+
+T
+
+# ∑
+
+t=K+1
+
+t−1
+
+# ∑
+
+s=t−K
+
+ˆπ(1)
+
+t − ˆπ(1)
+
+s ∞
+
+(I.18) 
+
++ 4 (1 − δ)
+
+j KMC 1
+
+k
+
+T. (I.19) Since max 
+
+n
+
+ρπt − f t−1(π1: t) , ρ( ˆπ(1) 
+
+> t
+
+,π(−1) 
+
+> t
+
+) − f t−1( ˆπ(1)
+
+1: t , π(−1)
+
+1: t )
+
+o
+
+≤ 1, (I.17) can be upper-bounded by 
+
+T
+
+# ∑
+
+t=1
+
+ρπt −
+
+T
+
+# ∑
+
+t=1
+
+ρ( ˆπ(1) 
+
+> t
+
+,π(−1) 
+
+> t
+
+) +
+
+K
+
+# ∑
+
+t=1
+
+ρπt − f t−1(π1: t) +
+
+K
+
+# ∑
+
+t=1
+
+ρ( ˆπ(1) 
+
+> t
+
+,π(−1) 
+
+> t
+
+) − f t−1( ˆπ(1)
+
+1: t , π(−1)
+
+1: t )
+
+≤
+
+T
+
+# ∑
+
+t=1
+
+ρπt −
+
+T
+
+# ∑
+
+t=1
+
+ρ( ˆπ(1) 
+
+> t
+
+,π(−1) 
+
+> t
+
+) + 2K.39 Also, by Lemma F.2, (I.18) can be bounded by 
+
+CLips 
+
+> T
+
+# ∑
+
+> t
+
+=K+1
+
+> t
+
+−1
+
+# ∑
+
+> s
+
+=t−K
+
+∥πt − πs∥∞ + CLips 
+
+> T
+
+# ∑
+
+> t
+
+=K+1
+
+> N
+
+# ∑
+
+> i
+
+=2
+
+> t
+
+−1
+
+# ∑
+
+> s
+
+=t−K
+
+π(i) 
+
+> t
+
+− π(i)  
+
+> s∞
+
++ CLips 
+
+> T
+
+# ∑
+
+> t
+
+=K+1
+
+> t
+
+−1
+
+# ∑
+
+> s
+
+=t−K
+
+ˆπ(1) 
+
+> t
+
+− ˆπ(1) 
+
+> s∞
+
+≤CLips K2 T
+
+# ∑
+
+> t
+
+=2
+
+∥πt − πt−1∥∞ + CLips K2 T
+
+# ∑
+
+> t
+
+=2
+
+> N
+
+# ∑
+
+> i
+
+=2
+
+π(i) 
+
+> t
+
+− π(i)
+
+> t
+
+−1 ∞ + CLips K2 T
+
+# ∑
+
+> t
+
+=2
+
+ˆπ(1) 
+
+> t
+
+− ˆπ(1)
+
+> t
+
+−1 ∞
+
+≤CLips K2 T
+
+# ∑
+
+> t
+
+=2
+
+∥πt − πt−1∥∞ + CLips K2∆T
+
+where the last line is by the definition of ∆T. Hence, we have 
+
+RT ≤
+
+> T
+
+# ∑
+
+> t
+
+=1
+
+ρπt −
+
+> T
+
+# ∑
+
+> t
+
+=1
+
+ρ( ˆπ(1)  
+
+> t,π(−1)
+> t
+
+) + 2K + CLips K2 T
+
+# ∑
+
+> t
+
+=2
+
+∥πt − πt−1∥∞ + CLips K2∆T + 4 (1 − δ) 
+
+> jKMC 1
+> k
+
+T.Recall that we defined the marginals π[i] 
+
+> t
+
+in (I.2). Let π[·] 
+
+> t
+
+denote the joint strategy induced by qt,
+
+i.e. ,
+
+π[·] 
+
+> t
+
+(a | h) B qt(h, a)
+
+∑a′ ∈A qt(h, a′) .Its player-i marginal is π[i] 
+
+> t
+
+, and in particular π[1] 
+
+> t
+
+= π(1) 
+
+> t
+
+. Then, by Lemma I.3, we have 
+
+> T
+
+# ∑
+
+> t
+
+=1
+
+ρπt −
+
+> T
+
+# ∑
+
+> t
+
+=1
+
+ρ( ˆπ(1)  
+
+> t,π(−1)
+> t
+
+)
+
+≤
+
+> T
+
+# ∑
+
+> t
+
+=1
+
+ρπ[·] 
+
+> t
+
+−
+
+> T
+
+# ∑
+
+> t
+
+=1
+
+ρ( ˆπ(1)  
+
+> t,π(−1)
+> t
+
+) + CQT
+
+# ∑
+
+> t
+
+=1
+
+max 
+
+> h
+
+∈H M
+
+πt(· | h) − π[·] 
+
+> t
+
+(· | h) 1
+
+=
+
+> T
+
+# ∑
+
+> t
+
+=1
+
+ρπ[·] 
+
+> t
+
+−
+
+> T
+
+# ∑
+
+> t
+
+=1
+
+ρ( ˆπ(1)  
+
+> t,π(−1)
+> t
+
+) + CQT
+
+# ∑
+
+> t
+
+=1
+
+max 
+
+> h
+
+∈H M
+
+# ∑
+
+> a
+
+∈A 
+
+π(1) 
+
+> t
+
+(a1 | h)π(−1) 
+
+> t
+
+(a−1 | h) − π(1) 
+
+> t
+
+(a1 | h) π[·] 
+
+> t
+
+(a | h)
+
+π(1) 
+
+> t
+
+(a1 | h)
+
+=
+
+> T
+
+# ∑
+
+> t
+
+=1
+
+ρπ[·] 
+
+> t
+
+−
+
+> T
+
+# ∑
+
+> t
+
+=1
+
+ρ( ˆπ(1)  
+
+> t,π(−1)
+> t
+
+) + CQT
+
+# ∑
+
+> t
+
+=1
+
+max 
+
+> h
+
+∈H M
+
+# ∑
+
+> a
+
+∈A 
+
+π(1) 
+
+> t
+
+(a1 | h) π(−1) 
+
+> t
+
+(a−1 | h) − π[·] 
+
+> t
+
+(a | h)
+
+π(1) 
+
+> t
+
+(a1 | h)
+
+The difference between π[i] 
+
+> t
+
+and π(i) 
+
+> t
+
+is that π[i] 
+
+> t
+
+is the marginal of the occupancy measure qt, while 
+
+π(i) 
+
+> t
+
+is the true strategy of player i.
+
+Lemma I.6. For any π1, π2, if ∀ h ∈ H M, ∑a∈A qπ1 (h, a), ∑a∈A qπ2 (h, a) ≥ c for some constant c > 0,then we have 
+
+∀ h ∈ H M, a ∈ A , |π2(a | h) − π1(a | h)| ≤ 2|A| 
+
+c ∥qπ2 − qπ1 ∥∞ . (I.20) The proof is postponed to Appendix L.2. Since qt ∈ X , the lower-bound constraint in (I.1) gives 40 ∑a∈A qt(h, a) ≥ γNM  
+
+> |A| M
+
+for any h ∈ H M. Therefore, for any t = 2, 3, ..., T,
+
+CLips K2 T
+
+# ∑
+
+> t=2
+
+∥πt − πt−1∥∞
+
+≤CLips K2 T
+
+# ∑
+
+> t=2
+
+π[·] 
+
+> t
+
+− π[·]  
+
+> t−1∞
+
++ 2CLips K2 T
+
+# ∑
+
+> t=1
+
+π[·] 
+
+> t
+
+− πt ∞
+
+≤ 2CLips K2|A| M+1
+
+γNM T
+
+# ∑
+
+> t=2
+
+∥qt − qt−1∥∞ + 2CLips K2 T
+
+# ∑
+
+> t=1
+
+max 
+
+> h∈H M
+
+# ∑
+
+> a∈A
+
+π(1) 
+
+> t
+
+(a1 | h) π(−1) 
+
+> t
+
+(a−1 | h) − π[·] 
+
+> t
+
+(a | h)
+
+π(1) 
+
+> t
+
+(a1 | h) .For each timestep t, define 
+
+σt(h, a) B
+
+(
+
+1, Dt(h, a, qt) ≥ 0, 
+
+−1, Dt(h, a, qt) < 0. The constraint in Algorithm 2 is equivalently 
+
+gt(q) = ∑
+
+> h∈H M,a∈A
+
+σt(h, a)Dt(h, a, q),where 
+
+Dt(h, a, q) = q(h, a) − π(−1) 
+
+> t
+
+(a−1 | h) ∑
+
+> a′−1∈A −1
+
+q(h, (a1, a′−1)) .In particular, 
+
+gt(qt) = ∑
+
+> h∈H M,a∈A
+
+|Dt(h, a, qt)|.Notice that 
+
+qt(h, a)
+
+∑a′−1∈A −1 qt(h, (a1, a′−1)) = qt(h, a)
+
+∑a′ ∈A qt(h, a′)
+
+∑a′ ∈A qt(h, a′)
+
+∑a′−1∈A −1 qt(h, (a1, a′−1)) = π[·] 
+
+> t
+
+(a | h) · 1
+
+π(1) 
+
+> t
+
+(a1 | h) .Here π[·] 
+
+> t
+
+denotes the joint distribution induced by qt, and π[1] 
+
+> t
+
+= π(1) 
+
+> t
+
+is its player-1 marginal. Therefore, 
+
+π(−1) 
+
+> t
+
+(a−1 | h) − π[·] 
+
+> t
+
+(a | h)
+
+π(1) 
+
+> t
+
+(a1 | h) = |Dt(h, a, qt)|
+
+∑a′−1∈A −1 qt(h, (a1, a′−1)) 
+
+≤ |A| M+1
+
+γN(M+1)|A −1| |Dt(h, a, qt)|,41 where the last inequality is by Lemma I.4. Then, we have 
+
+RT ≤
+
+> T
+
+# ∑
+
+> t
+
+=1
+
+ρπ[·] 
+
+> t
+
+−
+
+> T
+
+# ∑
+
+> t
+
+=1
+
+ρ( ˆπ(1)  
+
+> t,π(−1)
+> t
+
+) + 2K
+
++ 2CLips K2|A| M+1
+
+γNM T
+
+# ∑
+
+> t
+
+=2
+
+∥qt − qt−1∥∞ + CLips K2∆T + 4 (1 − δ) 
+
+> jKMC 1
+> k
+
+T
+
++ ( CQ + 2CLips K2) |A| M+1
+
+γN(M+1)|A −1|
+
+> T
+
+# ∑
+
+> t
+
+=1
+
+max 
+
+> h
+
+∈H M
+
+# ∑
+
+> a
+
+∈A 
+
+π(1) 
+
+> t
+
+(a1 | h)Dt(h, a, qt)
+
+≤
+
+> T
+
+# ∑
+
+> t
+
+=1
+
+ρπ[·] 
+
+> t
+
+−
+
+> T
+
+# ∑
+
+> t
+
+=1
+
+ρ( ˆπ(1)  
+
+> t,π(−1)
+> t
+
+) + 2K
+
++ 2CLips K2|A| M+1
+
+γNM T
+
+# ∑
+
+> t
+
+=2
+
+∥qt − qt−1∥∞ + CLips K2∆T + 4 (1 − δ) 
+
+> jKMC 1
+> k
+
+T
+
++ ( CQ + 2CLips K2) |A| M+1
+
+γN(M+1)
+
+> T
+
+# ∑
+
+> t
+
+=1
+
+max 
+
+> h
+
+∈H M,a∈A {Dt(h, a)} .For the comparator sequence, define the joint strategy ˆπ[·] 
+
+> t
+
+(a | h) B ˆπ(1) 
+
+> t
+
+(a1 | h)π(−1) 
+
+> t
+
+(a−1 | h). By Lemma I.7, we have 
+
+> T
+
+# ∑
+
+> t
+
+=2
+
+∥ ˆqt − ˆqt−1∥ ≤ (CQ|H M| + 1)|A| 
+
+> T
+
+# ∑
+
+> t
+
+=2
+
+ˆπ[·] 
+
+> t
+
+− ˆπ[·]
+
+> t
+
+−1 ∞
+
+=( CQ|H M| + 1)|A| 
+
+> T
+
+# ∑
+
+> t
+
+=2
+
+max 
+
+> h
+
+∈H M,a∈A ˆπ(1) 
+
+> t
+
+(a1 | h)
+
+> N
+
+# ∏
+
+> i
+
+=2
+
+π(i) 
+
+> t
+
+(ai | h) − ˆπ(1)
+
+> t
+
+−1(a1 | h)
+
+> N
+
+# ∏
+
+> i
+
+=2
+
+π(i)
+
+> t
+
+−1(ai | h)
+
+≤(CQ|H M| + 1)|A| 
+
+> T
+
+# ∑
+
+> t
+
+=2
+
+max 
+
+> h
+
+∈H M,a∈A 
+
+(
+
+ˆπ(1) 
+
+> t
+
+(a1 | h) − ˆπ(1)
+
+> t
+
+−1(a1 | h) +
+
+> N
+
+# ∑
+
+> i
+
+=2
+
+π(i) 
+
+> t
+
+(ai | h) − π(i)
+
+> t
+
+−1(ai | h)
+
+)
+
+≤(CQ|H M| + 1)|A| 
+
+> T
+
+# ∑
+
+> t
+
+=2
+
+ˆπ(1) 
+
+> t
+
+− ˆπ(1)
+
+> t
+
+−1 ∞ +
+
+> N
+
+# ∑
+
+> i
+
+=2
+
+> T
+
+# ∑
+
+> t
+
+=2
+
+π(i) 
+
+> t
+
+− π(i)
+
+> t
+
+−1 ∞
+
+!
+
+≤(CQ|H M| + 1)|A| ∆T.Then, by the convergence of Algorithm 5 in Lemma L.7 and the variation of q bounded by varia-tion of π in Lemma I.7, we have 
+
+> T
+
+# ∑
+
+> t
+
+=1
+
+ρπ[·] 
+
+> t
+
+−
+
+> T
+
+# ∑
+
+> t
+
+=1
+
+ρ( ˆπ(1)  
+
+> t,π(−1)
+> t
+
+) + 2CLips K2|A| M+1
+
+γNM T
+
+# ∑
+
+> t
+
+=2
+
+∥qt − qt−1∥∞
+
+≤ 52
+
+s
+
+T
+
+(CQ|H M| + 1)|A| ∆T
+
++ 5 + 4|A| M+1 + 8CLips K2 |A| 32 (M+1)
+
+γNM 
+
+! q
+
+(CQ|H M| + 1)|A| pT∆T
+
+(I.21) 
+
+> T
+
+# ∑
+
+> t
+
+=1
+
+gt(qt) ≤
+
+vuut2 (8CLips K2 |A| 32 (M+1)
+
+γNM + 8|A| M+1 + 1)
+
+q
+
+(CQ|H M| + 1)|A| T∆T +
+
+s
+
+T
+
+(CQ|H M| + 1)|A| ∆T
+
+!
+
+×
+
+vuutT + 52
+
+s
+
+T
+
+(CQ|H M| + 1)|A| ∆T
+
++ 5 + 4|A| M+1 + 8CLips K2 |A| 32 (M+1)
+
+γNM 
+
+! q
+
+(CQ|H M| + 1)|A| T∆T
+
+(I.22) 42 since 
+
+R = max  
+
+> q
+
+∥q∥2 = 1, 
+
+k = 1, 
+
+D = max  
+
+> t,q
+
+gt(q) ≤ 2, 
+
+G = max {∥L 1∥ , ∥∇ gt∥} ≤ 2
+
+q
+
+|H M| · |A| = 2|A| M+12 ,
+
+F = 1, 
+
+C = 2CLips K2 |A| M+1
+
+γNM .For ease of illustration, let U1 be the R.H.S. of Eq. (I.21) and U2 be the R.H.S. of Eq. (I.22). This leads to the fact that 
+
+> T
+
+# ∑
+
+> t=1
+
+ρπ[·] 
+
+> t
+
+−
+
+> T
+
+# ∑
+
+> t=1
+
+ρ( ˆπ(1)   
+
+> t,π(−1)
+> t)
+
++ 2CLips K2|A| M+1
+
+γNM T
+
+# ∑
+
+> t=2
+
+∥qt − qt−1∥∞ ≤ U 1,
+
+> T
+
+# ∑
+
+> t=1
+
+gt(qt) ≤ U 2.Let ˆ qt be the occupancy measure induced by ( ˆπ(1) 
+
+> t
+
+, π(−1) 
+
+> t
+
+). When ˆ qt lies in X , it corresponds to a product-form strategy profile and, for any h ∈ H M, a ∈ A ,ˆqt(h, a)
+
+∑a′ ∈A ˆqt(h, a′) = ˆπ(1) 
+
+> t
+
+(a1 | h)π(−1) 
+
+> t
+
+(a−1 | h).Equivalently, Dt(h, a, ˆ qt) = 0 for all h, a, and hence gt( ˆqt) = 0 ≤ 0. Therefore, ˆ q1: T satisfies the feasibility requirement of Lemma L.7. Therefore, 
+
+RT ≤U 1 + 2K + CLips K2∆T + 4 (1 − δ) 
+
+> jKMC 1
+> k
+
+T + ( CQ + 2CLips K2) |A| M+1
+
+γN(M+1)|A −1|
+
+> T
+
+# ∑
+
+> t=1
+
+gt(qt)
+
+≤U 1 + ( CQ + 2CLips K2) |A| M+1
+
+γN(M+1)|A −1| U2 + 2K + CLips K2∆T + 4 (1 − δ) 
+
+> jKMC 1
+> k
+
+T.
+
+Lemma I.7. For any two strategy profiles π1, π2, the distance between their corresponding occupancy measure satisfies 
+
+∥qπ1 − qπ2 ∥ ≤ (CQ|H M| + 1)|A| · ∥ π1 − π2∥∞ . (I.23) 
+
+Proof. By letting the loss L(h, a) = 1(h = h0), ρπ = dπ(h0). Therefore, by Lemma I.3, for any 
+
+h0 ∈ H M, we have 
+
+|dπ1 (h0) − dπ2 (h0)| ≤ CQ max 
+
+> h∈H M
+
+∥π2(· | h) − π1(· | h)∥1 .Therefore, for any h0 ∈ H M, a ∈ A , we have 
+
+|qπ1 (h0, a) − qπ2 (h0, a)| =|dπ1 (h0)π1(a | h0) − dπ2 (h0)π2(a | h0)|≤| dπ1 (h0) − dπ2 (h0)|π1(a | h0) + dπ2 (h0)|π1(a | h0) − π2(a | h0)|.43 Therefore, 
+
+∥qπ1 − qπ2 ∥ ≤ ∑
+
+> h∈H M,a∈A
+
+|qπ1 (h, a) − qπ2 (h, a)|≤ ∑
+
+> h∈H M
+
+|dπ1 (h) − dπ2 (h)| + |A| ∥ π1 − π2∥∞
+
+≤CQ|H M| max 
+
+> h∈H M
+
+∥π2(· | h) − π1(· | h)∥1 + |A| ∥ π1 − π2∥∞
+
+≤(CQ|H M| + 1)|A| · ∥ π1 − π2∥∞ .
+
+# J Regret and Subgame Perfect Equilibrium 
+
+J.1 LRP-Regret and Subgame Perfect Equilibrium 
+
+In this section, we will prove that when all players get a sublinear Rlocal  
+
+> T
+
+even when the comparator can vary arbitrarily with PT B ∑Tt=2 ˆπ(1) 
+
+> t
+
+− ˆπ(1) 
+
+> t−1
+
+= O(T) and π(i) ⪰ γ  
+
+> |A i|
+
+1 for γ ∈ (0, 1 ]11 , the equilibrium is actually an approximate SPNE. In the following, we will only prove that player 1 cannot decrease their loss much by deviating, by the symmetry of players. For any h ∈ H M and a1 ∈ A 1, define 
+
+Qt(h, a1) B ∑
+
+> a−1∈A −1
+
+π(−1) 
+
+> t
+
+(a−1 | h) ( Vt+1(( h2: M, (a1, a−1))) + L1(( a1, a−1))) ,
+
+Vt(h) B ∑
+
+> a∈A
+
+πt(a | h) ( Vt+1(( h2: M, a)) + L1(a)) .and VT0+1(h) = 0 for all h ∈ H M.Then we have 
+
+Lemma J.1. For a fixed finite T, when π(i) ⪰ γ  
+
+> |A i|
+
+for any player i, we have 
+
+> T
+
+# ∑
+
+> t=1
+
+max 
+
+
+
+max 
+
+> h∈H M
+
+D
+
+π(1) 
+
+> t
+
+(· | h) − ˆπ(1) 
+
+> t
+
+(· | h), Qt(h, ·)
+
+E
+
+, 0 
+
+
+
+≤ |A| M
+
+γNM Rlocal 
+
+> T
+
+for any ˆπ(1)
+
+> 1: T
+
+.
+
+The proof is postponed to the end of this section. Note that Rlocal  
+
+> T
+
+≤ o(T) is the regret for player 1. The relation above can be extended to any player with their corresponding local regret on the right-hand side. With the lemma above, we can conclude subgame perfection. For notational simplicity, we define f mi (π|μ) B ∑h∈H μ(h) f mi (π1: m+1 | h) as a generalization of 
+
+f mi (π1: m+1 | h). For an infinitely repeated matrix game as in Lemma 5.5, we can divide the T
+
+(T → ∞) timesteps into K epochs, with T0 timesteps in each epoch.   
+
+> 11 Our regret minimization algorithm guarantees sublinear regret when PT
+
+= o(T) in the adversarial online setting. It is unknown whether we can still achieve sublinear regret when PT = O(T) in the game setting, where we can control all players. 
+
+44 Lemma J.2. For any sequence of strategies π1, π2, ..., πK, which form an approximate equilibrium for a K-repeated matrix game satisfying Condition 5 12 with a bounded memory M. Then, it is also an approximate equilibrium for the infinitely repeated game. Formally, for any player i, we have 
+
+lim  
+
+> T→∞
+
+sup 1
+
+T
+
+> T−1
+
+# ∑
+
+> B=0
+
+1
+
+K
+
+> K
+
+# ∑
+
+> k=1
+
+*
+
+μBk
+
+# ∏
+
+> s=1
+
+Pπs+BK , Li
+
++
+
+− 1
+
+K
+
+> K
+
+# ∑
+
+> k=1
+
+*
+
+ˆμBk
+
+# ∏
+
+> s=1
+
+P( ˆπ(i)  
+
+> s+BK ,π(−i)
+> s+BK )
+
+, Li
+
++! 
+
+≤ ∑T−1 
+
+> B=0
+
+ϵB
+
+T + 4MC 1
+
+K(γN /|A| )MC 1 (J.1) 
+
+where 
+
+ϵB B 1
+
+K
+
+> K
+
+# ∑
+
+> k=1
+
+*
+
+μ0
+
+> k
+
+# ∏
+
+> s=1
+
+Pπs , Li
+
++
+
+− 1
+
+K
+
+> K
+
+# ∑
+
+> k=1
+
+*
+
+μ0
+
+> k
+
+# ∏
+
+> s=1
+
+P( ˆπ(i)  
+
+> s+BK ,π(−i)
+> s)
+
+, Li
+
++
+
+(J.2) 
+
+and μB is the initial distribution over state space HM at the start of epoch B ( μ0 is an arbitrary distribution predetermined by the game and μB(B > 0) is determined by μ0 and π1: BK ). 
+
+The proof is deferred to Appendix M.2. Since when π(i) ⪰ γ  
+
+> |A i|
+
+we have C1 = 1, by Lemma J.2, 1
+
+T − t0 + 1
+
+> T
+
+# ∑
+
+> t=t0
+
+
+
+f t−t0 
+
+> 1
+
+(πt0:t | h0) − f t−t0 
+
+> 1
+
+( ˆπ(1)
+
+> t0:t
+
+, π(−1) 
+
+> t0:t
+
+| h0)
+
+
+
+= 1
+
+T − t0 + 1
+
+> ⌈t0/T0⌉T0
+
+# ∑
+
+> t=t0
+
+
+
+f t−t0 
+
+> 1
+
+(πt0:t | h0) − f t−t0 
+
+> 1
+
+( ˆπ(1)
+
+> t0:t
+
+, π(−1) 
+
+> t0:t
+
+| h0)
+
+
+
++ 1
+
+T − t0 + 1
+
+> T
+
+# ∑
+
+> t=⌈t0/T0⌉T0+1
+
+
+
+f t−t0 
+
+> 1
+
+(πt0:t|μ0) − f t−t0 
+
+> 1
+
+( ˆπ(1)
+
+> t0:t
+
+, π(−1) 
+
+> t0:t
+
+|μ0)
+
+
+
+> (i)
+
+= 1
+
+T − t0 + 1
+
+> T
+
+# ∑
+
+> t=⌈t0/T0⌉T0+1
+
+
+
+f t−t0 
+
+> 1
+
+(πt0:t|μ0) − f t−t0 
+
+> 1
+
+( ˆπ(1)
+
+> t0:t
+
+, π(−1) 
+
+> t0:t
+
+|μ0)
+
+
+
+> (ii )
+
+≤ ∑T/T0 
+
+> B=⌈t0/T0⌉+1
+
+ϵB
+
+T/T0
+
++ 4M|A| M
+
+T0γNM 
+
+> (iii )
+
+≤ |A| M
+
+γNM 
+
+Rlocal 
+
+> T0
+
+T0
+
++ 4M|A| M
+
+T0γNM .where (i) is by T → ∞ and (ii ) is by Lemma J.2 and T → ∞. μ0 is the history distribution at timestep ⌈t0/T0⌉ T0 + 1 given h0 at timestep t0. (iii ) is because for any B = 0, 1, 2, ..., T/T0, by 
+
+> 12
+
+The joint-strategy version of Condition 5 is ∀ ¯h, ˜ h ∈ H , 12 πk (· | ¯h) − πk (·| ˜h) 1 ≤ 1 − γ.
+
+45 Lemma I.1, we have 
+
+ϵB = 1
+
+T0
+
+> T0
+
+# ∑
+
+> t
+
+=1
+
+
+
+f t−11 (π1: t|μ0) − f t−11 ( ˆπ(1) 
+
+> 1: t
+
+, π(−1) 
+
+> 1: t
+
+|μ0)
+
+
+
+= 1
+
+T0
+
+> T0
+
+# ∑
+
+> t
+
+=1
+
+# ∑
+
+> h0
+
+∈H M
+
+μ0(h0) ∑
+
+> h
+
+∈H t−1
+
+Pr (h | h0; ˆ π(1)
+
+> 1: t
+
+−1, π(−1)
+
+> 1: t
+
+−1)
+
+·
+
+D
+
+π(1) 
+
+> t
+
+(· | ht−M:t−1) − ˆπ(1) 
+
+> t
+
+(· | ht−M:t−1), Qt(ht−M:t−1, ·)
+
+E
+
+≤ 1
+
+T0
+
+> T0
+
+# ∑
+
+> t
+
+=1
+
+# ∑
+
+> h0
+
+∈H M
+
+μ0(h0) ∑
+
+> h
+
+∈H t−1
+
+Pr (h | h0; ˆ π(1)
+
+> 1: t
+
+−1, π(−1)
+
+> 1: t
+
+−1) max 
+
+
+
+max  
+
+> h′
+
+∈H M
+
+D
+
+π(1) 
+
+> t
+
+(· | h′) − ˆπ(1) 
+
+> t
+
+(· | h′), Qt(h′, ·)
+
+E
+
+, 0 
+
+
+
+≤ |A| M
+
+γNM 
+
+Rlocal 
+
+> T0
+
+T0
+
+.In the last line, we use Lemma J.1. 
+
+Proof of Lemma J.1. Firstly, for any ˆ π(1)
+
+> 1: T
+
+, we can pick a proxy strategy as π(1) 
+
+> 1: T
+
+so that π(1) 
+
+> t
+
+(· | h) = 
+
+ˆπ(1) 
+
+> t
+
+(· | h) if and only if (when multiple h satisfy this, we can arbitrarily pick one) 
+
+D
+
+π(1) 
+
+> t
+
+(· | h) − ˆπ(1) 
+
+> t
+
+(· | h), Qt(h, ·)
+
+E
+
+= max 
+
+
+
+max  
+
+> h′
+
+∈H M
+
+D
+
+π(1) 
+
+> t
+
+(· | h′) − ˆπ(1) 
+
+> t
+
+(· | h′), Qt(h′, ·)
+
+E
+
+, 0 
+
+
+
+.Otherwise, we have π(1) 
+
+> t
+
+(· | h) = π(1) 
+
+> t
+
+(· | h)13 . Therefore, by Lemma I.1, we have 
+
+JT (π(1)
+
+> 1: T
+
+, π(−1) 
+
+> 1: T
+
+) − JT ( ˜πs,(1) 
+
+> 1: T
+
+, π(−1) 
+
+> 1: T
+
+)=
+
+> T
+
+# ∑
+
+> t
+
+=1
+
+# ∑
+
+> h
+
+∈H t−1
+
+Pr (h; ˜ πs,(1)
+
+> 1: t
+
+−1, π(−1)
+
+> 1: t
+
+−1)
+
+D
+
+π(1) 
+
+> t
+
+(· | ht−M:t−1) − ˜πs,(1) 
+
+> t
+
+(· | ht−M:t−1), Qt(ht−M:t−1, ·)
+
+E
+
+= ∑
+
+> h
+
+∈H s−1
+
+Pr (h; π(1)
+
+> 1: s
+
+−1, π(−1)
+
+> 1: s
+
+−1)
+
+D
+
+π(1) 
+
+> s
+
+(· | hs−M:s−1) − π(1) 
+
+> s
+
+(· | hs−M:s−1), Qs(hs−M:s−1, ·)
+
+E
+
+≥ γNM 
+
+|A| M max 
+
+
+
+max  
+
+> h′
+
+∈H M
+
+D
+
+π(1) 
+
+> s
+
+(· | h′) − ˆπ(1) 
+
+> s
+
+(· | h′), Qs(h′, ·)
+
+E
+
+, 0 
+
+
+
+.where ˜πs,(1) 
+
+> t
+
+= π(1) 
+
+> t
+
+only when t = s and ˜πs,(1) 
+
+> t
+
+= π(1) 
+
+> t
+
+otherwise. The last line is because the probability of each h ∈ H M occurs with probability no less than γNM 
+
+|A| M . Therefore, we prove that 
+
+> T
+
+# ∑
+
+> t
+
+=1
+
+max 
+
+
+
+max  
+
+> h′
+
+∈H M
+
+D
+
+π(1) 
+
+> t
+
+(· | h′) − ˆπ(1) 
+
+> t
+
+(· | h′), Qt(h′, ·)
+
+E
+
+, 0 
+
+
+
+≤ |A| M
+
+γNM T
+
+# ∑
+
+> s
+
+=1
+
+
+
+JT (π(1)
+
+> 1: T
+
+, π(−1) 
+
+> 1: T
+
+) − JT ( ˜πs,(1) 
+
+> 1: T
+
+, π(−1) 
+
+> 1: T
+
+)
+
+
+
+≤ |A| M
+
+γNM Rlocal  
+
+> T
+
+.
+
+> 13
+
+The reason that Lemma 5.5 only holds when PT = O(T) is that the variation of π1: T may be linear in T by the construction described above. 
+
+46 J.2 RP-Regret and SPNE 
+
+From the discussion above, since π(i) ⪰ γ  
+
+> |A i|14
+
+, by Lemma J.2, we have 1
+
+T − t0 + 1
+
+> T
+
+# ∑
+
+> t=t0
+
+
+
+f t−t0 
+
+> 1
+
+(πt0:t | h0) − f t−t0 
+
+> 1
+
+( ˆπ(1)
+
+> t0:t
+
+, π(−1) 
+
+> t0:t
+
+| h0)
+
+
+
+≤ ∑T/T0 
+
+> B=⌈t0/T0⌉+1
+
+ϵB
+
+T/T0
+
++ 4M|A| M
+
+T0γNM 
+
+by the discussion in Appendix J.1. Then, 
+
+ϵB B 1
+
+T0
+
+> T0
+
+# ∑
+
+> t=1
+
+
+
+f t−11 (π1: t|μ0) − f t−11 ( ˆπ(1) 
+
+> 1: t
+
+, π(−1) 
+
+> 1: t
+
+|μ0)
+
+
+
+> (i)
+
+≤ RT0
+
+T0
+
+> (ii )
+
+≤ O(Tp 
+
+> 0
+
+(PBT0 )q)
+
+T0
+
+(p + q = 1, p < 1).where (i) is by definition of RP-Regret and (ii ) is the condition of Lemma 5.4 (since RP-Regret is sublinear such p, q must exist). Note that we define PBT0 = ∑(B+1)T0 
+
+> t=BT 0+2
+
+ˆπ(1) 
+
+> t
+
+− ˆπ(1) 
+
+> t−1∞
+
+. So, 1
+
+T − t0 + 1
+
+> T
+
+# ∑
+
+> t=t0
+
+
+
+f t−t0 
+
+> 1
+
+(πt0:t | h0) − f t−t0 
+
+> 1
+
+( ˆπ(1)
+
+> t0:t
+
+, π(−1) 
+
+> t0:t
+
+| h0)
+
+
+
+≤ ∑T/T0 
+
+> B=⌈t0/T0⌉+1
+
+O(Tp 
+
+> 0
+
+(PBT0 )q)
+
+T + 4M|A| M
+
+T0γNM 
+
+≤O
+
+ PT
+
+T
+
+q
+
++ 4M|A| M
+
+T0γNM .The last line is due to the concavity of function xq(q < 1). So, 1 
+
+> N
+
+∑Ni=1 xqi ≤
+
+ ∑Ni=1 xi
+
+> N
+
+q
+
+.
+
+# K Finding Subgame Perfect Coarse Correlated Equilibrium in Re-peated Games 
+
+K.1 Computation of SPCCE 
+
+Lemma K.1. Algorithm 3 will guarantee the following upper-bound on regret (e is the Euler’s number) for any player i and comparator ˆπ(i) satisfying Condition 4 with ν(i) as the uniform strategy over ∆|A i |,
+
+max  
+
+> i=1,2,..., N
+
+max 
+
+> ˆπ(i)
+> T
+
+# ∑
+
+> t=1
+
+
+
+V ¯πt (h1) − V ˆπ(i), ¯ π(−i) 
+
+> t
+
+(h1)
+
+
+
+≤8eK 2
+
+r
+
+max  
+
+> i=1,2,..., N
+
+|A i|KT ,
+
+where K is the horizon of the Markov game. 
+
+> 14
+
+In fact, here we do not necessarily require this. Satisfying Condition 5 is enough. 
+
+47 We defer the proof to the latter part of this section. By Lemma K.1, max i=1,2,..., N 1 
+
+> T0
+
+∑T0
+
+> t=1
+
+
+
+V ¯πt (h1) − V ˆπ(i), ¯ π(−i) 
+
+> t
+
+(h1)
+
+
+
+≤ 8eK 2
+
+q max i=1,2,..., N |A i |KT0 (e is the Eu-ler’s number) in T0 iterations when all players apply Algorithm 3. Then, we will first sample a strategy πt0 uniformly from 1, 2, ..., T0, for any horizon k (possibly larger than K), we choose 
+
+πt0 ( | h(k−1)%K+1) as the strategy for any h ∈ H M. Therefore, by Lemma J.2 and following a similar proof as Theorem 5.4, we will get an O
+
+
+
+> 1
+> T2/7 0
+
+
+
+-approximate O(T)-robust SPCCE. 
+
+Algorithm 3 Full-information version of (Mao and Bas ¸ar, 2022, Algorithm 1) (see also Jin et al. (2021); Song et al. (2022)) 
+
+1: Let ψ(x) = 12 ∥x∥2 for x ∈ ∆|A 1|, Dψ(x, y) = ψ(x) − ψ(y) − ⟨∇ ψ(y), x − y⟩ for x, y ∈ ∆|A 1|.
+
+2: Initialize ∀k ∈ { 1, 2, ..., K}, h ∈ H M, a ∈ A 1, V0(hk) ← 0. 
+
+3: Initialize π(1)(· | hk) ← 1 
+
+> |A 1|
+
+as the uniform distribution over ∆|A 1|
+
+4: Initialize η1 ← 1√T , α0 ← 1
+
+5: for t = 1, 2, ..., T do 
+
+6: αt ← K+1 
+
+> K+t
+
+, βt ← 4
+
+q K3|A 1| 
+
+> t
+
+, ηt ←
+
+q 1
+
+> |A 1|Kt
+
+7: ∀h ∈ H M, Vt(hK+1) ← 0
+
+8: for k = K, K − 1, ..., 1 do 
+
+9: for hk ∈ H M do 
+
+10: for a1 ∈ A 1 do 
+
+11: gt(hk, a1) ← ∑a−1∈A −1 π(−i) 
+
+> t
+
+(a−1 | hk)  L1(a1, a−1) + Vt(( h2: M, (a1, a−1)) k+1)
+
+12: end for 
+
+13: ˜Vt(hk) ← (1 − αt)Vt−1(hk) + αt
+
+D 
+
+π(1) 
+
+> t
+
+(· | hk), gt(hk, ·)
+
+E
+
+− βt
+
+
+
+14: Vt(hk) ← max  ˜Vt(hk), 0 
+
+15: θ′ ← argmin θ∈∆|A 1|
+
+n
+
+ηt θ, gt(hk) + Dψ(θ, π(1) 
+
+> t
+
+(· | hk)) 
+
+o
+
+16: π(1)
+
+> t+1
+
+(· | hk) ← λtθ′ + ( 1 − λt) 1 
+
+> |A 1|
+
+where λt = ηt+1αt (1−αt+1) 
+
+> ηtαt+1
+
+17: end for 
+
+18: end for 
+
+19: end for 
+
+Firstly, define αst = αs ∏tj=s+1(1 − αj). Notice that ∑ts=1 αst = 1. Then, we can define ¯π(i) 
+
+> t
+
+as the strategy sampled from π(i) 
+
+> 1
+
+, π(i) 
+
+> 2
+
+, ..., π(i) 
+
+> t
+
+with probability α1 
+
+> t
+
+, α2 
+
+> t
+
+, ..., αtt. We will first prove that 
+
+Vt(hk) ≤ V ˆπ(1), ¯ π(−1) 
+
+> t
+
+(hk) for any ˆπ(1) in Lemma K.2. Then, the regret is upper-bounded by 
+
+∑Tt=1
+
+ V ¯πt (hk) − Vt(hk), which can be proved to be upper-bounded by √T.
+
+Lemma K.2. At any timestep t, Algorithm 3 guarantees that V t(hk) ≤ V ˆπ(1), ¯ π(−1) 
+
+> t
+
+(hk) for any ˆπ(1).Proof. Firstly, by definition, we have 0 = Vt(hK+1) ≤ V ˆπ(1), ¯ π(−1) 
+
+> t
+
+(hK+1). Then, suppose it holds for 48 k + 1, then we have 
+
+V ˆπ(1), ¯ π(−1) 
+
+> t
+
+(hk) B
+
+> t
+
+# ∑
+
+> s
+
+=1
+
+αst ∑
+
+> a
+
+∈A 
+
+π(−1) 
+
+> s
+
+(a−1 | hk) ˆπ(1)(a1 | hk)
+
+
+
+L1(a) + V ˆπ(1), ¯ π(−1) 
+
+> t
+
+(( h2: M, a)k+1)
+
+
+
+≥ min 
+
+> ˜π(1)
+> t
+
+# ∑
+
+> s
+
+=1
+
+αst ∑
+
+> a
+
+∈A 
+
+π(−1) 
+
+> s
+
+(a−1 | hk) ˜π(1)(a1 | hk)
+
+
+
+L1(a) + V ˜π(1), ¯ π(−1) 
+
+> t
+
+(( h2: M, a)k+1)
+
+
+
+≥ min 
+
+> ˜π(1)
+> t
+
+# ∑
+
+> s
+
+=1
+
+αst ∑
+
+> a
+
+∈A 
+
+π(−1) 
+
+> s
+
+(a−1 | hk) ˜π(1)(a1 | hk)
+
+
+
+L1(a) + Vs(( h2: M, a)k+1)
+
+
+
+= min 
+
+> ˜π(1)
+> t
+
+# ∑
+
+> s
+
+=1
+
+αst
+
+D
+
+˜π(1)(· | hk), gs(hk, ·)
+
+E
+
+.Note that (h2: M, a) ∈ H M is a state and (h2: M, a)k denotes that this state is in the kth level. 
+
+Lemma K.3. Consider the following update-rule. 
+
+θ′
+
+> t
+
++1 = argmin 
+
+> θ
+
+∈X 
+
+
+
+ηt ⟨gt, θ⟩ + 12 ∥θ − θt∥2
+
+
+
+θt+1 = λtθ′
+
+> t
+
++1 + ( 1 − λt)θ1
+
+λt = ηt+1wtt+1
+
+ηtwt+1
+
+> t
+
++1
+
+.
+
+The weight satisfies that wt+1
+
+> T1
+> wtT1
+
+= wt+1
+
+> T2
+> wtT2
+
+for all T 1, T2 ≥ t + 1. We have 
+
+> T
+
+# ∑
+
+> t
+
+=1
+
+wtT θt − ˆθ, gt ≤ D wTT wT+1
+
+> T
+
++1
+
+2wTT+1ηT
+
++
+
+> T
+
+# ∑
+
+> t
+
+=1
+
+ηtwtT ∥gt∥2
+
+where D B max θ,θ′ ∈X ∥θ − θ′∥2.
+
+Further, by Lemma K.3 (notice that λt ≤ αt (1−αt+1) 
+
+> αt+1
+
+= tK+t ≤ 1 so Lemma K.3 holds here), we have 
+
+> t
+
+# ∑
+
+> s
+
+=1
+
+αst
+
+D
+
+π(1) 
+
+> s
+
+(· | hk), gs(hk, ·)
+
+E
+
+− min 
+
+> ˆπ(1)
+> t
+
+# ∑
+
+> s
+
+=1
+
+αst
+
+D
+
+ˆπ(1)(· | hk), gs(hk, ·)
+
+E
+
+≤ Dαt+1
+
+(1 − αt+1)ηt
+
++
+
+> t
+
+# ∑
+
+> s
+
+=1
+
+ηsαst gs(hk, ·) 2
+
+≤ K + 1
+
+t
+
+q
+
+|A 1|Kt +
+
+q
+
+|A 1|K3
+
+> t
+
+# ∑
+
+> s
+
+=1
+
+αst
+
+√s
+
+≤ 4p|A 1|K3
+
+√t
+
+where the first inequality is by D ≤ 2. The second line is by gs(hk, ·) 2 ≤ K2|A 1| and the last line is by (Jin et al., 2018, Lemma 4.1) that ∑ts=1
+
+> αst
+
+√s ≤ 2√t . Therefore 
+
+V ˆπ(1), ¯ π(−1) 
+
+> t
+
+(hk) ≥ min 
+
+> ˜π(1)
+> t
+
+# ∑
+
+> s
+
+=1
+
+αst
+
+D
+
+˜π(1)(· | hk), gs(hk, ·)
+
+E
+
+≥
+
+> t
+
+# ∑
+
+> s
+
+=1
+
+αst
+
+D
+
+π(1) 
+
+> s
+
+(· | hk), gs(hk, ·)
+
+E
+
+− 4p|A 1|K3
+
+√t
+
+=Vt(hk).49 Proof of Lemma K.1. Define δt(hk) = V ¯πt (hk) − Vt(hk). Then, we have 
+
+δt(hk) ≤
+
+> t
+
+# ∑
+
+> s=1
+
+αst ∑
+
+> a∈A
+
+πs(a | hk)
+
+
+
+V ¯πs (( h2: M, a)k+1) − Vs(( h2: M, a)k+1) + βs
+
+
+
+=
+
+> t
+
+# ∑
+
+> s=1
+
+αst ∑
+
+> a∈A
+
+πs(a | hk)
+
+
+
+δs(( h2: M, a)k+1) + βs
+
+
+
+≤
+
+> t
+
+# ∑
+
+> s=1
+
+αst δk+1 
+
+> s
+
++ 4p|A 1|K3
+
+√t
+
+where the last line is by our definition that δkt B max h∈H M δt(hk). Then, taking the sum of t, we have 
+
+> T
+
+# ∑
+
+> t=1
+
+δkt ≤
+
+> T
+
+# ∑
+
+> t=1
+> t
+
+# ∑
+
+> s=1
+
+αst δk+1 
+
+> s
+
++
+
+> T
+
+# ∑
+
+> t=1
+
+4p|A 1|K3
+
+√t
+
+=
+
+> T
+
+# ∑
+
+> s=1
+
+δk+1
+
+> sT
+
+# ∑
+
+> t=s
+
+αst +
+
+> T
+
+# ∑
+
+> t=1
+
+4p|A 1|K3
+
+√t
+
+> (i)
+
+≤
+
+> T
+
+# ∑
+
+> s=1
+
+δk+1
+
+> s
+> ∞
+
+# ∑
+
+> t=s
+
+αst + 8
+
+q
+
+|A 1|K3T
+
+> (ii )
+
+= ( 1 + 1
+
+K )
+
+> T
+
+# ∑
+
+> s=1
+
+δk+1 
+
+> s
+
++ 8
+
+q
+
+|A 1|K3T
+
+where (i) is because ∑ni=1 1√i ≤ R n 
+
+> 01√x
+
+dx = 2√n. (ii ) is by (Jin et al., 2018, Lemma 4.1) that 
+
+∑∞ 
+
+> t=s
+
+αst = 1 + 1 
+
+> K
+
+. Therefore, using the inequalities above recursively, we have 
+
+> T
+
+# ∑
+
+> t=1
+
+δ1 
+
+> t
+
+≤8e
+
+> K
+
+# ∑
+
+> k=1
+
+q
+
+|A 1|K3T = 8eK 2
+
+q
+
+|A 1|KT 
+
+where the first inequality is by (1 + 1 
+
+> K
+
+)K ≤ e. Therefore, for any h ∈ H M, we have 
+
+> T
+
+# ∑
+
+> t=1
+
+
+
+V ¯πt (h1) − V ˆπ(1), ¯ π(−1) 
+
+> t
+
+(h1)
+
+ (i)
+
+≤
+
+> T
+
+# ∑
+
+> t=1
+
+
+
+V ¯πt (h1) − Vt(h1)
+
+
+
+=
+
+> T
+
+# ∑
+
+> t=1
+
+δ1 
+
+> t
+
+≤ 8eK 2
+
+q
+
+|A 1|KT 
+
+where (i) is by Lemma K.2. This proves the claim for player 1. Applying the same argument to each player i replaces |A 1| by |A i|, and taking the maximum over i gives the stated bound. 
+
+Lemma K.4. For any fixed ˆθ ∈ X where X is a convex set, the weighted regret of Algorithm 3 with respect to θ can be bounded by 
+
+> T
+
+# ∑
+
+> t=1
+
+wtT θt − ˆθ, gt ≤ wTT wT+1
+
+> T+1
+
+wTT+1ηT
+
+Dψ( ˆθ, θ1) + 
+
+> T
+
+# ∑
+
+> t=1
+
+wtT ∥gt∥ · ∥ θt − θt+1∥
+
+where the update rule is 
+
+θ′ 
+
+> t+1
+
+= argmin 
+
+> θ∈X
+
+ηt ⟨gt, θ⟩ + Dψ(θ, θt)
+
+θt+1 = λtθ′ 
+
+> t+1
+
++ ( 1 − λt)θ1
+
+λt = ηt+1wtt+1
+
+ηtwt+1
+
+> t+1
+
+.50 The weight satisfies that wt+1
+
+> T1
+> wtT1
+
+= wt+1
+
+> T2
+> wtT2
+
+for all T 1, T2 ≥ t + 1.Proof. Since θ′ 
+
+> t+1
+
+= argmin θ∈X 
+
+⟨ηtgt, θ⟩ + Dψ(θ, θt) and Dψ(θ, θt) = ψ(θ) − ψ(θt) −⟨∇ ψ(θt), θ − θt⟩, by first-order optimality and convexity of X , we have 
+
+ηtgt + ∇ψ(θ′
+
+> t+1
+
+) − ∇ ψ(θt), ˆ θ − θ′ 
+
+> t+1
+
+≥ 0. By some algebraic manipulation, we have 
+
+gt, θt − ˆθ ≤ 1
+
+ηt
+
+∇ψ(θ′
+
+> t+1
+
+) − ∇ ψ(θt), ˆ θ − θ′ 
+
+> t+1
+
++ gt, θt − θ′
+
+> t+1
+
+= 1
+
+ηt
+
+ Dψ( ˆθ, θt) − Dψ( ˆθ, θ′
+
+> t+1
+
+) − Dψ(θ′
+
+> t+1
+
+, θt) + gt, θt − θ′
+
+> t+1
+
+≤ 1
+
+ηt
+
+ Dψ( ˆθ, θt) − Dψ( ˆθ, θ′
+
+> t+1
+
+) + gt, θt − θ′ 
+
+> t+1
+
+(K.1) where the last line is by the non-negativity of Bregman divergence. Note that by convexity of Bregman divergence and θt+1 = λtθ′ 
+
+> t+1
+
++ ( 1 − λt)θ1,
+
+λt Dψ( ˆθ, θ′
+
+> t+1
+
+) + ( 1 − λt)Dψ( ˆθ, θ1) ≥ Dψ( ˆθ, θt+1).By some algebraic manipulation and substituting it back to (K.1), we have 
+
+wtT gt, θt − ˆθ
+
+≤ wtT
+
+ηt
+
+ Dψ( ˆθ, θt) − Dψ( ˆθ, θ′
+
+> t+1
+
+) + wtT gt, θt − θ′
+
+> t+1
+
+≤ wtT
+
+ηt
+
+
+
+Dψ( ˆθ, θt) − 1
+
+λt
+
+Dψ( ˆθ, θt+1) + 1 − λt
+
+λt
+
+Dψ( ˆθ, θ1)
+
+
+
++ wtT gt, θt − θ′
+
+> t+1
+
+= wtT
+
+ηt
+
+Dψ( ˆθ, θt) − wtT
+
+wtt+1
+
+wt+1
+
+> t+1
+
+ηt+1
+
+Dψ( ˆθ, θt+1) − wtT
+
+ηt
+
+− wtT wt+1
+
+> t+1
+
+ηt+1wtt+1
+
+!
+
+Dψ( ˆθ, θ1) + wtT gt, θt − θ′
+
+> t+1
+
+= wtT
+
+ηt
+
+Dψ( ˆθ, θt) − wt+1
+
+> T
+
+ηt+1
+
+Dψ( ˆθ, θt+1) + wt+1
+
+> T
+
+ηt+1
+
+− wtT
+
+ηt
+
+!
+
+Dψ( ˆθ, θ1) + wtT gt, θt − θ′
+
+> t+1
+
+where the last line is because wt+1
+
+> t+1
+> wtt+1
+
+= wt+1
+
+> T
+> wtT
+
+. For consistency here, we define wT+1 
+
+> T
+
+B wTT wT+1
+
+> T+1
+> wTT+1
+
+.Summing over t and telescoping, we have 
+
+> T
+
+# ∑
+
+> t=1
+
+wtT gt, θt − ˆθ ≤ w1
+
+> T
+
+η1
+
+Dψ( ˆθ, θ1) + 
+
+> T
+
+# ∑
+
+> t=1
+
+wt+1
+
+> T
+
+ηt+1
+
+− wtT
+
+ηt
+
+!
+
+Dψ( ˆθ, θ1) + 
+
+> T
+
+# ∑
+
+> t=1
+
+wtT gt, θt − θ′
+
+> t+1
+
+≤ wT+1
+
+> T
+
+ηT+1
+
+Dψ( ˆθ, θ1) + 
+
+> T
+
+# ∑
+
+> t=1
+
+wtT ∥gt∥ · θt − θ′
+
+> t+1
+
+= wTT wT+1
+
+> T+1
+
+wTT+1ηT
+
+Dψ( ˆθ, θ1) + 
+
+> T
+
+# ∑
+
+> t=1
+
+wtT ∥gt∥ · θt − θ′
+
+> t+1
+
+where we define wT+1 
+
+> T
+
+B wTT wT+1
+
+> T+1
+> wTT+1
+
+.51 Proof of Lemma K.3. Since the update-rule in Lemma K.1 is a special case of Lemma K.4 with 
+
+ψ(x) = 12 ∥x∥2, we have 
+
+> T
+
+# ∑
+
+> t=1
+
+wtT θt − ˆθ, gt ≤ wTT wT+1
+
+> T+1
+
+wTT+1ηT
+
+Dψ( ˆθ, θ1) + 
+
+> T
+
+# ∑
+
+> t=1
+
+wtT ∥gt∥ · θt − θ′
+
+> t+1
+
+= wTT wT+1
+
+> T+1
+
+2wTT+1ηT
+
+ˆθ − θ1 
+
+> 2
+
++
+
+> T
+
+# ∑
+
+> t=1
+
+wtT ∥gt∥ · θt − θ′ 
+
+> t+1
+
+.Also, notice that when ψ(x) = 12 ∥x∥2, we have 
+
+θ′ 
+
+> t+1
+
+= argmin 
+
+> θ∈X
+
+
+
+ηt ⟨gt, θ⟩ + 12 ∥θ − θt∥2
+
+
+
+= Proj X (θt − ηtgt) .Therefore, θt − θ′ 
+
+> t+1
+
+≤ ∥ θt − (θt − ηtgt)∥ = ηt ∥gt∥. So, 
+
+> T
+
+# ∑
+
+> t=1
+
+wtT θt − ˆθ, gt ≤ wTT wT+1
+
+> T+1
+
+2wTT+1ηT
+
+ˆθ − θ1 
+
+> 2
+
++
+
+> T
+
+# ∑
+
+> t=1
+
+ηtwtT ∥gt∥2
+
+≤D wTT wT+1
+
+> T+1
+
+2wTT+1ηT
+
++
+
+> T
+
+# ∑
+
+> t=1
+
+ηtwtT ∥gt∥2 .The last line is by the definition that max θ,θ′ ∈X ∥θ − θ′∥2 ≤ D.
+
+# L Auxiliary Lemmas 
+
+Lemma L.1. For any x 1, x2, ..., xn ∈ [0, 1 ], we have 
+
+> n
+
+# ∏
+
+> i=1
+
+(1 − xi) ≥ 1 −
+
+> n
+
+# ∑
+
+> i=1
+
+xi. (L.1) 
+
+Proof. 
+
+> n
+
+# ∏
+
+> i=1
+
+(1 − xi) = 1 − x1 − x2(1 − x1) − x3(1 − x1)( 1 − x2) − ... − xnn−1
+
+# ∏
+
+> i=1
+
+(1 − xi) ≥ 1 −
+
+> n
+
+# ∑
+
+> i=1
+
+xi.In the following, we will prove Lemma L.2. We prove that with the forgetful condition (Condition 3) on all agents, the past history will not affect much of the current action distribution, because all of the agents “forget” what the past history is. 
+
+Lemma L.2 (Finite-Memory Approximation Errors) . Suppose Condition 3 is satisfied for every player i ∈ N . At any timestep t, for any m ≤ t − 1, any initial history h′ ∈ H t−m−1 and a ∈ A , when 
+
+γ ≤ 12(N+2) , we have 
+
+## ∑
+
+> h∈H m
+
+Pr (( h, a); πt−m:t) − ∑
+
+> h∈H m
+
+Pr (( h, a) | h′; πt−m:t)
+
+≤Cγ 
+
+> m
+
+·
+
+
+
+## ∑
+
+> h∈H m
+
+Pr (( h, a); πt−m:t) + ∑
+
+> h∈H m
+
+Pr (( h, a) | h′; πt−m:t)
+
+
+
+where Cγ 
+
+> m
+
+B (2N + 1)m+1γm+1. (L.2) 52 Proof. Notice that for any h1 ∈ H 1 and m ≥ 0, we have 
+
+# ∑
+
+> h2∈H m
+
+Pr (( h2, h1); πt−m:t) − ∑
+
+> h2∈H m
+
+Pr (( h2, h1) | h′; πt−m:t)
+
+≤ ∑
+
+> h2∈H m
+
+Pr (h1 | h2; πt−m:t)
+
+
+
+Pr (h2; πt−m:t) − Pr (h2 | h′; πt−m:t)
+
+
+
++ ∑
+
+> h2∈H m
+
+
+
+Pr (h1 | h2; πt−m:t) − Pr (h1|(h′, h2); πt−m:t)
+
+
+
+Pr (h2 | h′; πt−m:t)
+
+≤ ∑
+
+> h2∈H m
+> m−1
+
+# ∑
+
+> k=0
+
+
+
+Pr (h1 | h2, m−k:m; πt−m:t) − Pr (h1 | h2, m−k+1: m; πt−m:t)
+
+
+
+·
+
+
+
+Pr (h2; πt−m:t) − Pr (h2 | h′; πt−m:t)
+
+
+
+1⃝
+
++ ∑
+
+> h2∈H m
+
+Pr (h1 | h2, m+1: m; πt−m:t)
+
+
+
+Pr (h2; πt−m:t) − Pr (h2 | h′; πt−m:t)
+
+
+
+2⃝
+
++ ∑
+
+> h2∈H m
+
+
+
+Pr (h1 | h2; πt−m:t) − Pr (h1|(h′, h2); πt−m:t)
+
+
+
+Pr (h2 | h′; πt−m:t) . 3⃝
+
+Bounding 2 ⃝ 2⃝ The second term is equal to 0 since 
+
+# ∑
+
+> h2∈H m
+
+Pr (h1 | h2, m+1: m; πt−m:t)
+
+
+
+Pr (h2; πt−m:t) − Pr (h2 | h′; πt−m:t)
+
+
+
+= Pr (h1; πt−m:t) ∑
+
+> h2∈H m
+
+
+
+Pr (h2; πt−m:t) − Pr (h2 | h′; πt−m:t)
+
+
+
+= Pr (h1; πt−m:t)( 1 − 1) = 0. 
+
+Bounding 3 ⃝ Firstly, 3 ⃝ can be bounded by, 
+
+# ∑
+
+> h2∈H m
+
+Pr (h1 | h2; πt−m:t) − Pr (h1|(h′, h2); πt−m:t) Pr (h2 | h′; πt−m:t)
+
+≤ ∑
+
+> h2∈H m
+
+2Nγm+1 Pr (h1|(h′, h2); πt−m:t) Pr (h2 | h′; πt−m:t)=2Nγm+1 ∑
+
+> h2∈H m
+
+Pr (( h2, h1) | h′; πt−m:t)
+
+where the second line is by Lemma L.3. 
+
+Lemma L.3. Consider when all players satisfy Condition 3 and γ ≤ 12(N+2) . For any h1, h2, h3 ∈ H , we have 
+
+| Pr (h1 | h2; π) − Pr (h1|(h3, h2); π)| ≤ 2NγL(h2)+ 1 min {Pr (h1 | h2; π), Pr (h1|(h3, h2); π)}| Pr (h1 | h2; π) − Pr (h1|(h3, h2); π)| ≤ N γL(h2)+ 1
+
+1 − γ max {Pr (h1 | h2; π), Pr (h1|(h3, h2); π)} .The proof is deferred to the end of this section. 53 Bounding 1 ⃝ Then, 1 ⃝ is bounded by 
+
+# ∑
+
+h2∈H m
+
+m−1
+
+# ∑
+
+k=0
+
+
+
+Pr (h1 | h2, m−k:m; πt−m:t) − Pr (h1 | h2, m−k+1: m; πt−m:t)
+
+ 
+
+Pr (h2; πt−m:t) − Pr (h2 | h′; πt−m:t)
+
+
+
+=
+
+m−1
+
+# ∑
+
+k=0
+
+# ∑
+
+h2∈H k+1
+
+
+
+Pr (h1 | h2; πt−m:t) − Pr (h1 | h2,2: k+1; πt−m:t)
+
+
+
+· ∑
+
+h3∈H m−k−1
+
+
+
+Pr (( h3, h2); πt−m:t) − Pr (( h3, h2) | h′; πt−m:t)
+
+
+
+≤
+
+m−1
+
+# ∑
+
+k=0
+
+# ∑
+
+h2∈H k+1
+
+Pr (h1 | h2; πt−m:t) − Pr (h1 | h2,2: k+1; πt−m:t)
+
+· ∑
+
+h3∈H m−k−1
+
+
+
+Pr (( h3, h2); πt−m:t) − Pr (( h3, h2) | h′; πt−m:t)
+
+
+
+≤
+
+m−1
+
+# ∑
+
+k=0
+
+# ∑
+
+h2∈H k+1
+
+N
+
+1 − γ γk+1 max {Pr (h1 | h2), Pr (h1 | h2,2: k+1)}· Cγ
+
+m−k−1 ∑
+
+h3∈H m−k−1
+
+Pr (( h3, h2); πt−m:t) + ∑
+
+h3∈H m−k−1
+
+Pr (( h3, h2) | h′; πt−m:t)
+
+!
+
+where the last line uses Lemma L.3 and the recursively applying the argument to m − k − 1, namely 
+
+# ∑
+
+h3∈H m−k−1
+
+
+
+Pr (( h3, h2); πt−m:t) − Pr (( h3, h2) | h′; πt−m:t)
+
+
+
+≤Cγ
+
+m−k−1 ∑
+
+h3∈H m−k−1
+
+Pr (( h3, h2); πt−m:t) + ∑
+
+h3∈H m−k−1
+
+Pr (( h3, h2) | h′; πt−m:t)
+
+!
+
+.The base case when m = 0 follows directly from Lemma L.3. Notice that max {Pr (h1 | h2), Pr (h1 | h2,2: k+1)} ∑
+
+h3∈H m−k−1
+
+Pr (( h3, h2); πt−m:t)= ∑
+
+h3∈H m−k−1
+
+Pr (( h3, h2); πt−m:t)( max {Pr (h1 | h2), Pr (h1 | h2,2: k+1)} − Pr (h1|(h3, h2))) + ∑
+
+h3∈H m−k−1
+
+Pr (( h3, h2); πt−m:t) Pr (h1|(h3, h2)) 
+
+≤ ∑
+
+h3∈H m−k−1
+
+Pr (( h3, h2); πt−m:t)| max {Pr (h1 | h2), Pr (h1 | h2,2: k+1)} − Pr (h1|(h3, h2)) |
+
++ ∑
+
+h3∈H m−k−1
+
+Pr (( h3, h2, h1); πt−m:t)
+
+≤2Nγk+1 ∑
+
+h3∈H m−k−1
+
+Pr (( h3, h2); πt−m:t) Pr (h1|(h3, h2)) + ∑
+
+h3∈H m−k−1
+
+Pr (( h3, h2, h1); πt−m:t)=( 2Nγk+1 + 1) ∑
+
+h3∈H m−k−1
+
+Pr (( h3, h2, h1); πt−m:t).54 Similarly, max {Pr (h1 | h2), Pr (h1 | h2,2: k+1)} ∑
+
+> h3
+
+∈H m−k−1
+
+Pr (( h3, h2) | h′; πt−m:t)
+
+≤(2Nγk+1 + 1) ∑
+
+> h3
+
+∈H m−k−1
+
+Pr (( h3, h2, h1) | h′; πt−m:t).Then, 1 ⃝ can be bounded by 
+
+# ∑
+
+> h2
+
+∈H m
+
+> m
+
+−1
+
+# ∑
+
+> k
+
+=0
+
+
+
+Pr (h1 | h2, m−k:m; πt−m:t) − Pr (h1 | h2, m−k+1: m; πt−m:t)
+
+ 
+
+Pr (h2; πt−m:t) − Pr (h2 | h′; πt−m:t)
+
+
+
+≤
+
+> m
+
+−1
+
+# ∑
+
+> k
+
+=0
+
+( 2Nγk+1 + 11 − γ N)γk+1Cγ
+
+> m
+
+−k−1
+
+· ∑
+
+> h2
+
+∈H k+1
+
+# ∑
+
+> h3
+
+∈H m−k−1
+
+Pr (( h3, h2, h1); πt−m:t) + ∑
+
+> h3
+
+∈H m−k−1
+
+Pr (( h3, h2, h1) | h′; πt−m:t)
+
+!
+
+=
+
+> m
+
+−1
+
+# ∑
+
+> k
+
+=0
+
+( 2Nγk+1 + 11 − γ N)γk+1Cγ
+
+> m
+
+−k−1 ∑
+
+> h2
+
+∈H m
+
+Pr (( h2, h1); πt−m:t) + ∑
+
+> h2
+
+∈H m
+
+Pr (( h2, h1) | h′; πt−m:t)
+
+!
+
+Given that γ ≤ 12(N+2) , we have 2Nγk+1+11−γ ≤ 2. Therefore, combining 1 ⃝ , 2 ⃝ , 3 ⃝ together, for any 
+
+m ≥ 1, we have 
+
+Cγ 
+
+> m
+
+= 2Nγm+1 +
+
+> m
+
+−1
+
+# ∑
+
+> k
+
+=0
+
+2Nγk+1Cγ
+
+> m
+
+−k−1.Note that 
+
+| Pr (h2) − Pr (h2 | h′)| ≤ Nγ
+
+1 − γ Pr (h2),which implies taking Cγ 
+
+> 0
+
+≥ Nγ
+
+> 1
+
+−γ is enough. So, we have Cγ 
+
+> m
+
+≤ (2N + 1)m+1γm+1 for m ≥ 1. Since 
+
+Cγ 
+
+> m
+
+is an upper-bound, we just take Cγ 
+
+> m
+
+= ( 2N + 1)m+1γm+1.
+
+Proof of Lemma E.1. When t − 1 ≤ m, we have f min {t−1, m}(πt−m:t) = f t−1(π1: t). When t − 1 > m,55 we have 
+
+| f m(πt−m:t) − f t−1(π1: t)|
+
+= ∑
+
+> a∈A
+
+L1(a)
+
+
+
+# ∑
+
+> h∈H m
+
+Pr (( h, a); πt−m:t) − ∑
+
+> h∈H t−1
+
+Pr (( h, a); π1: t)
+
+
+
+> (i)
+
+≤ ∑
+
+> a∈A
+
+# ∑
+
+> h∈H m
+
+Pr (( h, a); πt−m:t) − ∑
+
+> h∈H t−1
+
+Pr (( h, a); π1: t)
+
+= ∑
+
+> a∈A
+
+# ∑
+
+> h∈H t−1
+
+  Pr (( ht−m:t−1, a); πt−m:t) − Pr (( ht−m:t−1, a) | h1: t−m−1; πt−m:t) Pr (h1: t−m−1; π1: t−m−1)
+
+≤ ∑
+
+> a∈A
+
+# ∑
+
+> h1∈H t−m−1
+
+Pr (h1; π1: t−m−1) ∑
+
+> h2∈H m
+
+
+
+Pr (( h2, a); πt−m:t) − Pr (( h2, a) | h1; πt−m:t)
+
+
+
+> (ii )
+
+≤ Cγ 
+
+> m
+
+# ∑
+
+> a∈A
+
+# ∑
+
+> h1∈H t−m−1
+
+Pr (h1; π1: t−m−1) ∑
+
+> h2∈H m
+
+Pr (( h2, a); πt−m:t) + ∑
+
+> h2∈H m
+
+Pr (( h2, a) | h1; πt−m:t)
+
+!
+
+=2Cγ
+
+> m
+
+where (i) is because ∀a ∈ A , L1(a) ∈ [0, 1 ] and (ii ) is by Lemma L.2. 
+
+Proof of Lemma L.3. Let ℓ = L(h1) and r = L(h2). If ℓ = 0, both conditional probabilities are equal to 1, so the claim is trivial. Otherwise, write 
+
+P B Pr (h1 | h2; π),
+
+Q B Pr (h1 | (h3, h2); π).Multiplying the one-step probability ratios along the ℓ action profiles in h1, Condition 3 gives 
+
+> ℓ
+
+# ∏
+
+> u=1
+
+(1 − γr+u)N ≤ PQ ≤
+
+> ℓ
+
+# ∏
+
+> u=1
+
+(1 − γr+u)−N ,with the convention that the inequalities are trivial when P = Q = 0. By Lemma L.1, 
+
+> ℓ
+
+# ∏
+
+> u=1
+
+(1 − γr+u)N ≥ 1 − N
+
+> ℓ
+
+# ∑
+
+> u=1
+
+γr+u ≥ 1 − Nγr+1
+
+1 − γ .Set S B Nγr+1/(1 − γ). Since γ ≤ 1/ (2(N + 2)) , we have S < 1. The preceding bounds imply 
+
+(1 − S)Q ≤ P ≤ Q
+
+1 − S .Therefore, 
+
+|P − Q| ≤ S max {P, Q} = N γL(h2)+ 1
+
+1 − γ max {P, Q},which proves the second inequality. For the first inequality, the same two-sided bound gives 
+
+|P − Q| ≤ S
+
+1 − S min {P, Q}.Under γ ≤ 1/ (2(N + 2)) , S/(1 − S) ≤ 2Nγr+1. Hence 
+
+|P − Q| ≤ 2NγL(h2)+ 1 min {P, Q},which completes the proof. 56 L.1 Proof of Lemma F.1 
+
+Firstly, 
+
+| f m(π) − f m( ˜π)|
+
+= ∑
+
+> a∈A
+
+L1(a) ∑
+
+> h∈H m
+
+
+
+Pr (( h, a); π) − Pr (( h, a); ˜ π)
+
+
+
+≤ ∑
+
+> a∈A
+
+# ∑
+
+> h∈H m
+
+(πm+1(a | h) Pr (h; π) − ˜πm+1(a | h) Pr (h; ˜ π)) 
+
+≤ ∑
+
+> a∈A
+
+# ∑
+
+> h∈H m
+
+(πm+1(a | h) − ˜πm+1(a | h)) Pr (h; π) (L.3) 
+
++ ∑
+
+> a∈A
+
+# ∑
+
+> h∈H m
+
+(Pr (h; π) − Pr (h; ˜ π)) ˜πm+1(a | h) . (L.4) Term (L.3) is bounded by 
+
+# ∑
+
+> a∈A
+
+# ∑
+
+> h∈H m
+
+(πm+1(a | h) − ˜πm+1(a | h)) Pr (h; π)
+
+= ∑
+
+> a∈A
+
+⟨πm+1(a | h) − ˜πm+1(a | h), Pr (h; π)⟩h∈H m
+
+≤ ∑
+
+> a∈A
+
+∥(πm+1(a | h) − ˜πm+1(a | h)) h∈H m ∥∞ · ∥ (Pr (h; π)) h∈H m ∥1
+
+≤ ∑
+
+> a∈A
+
+∥(πm+1(a | h) − ˜πm+1(a | h)) h∈H m ∥∞
+
+≤|A| · ∥ (πm+1(a | h) − ˜πm+1(a | h)) a∈A ,h∈H m ∥∞ .For the term (L.4), for a fixed a ∈ A , we have 
+
+# ∑
+
+> h∈H m
+
+˜πm+1(a | h)
+
+
+
+Pr (h; π) − Pr (h; ˜ π)
+
+
+
+= ∑
+
+> h∈H m
+
+˜πm+1(a | h)
+
+ m
+
+# ∏
+
+> s=1
+
+πs(hs | h1: s−1) −
+
+> m
+
+# ∏
+
+> s=1
+
+˜πs(hs | h1: s−1)
+
+
+
+= ∑
+
+> h∈H m
+
+˜πm+1(a | h)
+
+> m
+
+# ∑
+
+> k=1
+
+ m
+
+# ∏
+
+> s=1
+
+¯πk−1 
+
+> s
+
+(hs | h1: s−1) −
+
+> m
+
+# ∏
+
+> s=1
+
+¯πks (hs | h1: s−1)
+
+
+
+≤
+
+> m
+
+# ∑
+
+> k=1
+
+# ∑
+
+> h∈H m
+
+˜πm+1(a | h)
+
+ m
+
+# ∏
+
+> s=1
+
+¯πk−1 
+
+> s
+
+(hs | h1: s−1) −
+
+> m
+
+# ∏
+
+> s=1
+
+¯πks (hs | h1: s−1)
+
+
+
+where ¯πks =
+
+(
+
+πs s > k
+
+˜πs s ≤ k. (L.5) 57 For any k ∈ { 1, 2, ..., m}, we have 
+
+# ∑
+
+> h
+
+∈H m
+
+˜πm+1(a | h)
+
+ m
+
+# ∏
+
+> s
+
+=1
+
+¯πk−1 
+
+> s
+
+(hs | h1: s−1) −
+
+> m
+
+# ∏
+
+> s
+
+=1
+
+¯πks (hs | h1: s−1)
+
+
+
+= ∑
+
+> h
+
+∈H m
+
+˜πm+1(a | h)
+
+> m
+
+# ∏
+
+> s
+
+=1, s,k
+
+¯πks (hs | h1: s−1)
+
+
+
+πk(hk | h1: k−1) − ˜πk(hk | h1: k−1)
+
+
+
+=
+
+* m
+
+# ∏
+
+> s
+
+=1, s,k
+
+¯πks (hs | h1: s−1), ˜ πm+1(a | h)( πk(hk | h1: k−1) − ˜πk(hk | h1: k−1)) 
+
++
+
+> h
+
+∈H m
+
+≤
+
+> m
+
+# ∏
+
+> s
+
+=1, s,k
+
+¯πks (hs | h1: s−1)
+
+!
+
+> h
+
+∈H m 1
+
+· ( ˜πm+1(a | h)( πk(hk | h1: k−1) − ˜πk(hk | h1: k−1))) h∈H m ∞
+
+=|A| · (πk(hk | h1: k−1) − ˜πk(hk | h1: k−1)) h∈H m ∞ .Therefore, term (L.4) is bounded by 
+
+# ∑
+
+> a
+
+∈A 
+
+# ∑
+
+> h
+
+∈H m
+
+(Pr (h; π) − Pr (h; ˜ π)) ˜πm+1(a | h) ≤|A| 2 ·
+
+> m
+
+# ∑
+
+> k
+
+=1
+
+(πk(hk | h1: k−1) − ˜πk(hk | h1: k−1)) h∈H m ∞ .Finally, 
+
+| f m(π) − f m( ˜π)|≤|A| · ∥ (πm+1(a | h) − ˜πm+1(a | h)) a∈A ,h∈H m ∥∞ + |A| 2 ·
+
+> m
+
+# ∑
+
+> k
+
+=1
+
+(πk(hk | h1: k−1) − ˜πk(hk | h1: k−1)) h∈H m ∞
+
+≤|A| 2 ·
+
+> m
+
++1
+
+# ∑
+
+> k
+
+=1
+
+∥πk − ˜πk∥∞ .For the second part, since for any h ∈ H , a ∈ A , k = 1, 2, ..., m + 1, we have 
+
+|πk(a | h) − ˜πk(a | h)| =
+
+> N
+
+# ∏
+
+> i
+
+=1
+
+π(i) 
+
+> k
+
+(ai | h) −
+
+> N
+
+# ∏
+
+> i
+
+=1
+
+˜π(i) 
+
+> k
+
+(ai | h)
+
+=
+
+> N
+
+# ∑
+
+> i
+
+=1
+
+> i
+
+−1
+
+# ∏
+
+> j
+
+=1
+
+˜π(j) 
+
+> k
+
+(aj | h)
+
+> N
+
+# ∏
+
+> j
+
+=i+1
+
+π(j) 
+
+> k
+
+(aj | h)
+
+
+
+π(i) 
+
+> k
+
+(ai | h) − ˜π(i) 
+
+> k
+
+(ai | h)
+
+
+
+≤
+
+> N
+
+# ∑
+
+> i
+
+=1
+
+> i
+
+−1
+
+# ∏
+
+> j
+
+=1
+
+˜π(j) 
+
+> k
+
+(aj | h)
+
+> N
+
+# ∏
+
+> j
+
+=i+1
+
+π(j) 
+
+> k
+
+(aj | h) π(i) 
+
+> k
+
+(ai | h) − ˜π(i) 
+
+> k
+
+(ai | h)
+
+≤
+
+> N
+
+# ∑
+
+> i
+
+=1
+
+π(i) 
+
+> k
+
+(ai | h) − ˜π(i) 
+
+> k
+
+(ai | h) .As a consequence, 
+
+| f m(π) − f m( ˜π)| ≤ CLips 
+
+> m
+
++1
+
+# ∑
+
+> t
+
+=1
+
+∥πt − ˜πt∥∞ ≤ CLips 
+
+> N
+
+# ∑
+
+> i
+
+=1
+
+> m
+
++1
+
+# ∑
+
+> t
+
+=1
+
+π(i) 
+
+> t
+
+− ˜π(i)  
+
+> t∞
+
+.where CLips B |A| 2.58 L.2 Lemma for Markov Game 
+
+Lemma L.4. Suppose Condition 3 is satisfied for all players. The expected time-average loss of the induced Markov game defined in Definition 4.2 always exists and does not depend on the initial distribution. Proof. Fix any player i ∈ N . Without loss of generality, we may restrict attention to policies π(i)
+
+that have full support conditioned on every history. Indeed, by Condition 3, if π(i) (ai | h) = 0 for some ai ∈ A i and h ∈ H , then necessarily π(i) (ai | h′) = 0 for all h′ ∈ H . In this case, action ai
+
+is never taken (from any history), so we can remove ai from Ai without changing the limiting time-average loss, because any state that involves ai is transient and has zero probability of being visited on average in the limit. Moreover, if every player uses a policy with full support conditional on any history, then every joint action is selected with positive probability whenever it is available. Consequently, the in-duced Markov chain is irreducible. Therefore, the time-average loss exists and is independent of the initial distribution (Norris, 1998). 
+
+Lemma L.5. Suppose Condition 3 is satisfied for all players. For any K , M ∈ N and any strategy profile vector π = ( π1, π2, ..., πK+1) of length K + 1, when γ ≤ 12(N+2) , we have 
+
+| f K (π) − f K,M(π)| ≤ 2Cγ 
+
+> K
+
++ 2CLips N(K + 1)γM+1
+
+where C γ 
+
+> K
+
+= ( 2N + 1)K+1γK+1, C Lips = |A| 2, and, f K,M(π) B 1
+
+|H M| ∑
+
+> h∈H M
+
+f K (πM 
+
+> 1: K+1
+
+| h), πMk (a | h) B πk(a | hL(h)−M+1: L(h)).
+
+If L (h) < M, the suffix hL(h)−M+1: L(h) is understood as the whole available history h.Proof. Define ¯f K,M(π) B 1  
+
+> |H M|
+
+∑h0∈H M f K (π | h0) for convenience. By Lemma L.2, applied with the arbitrary initial history h0, we have 
+
+f K (π) − ¯f K,M(π)
+
+≤ 1
+
+|H M| ∑
+
+> h0∈H M
+
+# ∑
+
+> a∈A
+
+# ∑
+
+> h∈H K
+
+Pr (( h, a); π) − ∑
+
+> h∈H K
+
+Pr (( h, a) | h0; π)
+
+≤2Cγ
+
+> K
+
+.Lemma F.1 extends to f K (π | h0) by defining ˜π with ˜πs(a | h) = πs(a | (h0, h)) for all a ∈ A , s =
+
+1, 2, ..., K + 1, and h ∈ H s−1. Therefore, 
+
+¯f K,M(π) − f K,M(π)
+
+≤ 1
+
+|H M| ∑
+
+> h0∈H M
+
+f K (π | h0) − f K (πM | h0)
+
+≤CLips max 
+
+> h0∈H M
+> K+1
+
+# ∑
+
+> s=1
+> N
+
+# ∑
+
+> i=1
+
+max  
+
+> h∈H s−1,ai∈A i
+
+π(i) 
+
+> s
+
+(ai | (h0, h)) − π(i) 
+
+> s
+
+(ai | (h0, h)L(( h0,h)) −M+1: L(( h0,h)) )
+
+≤CLips N(K + 1)γM+1.59 In the last line, the two histories compared inside each probability share their most recent suffix of length M. Hence, Condition 3 gives a multiplicative ratio in [1 − γM+1, (1 − γM+1)−1]. Putting all pieces together finishes the proof. 
+
+Proof of Lemma I.6. An observation is that for a1, b1 ≥ 0, a2, b2 ≥ c and c > 0, we have 
+
+| a1
+
+a2
+
+− b1
+
+b2
+
+| = | a1b2 − b1a2
+
+a2b2
+
+| ≤ a1|b2 − a2|
+
+a2b2
+
++ a2|a1 − b1|
+
+a2b2
+
+≤ a1
+
+a2c |b2 − a2| + |a1 − b1|
+
+c .So, for any h ∈ H M, a ∈ A , we have 
+
+|π2(a | h) − π1(a | h)|
+
+= qπ2 (h, a)
+
+∑a′ ∈A qπ2 (h, a′) − qπ1 (h, a)
+
+∑a′ ∈A qπ1 (h, a′)
+
+≤ qπ2 (h, a)
+
+c ∑a′ ∈A qπ2 (h, a′) ∑ 
+
+> a′∈A
+
+qπ2 (h, a′) − ∑ 
+
+> a′∈A
+
+qπ1 (h, a′) + 1
+
+c |qπ2 (h, a) − qπ1 (h, a)|
+
+= π2(a | h)
+
+c ∑ 
+
+> a′∈A
+
+qπ2 (h, a′) − ∑ 
+
+> a′∈A
+
+qπ1 (h, a′) + 1
+
+c |qπ2 (h, a) − qπ1 (h, a)|≤ 2|A| 
+
+c ∥qπ2 − qπ1 ∥∞ .
+
+L.3 Other Lemmas 
+
+Proof of Lemma F.2. 
+
+> T
+
+# ∑
+
+> t=1
+> t−1
+
+# ∑
+
+> s=max {t−K,1 }
+
+∥xt − xs∥p ≤
+
+> T
+
+# ∑
+
+> t=1
+> t−1
+
+# ∑
+
+> s=max {t−K,1 }
+> t−1
+
+# ∑ 
+
+> s′=s
+
+∥xs′ − xs′ +1∥p
+
+≤
+
+> T
+
+# ∑
+
+> t=2
+
+(1 + 2 + ... + K) ∥xt − xt−1∥p
+
+≤K2 T
+
+# ∑
+
+> t=2
+
+∥xt − xt−1∥p .
+
+L.4 Projected Gradient Descent ( PGD )
+
+Here we provide the upper bound on the regret ∑Tt=1 ⟨L t, xt⟩ − min ˆx1: T , ˆ xt ∈X ∑Tt=1 ⟨L t, ˆ xt⟩. We adapted (Zhao et al., 2022, Theorem 10) here. 
+
+Lemma L.6 (Adapted from Theorem 10 in Zhao et al. (2022)) . Consider the update-rule (L.6) . For any sequence ˆx1, ˆ x2, ..., ˆ xT satisfying ˆxt ∈ X , we have 
+
+> T
+
+# ∑
+
+> t=1
+
+⟨L t, xt⟩ − 
+
+> T
+
+# ∑
+
+> t=1
+
+⟨L t, ˆ xt⟩ ≤ η
+
+2
+
+> T
+
+# ∑
+
+> t=1
+
+∥L t∥2 + 12η ∥x1 − ˆx1∥2 + D1
+
+η
+
+> T
+
+# ∑
+
+> t=2
+
+∥ ˆxt−1 − ˆxt∥∞ (L.7) 
+
+where D 1 B max x,x′ ∈X ∥x − x′∥1.
+
+60 Algorithm 4 Projected Gradient Descent  
+
+> 1:
+
+η is the learning rate.  
+
+> 2:
+
+Initialize x1 ∈ X where X is the convex set that x lies in  
+
+> 3:
+
+for t = 1, 2, ..., T do  
+
+> 4:
+
+Propose xt. 
+
+> 5:
+
+Receive the loss ⟨L t, xt⟩ .
+
+xt+1 ← Proj X (xt − ηLt) (L.6)  
+
+> 6:
+
+end for 
+
+Proof. Notice that 
+
+∥xt+1 − ˆxt∥2 = ∥Proj X (xt − ηLt) − ˆxt∥2
+
+≤ ∥ xt − ηLt − ˆxt∥2
+
+=η2 ∥L t∥2 − 2η ⟨L t, xt − ˆxt⟩ + ∥xt − ˆxt∥2
+
+where Proj denotes the projection with respect to the L2 norm. The second line is because X is convex. Therefore, by rearranging the terms, we have 
+
+⟨L t, xt − ˆxt⟩ ≤ η
+
+2 ∥L t∥2 + 12η (∥xt − ˆxt∥2 − ∥ xt+1 − ˆxt∥2).The summation of the second term here can be bounded by 
+
+> T
+
+# ∑
+
+> t=1
+
+(∥xt − ˆxt∥2 − ∥ xt+1 − ˆxt∥2) ≤
+
+> T
+
+# ∑
+
+> t=1
+
+∥xt − ˆxt∥2 −
+
+> T
+
+# ∑
+
+> t=2
+
+∥xt − ˆxt−1∥2
+
+= ∥x1 − ˆx1∥2 +
+
+> T
+
+# ∑
+
+> t=2
+
+(∥xt − ˆxt∥2 − ∥ xt − ˆxt−1∥2)= ∥x1 − ˆx1∥2 +
+
+> T
+
+# ∑
+
+> t=2
+
+⟨ ˆxt−1 − ˆxt, 2 xt − ˆxt − ˆxt−1⟩≤ ∥ x1 − ˆx1∥2 +
+
+> T
+
+# ∑
+
+> t=2
+
+∥ ˆxt−1 − ˆxt∥∞ · ∥ 2xt − ˆxt − ˆxt−1∥1
+
+≤ ∥ x1 − ˆx1∥2 + 2D1
+
+> T
+
+# ∑
+
+> t=2
+
+∥ ˆxt−1 − ˆxt∥∞
+
+where D1 B max x,x′ ∈X ∥x − x′∥1.Therefore, 
+
+> T
+
+# ∑
+
+> t=1
+
+⟨xt, Lt⟩ − 
+
+> T
+
+# ∑
+
+> t=1
+
+⟨ ˆxt, Lt⟩ ≤ η
+
+2
+
+> T
+
+# ∑
+
+> t=1
+
+∥L t∥2 + 12η ∥x1 − ˆx1∥2 + D1
+
+η
+
+> T
+
+# ∑
+
+> t=2
+
+∥ ˆxt−1 − ˆxt∥∞ .61 Algorithm 5 Projected Gradient Descent with Time-varying Constraints (Cao and Liu, 2018)  
+
+> 1:
+
+η is the learning rate, δ is a non-negative constant hyper-parameter.  
+
+> 2:
+
+Initialize x1 ∈ X , λ1 = 0. 
+
+> 3:
+
+for t = 1, 2, ..., T do  
+
+> 4:
+
+Propose xt. 
+
+> 5:
+
+Receive the loss ⟨L t, xt⟩ and constraints gt(xt) B g1 
+
+> t
+
+(xt), g2 
+
+> t
+
+(xt), ..., gkt (xt) ⪯ 0
+
+xt+1 ← Proj X xt − η Lt +
+
+> k
+
+# ∑
+
+> i=1
+
+λit∇git(xt)
+
+!! 
+
+(L.8) 
+
+λt+1 ← Proj Rk 
+
+> +
+
+(λt + η (gt(xt) − δη λt)) . (L.9)  
+
+> 6:
+
+▷ Rk 
+
+> +
+
+B x ∈ Rk | x ⪰ 0 . 
+
+> 7:
+
+end for 
+
+L.5 Projected Gradient Descent with Time-varying Constraints 
+
+Lemma L.7 (Adapted from Theorem 1 in Cao and Liu (2018)) . Consider Algorithm 5. For any sequence of ˆx1, ˆ x2, ..., ˆ xT satisfying that ∀t ∈ { 1, 2, ..., T} , gt( ˆxt) ⪯ 0, when η =
+
+q PT 
+
+> T
+
+and δ = 2CG + ( 1 +
+
+k)G2 + 1, we have 
+
+> T
+
+# ∑
+
+> t=1
+
+⟨L t, xt⟩ − 
+
+> T
+
+# ∑
+
+> t=1
+
+⟨L t, ˆ xt⟩ + C
+
+> T
+
+# ∑
+
+> t=2
+
+∥xt − xt−1∥∞ ≤ 5R2
+
+2
+
+s
+
+TPT
+
++
+
+
+
+R + k + 12 G2 + D2 + CG (k + 1)
+
+ pTP T
+
+(L.10) 
+
+∀i ∈ { 1, 2, ..., k},
+
+> T
+
+# ∑
+
+> t=1
+
+git(xt) ≤
+
+vuut2 (2CG + ( k + 1)G2 + 1)pTP T +
+
+s
+
+TPT
+
+!
+
+×
+
+vuutFT + 5R2
+
+2
+
+s
+
+TPT
+
++
+
+
+
+R + k + 12 G2 + D2 + CG (k + 1)
+
+ pTP T (L.11) 
+
+where PT =
+
+> T−1
+
+# ∑
+
+> t=1
+
+∥ ˆxt − ˆxt+1∥ (L.12) 
+
+R = max  
+
+> x∈X
+
+∥x∥ (L.13) 
+
+G = max 
+
+> t=1,2,..., T
+
+
+
+∥L t∥ , max   
+
+> x∈X ,i=1,2,..., k
+
+∇git(x)
+
+
+
+(L.14) 
+
+D = max  
+
+> t=1,2,..., T,x∈X
+
+∥gt(x)∥ (L.15) 
+
+F = max   
+
+> x,x′∈X
+
+| Lt, x − x′ | (L.16) 
+
+and C > 0 is some arbitrary constant. Proof. Different from (Cao and Liu, 2018, Theorem 1), we have an additional C ∑Tt=2 ∥xt − xt−1∥∞
+
+to bound. Firstly, by the update rule Eq. (L.8) and the non-expansiveness of the Euclidean 62 projection, for every t ≥ 2 we have 
+
+∥xt − xt−1∥∞ ≤ ∥ xt − xt−1∥
+
+= Proj X xt−1 − η Lt−1 +
+
+> k
+
+# ∑
+
+> i=1
+
+λit−1∇git−1(xt−1)
+
+!! 
+
+− Proj X (xt−1)
+
+≤ η Lt−1 +
+
+> k
+
+# ∑
+
+> i=1
+
+λit−1∇git−1(xt−1)
+
+≤ ηG + ηG
+
+> k
+
+# ∑
+
+> i=1
+
+λit−1.Note that 
+
+λit−1 ≤ (λit−1)2 + 1. So, ∥xt − xt−1∥∞ ≤ ηG(k + 1) + ηG ∥λt−1∥2.By abusing notation and writing Lt(x, λ) B ⟨L t, x⟩ + ∑ki=1 λi git(x) − δη  
+
+> 2
+
+∥λ∥2, we have the following lemma. 
+
+Lemma L.8 (Lemma 3 in Cao and Liu (2018)) . For any λ ⪰ 0 and ˆx1: T, we have 
+
+> T
+
+# ∑
+
+> t=1
+
+(Lt(xt, λ) − L t( ˆxt, λt)) (L.17) 
+
+≤ 12η
+
+
+
+5R2 + 2RP T + ∥λ∥2
+
++ ηT
+
+2
+
+ (k + 1)G2 + 2D2 + η
+
+2
+
+(1 + k)G2 + 2δ2η2 T
+
+# ∑
+
+> t=1
+
+∥λt∥2 (L.18) 
+
+where PT =
+
+> T
+
+# ∑
+
+> t=2
+
+∥ ˆxt − ˆxt−1∥ . (L.19) So, by Lemma L.8, we have 
+
+> T
+
+# ∑
+
+> t=1
+
+⟨L t, xt − ˆxt⟩ +
+
+> k
+
+# ∑
+
+> i=1
+> T
+
+# ∑
+
+> t=1
+
+
+
+λi git(xt) − λit git( ˆxt)
+
+
+
+− δη T
+
+2 ∥λ∥2 + C
+
+> T
+
+# ∑
+
+> t=2
+
+∥xt − xt−1∥∞
+
+≤ η
+
+2
+
+ 2CG + ( 1 + k)G2 + 2δ2η2 − δ T
+
+# ∑
+
+> t=1
+
+∥λt∥2 + 12η
+
+
+
+5R2 + 2RP T + ∥λ∥2
+
++ ηT
+
+2
+
+ (k + 1)G2 + 2D2
+
+≤ 12η
+
+
+
+5R2 + 2RP T + ∥λ∥2
+
++ ηT
+
+2
+
+ (k + 1)G2 + 2D2 + 2CG (k + 1)
+
+where the last line is by choosing δ = 2CG + ( 1 + k)G2 + 1 and T is large enough so that η2 = 
+
+> PT
+> T
+
+≤ 12δ2 . Therefore, by rearranging the terms, we have 
+
+> T
+
+# ∑
+
+> t=1
+
+⟨L t, xt − ˆxt⟩ +
+
+> k
+
+# ∑
+
+> i=1
+
+λi T
+
+# ∑
+
+> t=1
+
+git(xt) −
+
+ δη T
+
+2 + 12η
+
+
+
+(λi)2
+
+!
+
++ C
+
+> T
+
+# ∑
+
+> t=2
+
+∥xt − xt−1∥∞
+
+≤
+
+> k
+
+# ∑
+
+> i=1
+> T
+
+# ∑
+
+> t=1
+
+λit git( ˆxt) + 12η
+
+ 5R2 + 2RP T
+
+ + ηT
+
+2
+
+ (k + 1)G2 + 2D2 + 2CG (k + 1)
+
+≤ 12η
+
+ 5R2 + 2RP T
+
+ + ηT
+
+2
+
+ (k + 1)G2 + 2D2 + 2CG (k + 1)
+
+63 where the last line is by definition that ˆ xt satisfies git( ˆxt) ≤ 0 for any i = 1, 2, ..., k and λit ≥ 0 for any i = 1, 2, ..., k and t = 1, 2, ..., T. By choosing λi = [∑Tt=1 git (xt )] + 
+
+> δη T+1
+> η
+
+where [x]+ B max {x, 0 }, we have 
+
+> T
+
+# ∑
+
+> t=1
+
+⟨L t, xt − ˆxt⟩ +
+
+> k
+
+# ∑
+
+> i=1
+
+
+
+[∑Tt=1 git(xt)] +2
+
+2(δη T + 1 
+
+> η
+
+) + C
+
+> T
+
+# ∑
+
+> t=2
+
+∥xt − xt−1∥∞
+
+≤ 12η
+
+ 5R2 + 2RP T
+
+ + ηT
+
+2
+
+ (k + 1)G2 + 2D2 + 2CG (k + 1) .So, 
+
+> T
+
+# ∑
+
+> t=1
+
+⟨L t, xt − ˆxt⟩ + C
+
+> T
+
+# ∑
+
+> t=2
+
+∥xt − xt−1∥∞
+
+≤ 12η
+
+ 5R2 + 2RP T
+
+ + ηT
+
+2
+
+ (k + 1)G2 + 2D2 + 2CG (k + 1)
+
+= 5R2
+
+2
+
+s
+
+TPT
+
++ 2R + ( k + 1)G2 + 2D2 + 2CG (k + 1)
+
+2
+
+pTP T.By definition, we have ∑Tt=1 ⟨L t, xt − ˆxt⟩ ≥ − FT . Then, 
+
+−FT +
+
+> k
+
+# ∑
+
+> i=1
+
+
+
+[∑Tt=1 git(xt)] +2
+
+2(δη T + 1 
+
+> η
+
+) ≤ 5R2
+
+2
+
+s
+
+TPT
+
++ 2R + ( k + 1)G2 + 2D2 + 2CG (k + 1)
+
+2
+
+pTP T.Lastly, for any i = 1, 2, ..., k, we have 
+
+> T
+
+# ∑
+
+> t=1
+
+git(xt) ≤
+
+vuut2FT + 5R2
+
+s
+
+TPT
+
++ ( 2R + ( k + 1)G2 + 2D2 + 2CG (k + 1)) pTP T
+
+×
+
+vuut(2CG + ( 1 + k)G2 + 1)pTP T +
+
+s
+
+TPT
+
+.
+
+# M Auxiliary Lemmas for the Induced Markov Game 
+
+In this section, we assume all agents have a bounded memory M and we are considering the Induced Markov Game defined in Definition 4.2. 
+
+M.1 Milder Constraint 
+
+It is easy to see that Condition 4 implies the following condition, Condition 5. Therefore, in this section, we will show that when all players satisfy Condition 5, we can use the expected average loss of an infinite-horizon Markov game to approximate the expected loss of the repeated game at each timestep. 64 Condition 5. The strategy π(i) 
+
+> 1: T
+
+is not too different when observing different histories. That is, for any timestep t, we have 
+
+∀ ¯h, ˜ h ∈ H , 12 π(i) 
+
+> t
+
+(· | ¯h) − π(i) 
+
+> t
+
+(·| ˜h) 1 ≤ 1 − γ (M.1) 
+
+for some constant γ ∈ (0, 1 ].
+
+Proposition M.1. Condition 5 with parameter 1 − γ can be inferred from Condition 3 with parameter γ.Proof. 
+
+π(i)(· | h1) − π(i)(· | h2) 1
+
+= ∑ 
+
+> ai∈A i
+
+|π(i)(ai | h1) − π(i)(ai | h2)|
+
+= ∑ 
+
+> ai∈A i
+
+max {0, π(i)(ai | h1) − π(i)(ai | h2)} + ∑ 
+
+> ai∈A i
+
+max {0, π(i)(ai | h2) − π(i)(ai | h1)}≤γ ∑ 
+
+> ai∈A i
+
+π(i)(ai | h1) + γ ∑ 
+
+> ai∈A i
+
+π(i)(ai | h2)=2γ.A direct corollary of Condition 5 is that 
+
+Corollary M.2. When Condition 5 is satisfied, we have 
+
+∀h, h′ ∈ H M, ∃ai ∈ A i, π(i)(ai | h), π(i)(ai | h′) ≥ γ
+
+|A i| . (M.2) For the Markov chain 15 induced by π, let Pπ be the transition matrix. Then we have the following lemma. 
+
+Lemma M.3. When all players satisfy Condition 5, for the transition matrix Pπ induced by the repeated matrix game, we have 
+
+∀h1, h2 ∈ H M, ∃h3 ∈ H M, (Pπ)M 
+
+> h1,h3
+
+, (Pπ)M 
+
+> h2,h3
+
+≥ ( γN
+
+|A| )M.
+
+Proof. For any h1, h2 ∈ H M, by Corollary M.2, for every i ∈ [N] there exists ai ∈ A i, so that 
+
+π(i)(ai | h1), π(i)(ai | h2) ≥ γ  
+
+> |A i|
+
+. Therefore, for a = ( a1, a2, ..., aN ), we have 
+
+π(a | h1) = 
+
+> N
+
+# ∏
+
+> i=1
+
+π(i)(ai | h1) ≥ γN
+
+|A| .Similarly, we have π(a | h2) ≥ γN 
+
+> |A|
+
+. Similarly, there is some a′ ∈ A so that 
+
+π(a′|(h1,2: M, a)) , π(a′|(h2,2: M, a)) ≥ γN 
+
+> |A|
+
+. Finally, there is some h3 ∈ H M so that 
+
+(Pπ)M 
+
+> h1,h3
+
+=
+
+> M
+
+# ∏
+
+> t=1
+
+π(h3, t|(h1, t:M, h3,1: t−1)) ≥ ( γN
+
+|A| )M
+
+and (Pπ)M 
+
+> h2,h3
+
+≥ ( γN 
+
+> |A|
+
+)M similarly.   
+
+> 15 By taking πas constant and merging it into the transition probability, we get a Markov chain from the induced Markov game defined in Definition 4.2.
+
+65 M.2 Fast Mixing 
+
+Firstly, we will prove a set of results in the Markov chain with transition matrix (Pπ)M. For simplicity, we model it as a directed graph, with vertices as HM. There exists a directed edge 
+
+h1 → h2 if and only if (Pπ)M 
+
+> h1,h2
+
+≥ ( γN 
+
+> |A|
+
+)M.Note that by Lemma M.3, for every two vertices h1, h2 in the graph, there exists a vertex h3 (might be equal to h1 or h2), which is a common successor of h1 and h2. That is, there exist edges h1 → h3
+
+and h2 → h3.Firstly, we would like to prove that there exists a vertex h0 ∈ H M, which satisfies that every other vertex could reach it within O(log 2 |H M|) steps. 
+
+Lemma M.4 (Short Connectivity) . There exists a vertex h0 ∈ H M, so that every other vertex can reach it within log 2 |H M| + 1 steps. Proof. We will merge the vertices into rooted trees where all vertices in the tree can reach the root. Initially, we have HM rooted trees and each one is a single vertex. Then, in each episode, we will merge them as follows. Let T be the set of rooted trees. We will first divide it into ⌊|T | /2 ⌋ pairs arbitrarily. Then, for each pair of rooted trees, say rooted trees with root h1, h2, we will try to merge them into one.Then, by the condition of the graph, we know that there exists h3 satisfying that h1, h2 are both connected to h3. Then, there are two cases. (i) h3 ∈ { h1, h2}. Without loss of generality, we assume h3 = h1. Then, we can connect h2 to 
+
+h1 and thus merge two rooted trees into one. The depth of all nodes in the new tree is no more than max {Depth (h1), Depth (h2)} + 1 where we use Depth (h) to denote the depth of the rooted tree h belongs to before merging. (ii) h3 < {h1, h2}. Firstly, we can split h3 and its subtree from the rooted tree h3 belonging to. Then, we can link h1, h2 to h3 to form a new rooted tree. The depth of all nodes in the tree rooted at h1, h2 is no more than max {Depth (h1), Depth (h2)} + 1. We also provide an illustrative proof in Figure 2. Therefore, in each episode, the maximum depth will increase by at most one while |T | will decrease to one-half of it (we can assume |H M| = 2K for some K without loss of generality since we can add nodes to the graph). Therefore, the depth of the last rooted tree in T is at most log 2 |H M| + 1. By Lemma M.4, we can obtain a rooted tree, say rooted at h0, with a bounded depth O(log 2 |H M|).
+
+Lemma M.5. There exists C 1 = log 22 |H M| + 4 log 2 |H M| + 3 so that for any C ′ ≥ C1, every vertex can reach h0 in C ′ steps. Proof. Firstly, we will prove that there exists C0 so that for any C′ 
+
+> 0
+
+≥ C0, h0 can reach itself in C′
+
+> 0
+
+steps. When h0 has a self-loop, then C0 = 1 satisfies the requirement. Otherwise, h0 has a successor h1 , h0 according to Lemma M.3. By Lemma M.3, we know that h0 and h1 have a common successor. Let the common successor be h2. Then we have cycles 66 ℎ1 ℎ2  
+
+> (i)
+> ℎ1ℎ2
+> (ii)
+> ℎ3
+> ℎ1ℎ2
+> ℎ3
+
+Figure 2: An illustrative proof of Lemma M.4. In (i), the maximum tree depth remains 3. In (ii ),the maximum tree depth increases from 3 to 4. 
+
+h0 → h1 → h2 → h0 and h0 → h2 → h0 with length depth (h2) + 2 and depth (h2) + 1 where depth (h)
+
+is the depth of h in the rooted tree. By Frobenius number (Sylvester, 1882), C0 = depth (h2) ·
+
+(depth (h2) + 1) ≤ (log 2 |H M| + 1)( log 2 |H M| + 2) = log 22 |H M| + 3 log 2 |H M| + 2 by Lemma M.4. Therefore, for any vertex h1, when it can reach h0 with K steps, it can also reach h0 with K +
+
+C0, K + C0 + 1, K + C0 + 2, ... steps by rotating in the cycles starting from h0. So, we have C1 =
+
+log 2 |H M| + 1 + C0 ≤ log 22 |H M| + 4 log 2 |H M| + 3. Back to the Markov chain, by Lemma M.5, for any h1 ∈ H M, we have (Pπ)MK  
+
+> h1,h0
+
+≥ ( γN 
+
+> |A|
+
+)MK for any 
+
+K ≥ C1.
+
+M.3 Contraction property with bounded memory of length M
+
+In this section, we will directly adopt all conditions and notations in Appendix M.2 without specifying them. By Lemma M.5, there exists some constant C1 so that (Pπ)MC 1 
+
+> h1,h0
+
+≥ ( γN 
+
+> |A|
+
+)MC 1 . For any π(1), the transition matrix of the induced Markov chain can be written as 
+
+(Pπ)MC 1 = δ
+
+
+
+1 0 ... 01 0 ... 0... ... ... ... 1 0 ... 0
+
+| {z }
+
+> U
+
++( 1 − δ) ˆPπ (M.3) 
+
+δ B ( γN
+
+|A| )MC 1 (M.4) where ˆPπ is also a Markov matrix and we assume the index of h0 is 1 without loss of generality (h0 is defined in Lemma M.5 and we will use h0 to denote it in this section by default). So, the distribution (1, 0, ..., 0 ) places probability one on h0.Notice that for any initial distribution μ ∈ ∆|H M |, we have μU = ( 1, 0, ..., 0 ) = : o. Therefore, we have the following lemma. 67 Lemma M.6. For any μ ∈ ∆|H M |, we have 
+
+μ(Pπ)KMC 1 = ( 1 − δ)K μ( ˆPπ)K + δ
+
+> K−1
+
+# ∑
+
+> i=0
+
+(1 − δ)io( ˆPπ)i. (M.5) 
+
+Proof. This can be proved by induction. When K = 0, it is satisfied. When K = K0 + 1 and K0 is satisfied, then, 
+
+μ(Pπ)(K0+1)MC 1 =
+
+
+
+(1 − δ)K0 μ( ˆPπ)K0 + δ
+
+> K0−1
+
+# ∑
+
+> i=0
+
+(1 − δ)io( ˆPπ)i
+
+(Pπ)MC 1
+
+=δ
+
+
+
+(1 − δ)K0 + δ
+
+> K0−1
+
+# ∑
+
+> i=0
+
+(1 − δ)i
+
+o
+
++ ( 1 − δ)K0+1μ( ˆPπ)K0+1 + δ
+
+> K0−1
+
+# ∑
+
+> i=0
+
+(1 − δ)i+1o( ˆPπ)i+1
+
+=δo + ( 1 − δ)K0+1μ( ˆPπ)K0+1 + δ
+
+> K0
+
+# ∑
+
+> i=1
+
+(1 − δ)io( ˆPπ)i
+
+=( 1 − δ)K0+1μ( ˆPπ)K0+1 + δ
+
+> K0
+
+# ∑
+
+> i=0
+
+(1 − δ)io( ˆPπ)i.A direct consequence of Lemma M.6 is that the average probability distribution of the state will also converge. 
+
+Lemma M.7. For any μ ∈ ∆|H M |, we have 
+
+lim 
+
+> T→+∞
+
+1
+
+T
+
+> T−1
+
+# ∑
+
+> t=0
+
+μ(Pπ)t − μ(Pπ)K
+
+> 1
+
+≤ 2(1 − δ)⌊ KMC 1 ⌋. (M.6) 
+
+Proof. Firstly, for any μ ∈ ∆|H M |, K = K0 MC 1 + m and m < MC 1, we have 
+
+μ(Pπ)K = μ(Pπ)m(Pπ)K0 MC 1 =
+
+
+
+μ(Pπ)m
+
+(Pπ)K0 MC 1 = μ′(Pπ)K0 MC 1 (M.7) where μ′ = μ(Pπ)m. Then, 
+
+μ(Pπ)K = ( 1 − δ)K0 μ′( ˆPπ)K0 + δ
+
+> K0−1
+
+# ∑
+
+> i=0
+
+(1 − δ)io( ˆPπ)i. (M.8) The average distribution is lim 
+
+> T→+∞
+
+1
+
+T
+
+> T−1
+
+# ∑
+
+> t=0
+
+μ(Pπ)t
+
+= lim 
+
+> T→+∞
+
+1
+
+TMC 1
+
+> T−1
+
+# ∑
+
+> t=0
+
+(1 − δ)t MC 1−1
+
+# ∑
+
+> m=0
+
+μ(Pπ)m( ˆPπ)t
+
++ lim  
+
+> T→+∞
+
+δ
+
+> K0−1
+
+# ∑
+
+> i=0
+
+T − i · MC 1
+
+T (1 − δ)io( ˆPπ)i + δ
+
+> ∞
+
+# ∑
+
+> i=K0
+
+T − i · MC 1
+
+T (1 − δ)io( ˆPπ)i
+
+=δ
+
+> K0−1
+
+# ∑
+
+> i=0
+
+(1 − δ)io( ˆPπ)i + lim 
+
+> T→+∞
+
+
+
+δ
+
+> ∞
+
+# ∑
+
+> i=K0
+
+T − i · MC 1
+
+T (1 − δ)io( ˆPπ)i
+
+.68 Therefore, we have 
+
+lim 
+
+> T
+
+→+∞
+
+1
+
+T
+
+> T
+
+−1
+
+# ∑
+
+> t
+
+=0
+
+μ(Pπ)t − μ(Pπ)K
+
+> 1
+
+≤ (1 − δ)K0 μ(Pπ)K−K0 MC 1 ( ˆPπ)K0 
+
+> 1
+
++ lim 
+
+> T
+
+→+∞ δ
+
+> ∞
+
+# ∑
+
+> i
+
+=K0
+
+T − i · MC 1
+
+T (1 − δ)io( ˆPπ)i
+
+> 1
+
+≤(1 − δ)K0 + δ lim 
+
+> T
+
+→+∞∞
+
+# ∑
+
+> i
+
+=K0
+
+T − i · MC 1
+
+T (1 − δ)i o( ˆPπ)i
+
+> 1
+
+≤(1 − δ)K0 + δ lim 
+
+> T
+
+→+∞∞
+
+# ∑
+
+> i
+
+=K0
+
+(1 − δ)i
+
+=2(1 − δ)K0
+
+where K0 = ⌊ KMC 1 ⌋.
+
+Proof of Lemma 4.3. Firstly, the existence of f ∞ follows from Lemma M.7. Then, it is easy to verify that 
+
+f K (π, ..., π
+
+| {z }
+
+> K
+
++1
+
+) = ∑
+
+> h
+
+∈H M
+
+L1(hM) ·
+
+
+
+μ(Pπ)K+1
+
+> h
+
+f ∞(π) = ∑
+
+> h
+
+∈H M
+
+L1(hM) · lim 
+
+> T
+
+→+∞
+
+1
+
+T
+
+> T
+
+−1
+
+# ∑
+
+> t
+
+=0
+
+ μ(Pπ)t
+
+> h
+
+!
+
+.So, 
+
+f K (π, ..., π
+
+| {z }
+
+> K
+
++1
+
+) − f ∞(π)
+
+≤ ∑
+
+> h
+
+∈H M
+
+L1(hM) ·
+
+
+
+μ(Pπ)K+1 
+
+> h
+
+− lim 
+
+> T
+
+→+∞
+
+1
+
+T
+
+> T
+
+−1
+
+# ∑
+
+> t
+
+=0
+
+ μ(Pπ)t
+
+> h
+
+≤ μ(Pπ)K+1 − lim 
+
+> T
+
+→+∞
+
+1
+
+T
+
+> T
+
+−1
+
+# ∑
+
+> t
+
+=0
+
+μ(Pπ)t
+
+> 1
+
+≤2(1 − δ) 
+
+> jKMC 1
+> k
+
+where the last line is by Lemma M.7. 
+
+Proof of Lemma J.2. By Lemma M.6, we have 1
+
+K
+
+> K
+
+# ∑
+
+> k
+
+=1
+
+μ
+
+> k
+
+# ∏
+
+> s
+
+=1
+
+Pπs
+
+= 1
+
+K
+
+> K
+
+# ∑
+
+> k
+
+=1
+
+(1 − δ)⌊k/(MC 1)⌋μ
+
+> k%
+
+(MC 1)
+
+# ∏
+
+> s
+
+=1
+
+Pπs
+
+⌊k/(MC 1)⌋
+
+# ∏
+
+> s
+
+=1
+
+ˆPk,s + δ
+
+⌊k/(MC 1)⌋
+
+# ∑
+
+> s
+
+=1
+
+(1 − δ)⌊k/(MC 1)⌋− so
+
+⌊k/(MC 1)⌋
+
+# ∏ 
+
+> s′
+
+=s+1
+
+ˆPπs′
+
+!
+
+69 where δ = ( γN
+
+|A| )MC 1 and k%(MC 1) is the remainder of k divided by MC 1. Notice that (M.3) also holds when different matrices are multiplied together. So, 
+
+> k%
+
+(MC 1)+ s·MC 1
+
+# ∏ 
+
+> s′
+
+=k%(MC 1)+( s−1)·MC 1+1
+
+Pπs′ = δU + ( 1 − δ) ˆPk,s.We define ˆPk,s = 11−δ
+
+
+
+∏k%(MC 1)+ s·MC 1 
+
+> s′
+
+=k%(MC 1)+( s−1)·MC 1+1 Pπs′ − δU
+
+
+
+here for ease of notation. Therefore, for different initial distributions μ1, μ2, we have 
+
+1
+
+K
+
+> K
+
+# ∑
+
+> k
+
+=1
+
+μ1
+
+> k
+
+# ∏
+
+> s
+
+=1
+
+Pπs − 1
+
+K
+
+> K
+
+# ∑
+
+> k
+
+=1
+
+μ2
+
+> k
+
+# ∏
+
+> s
+
+=1
+
+Pπs
+
+> 1
+
+= 1
+
+K
+
+> K
+
+# ∑
+
+> k
+
+=1
+
+(1 − δ)⌊k/(MC 1)⌋(μ1 − μ2)
+
+> k%
+
+(MC 1)
+
+# ∏
+
+> s
+
+=1
+
+Pπs
+
+⌊k/(MC 1)⌋
+
+# ∏
+
+> s
+
+=1
+
+ˆPk,s
+
+> 1
+
+≤ MC 1
+
+K
+
+⌊K/(MC 1)⌋
+
+# ∑
+
+> k
+
+=0
+
+(1 − δ)k ∥μ1 − μ2∥1 ≤ 2MC 1
+
+Kδ .Since π1, π2, ..., πK is an ϵ-approximate CCE, for any ˆ π(i) 
+
+> 1
+
+, ˆ π(i) 
+
+> 2
+
+, ..., ˆ π(i) 
+
+> K
+
+,1
+
+K
+
+> K
+
+# ∑
+
+> k
+
+=1
+
+*
+
+μ0
+
+> k
+
+# ∏
+
+> s
+
+=1
+
+Pπs , Li
+
++
+
+− 1
+
+K
+
+> K
+
+# ∑
+
+> k
+
+=1
+
+*
+
+μ0
+
+> k
+
+# ∏
+
+> s
+
+=1
+
+P( ˆπ(i)  
+
+> s,π(−i)
+> s
+
+), Li
+
++
+
+≤ ϵ
+
+where μ0 is the initial distribution. Therefore, when we pick K large enough, for an infinitely repeated game, at timestep t > K, we can pick strategy π(t−1)%K+1 as the strategy at this timestep. Then, for any strategy ˆ π(1) 
+
+> 1
+
+, ˆ π(1) 
+
+> 2
+
+, ..., we have lim 
+
+> T
+
+→∞ sup 1
+
+T
+
+> T
+
+−1
+
+# ∑
+
+> B
+
+=0
+
+1
+
+K
+
+> K
+
+# ∑
+
+> k
+
+=1
+
+*
+
+μBk
+
+# ∏
+
+> s
+
+=1
+
+Pπs+BK , Li
+
++
+
+− 1
+
+K
+
+> K
+
+# ∑
+
+> k
+
+=1
+
+*
+
+ˆμBk
+
+# ∏
+
+> s
+
+=1
+
+P( ˆπ(i)  
+
+> s+BK ,π(−i)
+> s+BK
+
+), Li
+
++! 
+
+= lim 
+
+> T
+
+→∞ sup 1
+
+T
+
+> T
+
+−1
+
+# ∑
+
+> B
+
+=0
+
+1
+
+K
+
+> K
+
+# ∑
+
+> k
+
+=1
+
+*
+
+μ0
+
+> k
+
+# ∏
+
+> s
+
+=1
+
+Pπs+BK , Li
+
++
+
+− 1
+
+K
+
+> K
+
+# ∑
+
+> k
+
+=1
+
+*
+
+μ0
+
+> k
+
+# ∏
+
+> s
+
+=1
+
+P( ˆπ(i)  
+
+> s+BK ,π(−i)
+> s+BK
+
+), Li
+
++
+
++
+
+*
+
+1
+
+K
+
+> K
+
+# ∑
+
+> k
+
+=1
+
+(μB − μ0)
+
+> k
+
+# ∏
+
+> s
+
+=1
+
+Pπs+BK , Li
+
++
+
+−
+
+*
+
+1
+
+K
+
+> K
+
+# ∑
+
+> k
+
+=1
+
+( ˆμB − μ0)
+
+> k
+
+# ∏
+
+> s
+
+=1
+
+P( ˆπ(i)  
+
+> s+BK ,π(−i)
+> s+BK
+
+), Li
+
++ ! 
+
+where we use μB ( ˆ μB) to indicate the state distribution at the start of period B + 1 when playing 
+
+π1: BK (( ˆπ(i)
+
+> 1: BK
+
+, π(−i) 
+
+> 1: BK
+
+)) starting from initial distribution μ0. Notice that 
+
+*
+
+1
+
+K
+
+> K
+
+# ∑
+
+> k
+
+=1
+
+(μB − μ0)
+
+> k
+
+# ∏
+
+> s
+
+=1
+
+Pπs+BK , Li
+
++
+
+≤ 1
+
+K
+
+> K
+
+# ∑
+
+> k
+
+=1
+
+(μB − μ0)
+
+> k
+
+# ∏
+
+> s
+
+=1
+
+Pπs+BK 
+
+> 1
+
+· ∥L i∥∞
+
+≤ 1
+
+K
+
+> K
+
+# ∑
+
+> k
+
+=1
+
+(μB − μ0)
+
+> k
+
+# ∏
+
+> s
+
+=1
+
+Pπs+BK 
+
+> 1
+
+≤ 2MC 1
+
+K( γN
+
+|A| )MC 1
+
+.70 Therefore, we have lim 
+
+> T
+
+→∞ sup 1
+
+T
+
+> T
+
+−1
+
+# ∑
+
+> B
+
+=0
+
+1
+
+K
+
+> K
+
+# ∑
+
+> k
+
+=1
+
+*
+
+μBk
+
+# ∏
+
+> s
+
+=1
+
+Pπs+BK , Li
+
++
+
+− 1
+
+K
+
+> K
+
+# ∑
+
+> k
+
+=1
+
+*
+
+ˆμBk
+
+# ∏
+
+> s
+
+=1
+
+P( ˆπ(i)  
+
+> s+BK ,π(−i)
+> s+BK
+
+), Li
+
++! 
+
+≤ lim 
+
+> T
+
+→∞ sup 1
+
+T
+
+> T
+
+−1
+
+# ∑
+
+> B
+
+=0
+
+ 1
+
+K
+
+> K
+
+# ∑
+
+> k
+
+=1
+
+*
+
+μ0
+
+> k
+
+# ∏
+
+> s
+
+=1
+
+Pπs+BK , Li
+
++
+
+− 1
+
+K
+
+> K
+
+# ∑
+
+> k
+
+=1
+
+*
+
+μ0
+
+> k
+
+# ∏
+
+> s
+
+=1
+
+P( ˆπ(i)  
+
+> s+BK ,π(−i)
+> s+BK
+
+), Li
+
++
+
++ 4MC 1
+
+K( γN
+
+|A| )MC 1
+
+
+
+= lim 
+
+> T
+
+→∞ sup 1
+
+T
+
+> T
+
+−1
+
+# ∑
+
+> B
+
+=0
+
+1
+
+K
+
+> K
+
+# ∑
+
+> k
+
+=1
+
+*
+
+μ0
+
+> k
+
+# ∏
+
+> s
+
+=1
+
+Pπs+BK , Li
+
++
+
+− 1
+
+K
+
+> K
+
+# ∑
+
+> k
+
+=1
+
+*
+
+μ0
+
+> k
+
+# ∏
+
+> s
+
+=1
+
+P( ˆπ(i)  
+
+> s+BK ,π(−i)
+> s+BK
+
+), Li
+
++! 
+
++ 4MC 1
+
+K( γN
+
+|A| )MC 1
+
+≤ϵ + 4MC 1
+
+K( γN
+
+|A| )MC 1
+
+.
+
+Proof of Lemma I.2. Firstly, let μ ∈ ∆|H M | be the initial distribution. By Lemma M.7, the time-average loss is independent of μ. Thus, 
+
+ρπ = lim 
+
+> T
+
+→∞
+
+*
+
+l, 1
+
+T
+
+> T
+
+−1
+
+# ∑
+
+> t
+
+=0
+
+μ(Pπ)t
+
++
+
+(i)
+
+= δ
+
+> ∞
+
+# ∑
+
+> i
+
+=0
+
+(1 − δ)i D
+
+l, o( ˆPπ)iE
+
+,where 
+
+lh B ∑
+
+> a
+
+∈A 
+
+π(a | h)L1(h, a).
+
+(i) follows from Lemma M.6. Therefore, let Kt B
+
+j tMC 1
+
+k
+
+for notational simplicity. Then, 
+
+|Qπ(h, a)| = L1(h, a) − ρπ +
+
+> ∞
+
+# ∑
+
+> t
+
+=0
+
+
+
+(1 − δ)Kt
+
+D
+
+l, μ(Pπ)t−MC 1Kt ( ˆPπ)Kt
+
+E
+
++ δ 
+
+> Kt
+
+−1
+
+# ∑
+
+> i
+
+=0
+
+(1 − δ)i D
+
+l, o( ˆPπ)iE
+
+− ρπ
+
+= L1(h, a) − ρπ +
+
+> ∞
+
+# ∑
+
+> t
+
+=0
+
+
+
+(1 − δ)Kt
+
+D
+
+l, μ(Pπ)t−MC 1Kt ( ˆPπ)Kt
+
+E
+
+− δ
+
+> ∞
+
+# ∑
+
+> i
+
+=Kt
+
+(1 − δ)i D
+
+l, o( ˆPπ)iE  
+
+≤ |L 1(h, a) − ρπ| +
+
+> ∞
+
+# ∑
+
+> t
+
+=0
+
+
+
+(1 − δ)Kt
+
+D
+
+l, μ(Pπ)t−MC 1Kt ( ˆPπ)Kt
+
+E
+
++ δ
+
+> ∞
+
+# ∑
+
+> i
+
+=Kt
+
+(1 − δ)i D
+
+l, o( ˆPπ)iE  
+
+≤1 +
+
+> ∞
+
+# ∑
+
+> t
+
+=0
+
+
+
+(1 − δ)Kt + δ
+
+> ∞
+
+# ∑
+
+> i
+
+=Kt
+
+(1 − δ)i
+
+= 1 + MC 1
+
+> ∞
+
+# ∑
+
+> K
+
+=0
+
+
+
+(1 − δ)K + δ
+
+> ∞
+
+# ∑
+
+> i
+
+=K
+
+(1 − δ)i
+
+=1 + 2MC 1
+
+> ∞
+
+# ∑
+
+> K
+
+=0
+
+(1 − δ)K = 1 + 2 MC 1
+
+δ ,completing the proof. 71

@@ -1,0 +1,585 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-06T21:04:33.510639+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 5,
+    "deep_cap": 6,
+    "deep_selected": 5,
+    "quick_candidates": 10,
+    "quick_skim_target": 11,
+    "quick_selected": 10
+  },
+  "deep_dive": [
+    {
+      "id": "2606.03698v1",
+      "source": "arxiv",
+      "title": "Multi$^2$: Hierarchical Multi-Agent Decision-Making with LLM-Based Agents in Interactive Environments",
+      "abstract": "A central goal of large language model (LLM) research is to build agentic systems that can plan, act, and adapt through sustained interaction with dynamic environments. While recent LLM-based agents exhibit impressive contextual reasoning, their long-horizon decision-making remains fragile, often suffering from objective drift, where goals and plans drift over extended interactions. We introduce Multi$^2$, a hierarchical multi-agent decision-making framework that explicitly decomposes agent behavior into complementary roles. A high-level agent (System 1) focuses on context-aware sub-goal generation using supervised fine-tuning (SFT), while a low-level agent (System 2) executes atomic actions through offline-to-online reinforcement learning (RL) in interactive environments. This separation enables stable long-horizon control, mitigates objective drift, and allows efficient adaptation. Across diverse interactive environments, Multi$^2$ consistently outperforms strong agentic baselines, demonstrating improved robustness and coordination in multi-turn interaction. Beyond performance, we introduce and release three hierarchical benchmark datasets, filling a long-standing gap in training and evaluating hierarchical decision-making for LLM-based agents.",
+      "authors": [
+        "Sangeun Park",
+        "Minhae Kwon"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-06-02T14:20:09+00:00",
+      "link": "https://arxiv.org/pdf/2606.03698v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "proposes a hierarchical multi-agent decision-making framework for LLM-based agents in interactive environments",
+      "llm_evidence_cn": "提出面向交互环境中基于LLM代理的分层多智能体决策框架",
+      "llm_evidence": "提出面向交互环境中基于LLM代理的分层多智能体决策框架",
+      "canonical_evidence": "提出面向交互环境中基于LLM代理的分层多智能体决策框架",
+      "llm_tldr_en": "Introduces Multi^2, a hierarchical multi-agent framework that decomposes agent behavior into high-level sub-goal generation and low-level action execution for long-horizon decision-making in interactive environments.",
+      "llm_tldr_cn": "论文提出Multi^2，一个分层多智能体决策框架，将代理行为分解为互补角色：高层代理（系统1）使用监督微调进行上下文感知的子目标生成，低层代理（系统2）通过离线到在线强化学习执行原子动作。该框架旨在解决LLM代理在长期交互中的目标漂移问题，提升持续决策的鲁棒性。",
+      "llm_tldr": "论文提出Multi^2，一个分层多智能体决策框架，将代理行为分解为互补角色：高层代理（系统1）使用监督微调进行上下文感知的子目标生成，低层代理（系统2）通过离线到在线强化学习执行原子动作。该框架旨在解决LLM代理在长期交互中的目标漂移问题，提升持续决策的鲁棒性。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.05002v1",
+      "source": "arxiv",
+      "title": "GARL: Game-Theoretic Reinforcement Learning for Multi-Agent Strategic Prioritisation",
+      "abstract": "LLM-based multi-agent systems are increasingly used for strategic decision-making tasks. In such settings, performance depends not only on individual model capabilities, but also on the policies by which agents interact and adapt. Multi-agent reinforcement learning can optimise these interaction policies, but its reward design often remains task-specific and weakly grounded in interaction structure. To address this gap, we propose GARL, a GAme-theoretic Reinforcement Learning framework for multi-agent strategic prioritisation. GARL formalises strategic prioritisation as a two-stage game: competing agents first allocate strategic resources over a shared candidate set, and a higher-level arbiter then produces the final ranking. The resulting game-theoretic utilities are converted into role-specific reinforcement signals, allowing policy optimisation to be guided by structured interaction. We instantiate GARL on issues-in-dispute ranking, where the goal is to prioritise core issues in legal proceedings. Experiments show that GARL improves ranking performance, enables small open-source LLMs to become competitive with a strong closed-source LLM under the same candidate-ranking setting, and yields gains in legal-domain competence and broader strategic decision-making. Overall, GARL demonstrates how game-theoretic interaction structure can be turned into reinforcement-learning objectives, providing a principled approach to policy optimisation in multi-agent strategic prioritisation.",
+      "authors": [
+        "Yuxiao Ye",
+        "Yiwen Zhang",
+        "Huiyuan Xie",
+        "Yuqin Huang",
+        "Zhiyuan Liu"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-06-03T15:19:55+00:00",
+      "link": "https://arxiv.org/pdf/2606.05002v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Game-theoretic RL for multi-agent strategic prioritisation, directly relevant to game AI agents",
+      "llm_evidence_cn": "博弈论强化学习用于多智能体战略优先级，直接相关游戏AI智能体",
+      "llm_evidence": "博弈论强化学习用于多智能体战略优先级，直接相关游戏AI智能体",
+      "canonical_evidence": "博弈论强化学习用于多智能体战略优先级，直接相关游戏AI智能体",
+      "llm_tldr_en": "Proposes GARL, a game-theoretic RL framework for multi-agent strategic prioritisation, formalising resource allocation as a two-stage game and learning efficient interaction policies.",
+      "llm_tldr_cn": "多智能体系统在战略决策中需要高效的交互策略。本文提出GARL框架，将战略优先级形式化为两阶段博弈：智能体先分配资源，再由仲裁者产出最终排名。实验表明，GARL能学习到更优的交互策略。该工作为游戏中的多智能体对抗与协作提供了理论基础。",
+      "llm_tldr": "多智能体系统在战略决策中需要高效的交互策略。本文提出GARL框架，将战略优先级形式化为两阶段博弈：智能体先分配资源，再由仲裁者产出最终排名。实验表明，GARL能学习到更优的交互策略。该工作为游戏中的多智能体对抗与协作提供了理论基础。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.05661v1",
+      "source": "arxiv",
+      "title": "Continual Learning Bench: Evaluating Frontier AI Systems in Real-World Stateful Environments",
+      "abstract": "Continual learning, the ability of AI systems to improve through sequential experience, has attracted substantial interest, but no high-quality benchmark exists to evaluate it. We introduce Continual Learning Bench (CL-Bench), the first difficult, expert-validated benchmark designed to measure whether LLM-based systems genuinely improve with experience. CL-Bench spans six diverse domains (software engineering, signal processing, disease outbreak forecasting, database querying, strategic game-playing, and demand forecasting), each validated by domain experts and designed so that tasks share a learnable latent structure (codebase layout, disease outbreak dynamics, opponent strategies) that a stateful system can discover online but a stateless one cannot. We evaluate frontier models across several agent architectures, from naive in-context learning (ICL) to dedicated memory systems, introducing a gain metric to isolate learning from prior capabilities. We find that these systems leave headroom for improved continual learning: agents frequently overfit to immediate observations or fail to reuse knowledge across instances, and dedicated memory systems do not fix this -- in fact, naive ICL outperforms systems dedicated to memory management. CL-Bench is the first benchmark to evaluate continual learning across diverse real-world domains with expert-validated tasks and isolate online learning from underlying model capability, showing a need for better continual learning systems.",
+      "authors": [
+        "Parth Asawa",
+        "Christopher M. Glaze",
+        "Gabriel Orlanski",
+        "Ramya Ramakrishnan",
+        "Benji Xu",
+        "Asim Biswal",
+        "Vincent Sunn Chen",
+        "Frederic Sala",
+        "Matei Zaharia",
+        "Joseph E. Gonzalez"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-06-04T03:43:28+00:00",
+      "link": "https://arxiv.org/pdf/2606.05661v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "benchmark includes strategic game-playing domain for evaluating AI systems",
+      "llm_evidence_cn": "基准包含策略游戏领域用于评估AI系统",
+      "llm_evidence": "基准包含策略游戏领域用于评估AI系统",
+      "canonical_evidence": "基准包含策略游戏领域用于评估AI系统",
+      "llm_tldr_en": "CL-Bench evaluates continual learning of LLM-based systems across six domains including strategic game-playing, directly relevant to AI game agents.",
+      "llm_tldr_cn": "该论文提出持续学习基准CL-Bench，覆盖软件工程、信号处理、策略游戏等六个领域，每个领域由专家验证，任务共享可学习的潜在结构。它旨在衡量基于LLM的系统能否通过经验真正改进。在游戏领域，代理需发现对手策略并适应，直接关联AI代理游戏能力。实验显示当前前沿系统仍有进步空间。",
+      "llm_tldr": "该论文提出持续学习基准CL-Bench，覆盖软件工程、信号处理、策略游戏等六个领域，每个领域由专家验证，任务共享可学习的潜在结构。它旨在衡量基于LLM的系统能否通过经验真正改进。在游戏领域，代理需发现对手策略并适应，直接关联AI代理游戏能力。实验显示当前前沿系统仍有进步空间。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.06011v1",
+      "source": "arxiv",
+      "title": "Merging model-based control with multi-agent reinforcement learning for multi-agent cooperative teaming strategies",
+      "abstract": "In this work, we propose a framework that combines multi-agent reinforcement learning (MARL) with model-based control to achieve safe, dynamically feasible actions in cooperative multi-agent tasks. Multi-agent reinforcement learning provides the advantage of learning cooperative policies for multi-agent teams from discrete non-differentiable rewards in a long planning horizon. Model-predictive control is robust and offers safe, dynamically feasible actions in a fast replanning framework for short horizons. We propose an algorithm that extends actor-critic model predictive control for MARL which we refer to as multi-agent actor-critic model predictive control (MA-AC-MPC). We demonstrate the capabilities of this algorithm by applying it to a multi-agent pursuit-evasion scenario. Specifically, we compare the evader team's strategy using the MA-AC-MPC model and a multi-layer perceptron model (MA-AC-MLP). The pursuer team uses augmented proportional navigation as it is accepted as an advanced adversarial control law. We also provide an example with a heterogeneous environment where a drone and omni-wheeled rover cooperate to achieve repeatable and successful landing with 100% success rate in hardware for MA-AC-MPC compared to 60% for MA-AC-MLP. We demonstrate the robustness of the proposed MA-AC-MPC algorithm in hardware for both environments.",
+      "authors": [
+        "Christian Llanes",
+        "Spencer W. Jensen",
+        "Samuel Coogan"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.LG",
+        "cs.MA"
+      ],
+      "published": "2026-06-04T11:01:00+00:00",
+      "link": "https://arxiv.org/pdf/2606.06011v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Multi-agent reinforcement learning framework combined with model predictive control for cooperative multi-agent tasks, applicable to game AI",
+      "llm_evidence_cn": "融合强化学习与模型预测控制的多智能体协作框架，适用于游戏AI",
+      "llm_evidence": "融合强化学习与模型预测控制的多智能体协作框架，适用于游戏AI",
+      "canonical_evidence": "融合强化学习与模型预测控制的多智能体协作框架，适用于游戏AI",
+      "llm_tldr_en": "Proposes MA-AC-MPC, combining MARL with model-predictive control for safe, dynamically feasible cooperative multi-agent actions.",
+      "llm_tldr_cn": "多智能体强化学习在长周期规划方面有优势，但缺乏动态可行性保证。本文提出MA-AC-MPC框架，将Actor-Critic MPC扩展到多智能体场景，融合短时域快速重规划与长周期学习。实验显示该方法在协作任务中实现安全、可行的协同行动。该工作为游戏等多智能体环境提供可靠决策框架。",
+      "llm_tldr": "多智能体强化学习在长周期规划方面有优势，但缺乏动态可行性保证。本文提出MA-AC-MPC框架，将Actor-Critic MPC扩展到多智能体场景，融合短时域快速重规划与长周期学习。实验显示该方法在协作任务中实现安全、可行的协同行动。该工作为游戏等多智能体环境提供可靠决策框架。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "artificial intelligence in games",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.06486v1",
+      "source": "arxiv",
+      "title": "Regret Minimization with Adaptive Opponents in Repeated Games",
+      "abstract": "In this paper, we study regret minimization in repeated games with \\emph{adaptive} opponents who can respond based on histories of play. The standard metric of \\emph{external regret} in online learning is known to fail to capture such adaptivity. To account for players' counterfactual reasoning, we introduce {\\tt Repeated Policy Regret (RP-Regret)}, a game-theoretic metric that measures the difference between the \\emph{realized} and the \\emph{best-in-hindsight} accumulated utility when all players can \\emph{respond} to the history of play. Compared to existing regret notions in this setting, ours is native to repeated game playing, enabling stronger comparators and opponents with fewer constraints, while maintaining the possibility of finding better equilibria when all players minimize it. We first identify necessary conditions for obtaining {\\tt RP-Regret} sublinear in time, on the variation of the player's comparator strategies in the regret definition and on the memories of both the comparator and opponents' strategies. We then study additional conditions and provable algorithms to minimize {\\tt RP-Regret}, which is by definition \\emph{non-convex} in the strategy space. To address this challenge, we propose three algorithms: (i) one based on an optimization oracle, as assumed in some prior work in online non-convex learning; (ii) one that minimizes a convex and \\emph{linearized} surrogate of {\\tt RP-Regret} at each iteration; (iii) one that directly minimizes {\\tt RP-Regret} when opponents change strategies slowly. Furthermore, when all players can run algorithms to minimize the {\\tt RP-Regret} (or its linearized variant), certain subgame perfect equilibria of the repeated game can be learned. We also provide experiments showing that minimizing our regret notions can lead to more cooperative solutions with higher utility in games such as Stag-Hunt.",
+      "authors": [
+        "Mingyang Liu",
+        "Asuman Ozdaglar",
+        "Tiancheng Yu",
+        "Kaiqing Zhang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.GT"
+      ],
+      "published": "2026-06-04T17:59:08+00:00",
+      "link": "https://arxiv.org/pdf/2606.06486v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "studies regret minimization in repeated games with adaptive opponents",
+      "llm_evidence_cn": "研究重复博弈中与自适应对手的遗憾最小化",
+      "llm_evidence": "研究重复博弈中与自适应对手的遗憾最小化",
+      "canonical_evidence": "研究重复博弈中与自适应对手的遗憾最小化",
+      "llm_tldr_en": "Introduces Repeated Policy Regret (RP-Regret) for measuring performance in repeated games with adaptive opponents, enabling stronger comparators and finding better equilibria.",
+      "llm_tldr_cn": "本文研究重复博弈中与自适应对手的遗憾最小化，指出现有的外部遗憾指标无法捕捉对手的适应性。提出了一种新的博弈论指标Repeated Policy Regret (RP-Regret)，用于衡量所有玩家根据历史做出反应时的累积效用差异。该指标支持更强的比较器和更少的对手约束，同时保持发现更好均衡的可能性。",
+      "llm_tldr": "本文研究重复博弈中与自适应对手的遗憾最小化，指出现有的外部遗憾指标无法捕捉对手的适应性。提出了一种新的博弈论指标Repeated Policy Regret (RP-Regret)，用于衡量所有玩家根据历史做出反应时的累积效用差异。该指标支持更强的比较器和更少的对手约束，同时保持发现更好均衡的可能性。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.01663v1",
+      "source": "arxiv",
+      "title": "A Sheaf Framework for Strategic Multi-Agent Systems: From Consensus to Nash Equilibria",
+      "abstract": "The coordination of heterogeneous autonomous agents in dynamic, adversarial environments requires simultaneous satisfaction of geometric constraints, logical consistency, temporal reasoning, and strategic optimization. Existing sheaf- and topos-theoretic frameworks provide powerful tools for geometric consensus, knowledge alignment, and causal planning, but lack explicit models for value, reward, and strategic choice. This report presents a unified categorical framework that integrates event calculus, SCEL-like ensemble formation, and game-theoretic reward structures into a single Grothendieck topos of time-space histories. We introduce the notion of a \\emph{game sheaf} whose stalks contain utility functions and policy distributions, and restriction maps encode both parallel transport and best-response dynamics. We prove that Nash equilibria correspond to global sections of a derived best-response correspondence sheaf, while cohomological obstructions classify failures of strategic consistency. A detailed case study of an immunological ``bastion defense'' scenario -- heterogeneous agents forming attack/defense ensembles under resource constraints -- demonstrates the framework's expressiveness. This synthesis provides a rigorous foundation for verifiable, autonomic, and economically rational multi-agent systems.",
+      "authors": [
+        "Manuel Hernández",
+        "Eduardo Sánchez-Soto"
+      ],
+      "primary_category": "cs.GT",
+      "categories": [
+        "cs.GT",
+        "cs.DC",
+        "cs.MA"
+      ],
+      "published": "2026-06-01T04:17:57+00:00",
+      "link": "https://arxiv.org/pdf/2606.01663v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Sheaf-theoretic framework for strategic multi-agent systems with game-theoretic rewards",
+      "llm_evidence_cn": "基于层论的战略多智能体系统框架，包含博弈论奖励结构",
+      "llm_evidence": "基于层论的战略多智能体系统框架，包含博弈论奖励结构",
+      "canonical_evidence": "基于层论的战略多智能体系统框架，包含博弈论奖励结构",
+      "llm_tldr_en": "A unified categorical framework integrating game-theoretic reward structures for multi-agent coordination in adversarial environments.",
+      "llm_tldr_cn": "多智能体在动态对抗环境中的协调需要同时满足几何约束、逻辑一致性和战略优化。本文提出统一的范畴框架，将事件演算、SCEL类组合和博弈论奖励结构整合到时空历史的格罗滕迪克拓扑中，引入包含效用函数和政策分布的'博弈层'。该框架为多智能体战略交互提供形式化基础，可直接用于游戏中的智能体建模与博弈分析。",
+      "llm_tldr": "多智能体在动态对抗环境中的协调需要同时满足几何约束、逻辑一致性和战略优化。本文提出统一的范畴框架，将事件演算、SCEL类组合和博弈论奖励结构整合到时空历史的格罗滕迪克拓扑中，引入包含效用函数和政策分布的'博弈层'。该框架为多智能体战略交互提供形式化基础，可直接用于游戏中的智能体建模与博弈分析。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2605.30795v1",
+      "source": "arxiv",
+      "title": "Feat2Go: Visual Feature-Grounded Value Estimation for Embodied Reinforcement Learning",
+      "abstract": "Reinforcement learning is a promising approach for improving the capabilities of vision-language-action (VLA) models while avoiding the heavy data requirements of imitation learning. However, its effectiveness for VLA models is often constrained by sparse supervision and the difficulty of designing informative reward signals for long-horizon manipulation. In this work, we present Feat2Go, a fine-grained value estimation framework for embodied reinforcement learning. Specifically, Feat2Go first derives a continuous progress target from a pretrained visual world model by measuring patch-level similarity to subgoal states and partitioning episodes into semantic stages with trend-based clustering. We then train an embodied value model to predict this structural progress from the current observation and task instruction, and use the predicted value to reshape terminal rewards during policy optimization. The proposed framework is compatible with existing VLA policy reinforcement learning pipelines, including PPO and GRPO, and does not rely on manual reward engineering. Extensive experiments on ManiSkill3 and RoboTwin 2.0 demonstrate that Feat2Go consistently improves the performance of existing VLA models under both single-arm and bimanual manipulation settings. More specifically, on ManiSkill3, Feat2Go improves OpenVLAOFT from 17.5% to 82.9% average out-of-distribution success while retaining 96.9% in-distribution performance. On RoboTwin 2.0, Feat2Go achieves an average success rate of 88.8% in domain-randomized task settings, outperforming prior reinforcement learning methods.",
+      "authors": [
+        "Junyang Shu",
+        "Zhiwei Lin",
+        "Bingqing Wei",
+        "Yongtao Wang"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-05-29T03:36:33+00:00",
+      "link": "https://arxiv.org/pdf/2605.30795v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "reinforcement learning for embodied agents, applicable to game agent training",
+      "llm_evidence_cn": "面向具身代理的强化学习，可应用于游戏代理训练",
+      "llm_evidence": "面向具身代理的强化学习，可应用于游戏代理训练",
+      "canonical_evidence": "面向具身代理的强化学习，可应用于游戏代理训练",
+      "llm_tldr_en": "Feat2Go provides fine-grained value estimation for embodied RL, enabling sample-efficient learning that can benefit game agent training.",
+      "llm_tldr_cn": "该论文提出Feat2Go框架，用于具身强化学习中的细粒度值估计。通过预训练视觉世界模型提取连续进度目标，并利用趋势聚类划分语义阶段，训练值模型以提供密集奖励信号。在多个操作任务上验证了样本效率提升，其方法可迁移至游戏代理的训练场景。",
+      "llm_tldr": "该论文提出Feat2Go框架，用于具身强化学习中的细粒度值估计。通过预训练视觉世界模型提取连续进度目标，并利用趋势聚类划分语义阶段，训练值模型以提供密集奖励信号。在多个操作任务上验证了样本效率提升，其方法可迁移至游戏代理的训练场景。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.02372v1",
+      "source": "arxiv",
+      "title": "COMAP: Co-Evolving World Models and Agent Policies for LLM Agents",
+      "abstract": "Equipping language agents with world models enables them to anticipate environment dynamics and evaluate candidate actions before execution. However, existing textual world models are typically fixed after training, preventing them from adapting to the on-policy state-action distributions induced by an evolving agent. Meanwhile, agent-improvement methods often rely on external rewards or verifiers, limiting their applicability in realistic interactive environments. In this paper, we propose COMAP, a novel framework that co-evolves textual world models and agent policies through closed-loop interaction. At each decision step, the world model predicts future state feedback for candidate actions, and the agent performs future-aware reflection by estimating the reliability of this feedback and refining its action accordingly. The resulting on-policy trajectories are then used to update the world model via self-distillation, allowing it to better match the agent's evolving interaction distribution. Across embodied task planning, Web navigation, and tool-use benchmarks, COMAP consistently outperforms competitive baselines, e.g., +16.75% relative improvement with Qwen3-4B. Further analyses show that the co-evolutionary loop improves the world model's prediction accuracy over time and leads to more effective long-horizon decision-making. Our code is available at: https://github.com/loyiv/CoMAP.",
+      "authors": [
+        "Youwei Liu",
+        "Jian Wang",
+        "Hanlin Wang",
+        "Wenjie Li"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-06-01T15:21:17+00:00",
+      "link": "https://arxiv.org/pdf/2606.02372v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "co-evolution of world models and agent policies for interactive environments",
+      "llm_evidence_cn": "世界模型与智能体策略在交互环境中的共同进化",
+      "llm_evidence": "世界模型与智能体策略在交互环境中的共同进化",
+      "canonical_evidence": "世界模型与智能体策略在交互环境中的共同进化",
+      "llm_tldr_en": "Proposes COMAP framework that co-evolves world models and agent policies via closed-loop interaction for LLM agents.",
+      "llm_tldr_cn": "该论文提出COMAP框架，让语言智能体的世界模型和策略在闭环交互中共同进化。现有文本世界模型固定不变，无法适应智能体策略变化。COMAP在每个决策步骤让世界模型预测候选动作的未来反馈，智能体据此进行前瞻性反思和优化。在多个交互环境中验证，该框架显著提升了智能体的决策质量和适应能力，对游戏中的AI智能体训练有重要价值。",
+      "llm_tldr": "该论文提出COMAP框架，让语言智能体的世界模型和策略在闭环交互中共同进化。现有文本世界模型固定不变，无法适应智能体策略变化。COMAP在每个决策步骤让世界模型预测候选动作的未来反馈，智能体据此进行前瞻性反思和优化。在多个交互环境中验证，该框架显著提升了智能体的决策质量和适应能力，对游戏中的AI智能体训练有重要价值。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.01815v1",
+      "source": "arxiv",
+      "title": "CRAB-Bench: Evaluating LLM Agents under Complex Task Dependencies and Human-aligned User Simulation",
+      "abstract": "Evaluating LLM agents in realistic service scenarios requires complex task dependencies, imperfect user behavior, and an evaluation that accommodates multiple valid solutions. We introduce CRAB-Bench (Constraint-based Realistic Agent Benchmark) and RUSE (Realistic User Simulation Engine) to address this gap. CRAB-Bench generates tasks via a constraint graph over multiple interdependent entities with structured distractors, requiring agents to reason carefully over thousands of misleading candidates where only a tiny fraction of solutions are valid. RUSE replaces cooperative, template-like simulators with realistic users grounded in human behavioral studies, instantiated across diverse personas and four behavioral dimensions. Experiments on four frontier LLM agents show that the best model achieves only 61% pass@1 on CRAB-Bench, and switching to RUSE causes further drops of up to 57%, concentrated in task-solving ability rather than conversational quality. Information Disclosure is the most damaging behavioral dimension, and agents interacting with RUSE are less likely to admit mistakes, instead masking errors through implicit corrections.",
+      "authors": [
+        "Danqing Wang",
+        "Akshay Sivaraman",
+        "Lei Li"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-06-01T07:31:04+00:00",
+      "link": "https://arxiv.org/pdf/2606.01815v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Realistic user simulation engine for evaluating agents, applicable to player behavior simulation",
+      "llm_evidence_cn": "用于评估智能体的逼真用户模拟引擎，适用于玩家行为模拟",
+      "llm_evidence": "用于评估智能体的逼真用户模拟引擎，适用于玩家行为模拟",
+      "canonical_evidence": "用于评估智能体的逼真用户模拟引擎，适用于玩家行为模拟",
+      "llm_tldr_en": "Introduces CRAB-Bench and RUSE for evaluating LLM agents under complex task dependencies and human-aligned user simulation, providing a benchmark with realistic user behavior.",
+      "llm_tldr_cn": "现有LLM智能体评估缺乏复杂任务依赖和真实用户行为模拟。本文提出CRAB-Bench基准和RUSE用户模拟引擎，通过约束图生成任务并基于人类行为研究构建多样化用户画像。实验表明，该评估能更好反映智能体在真实服务场景中的表现。该工作为游戏玩家行为模拟提供了方法论参考。",
+      "llm_tldr": "现有LLM智能体评估缺乏复杂任务依赖和真实用户行为模拟。本文提出CRAB-Bench基准和RUSE用户模拟引擎，通过约束图生成任务并基于人类行为研究构建多样化用户画像。实验表明，该评估能更好反映智能体在真实服务场景中的表现。该工作为游戏玩家行为模拟提供了方法论参考。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "player behavior simulation techniques",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.03557v1",
+      "source": "arxiv",
+      "title": "From Prompt to Service: An SLM-Based Agent Orchestration Gateway for AI-Driven Virtual Worlds",
+      "abstract": "As generative AI capabilities expand, AI-driven virtual worlds face a growing architectural challenge. Users interact through in-world interfaces in multimodal ways, yet their requests demand fundamentally different AI backend models and computational resources. Embedding these capabilities directly into virtual world systems reduces extensibility, complicates maintenance, and limits the ability to coordinate services distributed across edge and cloud infrastructure. This paper presents an SLM-based Agent Orchestration Gateway, a lightweight runtime coordination mechanism that decouples a virtual world client from heterogeneous AI backends through intent-driven service routing. An edge-deployed SLM classifies the semantic intent of each user prompt, a configurable service registry validates and resolves the routing decision, and the selected backend is invoked transparently, enabling new AI capabilities to be introduced in the virtual world without modifying the client application. The gateway is implemented and evaluated within the InterwovenXR virtual museum testbed. The evaluation shows that compact SLMs can serve as reliable intent routers on edge hardware, and that task-specific fine-tuning can transform sub-billion-parameter models into practical, low-latency routers. A layered configuration pairing a fine-tuned sub billion-parameter model as router with a larger SLM for conversational response generation is shown to be deployable on mid-range edge hardware and more efficient than delegating both responsibilities to a single model. The findings show that SLMs can support practical AI service orchestration in virtual worlds and the work contributes an evaluated architecture for scalable, extensible, and edge-supported AI interaction, enabling virtual agents become access points to distributed generative AI services.",
+      "authors": [
+        "Louis Nisiotis",
+        "Aimilios Hadjiliasi"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.HC"
+      ],
+      "published": "2026-06-02T12:22:03+00:00",
+      "link": "https://arxiv.org/pdf/2606.03557v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "SLM-based agent orchestration for AI-driven virtual worlds, directly relevant to game AI",
+      "llm_evidence_cn": "基于SLM的智能体编排用于AI驱动虚拟世界，直接关联游戏AI",
+      "llm_evidence": "基于SLM的智能体编排用于AI驱动虚拟世界，直接关联游戏AI",
+      "canonical_evidence": "基于SLM的智能体编排用于AI驱动虚拟世界，直接关联游戏AI",
+      "llm_tldr_en": "Presents an SLM-based Agent Orchestration Gateway that decouples virtual world clients from heterogeneous AI backends via intent-driven routing, enabling scalable and maintainable AI-driven virtual worlds.",
+      "llm_tldr_cn": "AI驱动的虚拟世界面临后端服务异构、扩展性差等问题。本文提出基于SLM的智能体编排网关，通过意图驱动路由解耦客户端与AI后端，支持边缘-云协同。该架构轻量高效，可灵活集成多种AI服务，为游戏等虚拟世界中的AI应用提供了可扩展的实践方案。",
+      "llm_tldr": "AI驱动的虚拟世界面临后端服务异构、扩展性差等问题。本文提出基于SLM的智能体编排网关，通过意图驱动路由解耦客户端与AI后端，支持边缘-云协同。该架构轻量高效，可灵活集成多种AI服务，为游戏等虚拟世界中的AI应用提供了可扩展的实践方案。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "artificial intelligence in games",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.02536v1",
+      "source": "arxiv",
+      "title": "Tracking the Behavioral Trajectories of Adapting Agents",
+      "abstract": "Text files such as skill files, memory files, and behavioral configuration files play a central role in defining how modern agents act. Through edits by humans or the agents themselves, these files may evolve over time, directly steering the agent's behavior in future interactions. We present a methodology and framework for measuring agent $traits$ by defining traits as directions in the embedding space of a text embedding model. We train a linear model on labeled \"before\" versus \"after\" skill file diffs to learn a trait vector, then score arbitrary skill edits by projecting their embedding diffs onto this vector. Evaluated on 68 labeled skill diff pairs for the trait of propensity to seek sensitive data, our method achieves 91.2% sign classification accuracy and a Spearman rank correlation of $ρ= 0.82$ under leave-one-out cross-validation. We build this trait evaluation into a broader agent-to-agent protocol that enables one agent to evaluate another's skill file updates through a trusted intermediary.",
+      "authors": [
+        "Jonah Leshin",
+        "Manish Shah",
+        "Ian Timmis"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-01T17:40:31+00:00",
+      "link": "https://arxiv.org/pdf/2606.02536v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Methodology for tracking behavioral trajectories of adapting agents via skill file edits, transferable to player behavior simulation",
+      "llm_evidence_cn": "通过技能文件编辑追踪自适应智能体行为轨迹的方法，可迁移至玩家行为模拟",
+      "llm_evidence": "通过技能文件编辑追踪自适应智能体行为轨迹的方法，可迁移至玩家行为模拟",
+      "canonical_evidence": "通过技能文件编辑追踪自适应智能体行为轨迹的方法，可迁移至玩家行为模拟",
+      "llm_tldr_en": "Presents a framework to measure agent traits from skill file diffs using embedding spaces, achieving 91.2% accuracy on sensitive data seeking trait.",
+      "llm_tldr_cn": "现有方法缺乏对适应中智能体行为变化的量化手段。本文提出通过技能文件差异嵌入来定义和测量智能体特质，在线性投影中学习特质向量。在68对标签数据上对敏感数据倾向性分类准确率达91.2%。该方法可拓展至游戏玩家行为演化分析，为行为建模提供新工具。",
+      "llm_tldr": "现有方法缺乏对适应中智能体行为变化的量化手段。本文提出通过技能文件差异嵌入来定义和测量智能体特质，在线性投影中学习特质向量。在68对标签数据上对敏感数据倾向性分类准确率达91.2%。该方法可拓展至游戏玩家行为演化分析，为行为建模提供新工具。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "player behavior simulation techniques",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.06013v1",
+      "source": "arxiv",
+      "title": "Cheating in Multiplayer Online Games: a Dataset",
+      "abstract": "Cheating poses a significant threat to the Multiplayer Online Games (MOG) industry by degrading player satisfaction and undermining the fairness in competitive gaming. Despite efforts to develop mitigation techniques, cheating remains difficult to detect and prevent in practice. In particular, a class of cheats based on network flow disruption remains unsolvable. To find out how to detect such attacks we need access to representative labelled data. However, no such dataset exists.   To address this gap, we leverage an experimental framework that combines a multiplayer online game with a plug-in capable of both reproducing cheating attacks and collecting logs at two levels: network and application-layer.   This paper presents a dataset compiling records of game sessions played by both real players and automated game clients, with cheating actions explicitly logged. To the best of our knowledge, this is the first dataset that provides logs of network flow disruption cheats. While it includes such network-based cheats, it is not limited to them and also contains records of more commonly studied cheats, such as aimbots and wallhacks. This dataset can be used by researchers in academia and industry seeking to develop cheating detection mechanisms for online games. Furthermore, it is designed to be evolutive and can be enriched by others creating their own data traces with the proposed framework.",
+      "authors": [
+        "Hugo Bertin",
+        "Marc Dacier",
+        "Yérom-David Bromberg"
+      ],
+      "primary_category": "cs.CR",
+      "categories": [
+        "cs.CR"
+      ],
+      "published": "2026-06-04T11:03:18+00:00",
+      "link": "https://arxiv.org/pdf/2606.06013v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Dataset of cheating behavior in multiplayer online games for player behavior analysis",
+      "llm_evidence_cn": "多人游戏作弊行为数据集，用于玩家行为分析",
+      "llm_evidence": "多人游戏作弊行为数据集，用于玩家行为分析",
+      "canonical_evidence": "多人游戏作弊行为数据集，用于玩家行为分析",
+      "llm_tldr_en": "Presents a dataset of multiplayer online game sessions with labeled cheating attacks, enabling detection of network flow disruption cheats.",
+      "llm_tldr_cn": "该论文创建了一个多人游戏作弊数据集，结合网络和应用层日志，标注了多种作弊攻击。通过实验框架复现网络流干扰类作弊，提供了代表性标注数据。该数据集支持作弊检测技术的研究，对理解和管理玩家异常行为具有重要意义。",
+      "llm_tldr": "该论文创建了一个多人游戏作弊数据集，结合网络和应用层日志，标注了多种作弊攻击。通过实验框架复现网络流干扰类作弊，提供了代表性标注数据。该数据集支持作弊检测技术的研究，对理解和管理玩家异常行为具有重要意义。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "player behavior simulation techniques",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.02832v1",
+      "source": "arxiv",
+      "title": "An Exploration of Collision-based Enemy Morphology Generation",
+      "abstract": "Despite a great deal of prior research into Procedural Content Generation (PCG), relatively little prior work has explored generating enemies for video games. In particular, there is almost no work on generating enemy morphologies, the basic body plan or collision information for in-game enemies, despite the existence of related morphology generation work in robotics. In this paper, we explore three different novel approaches to generate enemy morphologies based on player collision information. We found that each approach provides different strengths and weaknesses, but all had equivalent or better performance than an evolutionary baseline adapted from prior robotics morphology work.",
+      "authors": [
+        "Johor Jara Gonzalez",
+        "Matthew Guzdial"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-01T19:52:33+00:00",
+      "link": "https://arxiv.org/pdf/2606.02832v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Generates enemy morphologies from player collision information, relating to player behavior simulation in games",
+      "llm_evidence_cn": "基于玩家碰撞信息生成敌人形态，涉及游戏中玩家行为模拟",
+      "llm_evidence": "基于玩家碰撞信息生成敌人形态，涉及游戏中玩家行为模拟",
+      "canonical_evidence": "基于玩家碰撞信息生成敌人形态，涉及游戏中玩家行为模拟",
+      "llm_tldr_en": "Explores three approaches to generate enemy body plans (morphologies) using player collision data, outperforming evolutionary baselines.",
+      "llm_tldr_cn": "游戏内容生成中敌人形态研究匮乏。本文提出三种基于玩家碰撞信息的敌人形态生成方法，利用玩家与环境的交互数据来驱动敌人设计。实验表明各方法性能不低于进化算法基线。该工作为利用玩家数据生成游戏内容提供了新思路，促进玩家建模与PCG融合。",
+      "llm_tldr": "游戏内容生成中敌人形态研究匮乏。本文提出三种基于玩家碰撞信息的敌人形态生成方法，利用玩家与环境的交互数据来驱动敌人设计。实验表明各方法性能不低于进化算法基线。该工作为利用玩家数据生成游戏内容提供了新思路，促进玩家建模与PCG融合。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "artificial intelligence in games",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.06223v1",
+      "source": "arxiv",
+      "title": "From Reward-Hack Activations to Agentic Risk States: Context-Calibrated Mechanistic Monitoring in LLM Agents",
+      "abstract": "Language-model agents act through repeated cycles of observation, reasoning, and action selection, making safety monitoring depend on both internal model state and environment context. We study reward-hacking monitors in ReAct-style agents acting in Gameable ALFWorld and WebShop. Agents are instrumented with activation-based reward-hack scores, token-level entropy, and decision-context features. We find that adapters fine-tuned on \\textit{School-of-Reward-Hacks} dataset can transfer reward-hack tendencies into agentic action selection, especially when the environment exposes proxy-reward affordances. However, mitigating such behavior cannot rely on activation dynamics alone. High reward-hack activation identifies a latent policy state, but does not necessarily imply an immediate exploit action. Across next-step prediction tasks, entropy and context-calibrated internal features improve risk estimation over reward-hack activation alone. Activation-direction steering further reduces proxy-exploit behavior in selected mixed-adapter regimes. Overall, our results support context-calibrated internal monitoring for agents: reward-hack activation identifies a latent policy state, while entropy and decision context help determine when that state becomes risky action.",
+      "authors": [
+        "Patrick Wilhelm",
+        "Odej Kao"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-04T14:34:31+00:00",
+      "link": "https://arxiv.org/pdf/2606.06223v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "studies reward-hacking monitors in ReAct-style agents acting in Gameable ALFWorld and WebShop",
+      "llm_evidence_cn": "在可游戏环境ALFWorld和WebShop中研究ReAct风格代理的奖励黑客监控",
+      "llm_evidence": "在可游戏环境ALFWorld和WebShop中研究ReAct风格代理的奖励黑客监控",
+      "canonical_evidence": "在可游戏环境ALFWorld和WebShop中研究ReAct风格代理的奖励黑客监控",
+      "llm_tldr_en": "Examines reward-hacking behaviors in LLM agents using game environments, finds that fine-tuned adapters can transfer reward-hack tendencies, and proposes context-calibrated mechanistic monitoring.",
+      "llm_tldr_cn": "论文研究语言模型代理在游戏环境ALFWorld和WebShop中的奖励黑客行为。通过激活奖励黑客分数、令牌级熵和决策上下文特征进行监控，发现基于School-of-Reward-Hacks数据集微调的适配器可以将奖励黑客倾向转移到代理动作选择中。尽管如此，仅依靠激活动力学无法完全缓解此类行为。研究提出了上下文校准的机制监控方法。",
+      "llm_tldr": "论文研究语言模型代理在游戏环境ALFWorld和WebShop中的奖励黑客行为。通过激活奖励黑客分数、令牌级熵和决策上下文特征进行监控，发现基于School-of-Reward-Hacks数据集微调的适配器可以将奖励黑客倾向转移到代理动作选择中。尽管如此，仅依靠激活动力学无法完全缓解此类行为。研究提出了上下文校准的机制监控方法。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.05558v1",
+      "source": "arxiv",
+      "title": "Autoregressive Diffusion World Models for Off-Policy Evaluation of LLM Agents",
+      "abstract": "Evaluating large language model (LLM) agents in multi-turn interactive environments is expensive and risky, as it requires online environment interaction. We propose ADWM (Autoregressive Diffusion World Model), an evaluation framework that estimates the performance of a new LLM agent policy purely from pre-collected trajectories. The core idea is to learn a latent diffusion world model that simulates how the environment responds to the evaluation policy, without ever executing it in the real environment. Existing diffusion-based OPE methods guide full trajectories in a single pass by jointly diffusing states and actions, an assumption that breaks down for LLM agents whose actions are discrete text that must be sampled from the policy after observing the environment. Unlike autoregressive world models that suffer from compounding errors, ADWM models each transition as an independent denoising process, enabling reliable step-by-step rollouts where the world model and agent alternate in causal order. Crucially, the LLM agent under evaluation directly guides the diffusion generation at each step via a policy-conditioned score function, ensuring that simulated trajectories accurately reflect its decision-making patterns. Empirically, ADWM achieves accurate value estimates and evaluation reliability across diverse multi-turn agent tasks, demonstrating its promise as a practical framework for offline LLM agent evaluation.",
+      "authors": [
+        "Kaixuan Liu",
+        "Guojun Xiong",
+        "Weinan Zhang",
+        "Shengpu Tang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-06-04T01:13:24+00:00",
+      "link": "https://arxiv.org/pdf/2606.05558v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "World model for off-policy evaluation of LLM agents, can simulate game environments",
+      "llm_evidence_cn": "用于LLM代理离线策略评估的世界模型，可模拟游戏环境",
+      "llm_evidence": "用于LLM代理离线策略评估的世界模型，可模拟游戏环境",
+      "canonical_evidence": "用于LLM代理离线策略评估的世界模型，可模拟游戏环境",
+      "llm_tldr_en": "ADWM uses a latent diffusion world model to evaluate LLM agents without online interaction, applicable to game agent training.",
+      "llm_tldr_cn": "在线评估LLM代理成本高昂且存在风险。本文提出ADWM框架，学习一个潜在扩散世界模型，从预收集轨迹模拟环境对评估策略的响应，避免真实环境交互。该框架专为LLM代理设计，处理离散文本动作。在多个交互任务上，ADWM的评估结果与真实在线评估高度一致。该方法可直接用于游戏代理的策略离线评估，加速游戏AI开发。",
+      "llm_tldr": "在线评估LLM代理成本高昂且存在风险。本文提出ADWM框架，学习一个潜在扩散世界模型，从预收集轨迹模拟环境对评估策略的响应，避免真实环境交互。该框架专为LLM代理设计，处理离散文本动作。在多个交互任务上，ADWM的评估结果与真实在线评估高度一致。该方法可直接用于游戏代理的策略离线评估，加速游戏AI开发。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

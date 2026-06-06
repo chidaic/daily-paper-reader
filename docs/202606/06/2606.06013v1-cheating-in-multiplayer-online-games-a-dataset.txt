@@ -1,0 +1,438 @@
+Title: Cheating in Multiplayer Online Games: a Dataset
+
+URL Source: https://arxiv.org/pdf/2606.06013v1
+
+Published Time: Fri, 05 Jun 2026 01:01:50 GMT
+
+Number of Pages: 16
+
+Markdown Content:
+# Cheating in Multiplayer Online Games: a Dataset 
+
+Hugo Bertin 
+
+Univ Rennes, CNRS, INRIA, IRISA 
+
+Rennes, France hugo.bertin@irisa.fr 
+
+Marc Dacier 
+
+KAUST 
+
+Thuwal, Saudi Arabia marc.dacier@kaust.edu.sa 
+
+Yérom-David Bromberg 
+
+Univ Rennes, CNRS, INRIA, IRISA 
+
+Rennes, France david.bromberg@irisa.fr 
+
+Abstract —Cheating poses a significant threat to the Multiplayer Online Games (MOG) industry by degrad-ing player satisfaction and undermining the fairness in competitive gaming. Despite efforts to develop mit-igation techniques, cheating remains difficult to detect and prevent in practice. In particular, a class of cheats based on network flow disruption remains unsolvable. To find out how to detect such attacks we need access to representative labelled data. However, no such dataset exists. To address this gap, we leverage an experimental frame-work that combines a multiplayer online game with a plug-in capable of both reproducing cheating attacks and collecting logs at two levels: network and application-layer. This paper presents a dataset compiling records of game sessions played by both real players and automated game clients, with cheating actions explicitly logged. To the best of our knowledge, this is the first dataset that provides logs of network flow disruption cheats. While it includes such network-based cheats, it is not limited to them and also contains records of more commonly studied cheats, such as aimbots and wallhacks. This dataset can be used by researchers in academia and industry seeking to develop cheating detection mechanisms for online games. Furthermore, it is designed to be evolutive and can be enriched by others creating their own data traces with the proposed framework. 
+
+I. V ALUE OF THE DATA  
+
+> •
+
+To the best of our knowledge, this is the first public dataset in which the use of a network flow manipulation cheat has been explicitly identified.  
+
+> •
+
+The dataset contains traces of usage of diverse types of cheats: aimbot, wallhack, player-targeted DDoS, lag-switch, fixed-delay packet-tampering.  
+
+> •
+
+The explicit log of cheating actions enables the labelling of other gameplay event logs as either cheating or honest.  
+
+> •
+
+The dataset includes traces at both the net-work and application levels, enabling analysis of network-level cheating across layers and the investigation of how events at one layer affect the other.  
+
+> •
+
+The dataset contains data that was generated dur-ing real gaming sessions involving human players. Thus, it is representative of real-world gaming sessions involving cheaters.  
+
+> •
+
+The data is intended for use by researchers study-ing cheat detection and gaming security, and can also be leveraged by industry and video games studio to develop and improve their cheats de-tection models. The dataset aims to contribute to mitigating cheating in online games. II. B ACKGROUND 
+
+The Multiplayer Online Games (MOGs) market was valued at US$225 billion in 2025 [3], yet it faces sig-nificant threats from cheating, which frustrates users, reduces engagement, and raises ethical concerns re-garding fairness in e-sports [4]–[6]. Cheats generally fall into two categories. The first manipulates the game client at runtime to access unau-thorized information. For example, a wallhack reveals hidden opponent locations (e.g., behind walls). This exposed information can be processed to automatically generate game inputs (e.g., an aimbot automates aim-ing in shooter games [7]). The second exploits network communications between game clients and the server:  
+
+> •
+
+Packet tampering : cheats intercept and modify the content of the packets exchanged at the network level [8], [9]. For example, a packet reporting a missed shot can be altered to communicate a successful hit.  
+
+> •
+
+Disruption of packet flow : Attackers manipulate network packet flow without changing packet con-tents. Examples include lag-switch , fixed-delay 
+
+and player-targeted DDoS attacks, which increase latency between clients and the server to disrupt game synchronization [10], [11]. Detecting network flow disruption cheats is challeng-ing, as they could be confused with normal network latency from the server’s perspective. Whether such cheats can be detected remains an open question. Addressing this issue requires data; however, no dataset containing network traces of these cheats currently exists, motivating the creation of a dedicated dataset. 1          
+
+> arXiv:2606.06013v1 [cs.CR] 4 Jun 2026 Subject Computer Sciences
+> Specific subject area Cybersecurity. Cheating Detection in Multiplayer Online Games. Type of data Raw Network Traffic Traces (pcap files), Filtered Network Traffic Traces (Protocol Buffers-encoded binary format), and Filtered application-level game logs (Protocol Buffers-encoded binary format). Data collection Data collection relied on an experimental framework that combines a multiplayer online game with a plug-in to enable log collection and controlled cheat execution. The game was distributed to players in the form of a game client executable. The game server was running at a cloud provider infrastructure. This setup enabled an experimental data collection campaign organized in game sessions, including participants from geographically distributed locations. The data was collected at both the game server and the clients. Additional logs were collected using automated game clients to reproduce pre-defined scenarios of gameplay and cheating multiple times. Data source location Server-side data : collected on the game server running on a virtual private server hosted in Gravelines, France by OVH provider.
+> Client-side data :
+> •Human-played sessions: data were collected on game client comput-ers owned by participants with distributed geographic locations, as specified in the dataset.
+> •Scripted sessions: Client data were collected on machines from the Grid5000 infrastructure [1], located in Rennes and Grenoble, France. The data were then stored and processed on the University of Rennes’ IT infrastructure. Data accessibility Repository name: Cheating in Networked Multiplayer Games: a Dataset. Data identification number: to be updated — current status: draft on Zenodo
+> Direct URL to data: [2] Related research article None
+
+Table I: Specification Table III. D ATA DESCRIPTION 
+
+The dataset contains logs of gaming sessions collected on a multiplayer online game. The dataset combines traces collected from both the game server and the clients (as described in Section IV). On each node, logs are collected at two levels: 1) at the game application layer, capturing the game events generated by the game logic and observable by the players, and 2) at the network level, collecting the data embedded in the network packets exchanged by the client and server. 
+
+A. Structure and Entities 
+
+The dataset is organised under Sessions , where each session represents a game session stored in its own folder identified by a unique session ID at 
+
+Sessions/Session_id . Each session follows a hierar-chical structure composed of Scenarios , Players , and 
+
+Match containers, within which different types of data are stored. The content of these containers is described in the subsection hereafter. Listing 1 illustrates the directory structure of the dataset. Listing 1: Dataset directory structure 
+
+dataset ‘-- Sessions +-- Session_01 | +-- Scenarios | | +-- scenario_1.json | | +-- scenario_2.json | | ‘-- [...] | +-- Players | | +-- player_A | | | +-- sys_info.txt | | | ‘-- feedback.md | | +-- player_B | | ‘-- [...] | +-- Match_01 | | +-- metadata.yml | | +-- Clients | | | +-- trace_player_A_2025 .12.08-11.57.35.bin | | | +-- trace_player_B_2025 .12.08-11.57.42.bin | | | +-- traceroute_player_A.txt | | | ‘-- traceroute_player_B.txt | | ‘-- Server | | +-- capture_2025.12.08-11.57.35. pcap | | ‘-- trace_2025.12.08-11.57.24. bin | +-- Match_02 | | ‘-- [...] | ‘-- [Other Matches] +-- Session_02 | ‘-- [...] ‘-- [Other Sessions] 
+
+1) Scenarios: Scenario is a formally defined gameplay description that can be interpreted by game clients. These scenarios were used in our experiment to automate game sessions and are included in the dataset to support the reproducibility of the experiments. The folder contains scenarios used in the related Session .
+
+2) Players: Player represents a participant taking part in the experiment. The data concerning a player is organized in a folder at the path: Players/Player_id ,where Player_id is a unique identifier assigned to each participant to anonymize their name. The partici-2pant’s environment information is stored in the text file named sys_info.txt , which records the Operating System (Platform and Version), hardware information (CPU, number of cores, GPU, and RAM), and the Un-real Engine version. An example of sys_info.txt file is shown in listing 2. The folder also contains a form (feedback.md ), filled out by the participants, presented in Appendix C. The form provides information about the players’ experience with online games and their geographical background, which could be leveraged to filter logs during analysis. Listing 2: Example of Environment file 
+
+> CPU=Intel(R) Core(TM) i5-10210U CPU @ 1.60 GHz CPU Cores=4 GPU=Intel(R) UHD Graphics Platform=Windows OS Version=10.0.19045.1.256.64bit Total RAM (GB)=8.0 UE=d1e3064 Plugin=03fea25 Game=9eb8cbc
+
+If players participate in multiple game sessions, their corresponding player folder is duplicated for each session. This allows session-specific feedback to be provided and enables changes in the system used to play. 
+
+3) Match: The Match directory represent one ex-ecution instance of the game in the Session . The match recorded in the dataset can be found at 
+
+Sessions/Session_id/Match_id , where Match_id is a unique identifier for the session. Each match contains a metadata.yml file that pro-vides contextual information about the session record-ing. It specifies whether the session was con-ducted with real-world players or with automated game clients. The scenarios selected for automated game sessions are referenced in this file by apointer to the scenario_id.json listed under the 
+
+Sessions/Sessions_id/Scenarios/ folder. Meta-data also specifies the version of the environment used, identified by the commit hashes of the environment software (see Section IV). Additionally, it includes the list of cheats that were available for players in the game session. An example of a game session in Section IV lists a metadata.yaml file as an example. The remaining content in the Match folder consists of data collected from both clients and the server during gameplay. This data is organised into two folders: 
+
+Clients for client-side data and Server for server-side data. This data can be separated into three different types of content: capture , traceroute , and trace .A Capture file is a raw network packet capture of the packets exchanged between the clients and the server. The capture is recorded only on the server-side, therefore stored in the Server folder. 
+
+Traceroute is a record of the evolution of the player’s network environment through a history of traceroute 
+
+command output (tracert on Windows) executed toward the server. Traceroute is executed only on the client side and is therefore stored in the Clients folder. A trace is a sequence of log entries that are recorded at runtime on both the clients and server. Each Match 
+
+contains one server trace and N client traces, where 
+
+N is the total number of clients. Clients’ traces are located in the Clients subfolder and the server trace is located in the Server subfolder. The server traces are timestamped using the match start time. Client traces are timestamped when each client joins the session. All the timestamps are expressed in UTC. Client traces refer to one player , identified by its Player_id . This information can be read in the file name of the trace .Log entries in a trace can be of three types: 
+
+GameEvent , PacketLog , or NetStat . Each log entry contains two types of time information: a UTC timestamp ( ts ) and a counter ( frame ) that is updated every game loop iteration. 
+
+a) Game events: GameEvent structures represent a log entry that has been generated at the game application level. This level of logs represents the events that are observable by the players. It is important to note that those events do not necessarily represent a direct translation of information received from the network but may also be events generated locally by the game logic. Figure 1 presents the data structure involved in the GameEvent . Seven different types of events can be observed in the logs. Movement captures the move-ments of the player’s avatar. Client-side movements are combined with mouse movements ( MouseUpdate ), which directly affect the player’s rotation. Weapon-Fired records when a player fires a weapon, HealthUp-date tracks changes in player’s health, CheatEvent logs the usage of cheats by a player. Player identifies a player. Address identifies the IP address used by a player to communicate with the server. Player and 
+
+Address objects are created when a player joins the game session. Phase indicates the timing of different gameplay match phases (e.g., warmup, gameplay). A comprehensive description of the data fields contained in GameEvents is provided in Appendix B. The table II presents an example of an event that has been extracted from the trace. We can read a weapon fired event in which the player 4 fired a shotgun at player 2, hitting his right clavicle. The shot was on target ( ot ) despite a distance of more than 2973 units of space. Players 2 and 4 refer to player identifiers that have been assigned, which are associated with player names recorded in the new_player events issued when they joined the game. 3Figure 1: GameEvent entry data structure. Table II: Example of a packet notification header extracted from a network-level log           
+
+> type timestamp Sequence number Acked Sequence extra info jit_clock notif_hdr 2025-12-11 09:11:54.371 +00:00 8253 7698 jit_clk 1023.0
+
+b) Packets logs: Packet logs are logs collected by the game engine upon network packets transmission and reception. They record different fields from the Unreal Engine networking protocol [8]. Figure 2 presents the structure of those logs. The log of a packet is organised under four categories of information, which represent the different fields in the UE application-layer protocol: Header , NotificationHeader , Bunches .An additional category has been added to represent the potential connection error messages that may be sent. A comprehensive description of the data fields contained in PacketLogs is provided in Appendix C. Table III presents an example of a notification header extracted from a packet logged in the trace. The header includes the timestamp corresponding to the packet’s reception, as well as the Sequence and Acknowledged Sequence numbers of the packet from Unreal Engine’s networking protocols. This notification header also embeds additional information, including a jitter clock value, used by the engine for network condition measurement. 
+
+c) Network Statistics: NetStats is a log entry that pro-vides information about client-server latency. It is only present in the client traces and periodically records the evolution of the latency to reach the server (1s). This data structure contains two values: ICMPPing 
+
+and UDPPing , which represent latency measurements respectively obtained via ICMP and UDP, as described in Section IV. Additionally, the latency of each packet transmission can be retrieved by combining sender and receiver logs and comparing their timestamps. The machines used in this dataset were synchronized using NTP. 
+
+B. Data Labelling 
+
+The dataset contains logs recorded on an online game, including the activation and deactivation of cheats. This information can be used to label logs that correspond to either honest or cheating behaviour. Since all recorded logs are timestamped, cheating labels can be assigned to the logs concerning the cheater’s actions, times-tamped in the cheat activation time interval. In the case of a player-targeted DDoS cheat, the effects of the cheat primarily target the victim’s gameplay rather than the cheating client (as detailed in IV-A1). Thus, a victim label could be applied to the target’s logs. For instance, based on the timestamp of the example of log describing a lag-switch event in Table IV, we can infer that the shoot event presented in Table VII was performed by player 4 while cheating. 
+
+C. Data Format 
+
+The entire dataset is compressed using gzip. Captures 
+
+are packet capture files ( .pcap ), containing raw pack-ets. Traces are stored in a binary format, consisting of serialised data following a specification defined in a Protocol Buffer schema [12]. The process of serial-ization has been realized through the Protocol Buffer engine and can be leveraged to deserialise the data in order to analyse it. We distribute the specification file ( .proto ) to this purpose. As protobuf is language-agnostic, this facilitates the manipulation of the data in various programming languages. In order to facilitate the process of extraction, we also distribute a parser developed in Python, that translates a trace as input to pandas dataframes or to a CSV file, available on the following Git repository 1.We describe in the Appendix VI, the different data structures defined in this .proto specifications used to 
+
+> 1https://github.com/Lyra-FullGame/ParserProtobufLogs
+
+4Figure 2: PacketLog entry data structure. Table III: Example of a weapon-fired event               
+
+> event_type timestamp player_id weapon ot dist target_id bone weapon 2025-12-11 09:16:38.658 +00:00 4B_Shotgun_C_2147476661 True 2973.068848 2clavicle_r
+
+Table IV: Example of a cheat event           
+
+> event_type timestamp cheater_id type start duration cheat 2025-12-11 09:16:38.460 +00:00 4Lag-Switch True 0.5
+
+organize the logs and that can be leveraged for data analysis if not using our Python parser tool, but by directly rewriting another parser. IV. E XPERIMENTAL DESIGN , M ATERIALS AND 
+
+METHODS 
+
+A. Experimental environment 
+
+The dataset was collected using a multiplayer online game integrated with a framework that implements the cheats and enables data collection. 
+
+1) Online Game: The game is a multiplayer net-worked game developed with the Unreal Engine (UE), one of the leading game engines of the market [13]. Thus, the game used in the experiments shares pieces of software with other UE titles such as Fortnite, PUBG, and Valorant. The game is a multiplayer shooter game based on the Lyra Starter Game UE template [14]. Players compete in a team deathmatch mode, where two teams score points by eliminating players from the opposing team. The network architecture is client-server. The changes made to the template aim to incorporate the cheats directly into the game design. The cheats can be viewed as specific abilities that are periodically available to the player. The player picks one of the following cheats as a main ability: Lag-Switch , player-Targeted DDoS , and Fixed-Delay . The other cheats can be picked up as bonuses on the game map: 
+
+Aimbot , HitRedirection (Packet-Tampering cheat), and 
+
+Wallhack . The abilities and pick-ups are available to every player of the game. Reloading times are applied between consecutive usages of an ability and extra pick-ups. This strategy ensures that the logs contain both honest and cheater records for all the players. These mechanics have also been selected for ethical concerns, avoiding the promotion of cheating when it is not allowed by the game rules. It is important to note that for ethical reasons, the 
+
+Player-targeted DDoS attack is not actually performed but instead simulated within the framework, as it is a real network attack that could have adverse effects on the player’s network. To simulate the attack, the game server tells the game client to drop packets according to configurable packet loss rates for both incoming and outgoing traffic flows, which are configurable. This configuration is logged (see CheatEvent in Appendix B) 
+
+2) Log Collection framework: Log collection and cheat detection are implemented within a game engine plug-in, based on a framework designed to enable data collection on cheating in online game environments [15]. The framework contains different modules. The first module implements and enables cheating directly from within the game. By doing so, it provides a view into players’ use of cheats and provides a way to reproduce cheating without relying on external tools. 5The cheats were implemented to replicate the same mechanics and effects as those observed when real cheats are used in actual Unreal Engine games. The second module collects logs from the gaming session following the specification presented in Section III. As represented in Figure 3, these logs are collected at two different levels in the game engine. The first level corresponds to the game application layer, where events are processed, and game logic is executed. This represents the state of the game and includes the events perceived by the players. The second level is the engine network stack, where the applicative data received from network communication is parsed. This level focuses on filtering and decoding the embedded application payload to extract fields defined by Unreal Engine network protocols, while also capturing timing information. Thereby providing insights into both the information exchanged and the temporal behaviour of online game communication. This represents a vision of online game communication at the network level. To complete the capture of network communications, we additionally collect raw network traffic at the server level. For this purpose, we use the tcpdump tool, which captures transmitted and received packets and stores them in a pcap file. We apply the following filter to the tcpdump capture: udp and port $port , where 
+
+port denotes the game server’s port. To complete the collection of network information, we periodically collect from the client, the latency to reach the server (each second). This is done by combining the results of ICMP ping to the server with UDP-ping already implemented in Unreal Engine. In addition, the 
+
+traceroute command (or tracert on Windows) is performed at the beginning of each client session to obtain detailed information about the player’s network infrastructure. When a spike of latency is detected, the command is executed again to observe potential network path changes. 
+
+B. Scripted Game Session Examples 
+
+A subset of the game session included in the dataset was recorded as "scripted-examples", which reproduce specific, expected game scenarios that contain a low level of noise, much lower than the one produced by less deterministic human gameplay. Scripted-Example traces can be divided into two different sets: fully-automated and human-executed reference traces. 
+
+1) Fully-Automated Traces: Fully-Automated game sessions were collected while automating game sce-narios at the clients. For this purpose, we leveraged the automation module included in the log collection framework [15]. The module automates gameplay ac-tivities, such as movements, weapon shots, and cheat usage. Specific gameplay scenarios can be scripted using a JSON file that defines the actions to automate and their parameters. We insert 3 game sessions in the dataset that were recorded with automated scenarios, which serve as examples for analysis with known ground-truth scenarios. The experimental setup combines a game server located at Gravelines, France, and two game clients at two different locations in France: Grenoble and Rennes. All the machines run on Linux. This information can be found in the dataset besides the hardware information in the env.txt file for the clients and in the metadata.yml for the clients. We describe hereafter the different scenarios that were followed. Each scenario was recorded on a session of 10 minutes, and reproduced 10 times. 
+
+a) Scenario 1: The purpose of this first series of automated sessions is to observe the effects of Lag Switch and player-targeted DDoS on the movement actions in the game. For this purpose, we scripted a scenario for each client. The scenario for client 1 is displayed in Figure 4. It is a scenario involving simple movements that follow a square pattern, with usage of the Lag-Switch cheat at the timestamp t = 5 s, and triggers a DOS against the second player at t = 25 s.The definition of a movement is done through the plugin scripting language and repeated multiple times. Example of movement and cheat scripting is provided in the Listing 3. The second client is automated with movements similar to client 1, with a delay of 5 seconds. This scenario is repeated every 35 seconds. Listing 3: Game scenario scripting with three types of actions. Move defines a movement to coordinates 
+
+(X, Y ), bounded by a specified duration (5 s in this ex-ample). Cheat defines a cheating action, here a denial-of-service (DoS) attack targeting the player PTB* for 5 s. Shoot defines a shooting action targeting player 
+
+PTB* , or the coordinates (X, Y, Z ) if the target is not visible. The symbol * denotes a wildcard in the player’s full name.   
+
+> {"Action": "Move", "Timestamp":5.0, "Duration":5, "X":2000, "Y":-2000 },{ "Action": "Cheat", "CheatType": "DOS", "Timestamp": 24.0, "Duration": 5.0, "Target": "PTB*" },{ "Action": "Shoot", "Timestamp": 25.0, "X": 670, "Y": 720, "Z": 100, "Target": "PTB*" }
+
+6Figure 3: Log collection pipeline 
+
+X
+
+Y
+
+t = 5 
+
+t = 10 t = 15 
+
+t = 20 
+
+> Lag-switch (5s)
+> DDoS client2 (5s)
+
+Figure 4: Automated Scenario for client 1. Game map with walls (grey), coordinate axes (black), and scripted player movement (blue) with stop points (red). Lag-Switch ( △) and DoS (×) targeted against client 2 are triggered for 5 seconds, at t = 7 and t = 23 .
+
+b) Scenario 2: The second automated scenario builds on the first scenario by adding weapon fire events combined with cheating actions. Shoots are performed by client 1 on client 2. They are performed 0.5 seconds after client 1 cheats: first Lag-Switch, then DoS (similar to that presented in Figure 4). Shoots can be automated thanks to the Shoot events in Listing 3. The player aims at the targeted player when it is visible; otherwise, the shooter aims to the specified coordinates. 
+
+c) Scenario 3: The third scenario involves two clients who are cheating. The movements performed by the clients are described in Figure 5. At the beginning, both of the clients are behind walls, and cannot see each other. Then, in turn, they move to the centre of the map, where they are uncovered. First, client 1 moves and shoots at client 2, who is stationary. Then client 1 comes back to its previous location to be covered by the walls. At t = 10 s, client 2 moves to the centre and, client 1 shoots at client 2 as soon as it becomes visible. This scenario is then restarted with client 1 cheating. Client 1 first uses a lag switch while moving towards the centre. Secondly, client 1 launch a DDoS attack against client 2, while client 2 is moving. Then Client 1 uses a Fixed-Delay while moving to the centre. 
+
+X
+
+Y
+
+client 2 client 1 Figure 5: Initial settings ( t = 0 s) for clients 1 and 2 in scenario 3, with map walls (gray). Coordinates axes intersect in the center of the map. For each automated session in the dataset, the scenario script file is provided. 
+
+2) Human-Executed Reference Traces: Human-executed reference traces correspond to scripted gameplay scenarios recorded by a human player. The dataset contains three sets of three traces, recorded with two clients on the same set-up used in fully-automated traces (§IV-B1). Within each set of traces, the first trace capture the human player defeating its opponent without using any cheat; the second trace the same outcome with the help of the lag-switch, the last one records the outcome with the help of the DDoS cheat. The series differ in the opponent actions. In the first one, the opponent is neither moving nor shooting; in the second the opponent is moving, following the Scenario 2 presented in §IV-B1. In the third one the opponent shoots at the player when he can see it. 
+
+C. Experimental campaign 
+
+This subsection presents the experimental protocol conducted to collect traces involving real players who participated in gameplay sessions. 71) Participants: The experimental campaigns are conducted with real players, who were recruited through academic networks. All the participants gave their consent to participate in the experience. The screened participants represented a wide range of experience levels (labelled by player in the dataset). Participants are required to have access to a computer running one of the following OSes: Linux, Windows, MacOS; and the minimal hardware requirements that can be found for Lyra on Steam [14]. A summary of the sessions realized is presented in Table V, showing the number of players, the diversity of geographical locations, which may influence the network conditions, and their experience, which may influence their gameplay behaviours. 
+
+2) Experimental protocol for a game session: When a group of participants is identified, we carry out the following procedure. 
+
+a) Before the game session: We provide the partici-pants with the game client software and setup instruc-tions for installation on their computer. A specific ver-sion of the binary is available for each OS. The binary to install is an executable package containing the whole client’s experimental environment (game client and logging framework). We also provide video tutorials explaining the game mechanics and the consequences of the cheats on the gameplay. 
+
+b) The game session: After verifying that all the players can launch the game and automatically connect to the game server, a game session was started with all participants playing a team deathmatch. During the game, the logs described in the dataset specification (Section III) are collected. The duration of a match is 10 minutes. The number of players by session is 6 to 8, divided into two teams. 
+
+c) After the game session: Participants fill the 
+
+feedback.md form to detail their experience relative to the game. The detailed questions are provided in Appendix C. Then we asked them to upload to a repository a compressed folder containing the traces generated, the game logs, and the feedback document filled out. The framework and the binaries are available to researchers who are interested in our works. 
+
+3) Example of Session in the Dataset: In this sub-section, we detail the conditions under which the 
+
+Session_01 was conducted, taking the metadata.yml 
+
+file included in the dataset as an example. The session involved six players. The shortened commit hashes of the software used in the experimental environment are provided. Automation was disabled, as the session was realized with real players. The session lasted 27.5 minutes. Additionally, the hardware and system specifications of the game server, along with the cheats available in the game, are documented. Listing 4: Metadata file describing Session_01 
+
+> clients_number: 6 env: UE: d1e3064 Plugin: 03fea25 Game: 9eb8cbc automation: no start_time: 2026.01.14-19.52.56:337 end_time: 2026.01.14-20.20.27:881 server: city: Gravelines country: France hardware: cpu:Intel Core Processor (Haswell, no TSX) cpu_cores: 6 ram: 12.0 os: platform: Linux os_version: ubuntu25.04 cheats: [DOS, LS, Fixed-Delay, Aimbot, Wallhack, HitRedirection]
+
+The information relative to the player environment and experience can be fetched under Players/Player_id .For instance, the Player_A , included in this session was located in Rennes, France, and was experienced with shooter games. This can be observed by its CS:GO ranking provided in the feedback.md . Addi-tionally, as shown in the env.txt , the player was on Linux. V. L IMITATIONS (limit: 200 words) 
+
+The dataset focuses solely on a limited number of cheats that we have implemented in an execution sand-box to reproduce similar effects to real cheats. How-ever, the experimental framework, and consequently the dataset, can be enriched with new cheats. Any newly added cheats will be recorded in the metadata file for the corresponding sessions. The cheats used to collect these logs were implemented manually within the game, and are thus not the exact software used by actual cheaters. Nevertheless, they implement the same purpose conceptually and exhibit behaviours similar to those of real cheat software. The cheats provided to the player are accessible through the game interface according to the game rules defined. Thus, users do not have full autonomy in tuning the cheat usage parameters. Nevertheless, the remaining flexibility in the cheat usage (timing, exe-cution) corresponds to real-world cheating behaviour. Additionally, the logs were collected from a single game, which may differs with other ones in terms of gameplay. However, since the dataset is based on the Unreal Engine, it benefits from sharing many common components with other games built on the same engine. 8id # Players # Automated # Matches Clients Locations Description 
+
+01 6 0 4 Benin, Saudi, France Gameplay with real participants (see IV-C) 02 6 0 5 Brasil, France, HongKong Gameplay with real participants (see IV-C) 03 6 0 11 Cameroun Gameplay with real participants (see IV-C) 04 4 0 6 Cameroun Gameplay with real participants (see IV-C) 05 0 2 5 France (In-Lab) Fully-automated traces, Scenario 1 (see IV-B1) 06 0 2 5 France (In-Lab) Fully-automated traces, Scenario 2 (see IV-B1) 07 0 2 5 France (In-Lab) Fully-automated traces, Scenario 3 (see IV-B1) 08 1 1 4 France (In-Lab) Human-Executed Reference traces (See IV-B2) 09 1 1 4 France (In-Lab) Human-Executed Reference traces (See IV-B2) 10 1 1 4 France (In-Lab) Human-Executed Reference traces (See IV-B2) 
+
+Table V: Summary of the sessions and player groups in the dataset. Session_id denotes the session identifier, #Players indicates the number of human players, # Players indicates the number of automated clients, # Matches 
+
+the number of matches played, Locations lists the countries where the players were located, and Descripion 
+
+provides additional details about the game session context. VI. E THIC STATEMENT 
+
+All the participants in the experiment gave their con-sent to the collection of their IP addresses for the purpose of compiling this dataset through the feedback form they filled. VII. C REDIT AUTHOR STATEMENTS 
+
+Hugo Bertin: Conceptualization, Methodology, Soft-ware, Data Curation, Investigation, Writing - Original Draft 
+
+Marc Dacier: Conceptualization, Methodology, Writ-ing - Review & Editing, Supervision, Funding Acqui-sition. 
+
+Yérom-David Bromberg: Conceptualization, Method-ology, Writing - Review & Editing, Supervision, Fund-ing Acquisition. VIII. A CKNOWLEDGEMENTS 
+
+The authors thank Salman Shaikh for his participation in the development of the software used in these experiments and in the organisation of the experimental gameplay sessions. The authors would also like to thank Cnam-Enjmin, its director Axel Buendia, and the students who con-tributed to the development of the online game, Tim-othée Drugeon, Samuel Suzan, Baptiste Denis, and Rémi Bernard, for their valuable work on the experi-mental platform used to collect this dataset. IX. D ECLARATION OF COMPETING INTERESTS 
+
+The authors declare that they have no known com-peting financial interests or personal relationships that could have appeared to influence the work reported in this paper. REFERENCES [1] D. Balouek, A. Carpen Amarie, G. Charrier, F. Desprez, E. Jeannot, E. Jeanvoine, A. Lèbre, D. Margery, N. Niclausse, L. Nussbaum, O. Richard, C. Pérez, F. Quesnel, C. Rohr, and L. Sarzyniec, “Adding virtualization capabilities to the Grid’5000 testbed,” in Cloud Computing and Services Science ,ser. Communications in Computer and Information Science, I. I. Ivanov, M. van Sinderen, F. Leymann, and T. Shan, Eds. Springer International Publishing, 2013, vol. 367, pp. 3–20. [2] H. Bertin, M. Dacier, and Y.-D. Bromberg, “Cheating in multiplayer online games: a dataset,” Apr. 2026. [Online]. Available: https://zenodo.org/records/19628775?preview=1& token=eyJhbGciOiJIUzUxMiJ9.eyJpZCI6IjFiNjIwMjE5LWM 5NjYtNGQ4My04OTQ3LTg1MTIzMDBmOGFkNiIsImRhd GEiOnt9LCJyYW5kb20iOiIxYTJjZGIzNjVmYTc2NjBlYTg 0MDU2MzUwNmFkYjlhZiJ9.U1TZL-UeTE8Pg71tj1ZSICnre 2FKKk52D2iTKGdgUowBD8c0Dc5UMuVhUIbvYHIH3VV crblg-xhihSGsB_M70g [3] F. B. Insights, “Online gaming market size, share & industry analysis,” Market report webpage. URL https://www.fortuneb usinessinsights.com/online-gaming-market-112179, December 2025, [Accessed 2026-01-11]. [4] J. Johansson, “The alarming truth about cheating in online gaming,” 2025, blog Article, [Accessed: 2026-04-20]. [Online]. Available: https://www.eneba.com/hub/news/cheating-has-bec ome-a-widespread-gaming-crisis/ [5] N. Granados, “Report: Cheating is becoming a big problem in online gaming,” Apr 2018, [Accessed: 2026-04-20]. [Online]. Available: https://www.forbes.com/sites/nelsongranados/2018 /04/30/report-cheating-is-becoming-a-big-problem-in-onlin e-gaming/ [6] J. Weatherbed, “Apex Legends devs confirm esports hacking incident,” Mar 2024, [Accessed: 2026-04-20]. [Online]. Available: https://www.theverge.com/2024/3/18/24104666/ap ex-legends-postpones-algs-competition-hack-concerns [7] M. Choi, G. Ko, and S. K. Cha, “BotScreen: Trust Everybody, but Cut the Aimbots Yourself,” in 32nd USENIX Security Symposium (USENIX Security 23) , 2023, pp. 481–498. [8] H. Bertin, I. Benhabbour, M. Dacier, and Y.-D. Bromberg, “Disconnecting users from virtual worlds with a single packet: an unreal untold story,” in The 3rd International Confer-ence on Intelligent Metaverse Technologies & Applications (iMETA2025) , 2025. [9] P. Laurens, R. F. Paige, P. J. Brooke, and H. Chivers, “A novel approach to the detection of cheating in multiplayer online games,” in 12th IEEE International Conference on Engineering Complex Computer Systems (ICECCS) . IEEE, 2007, pp. 97– 106. [10] I. Benhabbour, Y. Bromberg, M. Dacier, S. Dietrich, R. Ro-drigues, and P. Esteves-Verissimo, “Attacks on tomorrow’s virtual world,” in 53rd Annual IEEE/IFIP International Con-ference on Dependable Systems and Networks - Supplemental Volume (DSN-S) . IEEE Computer Society, Jun 2023, pp. 105– 110. [11] S. D. Webb and S. Soh, “Cheating in networked computer games: a review,” in 2nd International Conference on Digital Interactive Media in Entertainment and Arts , 2007, p. 105–112. [12] Google, “Protocol Buffers,” https://protobuf.dev/, 2025, [Accessed: 2026-04-20]. 
+
+9[13] Video Game Insights, “The big game engines report of 2025,” 2025, report, [Accessed: 2026-04-20]. [Online]. Available: https://app.sensortower.com/vgi/assets/reports/The_Big_Gam e_Engines_Report_of_2025.pdf [14] Steam Store, “Lyra convolution,” Valve, [Accessed: 2026-04-20]. [Online]. Available: https://store.steampowered.com/app /3328230/Lyra_Convolution/ [15] S. Shaikh, H. Bertin, M. Dacier, and Y.-D. Bromberg, “A framework to enable cheating detection in multiplayer online games,” in Cybersecurity . Cham: Springer Nature Switzerland, 2025, pp. 166–181. 
+
+APPENDIX 
+
+10 A. Top-Level Structures and global identifiers 
+
+Top-level structures are defined in the .proto specification, to organize log entries during serialization and deserialization. They are abstracted when using the parser provided, but we describe them here for anyone who wishes to implement a custom parser. RingBufferLog is the buffer used for storage; any entry of this buffer is a LogEntry . Player is a data structure leveraged to identify players. Both PacketLog and GameEvent refer to 
+
+Player in their content. LogEntry contains one of the two following data structures: GameEvent or PacketLog .Messages are structured data format defined in the Protobuf schema. 
+
+Field Type Description Message: RingBufferLog 
+
+capacity int32 Maximum number of log entries stored. head int32 Index of next entry to read. tail int32 Index of next entry to write. entries LogEntry[] Circular buffer content. 
+
+Message: LogEntry 
+
+entry oneof{ packet PacketLog Log entry containing a PacketLog 
+
+event GameEvent Log entry containing a GameEvent 
+
+event NetworkStat Log entry containing a NetStat 
+
+}
+
+Message: Player 
+
+id uint32 Unique player identifier. name string Player name. 
+
+B. Game Events 
+
+Field Type Description Message: GameEvent 
+
+payload oneof {movement Movement Player movement event. weapon WeaponFired Weapon firing event. health HealthUpdate Health update event. cheat CheatEvent Cheat usage event. new_player Player Player join event (useful for identifying players at game-level analysis). new_address Address New IP address connection (useful for packet-level analysis). phase_event Phase Phase of the Match (Warmup, Playing or PostGame) }ts Timestamp Event timestamp. ind int32 Index in ring buffer. frame int32 Frame counter (internal engine counter, incremented every game loop). 
+
+Message: Phase 
+
+phase_name string Warmup, Playing, PostGame. start bool True: beginning of the phase, False: end. 
+
+Message: Address 
+
+address_id uint32 unique ID of the ip address(different from the player_id). ip string IP address and port number of the connection ("IP:Port") 
+
+Message: Player 
+
+player_id uint32 unique ID of the player (different from the address_id). string name Name of the player (as recorded by UE). 11 Field Type Description 
+
+string address IP address and port used by the player when joining the game ("IP:Port"). Warning: the source port of a client connection can change due to NATing during the game. In this scenario, UE updates the connection without modifying the player’s object. Therefore, the port stored can be outdated. In that scenario the Session_id and Client_id in the Packet::HeaderIDs do not change. 
+
+Message: Movement 
+
+player_id int32 ID of the moving player. dS float Time delta with previous Movement. location float[3] Location (x,y,z) of the player’s avatar. rotation float[3] (opt) rotation (Pitch, Yaw, Roll) of the player’s camera (only logged on server and owning client). ts_client float Client timestamp (seconds since the start of the game); only logged on owning client (movement of the avatar owned by the client) mouse_update MouseUpdate (opt) Mouse movement delta (Only logged client-side) 
+
+Message: MouseUpdate 
+
+delta_x float Mouse delta on the x-axis (Pitch). delta_y float Mouse delta on the y-axis (-Yaw). 
+
+Message: WeaponFired 
+
+player_id int32 ID of the player shooting. weapon string Weapon name. ot bool Whether the shot reached an opponent (on target). time float Duration of the shoot (only if ot true). dist float Distance to target (only if ot true). cartridge_id int32 Unique ID for the shoot (computed randomly). target_id int32 ID of player hit (only if ot true). bone string Bone hit (only if ot true). blind bool Indicates whether the shot was possible from the server’s perspective. A line is traced between the shooter position and the target. The value is true if the shot was not possible (i.e., a blind shot), and false otherwise (only if 
+
+ot true). visible_players int32[] List of the players in the shooter’s field of vision at the time of the firing. Visible players are identified by their player_id. 
+
+Message: HealthUpdate 
+
+player_id int32 Player ID. old int32 Previous health value. new_ int32 Updated health value. 
+
+Message: CheatEvent 
+
+cheater_id int32 Cheater player ID. target_id int32 (opt) Target player’s ID (if the cheat is launched against a target). type string Type of cheat. start bool Whether cheat started/stopped. dur float (opt) Duration of cheat. out int32 (opt) Outgoing damage loss (For DDoS). in_ int32 (opt) Incoming damage loss (For DDoS). 
+
+C. Packet Logs opt : optional 12 Field Type Description Message: Packet 
+
+ts Timestamp Packet reception timestamp. ind int32 Index in ring buffer. frame int32 Frame counter. incoming bool Outgoing (false), incoming (true). By default, we only add Header , notification and Bunch , for incoming packets. the content of outgoing packets can be retrieved as an incoming packet on the other endpoint, the hash can be leveraged to verify the packet’s integrity. header Header (opt) Packet header. notification Notification (opt) Notification payload. bunches Bunch[] Grouped payload structures. hash_data bytes hash of the packet’s data, to compare packets at clien-t/server and verify no tampering connection_error ConnectionError (opt) Connection-level error info. 
+
+Message: Header 
+
+ids HeaderIDs (opt) Session and client IDs. handshake HeaderHandshake (opt) Handshake metadata. 
+
+Message: HeaderIDs 
+
+sessionid uint32 Server-assigned ID that increments on every non-seamless travel per connection, identifying the game session. Internally used to distinguish between old/new connection with the same IP:Port. clientid uint32 Client-assigned connection ID that increments on each connection to a server. Note: This is different from 
+
+player_id ; it is an internal Unreal Engine counter used to distinguish connections, not individual players. address_id int32 ID of the IP address of the corresponding player (the address used can be retrieved by mapping the id and new_address events). hash_data bytes hash of the packet’s data, to compare packets at clien-t/server and verify no tampering 
+
+Message: HeaderHandshake 
+
+packet_type int32 Type of handshake packet. sent_packet_count int32 Number of packets sent during handshake. restart bool Restart handshake flag. secretid int64 Secret key used. ts Timestamp Timestamp exchanged. cookie string Challenge cookie. 
+
+Message: Notification 
+
+type string Notification type. seq int32 Sequence number, incremented every packet per flow. in the range [0, 65535]. acked_seq int32 Acknowledged sequence number (last seq received, per flow). extra_info_header ExtraInfoNotification-Header (opt) Additonal information. server_frame_time ServerFrameTime (opt) Server frame time. 
+
+Message: ExtraInfoNotificationHeader 
+
+type string Extra information type. jitter_clock int32 Jitter clock value transmitted. 
+
+Message: ServerFrameTime 
+
+type string Entry type. 13 Field Type Description 
+
+srvft int32 Server frame time. 
+
+Message: Bunch 
+
+payload oneof {bunch_actor_channel BunchActorChannel Bunch containing actor data. control_channel ControlChannel Control channel information. movement_srv_rcvd MovementSrvRcvd Movement received at the server level. movement_inv_timestamp MovementInvTimestamp Invalid timestamp was received. received_property ReceivedProperty Unreal Engine property received. invalid_rep_field InvalidRepField Invalid replication field received. received_rpc ReceivedRPC Remote Procedure Call received. ability_fail AbilityFail error message: an ability failed to invoke. }
+
+Message: BunchActorChannel 
+
+bopen bool Channel opened. bclose bool Channel closed. breliable bool Reliable channel. bpartial bool Partial (fragmentation). bpartial_initial bool Start of partial bunch. bpartial_final bool End of partial bunch. actor_name string Actor name. index int32 Actor channel index. 
+
+Message: ControlChannel 
+
+type string Control message type. messagetype string Content of the control message. 
+
+Message: MovementSrvRcvd 
+
+type string Movement update type. ts_client float Client timestamp (seconds since the start of the game). accel string Acceleration. velocity string Velocity. loc string Location. rot string Rotation. dt float Delta time with previous movement. 
+
+Message: MovementInvTimestamp 
+
+type string Update type. ts_client float Client timestamp (seconds since the start of the game). ts_server float Server timestamp (seconds since the start of the game). 
+
+Message: ReceivedProperty 
+
+type string Property type. obj string Target object. func string Property function. 
+
+Message: InvalidRepField 
+
+obj string Invalid replicated field. 
+
+Message: ReceivedRPC 
+
+type string RPC type. func string Function name. obj string Target object. delayed bool Whether RPC was delayed. parms_nbr int32 Number of parameters. parms_size int32 Size of parameter data. handle int32 (opt) Optional handle, only for specific RPC. input bool (opt) Optional input flag, only for specific RP. 
+
+Message: AbilityFail 
+
+type string Event type. ability string Name of ability. 14 Field Type Description 
+
+reason string Reason for failure. 
+
+Message: ConnectionError 
+
+type string Error type. err int32 Error code. fatal bool Error is fatal (leads to a disconnection). 15 Feedback Form 
+
+Thank you for participating in our video game test! Your feedback is valuable for our research. Please an-swer the following questions based on your experience. 
+
+Consent 
+
+This study collects your IP address for research pur-poses. Do you consent to this data being collected and used? 
+
+Player Information 
+
+1) What country are you playing from? 2) What is the Zip-Code of your location? 3) How would you rate your skill level in shooter games? (1 = beginner, 2 = average, 3 = experi-enced) 4) If you have a ranking in a popular game, please write it below (e.g., CS:GO rank) 
+
+Performance & Stability 
+
+5) Did you encounter any crashes? (Yes/No)  
+
+> •
+
+If yes, please describe when it happened (in the gameplay) and send us the game logs by zipping the log folder Linux/LyraS-tarterGame/Saved/ 
+
+6) Did you experience any lag / frame rate drops (e.g., delayed input / character teleporting)? (Yes/No)  
+
+> •
+
+If yes, how severe was it? Describe it briefly: 7) How would you rate the overall visual perfor-mance? (Poor, Fair, Good, Excellent)  
+
+> •
+
+Did you encounter any graphical glitches or artifacts? (Yes/No)  
+
+> •
+
+If yes, please describe them: 
+
+Additional Comments 
+
+13) Is there anything else you’d like to share about the game’s performance? 16
