@@ -1,0 +1,726 @@
+Title: Local Guidance, Global Impact: Gaussian-Reshaped Trust Region Unlocks Behavior Transitions
+
+URL Source: https://arxiv.org/pdf/2606.03382v1
+
+Published Time: Wed, 03 Jun 2026 01:07:10 GMT
+
+Number of Pages: 21
+
+Markdown Content:
+# Local Guidance, Global Impact: Gaussian-Reshaped Trust Region Unlocks Behavior Transitions 
+
+Bingxu Liu 1,4∗ Jiashun Liu 1∗ Johan Obando-Ceron 2,3 Hao Wang 5 Runze Liu 1
+
+Pablo Samuel Castro 2,3 Aaron Courville 2,3 Ling Pan 1†
+
+> 1
+
+Hong Kong University of Science and Technology 2Mila - Québec AI Institute 
+
+> 3
+
+Université de Montréal 4Fudan University 5City University of Hong Kong 
+
+## Abstract 
+
+While Proximal Policy Optimization (PPO) demonstrates strong performance in stationary settings, we show that its standard optimization paradigm struggles in continual and non-stationary environments. The failure does not stem from insuffi-cient model capacity or overly restrictive clipping. Instead, PPO performs persistent, directionally inefficient local updates, which indicates a lack of geometry-aware guidance for accumulating meaningful behavioral change and ultimately hindering transitions toward new behavior patterns. Although divergence-based regulariza-tion introduces partial geometric awareness, its monotonically increasing penalties implicitly discourage large policy deviations, even when such shifts are necessary for effective adaptation. To address this limitation, we propose Gaussian Trust Re-gion Policy Optimization (GTR ), which reshapes the trust region using a Gaussian kernel. The resulting constraint is bounded and non-monotonic, providing strong local stability while progressively relaxing under sustained high-advantage updates. To further improve robustness, we introduce a Mixture Gaussian Anchor that adapts to recent policy trajectories, reducing variance induced by stale references. GTR 
+
+is architecture-agnostic and achieves strong performance across games, simulated robotic control, open-world exploration, and language model post-training. These results demonstrate that geometry-aware trust-region design can be a promising direction for robust reinforcement learning in complex non-stationary environments. 
+
+Our code is available here. 
+
+## 1 Introduction 
+
+Proximal Policy Optimization (PPO) (Schulman et al., 2017), as a standard deep reinforcement learning (RL) algorithm (Sutton et al., 1998), has achieved significant success across diverse domains, e.g., robotic control (Akkaya et al., 2019, Hwangbo et al., 2019), game AI (Berner et al., 2019), and large foundation model post-training (Guo et al., 2025, Ouyang et al., 2022). Its success largely stems from a simple yet effective principle: constraining policy updates to remain close to a reference policy via a clipping mechanism (Schulman et al., 2017), ensuring stable improvement under advantage-driven optimization (Kakade and Langford, 2002, Schulman et al., 2015). This local-update paradigm is well-suited to traditional, stationary environments, where progress can often be made through incremental refinement around the current behavioral mode (Andrychowicz et al., 2020).     
+
+> ∗Equal contribution †Correspondence to lingpan@ust.hk
+
+1               
+
+> arXiv:2606.03382v1 [cs.LG] 2 Jun 2026 Standard PPO:
+> Inefficient exploration
+> due to lack of guidence
+> PPO w/ KL Divergence:
+> Locally guided but trapped by
+> rigid trust -region constrain t
+> GTR escapes the local basin
+> and reaches the novel optimum
+> Standard PPO:
+> Inefficient exploration
+> due to lack of guidance
+> PPO w/ KL Divergence:
+> Locally guided but trapped by
+> rigid trust -region constrain t
+> GTR escapes the local basin
+> and reaches the novel optimum
+> Open -world exploration
+> PPO w/ KL Divergence
+> Gaussian Trust Region Policy Optimization (GTR)
+> Standard PPO
+> Low Return High Return
+> Current Mode
+> Current Mode
+
+Figure 1: (Top): In continual learning, standard PPO may perform persistent but ineffective local policy search and fail to accumulate the distributional shift required to reach a better behavioral mode. Monotone divergence regularization provides local guidance but cannot adapt to a different mode stably due to the monotonically increas-ing penalty. (Bottom): GTR achieves continuous mode transition in open-world and achieves the best perfor-mance in all benchmarks. 
+
+However, as modern RL systems move toward continual, non-stationary regimes (Khetarpal et al., 2022, Wołczyk et al., 2021) with evolving dynamics, this paradigm requires rethinking in the context of continual RL (Abel et al., 2023, Pan et al., 2025). When tasks or required skills evolve over time, effec-tive learning requires not only stable lo-cal improvement, but also the ability to leave outdated behavioral modes and transition toward newly advantageous ones (Agarwal et al., 2021). In such dynamic scenarios, the clipped objec-tive may provide insufficient geometric preference among competing update di-rections, and we observe that standard PPO fails to achieve such effective tran-sitions. As a result, the policy can un-dergo persistent but poorly directed lo-cal optimization and eventual collapse, as illustrated in Figure 1 (Top). This fail-ure highlights a fundamental limitation of standard PPO in continual learning: it lacks a mechanism for shaping local updates according to the distributional geometry induced by the policy, making advantage-driven optimization prone to unproductive drift rather than meaningful behavioral transition. 
+
+Intuitively, effective guidance should shape the local optimization geometry (Kakade, 2001) for distinguishing directions based on how sensitively policy distributions respond to parameter perturbations. This can be characterized by the Fisher Information Matrix (FIM): high-curvature directions induce large distributional shifts, while low-curvature directions correspond to relatively stable updates (Amari, 1998). Divergence-based regularization introduces partial landscape aware-ness through its connection to the FIM, e.g., the second-order expansion of KL divergence recovers the Fisher metric (Schulman et al., 2015). Empirically, we find that incorporating divergence-style penalties improves stability and alleviates inefficient exploration, suggesting that the absence of geometric guidance is a key source of adaptation failure in standard PPO. Nevertheless, most diver-gence penalties increase monotonically with policy deviation, implicitly assuming that larger shifts are undesirable (Nowozin et al., 2016). While reasonable in stationary settings, this assumption becomes restrictive in continual RL, where optimal behaviors may lie far from the current policy (Lecarpentier et al., 2021). Therefore, overly conservative regularization can hinder necessary mode transitions as shown in Figure 1 (Top), raising a key question: can we design a trust-region regular-ization that is stiff enough to suppress noisy local drift, yet permissive enough to allow sustained high-advantage updates to escape the current behavioral mode? 
+
+Idealized trust-region regularization should enforce stiffness around small deviations to stabilize incremental learning, while gradually relaxing as the policy is consistently driven toward high-2advantage situations. This balance prevents unstable local updates while avoiding over-constraining exploration when strong advantage signals suggest departure from suboptimal behaviors. Guided by this principle, we introduce a Gaussian-shaped trust-region constraint, which induces localized stiffness near the reference policy and a rapidly diminishing penalty for larger deviations. This design also encodes a geometry-aware regularization: the Gaussian weighting modulates the influ-ence of policy ratios in a distance-dependent manner, effectively reweighting gradient contributions and shaping the local optimization landscape. In contrast to monotonic divergence penalties, this Gaussian penalty allows the policy to preserve stability in the extreme proximal region while re-ducing resistance to sustained, high-advantage updates, thereby facilitating controlled exploration. However, as the reference policy becomes stale under a high-data-reuse setting, a fixed Gaussian anchor can be unstable. Therefore, we propose Mixture Gaussian Anchor , which models the constraint as a dynamically updated mixture over the recent policy snapshots, to reduce variance induced by outdated references while remaining responsive to recent high-advantage updates. We instantiate this framework as Gaussian Trust Region Policy Optimization (GTR ). 
+
+GTR improves adaptability at the algorithmic level and generalizes seamlessly across diverse policy classes, i.e., MLPs (Mnih et al., 2015), RNNs (Chung et al., 2014), SimBa (Lee et al., 2024), and Transformer-based (Vaswani et al., 2017) policies. Extensive evaluations on robotic control (Tassa et al., 2018, Todorov et al., 2012), open-world exploration (Matthews et al., 2024), and language model post-training (Guo et al., 2025, Yu et al., 2025) demonstrate that GTR consistently achieves state-of-the-art performance, as shown in Figure 1, highlighting that principled constraint design could be a promising way for policy improvement. Our contributions are threefold: 1. We reveal that a key factor for the collapse of PPO in continual RL is that it exhibits persistent but directionally inefficient local updates, which indicates the lack of local optimization geometry. 2. We introduce GTR , a Gaussian-shaped, geometry-aware trust-region regularization that balances local stability and global adaptability in continual setups. 3. We extensively validate GTR across a wide range of benchmarks and various architectures. 
+
+GTR consistently improves performance in non-stationary and continual learning settings. 
+
+## 2 Preliminaries 
+
+Proximal Policy Optimization Standard Proximal Policy Optimization (PPO) (Schulman et al., 2017) is a policy gradient method that improves training stability by constraining policy updates within a proximal region of a reference policy. Let πθ denote the current policy and reference policy πθold used for data collection. PPO optimizes a surrogate objective based on importance sampling: rt(θ) = πθ (at|st)  
+
+> πθold (at|st)
+
+,where rt(θ) is the likelihood ratio. The clipped objective is defined as: LCLIP (θ) = Et
+
+h
+
+min  rt(θ) ˆAt, clip( rt(θ), 1 − ϵ, 1 + ϵ) ˆAt
+
+i
+
+,where ˆAt is an estimate of the advantage function and ϵ is a hyperparameter controlling the trust region size. However, the clipping mecha-nism does not explicitly account for the geometry of the policy space, as it constrains updates based solely on the likelihood ratio without incorporating curvature information. 3Trust region regularization can be used as directional guidance We consider a regularized policy optimization objective of the standard form (Schulman et al., 2015): 
+
+max  
+
+> θ
+
+L(θ) = Ert(θ) ˆAt
+
+ − λ D (πθold ∥ πθ), (1) where D(·) is a divergence measure. Under a small update θ = θold + ∆ θ, if D is the KL divergence, the objective admits a second-order approximation: 
+
+L(θ) ≈ g⊤∆θ − λ 
+
+> 2
+
+∆θ⊤F ∆θ, (2) where g = E ˆAt∇θ log πθ(at|st), F = E∇θ log πθ∇θ log π⊤
+
+> θ
+
+is the Fisher Information Matrix (FIM). The optimal update is given by: ∆θ∗ = 1 
+
+> λ
+
+F −1g. Compared to standard policy gradients ∆θ ∝ g,trust-region regularization transforms the update into a geometry-aware form F −1g, where the FIM induces anisotropic scaling across directions. In particular, directions associated with high curvature (large eigenvalues of F ) are suppressed, while low-curvature directions are amplified. This shows that trust-region regularization acts as a directional filter , guiding updates based on the local geometry of the policy space rather than purely on scalar advantage signals. 
+
+## 3 Trust Region Regularization Unlocks Behavior Transition Level 1 (0-2M) Level 2 (2-4M) Level 3 (4-6M)       
+
+> 0
+> 20
+> 40
+> Return
+> 0123456
+> Env Steps (1M)
+> 0
+> 20
+> 40
+> Return
+> PPO sequential
+> PPO sequential (SnP)
+> PPO single-task
+> PPO w/ relaxed clip
+> PPO w/ gradually relaxed clip
+
+Figure 2: (Top): Complex layouts across levels. (Middle): PPO collapses during sequential train-ing, even w/ repairing the network. (Bottom): With higher clip range, PPO still collapses. 
+
+Network capacity is not the bottleneck. To test whether the failure is caused by limited model expressiveness, we incorporate stochastic network perturbations (SnP) (Ash and Adams, 2020) to continually refresh network capacity (PPO-sequential-SnP) (Figure 2 (Middle)). De-spite improved performance on the first task, the policy still collapses, suggesting that insuf-ficient capacity is not the primary cause.We first investigate the root cause of PPO’s limited be-havioral pattern transition capability using a controlled sequential training setup inspired by (Abbas et al., 2023, Muppidi et al., 2024). Specifi-cally, we construct a curriculum on the challeng-ing starpilot environment from Procgen (Cobbe et al., 2020), where task difficulty increases pro-gressively (Level 1 →Level 2 →Level 3). We train a single MLP policy using standard PPO across the full sequence (PPO-sequential), and com-pare it to a control setting where PPO is trained from scratch on each task independently (PPO-single task). As shown in Figure 2 (Bottom), PPO successfully solves each task in isolation. However, under sequential training, although the policy rapidly learns the first task coincides with PPO-single task, it experiences a sharp performance collapse when transitioning to subsequent tasks. This indicates that the failure is not due to task difficulty alone, but arises from the interaction between PPO’s update mechanism and non-stationary task shifts. 4Larger clipping ranges fail to recover the policy. A natural hypothesis is that the clipping con-straint restricts the policy to a region too small to capture new behaviors (Wang et al., 2019). To evaluate this, we relax the clipping bound (PPO w/ relaxed clip) and also consider schedules where the clipping range grows over time (PPO w/ gradually relaxed clip). Neither modification recovers continual learning ability, indicating that clipping is not the root cause (Figure 2 (Bottom)). 
+
+Failure arises from aimless local optimization. We further examine the dynamics preceding collapse. As shown in Figure 3 (Left), the policy shift ratio exhibits high-frequency fluctuations before failure, while gradient magnitudes remain significant. This suggests that the policy is actively updating and exploring in parameter space. However, these updates fail to produce consistent improvement, indicating that exploration is directionally inefficient despite being persistent. 2.00 2.01 2.02 2.03 2.04 2.05              
+
+> Env Steps (1M)
+> 0.96
+> 0.98
+> 1.00
+> 1.02
+> 1.04
+> 1.06
+> 1.08
+> 1.10
+> Policy Shift Ratio
+> PPO sequential
+> PPO single-task
+> 01234
+> ratio r
+> 0
+> 2
+> 4
+> 6
+> 8
+> 10
+> 12
+> trust region reg
+> Inverse KL: rlog r
+> Pearson: r(r1)
+> 0510 15 20
+> Env Steps (1M)
+> 0
+> 10
+> 20
+> 30
+> 40
+> 50
+> Return
+> Inverse KL
+> Pearson
+> PPO sequential
+
+Figure 3: (Left): Policy update magnitude of standard PPO is high. After the task switch, PPO shows a higher update range than the baseline, and the updated policy is always far from the reference policy, which indicates that it cannot sense the reliable optimization direction. (Middle): 
+
+Visualization of constraint strength. The penalty strength of the divergence corresponding to the shift ratio. (Right): Trust-region regularizations unlock the behavior transition ability of PPO. 
+
+Under the setup of Figure 2 (Level 1 to Level 10), the policy employing these two mild punishment divergences achieves better continuous learning ability compared to the standard PPO. 
+
+Trust-region regularization is critical for effective adaptation. The above results indicate that PPO fails in continual settings not due to insufficient model capacity or overly restricted update magnitude, but because it lacks the navigation in complex local optimization landscapes. In particu-lar, the absence of directional guidance leads to inefficient exploration, causing the accumulation of biased local updates and resulting in training collapse. This suggests that the core issue lies in how trust-region regularization shapes the update geometry, rather than in the scale of the update itself. To test this hypothesis, we introduce divergence-based penalties, which provide partial land-scape awareness through their connection to the Fisher Information Matrix (FIM). Unlike standard PPO, which relies solely on scalar advantage weighting, these penalties incorporate curvature information that differentiates update directions based on their induced distributional shifts. As shown in Figure 3 (Middle), both inverse KL (Shah et al., 2025, Tang and Munos, 2025) and Pearson 
+
+χ2 (Xie et al., 2024) penalties lead to immediate and consistent performance improvements over standard PPO in sequential Procgen training (Figure 3, right). These results provide empirical evi-dence that incorporating geometry-aware regularization significantly improves local optimization quality. By guiding updates toward directions that yield stable and meaningful policy changes, such regularization enables iterative improvements to accumulate, resulting in gradual behavioral transitions and sustained performance in continual learning. 54 Reshape the Trust Region via Gaussian Kernel 
+
+Figure 4: Visualization of constraints. Com-pared to KL divergence, Gaussian maintains proximal stability while allowing far exploration driven by high advantage. As section 3 shows, incorporating divergence-based penalties can achieve behavior transition by providing geometry-aware guidance for local op-timization. However, these approaches remain fundamentally limited. Most divergence-based penalties increase monotonically with policy devi-ation, implicitly enforcing a linear or unbounded growth of constraint strength as the policy moves away from the reference. In non-stationary en-vironments, effective adaptation often requires transitioning toward behavior modes that are sub-stantially different from the current policy. In such cases, monotonically increasing penalties can overly suppress exploration precisely when large, consistent updates are needed. This observation suggests that an effective trust-region constraint for continual learning should not only encode lo-cal geometry, but also relax its restriction in a controlled manner as the policy moves toward promising regions. In other words, the regular-ization should provide strong local stability while avoiding excessive resistance to sustained, high-quality updates far away from the current reference policy. To address this limitation, we propose to reshape the trust region using a Gaussian kernel. This formulation induces a bounded, non-monotonic constraint that preserves local geometry while allowing controlled exploration beyond the immediate neighborhood, enabling efficient navigation of complex optimization landscapes: (i) Forgetting Mechanism: λ(˜ r) → 0 as ˜r → 0. When an action is no longer sampled, no regularization gradient should be applied to it. (ii) Unchanged Policy: λ(˜ r) → 0 as ˜r → 1. No regularization is enforced when the policy remains unchanged. (iii) Local Trust Region: λ(˜ r)˜r ≈ ± ϵ when ˜r = 1 ± ϵ, preserving first-order trust-region behavior and endowing the regularization term with the functionality of a trust region, analogous to the 
+
+ϵ-alignment (Xie et al., 2024). (iv) Vanishing Constraint at Scale: λ(˜ r) → 0 as ˜r ≫ 1, allowing sustained, high-advantage updates to escape local modes. The complete derivation is deferred to subsection A.2. Guided by these principles, we introduce a Gaussian decay kernel (as shown in Figure 4 (Top)), yielding λGaussian (˜ r) = ˜ r(˜ r − 1) e−(˜ r−1) 2
+
+, which satisfies localized stiffness near ˜r ≈ 1 while inducing rapidly vanishing gradients for large deviations. This behavior allows policy updates to remain stable in local regions while avoiding excessive penalization of large, high-advantage shifts. Remarkably, this formulation admits an elegant anti-derivative: 
+
+LGaussian = 12 (1 − e−(˜ r−1) 2
+
+) (3) This is a plug-and-play module that can be effortlessly integrated into standard PPO. We term this idealized approach which aligns with the theory as Gaussian Trust Region Policy Optimization 
+
+6(GTR ), with the objective function formulated as follows: 
+
+LGTR = Et
+
+n
+
+− min 
+
+h
+
+rt(θ) ˆAt, clip( rt(θ), 1 − ϵ, 1 + ϵ) ˆAt
+
+i
+
++ η
+
+2
+
+
+
+1 − e−(rt−1) 2 o 
+
+(4) 
+
+Sliding Trust Region via Gaussian Mixtures While the single Gaussian kernel improves the functional shape of the trust region, it does not consider another implicit issue: During multi-epoch updates, the trust-region anchor remains tied to the behavior policy, causing likelihood ratios to become increasingly unstable as the policy drifts away. This issue is further exacerbated under high UTD regimes, where repeated reuse of stale data leads to biased updates and degraded adaptation (Gan et al., 2024, Li et al., 2025). We reinterpret it as a consequence of a rigid trust region . The constraint remains anchored to an outdated policy and fails to account for the progressive shift of the policy distribution throughout optimization. To address this limitation, we propose a Mixture Gaussian Anchor , which generalizes the trust-region constraint by replacing the single reference policy with a mixture over recent policy snapshots. Concretely, we compute the trust-region penalty using multiple intermediate policies from different PPO epochs and average their contributions. This yields a trajectory-aware constraint that tracks the progressive shift of the policy distribution, mitigating the effect of stale references while preserving sensitivity to recent updates. Moreover, due to the vanishing tails of the Gaussian kernel, the resulting regularization is inherently bounded and avoids excessive variance. From a theoretical standpoint, this mixture Gaussian regularization directly shapes the policy update through its adaptive, smoothly decaying penalty: 
+
+LMixGaussian = 1
+
+K
+
+> K
+
+X
+
+> i=1
+
+πi(a | s)
+
+μ(a | s) · 12
+
+"
+
+1 − exp −
+
+ πθ(a | s)
+
+πi(a | s) − 1
+
+2!#! 
+
+(5) where μ denotes the behavior policy, πi represents the policy at the i-th epoch (with π1 = μ), and πθ
+
+is the current policy. The final GTR objective is thus given by: 
+
+LGTR = Et
+
+
+
+− min 
+
+ πθ(a | s)
+
+μ(a | s) ˆAt, clip 
+
+ πθ(a | s)
+
+μ(a | s) , 1 − ϵ, 1 + ϵ
+
+
+
+ˆAt
+
+
+
++ ηL MixGaussian 
+
+
+
+(6) 
+
+Rethink the Rationality of GTR According to Fisher Information Matrix From an optimization perspective, we construct a trust region along the path of policy improvement (Dabney et al., 2021). From a gradient perspective, the probability measures of reference policies are unified to the current parameterized policy πθ via the Radon-Nikodym derivative (i.e. the importance weight). Concurrently, a Gaussian kernel is applied to these derivatives to smoothly penalize deviations, yielding: 
+
+∇θLMixGaussian = Eπθ
+
+"
+
+1
+
+K
+
+> K
+
+X
+
+> i=1
+
+exp −
+
+ πθ(a | s)
+
+πi(a | s) − 1
+
+2!| {z }
+
+> Gaussian Kernel
+
+·
+
+ πθ(a | s)
+
+πi(a | s) − 1
+
+| {z }
+
+> Trust Region Penalty
+
+∇θ log πθ
+
+#
+
+(7) Our approach can thus be viewed as approximating the effective FIM via a Gaussian-weighted aggregation of multiple local FIMs along the optimization trajectory. 
+
+## 5 Experiments 
+
+We evaluate GTR across a diverse spectrum of architectures and tasks ranging in complexity, to determine whether continual learning ability is effectively recovered. Our evaluation spans three 7distinct domains: (i) Robotic Control: Evaluating continual learning performance and generalization across tasks. (ii) Open-World Exploration: Assessing adaptability under prolonged training with high data staleness. (iii) Language Reasoning Model Post-Training: Demonstrating the efficacy of 
+
+GTR on large-scale models, highlighting the mode transition issue in such domain. (iv) Ablation Study: Investigating the robustness of GTR to relaxed clipping and examining whether adjusting KL’s penalty strength can replicate the effect of GTR .
+
+5.1 Robotic Control: GTR Stimulates Continual Learning Capacity on Advanced Architecture 
+
+Experimental Setup We compare GTR with standard PPO, PPO with KL-based trust-region con-straint and a recent PPO variant, SPO (Xie et al., 2024). All results are averaged over three random seeds, and each method is tuned with empirically optimal hyperparameters (details in Appendix B). We adopt the same SimBa (Lee et al., 2024) architecture (advanced scalable residual blocks with LayerNorm) to parameterize policies to ensure baseline performance and eliminate the performance degradation caused by network expressiveness. To comprehensively evaluate continual learning ability, we construct two types of benchmarks: 
+
+Sequential Training on Related Tasks within the Same Scenario This setting evaluates the ability to adapt between tasks with shared action and observation spaces (use the same embodied skeleton) but differing task goals, capturing smooth behavioral mode transitions. We build two difficult locomotion benchmarks via DeepMind Control Suite (Tassa et al., 2018): (i) Walker: walker stand →walk →run and (ii) Dog: dog stand →walk →run →trot , repeated for two cycles. 0 1 2 3 4 5 6                  
+
+> 0
+> 300
+> 600
+> 900
+> Return
+> Walker
+> 02468
+> 0
+> 250
+> 500
+> 750
+> Dog
+> 0123456
+> Env Steps (1M)
+> 10
+> 5
+> 0
+> 5
+> Entropy
+> 02468
+> Env Steps (1M)
+> 0
+> 20
+> 40
+> GTR (Mix Gaussian) GTR (Gaussian) SPO PPO w/ KL PPO
+
+Figure 5: Performance and policy entropy with the default Simba architecture. (Top row) Episode return across two benchmarks. (Bottom row) Corresponding policy entropy. Results are averaged over three seeds. 
+
+Sequential Training on Differentiated Tasks across Scenarios This setting evaluates adaptation under significant dis-tribution shifts, including differences in task logic, observation spaces, and action spaces. It poses a more challenging test of policy plasticity. We construct two benchmarks us-ing MuJoCo-v5 tasks (Todorov et al., 2012), 
+
+HalfCheetah →Walker →Ant →Humanoid ,along with the reversed order, trained sequentially over three cycles. 
+
+Results: Related Tasks Sequential Training 
+
+As shown in Figure 5 (first row), GTR consis-tently achieves the best performance across all benchmarks and outperforms strong baselines by up to 25% in peak performance. 
+
+GTR exhibits substantially faster adaptation when switching tasks, as evidenced by the rapid rise in performance immediately after task transitions. This indicates more efficient behav-ioral mode switching. Further analysis of policy entropy (Figure 5 (second row)) shows that GTR 
+
+maintains higher entropy during training. This suggests that the reshaped trust region preserves exploration capacity and enables efficient mode seeking in a huge solution space. 80 2 4 6 8 10 12                                             
+
+> Env Steps (1M)
+> 0
+> 1k
+> 2k
+> 3k
+> 4k
+> Forward Return
+> HC WAHHC WAHHC WAH
+> GTR (Mix Gaussian)
+> GTR (Gaussian)
+> SPO
+> PPO w/ KL
+> PPO 0
+> 2k
+> 4k
+> HalfCheetah
+> 0
+> 1k
+> 2k
+> 3k
+> Ant
+> 0123
+> Steps (1M)
+> 0
+> 1k
+> 2k
+> 3k
+> Walker
+> 0123
+> Steps (1M)
+> 0
+> 2k
+> 4k Humanoid
+> 0246810 12
+> Env Steps (1M)
+> 0
+> 1k
+> 2k
+> 3k
+> 4k
+> Reverse Return
+> HAWHC HAWHC HAWHC
+> 2k
+> 4k
+> HalfCheetah
+> 0
+> 2k
+> 4k Ant
+> 0123
+> Steps (1M)
+> 0
+> 1k
+> 2k
+> 3k
+> Walker
+> 0123
+> Steps (1M)
+> 0
+> 2k
+> 4k Humanoid
+
+Figure 6: (Top row): Episode return during forward loop training across four tasks , i.e., H: Humanoid, A: Ant, W: Walk, HC: HalfCheetah. (Bottom row) Episode return during inverse loop training. GTR consistently achieves best performance during each cycle. 
+
+Results: Differentiated Tasks Sequential Training When task differences become more significant, the benefits of GTR are further amplified. Comparing Figure 6 (left) with Figure 1, we observe that increased difficulty in behavior mode transitions leads to larger performance gaps between GTR 
+
+and baseline methods. GTR consistently achieves superior performance under both forward and reverse training orders, demonstrating robustness to curriculum variations. This indicates that the method is less sensitive to task ordering and does not rely on favorable training sequences. A per-task analysis (Figure 6 (right)) further reveals that the mixture Gaussian trust region enables more precise modeling of behavioral boundaries. As a result, performance improves progressively across training cycles, with most tasks surpassing their previous best scores. Since state and action spaces are different across tasks, we employ task-specific input layers for both actors and critics and task-specific output heads for actors. Such layers account for a small fraction of the total parameters. 
+
+5.2 Open-World Exploration: GTR Discovers and Learns New Skills during Prolonged Training 
+
+Experimental Setup To evaluate whether GTR can achieve obvious behavior mode transition and stable training in prolonged training, we conduct an extreme long-horizon experiment in a challenging Minecraft-style open-world environment, Craftax (Matthews et al., 2024), which features a rich set of compositional subtasks and diverse behavioral patterns. We consider two architectures: (i) SimBa, an advanced residual network, following the official implementation and (ii) a GRU backbone with LayerNorm (Ba et al., 2016, Nauman et al., 2024), following the implementation in Matthews et al. (2024). Agents are trained for 1 billion steps to test the ability of behavior transition. 9(a) Miner                         
+
+> 0.0 0.2 0.4 0.6 0.8 1.0
+> Env Steps (1B)
+> 10
+> 16
+> 22
+> 28
+> 34
+> Score
+> (b) Return (c) Warrior
+> 0.0 0.2 0.4 0.6 0.8 1.0
+> Env Steps (1B)
+> 0
+> 30
+> 60
+> 90
+> (d) Open Chest
+> 0.0 0.2 0.4 0.6 0.8 1.0
+> Env Steps (1B)
+> 10
+> 16
+> 22
+> 28
+> (e) Return
+> UTD=4
+> UTD=8
+> UTD=12
+> GTR (Mix Gaussian) GTR (Gaussian) SPO PPO w/ KL PPO
+
+Figure 7: (a-c): Episodic return of GRU-based PPO , where arrows illustrate the agent’s mode shift from miner to warrior (d): Performance of GRU-based PPO on open-chest (e): Ablation study on the Up-to-Data ratio of SimBa-based PPO. Results are averaged over three seeds. olympiad math500 amc23 minerva 
+
+> 16 14 12 10 8642Performance improvements KL Divergence GTR (Mix Gaussian)
+
+Figure 8: Score Improvement over the ini-tial policy on four tasks. Both methods use GRPO as a backbone. 
+
+Results In experiments with GRU-based PPO (Fig-ure 7(b)), we identify open-chest (recorded in Fig-ure 7(d)) as a critical milestone highly predictive of ultimate performance. Prior to mastering this skill, the agent defaults to a conservative mining strat-egy (termed the old behavior ). Upon acquiring open-chest , the agent secures sufficient resources to hunt formidable monsters, effectively transitioning into a “warrior” (the new behavior ). We observe an intrigu-ing dynamic: while standard PPO discovers open-chest early in training, accumulated inefficiencies in local optimization leave it entrenched in the old pat-tern. SPO, hampered by its aggressive regularization against outliers, completely fails to transition into the new pattern, converging to a suboptimal policy. Con-versely, although GTR learns open-chest slightly later in the training process, its exceptional learning capacity enables a rapid behavioral shift into the new mode, ultimately yielding the highest return. We further investigate performance under high update-to-data (UTD) regimes using SimBa-based PPO (as shown in Figure 7(e)). As we increase the number of PPO epochs from 4 to 12, GTR not only maintains stable training, but also learns open-chest significantly faster and converges to higher returns. This suggests that GTR effectively leverages high-UTD updates to accelerate adaptation. 
+
+5.3 LLM Training: GTR Reveals the Implicit Need of Mode Transition in Fine-tuning 
+
+We adopt GRPO (Guo et al., 2025), a simplified variant of PPO widely used in LLM post-training, as the basis, where group normalization replaces GAE for advantage estimation. We set 
+
+U T D = 2 (equivalent to PPO epochs), introducing mild off-policy effects due to data reuse. Policies are initialized from Qwen3-1.7B-Base . To ensure reproducibility and fairness, we exclusively use open-source datasets in Yu et al. (2025). We evaluate performance using pass@4 on four challenging benchmarks: MATH-500 (Lightman et al., 2023), OlympiadBench (He et al., 2024), MinervaMath (Lewkowycz et al., 2022), and AMC 2023 (Xue et al., 2025). See subsection B.1 for detailed settings. 10 Results As shown in Figure 8, GTR achieves the best performance across all benchmarks. We attribute this improvement to the implicit continual learning nature of LLM post-training. In each training batch, prompts correspond to diverse reasoning prompts, requiring the policy to continuously adapt across heterogeneous objectives while maintaining previously acquired capa-bilities. As a result, optimization dynamics naturally involve frequent shifts between different behavioral patterns, and local directional guidance plays a critical role in achieving strong reasoning performance. 
+
+5.4 Ablation study 0.0 0.2 0.4 0.6 0.8 1.0             
+
+> Env Steps (1B)
+> 16
+> 22
+> 28
+> 34
+> Score
+> (a) Clip Coefficient
+> GTR (Mix Gaussian)
+> GTR (Mix Gaussian, 0.32)
+> PPO
+> PPO (0.32)
+> 0510 15 20
+> Env Steps (1M)
+> 0
+> 10
+> 20
+> 30
+> 40
+> 50
+> Return
+> (b) KL Coefficient
+> fixed KL = 0.10
+> fixed KL = 0.05
+> fixed KL = 0.01
+> KL : 0.10 0
+
+Figure 9: (Left): GTR remains robust on large clip range. (Right): PPO still collapses when adjusting KL coefficient. 
+
+GTR shows robustness to relaxed clip-ping As illustrated in Figure 9 (Left), after increasing the clip range of GRU-based PPO in Craftax, although the convergence slows down, it does not affect the final performance of GTR .In contrast, PPO experiences perfor-mance degradation. This demon-strates that the Gaussian trust region is more reliable to guide the local land-scape. 
+
+Modifying KL strength fails to recover the learning ability of standard PPO As depicted in Figure 9 (Right), we evaluated three fixed KL coefficients alongside a linearly decaying KL schedule starting from 0.1. All configurations led to collapse in Procgen. This highlights the necessity of directly reshaping the trust region to unlock the continuous learning ability. 
+
+## 6 Related Work 
+
+While stable dynamics and signals are theoretically crucial for algorithm convergence in re-inforcement learning (Agarwal et al., 2021), numerous empirical practices in model-free RL have demonstrated the robustness of deep RL to such tasks, utilizing techniques like residual learn-ing (Silver et al., 2018) and network ensembling (Ball et al., 2023). Interestingly, these methods are entirely based on Q-learning (Watkins and Dayan, 1992). Rather than contradicting foundational theories, these empirical techniques effectively stabilize the variance and mitigate the non-stationary, thereby satisfying the implicit requirements of classic stochastic approximation theory (Borkar and Borkar, 2008) and Robbins-Monro theorem (Robbins and Monro, 1951) in highly non-linear settings. Furthermore, the replay buffer mechanism in Q-learning naturally aligns with classic continual learning algorithms, such as EWC (Kirkpatrick et al., 2017) and PackNet (Mallya and Lazebnik, 2018), which has directly shaped the mainstream research trajectory of continual RL in recent years. Compared to off-policy counterparts, research on continual learning based on PPO remains exceptionally scarce. Prior mainstream research has undergone a paradigm shift from learning dynamics (Lyle et al., 2022, Tang and Munos, 2023), generalization and interference (Bengio et al., 2020), towards plasticity (Dohare et al., 2024). The latter specifically emphasizes the plasticity of neural networks, and existing methods have explored this from a diverse array of perspectives: plasticity injection (Nikishin et al., 2023), loss landscapes (Lyle et al., 2023), normalization (Lyle et al., 2024b), network weights (Elsayed et al., 2024), effective learning rates (Lyle et al., 2024a), dormant 11 neurons (Sokar et al., 2023), the lottery ticket hypothesis (Liu et al., 2024), gradient geometry (Liu et al., 2025), and Neural Tangent Kernel (NTK) theory (Tang et al., 2025). While fruitful, these approaches often blur the mechanistic distinctions between policy gradient methods and other RL algorithms, leaving the inherent continual learning potential of PPO itself largely overlooked. Although our foundational work builds upon vanilla PPO, numerous exceptional variants have been derived from PPO at the application level, which may harbor even greater potential for con-tinual learning. PPO-EWMA (Hilton et al., 2022) investigates asynchronous settings under limited computational resources, PPG (Cobbe et al., 2021) explores representation-level sharing and data efficiency, and GRPO (Guo et al., 2025) has successfully enabled the RL training of reasoning models. Additionally, the data collection pipeline (Mayor et al., 2025) itself warrants further consideration. We leave the exploration of these promising directions for future work. 
+
+## 7 Conclusion 
+
+In this work, we investigated the limitations of PPO in continual and non-stationary learning settings. Through systematic empirical analysis, we showed that policy collapse arises not from insufficient model capacity or clip range, but from inefficient local exploration. Without geometry-aware guidance, policy updates become directionally misaligned, leading to the accumulation of biased local updates and ultimately hindering global adaptation. While divergence-based con-straints introduce partial geometric structure, their monotonically increasing penalties limit the ability to transition toward new behavior modes. To address this limitation, we proposed GTR , which reshapes the trust region using a Gaussian kernel. This design balances local stability with controlled exploration. By further introducing a mixture-based anchor to adapt to evolving policies, GTR en-ables efficient local optimization and facilitates gradual yet reliable behavioral transitions. Extensive experiments across diverse domains demonstrated that GTR consistently improves performance. We hope this work motivates further research on trust-region design as a foundation for robust and adaptive reinforcement learning. Due to computational constraints, we do not evaluate our method on various-sized LLMs. Extending GTR to such high-compute regimes is an important direction for future work. Second, although our Gaussian-shaped trust-region design is well-motivated and empirically effective, its formulation is primarily guided by intuition and empirical observations, lacking a fully rigorous theoretical foundation. Developing a deeper theoretical understanding of geometry-aware, non-monotonic regularization remains an open problem. 12 References 
+
+Zaheer Abbas, Rosie Zhao, Joseph Modayil, Adam White, and Marlos C Machado. Loss of plasticity in continual deep reinforcement learning. In Conference on lifelong learning agents , pages 620–636. PMLR, 2023. David Abel, André Barreto, Benjamin Van Roy, Doina Precup, Hado P van Hasselt, and Satinder Singh. A definition of continual reinforcement learning. Advances in Neural Information Processing Systems , 36:50377–50407, 2023. Alekh Agarwal, Sham M Kakade, Jason D Lee, and Gaurav Mahajan. On the theory of policy gradient methods: Optimality, approximation, and distribution shift. Journal of Machine Learning Research , 22(98):1–76, 2021. Ilge Akkaya, Marcin Andrychowicz, Maciek Chociej, Mateusz Litwin, Bob McGrew, Arthur Petron, Alex Paino, Matthias Plappert, Glenn Powell, Raphael Ribas, et al. Solving rubik’s cube with a robot hand. arXiv preprint arXiv:1910.07113 , 2019. Shun-Ichi Amari. Natural gradient works efficiently in learning. Neural computation , 10(2):251–276, 1998. Marcin Andrychowicz, Anton Raichuk, Piotr Sta ´ nczyk, Manu Orsini, Sertan Girgin, Raphael Marinier, Léonard Hussenot, Matthieu Geist, Olivier Pietquin, Marcin Michalski, et al. What matters in on-policy reinforcement learning? a large-scale empirical study. arXiv preprint arXiv:2006.05990 , 2020. Jordan Ash and Ryan P Adams. On warm-starting neural network training. Advances in neural information processing systems , 33:3884–3894, 2020. Jimmy Lei Ba, Jamie Ryan Kiros, and Geoffrey E Hinton. Layer normalization. arXiv preprint arXiv:1607.06450 , 2016. Philip J Ball, Laura Smith, Ilya Kostrikov, and Sergey Levine. Efficient online reinforcement learning with offline data. In International Conference on Machine Learning , pages 1577–1594. PMLR, 2023. Emmanuel Bengio, Joelle Pineau, and Doina Precup. Interference and generalization in temporal difference learning. In International Conference on Machine Learning , pages 767–777. PMLR, 2020. Christopher Berner, Greg Brockman, Brooke Chan, Vicki Cheung, Przemysław D˛ ebiak, Christy Dennison, David Farhi, Quirin Fischer, Shariq Hashme, Chris Hesse, et al. Dota 2 with large scale deep reinforcement learning. arXiv preprint arXiv:1912.06680 , 2019. Vivek S Borkar and Vivek S Borkar. Stochastic approximation: a dynamical systems viewpoint , volume 100. Springer, 2008. Junyoung Chung, Caglar Gulcehre, KyungHyun Cho, and Yoshua Bengio. Empirical evaluation of gated recurrent neural networks on sequence modeling. arXiv preprint arXiv:1412.3555 , 2014. Karl Cobbe, Chris Hesse, Jacob Hilton, and John Schulman. Leveraging procedural generation to benchmark reinforcement learning. In International conference on machine learning , pages 2048–2056. PMLR, 2020. Karl W Cobbe, Jacob Hilton, Oleg Klimov, and John Schulman. Phasic policy gradient. In International Conference on Machine Learning , pages 2020–2027. PMLR, 2021. Will Dabney, André Barreto, Mark Rowland, Robert Dadashi, John Quan, Marc G Bellemare, and David Silver. The value-improvement path: Towards better representations for reinforcement learning. In Proceedings of the AAAI conference on artificial intelligence , volume 35, pages 7160–7168, 2021. 13 Shibhansh Dohare, J Fernando Hernandez-Garcia, Qingfeng Lan, Parash Rahman, A Rupam Mah-mood, and Richard S Sutton. Loss of plasticity in deep continual learning. Nature , 632(8026): 768–774, 2024. Mohamed Elsayed, Qingfeng Lan, Clare Lyle, and A Rupam Mahmood. Weight clipping for deep continual and reinforcement learning. arXiv preprint arXiv:2407.01704 , 2024. Yaozhong Gan, Renye Yan, Xiaoyang Tan, Zhe Wu, and Junliang Xing. Transductive off-policy proximal policy optimization. arXiv preprint arXiv:2406.03894 , 2024. Daya Guo, Dejian Yang, Haowei Zhang, Junxiao Song, Peiyi Wang, Qihao Zhu, Runxin Xu, Ruoyu Zhang, Shirong Ma, Xiao Bi, et al. Deepseek-r1: Incentivizing reasoning capability in llms via reinforcement learning. arXiv preprint arXiv:2501.12948 , 2025. Chaoqun He, Renjie Luo, Yuzhuo Bai, Shengding Hu, Zhen Thai, Junhao Shen, Jinyi Hu, Xu Han, Yujie Huang, Yuxiang Zhang, et al. Olympiadbench: A challenging benchmark for promoting agi with olympiad-level bilingual multimodal scientific problems. In Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) , pages 3828–3850, 2024. Jacob Hilton, Karl Cobbe, and John Schulman. Batch size-invariance for policy optimization. 
+
+Advances in Neural Information Processing Systems , 35:17086–17098, 2022. Jemin Hwangbo, Joonho Lee, Alexey Dosovitskiy, Dario Bellicoso, Vassilios Tsounis, Vladlen Koltun, and Marco Hutter. Learning agile and dynamic motor skills for legged robots. Science robotics , 4 (26):eaau5872, 2019. Sham Kakade and John Langford. Approximately optimal approximate reinforcement learning. In 
+
+Proceedings of the nineteenth international conference on machine learning , pages 267–274, 2002. Sham M Kakade. A natural policy gradient. Advances in neural information processing systems , 14, 2001. Khimya Khetarpal, Matthew Riemer, Irina Rish, and Doina Precup. Towards continual reinforcement learning: A review and perspectives. Journal of Artificial Intelligence Research , 75:1401–1476, 2022. James Kirkpatrick, Razvan Pascanu, Neil Rabinowitz, Joel Veness, Guillaume Desjardins, Andrei A Rusu, Kieran Milan, John Quan, Tiago Ramalho, Agnieszka Grabska-Barwinska, et al. Overcoming catastrophic forgetting in neural networks. Proceedings of the national academy of sciences , 114(13): 3521–3526, 2017. Erwan Lecarpentier, David Abel, Kavosh Asadi, Yuu Jinnai, Emmanuel Rachelson, and Michael L Littman. Lipschitz lifelong reinforcement learning. In Proceedings of the AAAI Conference on Artificial Intelligence , volume 35, pages 8270–8278, 2021. Hojoon Lee, Dongyoon Hwang, Donghu Kim, Hyunseung Kim, Jun Jet Tai, Kaushik Subramanian, Peter R Wurman, Jaegul Choo, Peter Stone, and Takuma Seno. Simba: Simplicity bias for scaling up parameters in deep reinforcement learning. arXiv preprint arXiv:2410.09754 , 2024. Aitor Lewkowycz, Anders Andreassen, David Dohan, Ethan Dyer, Henryk Michalewski, Vinay Ra-masesh, Ambrose Slone, Cem Anil, Imanol Schlag, Theo Gutman-Solo, et al. Solving quantitative reasoning problems with language models. Advances in neural information processing systems , 35: 3843–3857, 2022. Xiaocan Li, Shiliang Wu, and Zheng Shen. A-3po: Accelerating asynchronous llm training with staleness-aware proximal policy approximation. arXiv preprint arXiv:2512.06547 , 2025. 14 Hunter Lightman, Vineet Kosaraju, Yuri Burda, Harrison Edwards, Bowen Baker, Teddy Lee, Jan Leike, John Schulman, Ilya Sutskever, and Karl Cobbe. Let’s verify step by step. In The twelfth international conference on learning representations , 2023. Jiashun Liu, Johan Obando-Ceron, Aaron Courville, and Ling Pan. Neuroplastic expansion in deep reinforcement learning. arXiv preprint arXiv:2410.07994 , 2024. Jiashun Liu, Zihao Wu, Johan Obando-Ceron, Pablo Samuel Castro, Aaron Courville, and Ling Pan. Measure gradients, not activations! enhancing neuronal activity in deep reinforcement learning. 
+
+arXiv preprint arXiv:2505.24061 , 2025. Clare Lyle, Mark Rowland, Will Dabney, Marta Kwiatkowska, and Yarin Gal. Learning dynamics and generalization in deep reinforcement learning. In International conference on machine learning ,pages 14560–14581. PMLR, 2022. Clare Lyle, Zeyu Zheng, Evgenii Nikishin, Bernardo Avila Pires, Razvan Pascanu, and Will Dabney. Understanding plasticity in neural networks. In International Conference on Machine Learning , pages 23190–23211. PMLR, 2023. Clare Lyle, Zeyu Zheng, Khimya Khetarpal, James Martens, Hado van Hasselt, Razvan Pascanu, and Will Dabney. Normalization and effective learning rates in reinforcement learning. Advances in Neural Information Processing Systems , 37:106440–106473, 2024a. Clare Lyle, Zeyu Zheng, Khimya Khetarpal, Hado Van Hasselt, Razvan Pascanu, James Martens, and Will Dabney. Disentangling the causes of plasticity loss in neural networks. arXiv preprint arXiv:2402.18762 , 2024b. Arun Mallya and Svetlana Lazebnik. Packnet: Adding multiple tasks to a single network by iterative pruning. In Proceedings of the IEEE conference on Computer Vision and Pattern Recognition , pages 7765–7773, 2018. Michael Matthews, Michael Beukman, Benjamin Ellis, Mikayel Samvelyan, Matthew Jackson, Samuel Coward, and Jakob Foerster. Craftax: A lightning-fast benchmark for open-ended reinforcement learning. arXiv preprint arXiv:2402.16801 , 2024. Walter Mayor, Johan Obando-Ceron, Aaron Courville, and Pablo Samuel Castro. The impact of on-policy parallelized data collection on deep reinforcement learning networks. arXiv preprint arXiv:2506.03404 , 2025. Reginald McLean, Evangelos Chatzaroulas, Luc McCutcheon, Frank Röder, Tianhe Yu, Zhanpeng He, KR Zentner, Ryan Julian, Jordan K Terry, Isaac Woungang, et al. Meta-world+: An improved, standardized, rl benchmark. arXiv preprint arXiv:2505.11289 , 2025. Volodymyr Mnih, Koray Kavukcuoglu, David Silver, Andrei A Rusu, Joel Veness, Marc G Bellemare, Alex Graves, Martin Riedmiller, Andreas K Fidjeland, Georg Ostrovski, et al. Human-level control through deep reinforcement learning. nature , 518(7540):529–533, 2015. Aneesh Muppidi, Zhiyu Zhang, and Heng Yang. Pick up the pace: A parameter-free optimizer for lifelong reinforcement learning. In Finding the Frame: An RLC Workshop for Examining Conceptual Frameworks , 2024. Michal Nauman, Michał Bortkiewicz, Piotr Miło´ s, Tomasz Trzci ´ nski, Mateusz Ostaszewski, and Marek Cygan. Overestimation, overfitting, and plasticity in actor-critic: the bitter lesson of reinforcement learning. arXiv preprint arXiv:2403.00514 , 2024. Evgenii Nikishin, Junhyuk Oh, Georg Ostrovski, Clare Lyle, Razvan Pascanu, Will Dabney, and André Barreto. Deep reinforcement learning with plasticity injection. Advances in Neural Information Processing Systems , 36:37142–37159, 2023. 15 Sebastian Nowozin, Botond Cseke, and Ryota Tomioka. f-gan: Training generative neural samplers using variational divergence minimization. Advances in neural information processing systems , 29, 2016. Long Ouyang, Jeffrey Wu, Xu Jiang, Diogo Almeida, Carroll Wainwright, Pamela Mishkin, Chong Zhang, Sandhini Agarwal, Katarina Slama, Alex Ray, et al. Training language models to follow instructions with human feedback. Advances in neural information processing systems , 35:27730– 27744, 2022. Chaofan Pan, Xin Yang, Yanhua Li, Wei Wei, Tianrui Li, Bo An, and Jiye Liang. A survey of continual reinforcement learning. arXiv preprint arXiv:2506.21872 , 2025. Herbert Robbins and Sutton Monro. A stochastic approximation method. The annals of mathematical statistics , pages 400–407, 1951. John Schulman, Sergey Levine, Pieter Abbeel, Michael Jordan, and Philipp Moritz. Trust region policy optimization. In International conference on machine learning , pages 1889–1897. PMLR, 2015. John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, and Oleg Klimov. Proximal policy optimization algorithms. arXiv preprint arXiv:1707.06347 , 2017. Vedant Shah, Johan Obando-Ceron, Vineet Jain, Brian Bartoldson, Bhavya Kailkhura, Sarthak Mittal, Glen Berseth, Pablo Samuel Castro, Yoshua Bengio, Nikolay Malkin, et al. A comedy of estimators: On kl regularization in rl training of llms. arXiv preprint arXiv:2512.21852 , 2025. Guangming Sheng, Chi Zhang, Zilingfeng Ye, Xibin Wu, Wang Zhang, Ru Zhang, Yanghua Peng, Haibin Lin, and Chuan Wu. Hybridflow: A flexible and efficient rlhf framework. In Proceedings of the Twentieth European Conference on Computer Systems , pages 1279–1297, 2025. Tom Silver, Kelsey Allen, Josh Tenenbaum, and Leslie Kaelbling. Residual policy learning. arXiv preprint arXiv:1812.06298 , 2018. Ghada Sokar, Rishabh Agarwal, Pablo Samuel Castro, and Utku Evci. The dormant neuron phe-nomenon in deep reinforcement learning. In International Conference on Machine Learning , pages 32145–32168. PMLR, 2023. Richard S Sutton, Andrew G Barto, et al. Reinforcement learning: An introduction , volume 1. MIT press Cambridge, 1998. Hongyao Tang, Johan Obando-Ceron, Pablo Samuel Castro, Aaron Courville, and Glen Berseth. Mitigating plasticity loss in continual reinforcement learning by reducing churn. arXiv preprint arXiv:2506.00592 , 2025. Yunhao Tang and Rémi Munos. Towards a better understanding of representation dynamics under td-learning. In International Conference on Machine Learning , pages 33720–33738. PMLR, 2023. Yunhao Tang and Rémi Munos. On a few pitfalls in kl divergence gradient estimation for rl. arXiv preprint arXiv:2506.09477 , 2025. Yuval Tassa, Yotam Doron, Alistair Muldal, Tom Erez, Yazhe Li, Diego de Las Casas, David Budden, Abbas Abdolmaleki, Josh Merel, Andrew Lefrancq, et al. Deepmind control suite. arXiv preprint arXiv:1801.00690 , 2018. Emanuel Todorov, Tom Erez, and Yuval Tassa. Mujoco: A physics engine for model-based control. In 
+
+2012 IEEE/RSJ international conference on intelligent robots and systems , pages 5026–5033. IEEE, 2012. Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, Łukasz Kaiser, and Illia Polosukhin. Attention is all you need. Advances in neural information processing systems , 30, 2017. 16 Yuhui Wang, Hao He, Xiaoyang Tan, and Yaozhong Gan. Trust region-guided proximal policy optimization. Advances in Neural Information Processing Systems , 32, 2019. Christopher JCH Watkins and Peter Dayan. Q-learning. Machine learning , 8(3):279–292, 1992. Maciej Wołczyk, Michał Zaj ˛ ac, Razvan Pascanu, Łukasz Kuci ´ nski, and Piotr Miło´ s. Continual world: A robotic benchmark for continual reinforcement learning. Advances in Neural Information Processing Systems , 34:28496–28510, 2021. Zhengpeng Xie, Qiang Zhang, Fan Yang, Marco Hutter, and Renjing Xu. Simple policy optimization. 
+
+arXiv preprint arXiv:2401.16025 , 2024. Zhenghai Xue, Longtao Zheng, Qian Liu, Yingru Li, Xiaosen Zheng, Zejun Ma, and Bo An. Sim-pletir: End-to-end reinforcement learning for multi-turn tool-integrated reasoning. arXiv preprint arXiv:2509.02479 , 2025. Qiying Yu, Zheng Zhang, Ruofei Zhu, Yufeng Yuan, Xiaochen Zuo, Yu Yue, Weinan Dai, Tiantian Fan, Gaohong Liu, Lingjun Liu, et al. Dapo: An open-source llm reinforcement learning system at scale. arXiv preprint arXiv:2503.14476 , 2025. 
+
+## A Extended Preliminaries and Derivations 
+
+A.1 Divergence and Fisher Information 
+
+Let πθ(a | s) be a differentiable policy, and consider a local perturbation θ′ = θ + ∆ θ. The forward KL divergence between πθ and πθ′ is defined as: 
+
+DKL (πθ ∥ πθ′ ) = Es∼dπθ , a ∼πθ
+
+
+
+log πθ(a | s)
+
+πθ′ (a | s)
+
+
+
+. (8) 
+
+Proposition 1 (Second-Order Expansion of KL and FIM). For sufficiently small ∆θ, the KL divergence admits the following expansion: 
+
+DKL (πθ ∥ πθ+∆ θ) = 12 ∆θ⊤F (θ) ∆ θ + o(∥∆θ∥2), (9) where 
+
+F (θ) = Es∼dπθ , a ∼πθ
+
+h
+
+∇θ log πθ(a | s) ∇θ log πθ(a | s)⊤i
+
+(10) is the Fisher Information Matrix (FIM). 
+
+Proof (Sketch). Let ℓ(θ′) := log πθ′ (a | s). Applying a second-order Taylor expansion of ℓ(θ′)
+
+around θ, we obtain: 
+
+ℓ(θ + ∆ θ) = ℓ(θ) + ∇θℓ(θ)⊤∆θ + 12 ∆θ⊤∇2
+
+> θ
+
+ℓ(θ) ∆ θ + o(∥∆θ∥2). (11) Substituting into the KL definition: 
+
+DKL (πθ ∥ πθ+∆ θ) = Eℓ(θ) − ℓ(θ + ∆ θ). (12) Taking expectations: • The first-order term vanishes: 
+
+Ea∼πθ
+
+∇θ log πθ(a | s) = 0 . (13) 17 • The second-order term becomes: 
+
+− 12 ∆θ⊤E∇2 
+
+> θ
+
+log πθ(a | s)∆θ. (14) Using the identity: 
+
+F (θ) = −E∇2 
+
+> θ
+
+log πθ(a | s), (15) we obtain: 
+
+DKL (πθ ∥ πθ+∆ θ) = 12 ∆θ⊤F (θ) ∆ θ + o(∥∆θ∥2). (16) 
+
+□
+
+Remarks. KL divergence locally induces a quadratic form defined by the FIM, thereby providing a geometry-aware metric over the policy space. Consequently, KL-based trust-region methods implicitly constrain updates under the Fisher geometry for small policy perturbations. 
+
+A.2 Derivation of Score Function Penalties 
+
+Let ˜r = πθ (a|s) 
+
+> πold (a|s)
+
+denote the probability ratio. Using the identity ∇θ ˜r = ˜ r∇θ log πθ, a general gradient penalty of the form ∇θL = Eπold [λ(˜ r)∇θ log πθ] corresponds to a pointwise penalty function 
+
+f (˜ r) satisfying: 
+
+Eπold 
+
+f ′(˜ r)∇θ ˜r = Eπold 
+
+˜rf ′(˜ r)
+
+| {z } 
+
+> := λ(˜ r)
+
+∇θ log πθ
+
+ . (17) This yields the general integration rule: 
+
+f (˜ r) = 
+
+Z λ(˜ r)˜r d˜r. (18) Applying this rule, we derive three specific penalty objectives based on the choice of the score function multiplier λ(˜ r):
+
+Inverse KL divergence: Let λ(˜ r) = ˜ r log ˜ r. Integrating yields: 
+
+f (˜ r) = 
+
+Z ˜r log ˜ r
+
+˜r d˜r =
+
+Z
+
+log ˜ r d ˜r = ˜ r log ˜ r − ˜r + 1 . (19) 
+
+Pearson χ2-divergence: Let λ(˜ r) = ˜ r(˜ r − 1) . Integrating yields: 
+
+f (˜ r) = 
+
+Z ˜r(˜ r − 1) ˜r d˜r =
+
+Z
+
+(˜ r − 1) d˜r = 12 (˜ r − 1) 2. (20) 
+
+Gaussian penalty: Let λ(˜ r) = ˜ r(˜ r − 1) exp( −(˜ r − 1) 2). Integrating yields: 
+
+f (˜ r) = 
+
+Z
+
+(˜ r − 1) exp  −(˜ r − 1) 2 d˜r = 12
+
+1 − exp  −(˜ r − 1) 2 . (21) 18 B Hyper-parameter setting 
+
+B.1 LLM Post-training 
+
+To ensure consistency with prior work, we fix the global batch size to 1024 and the maximum response length to 8192 tokens. We use VERL (Sheng et al., 2025) as the infrastructure. The learning rate is set to 1 × 10 −6. We adopt GRPO (Guo et al., 2025)—a simplified PPO variant widely used in LLM post-training—as the optimization backbone, where group normalization replaces GAE for advantage estimation. For text generation, we use nucleus sampling with top p = 0 .99 ,top k = 100 , and temperature 0.6. Each task was trained for 500 steps. We set the update-to-data ratio to U T D = 2 (equivalent to PPO epochs), introducing mild off-policy effects due to data reuse. The policy is initialized from Qwen3-1.7B-Base . We exclusively use open-source datasets. We follow the training data from Yu et al. (2025), which is known to expose clear performance gaps across algorithms on long-tail reasoning tasks. We evaluate performance using pass@4 on four challenging benchmarks: MATH-500 (Lightman et al., 2023), OlympiadBench (He et al., 2024), MinervaMath (Lewkowycz et al., 2022), and AMC 2023 (Xue et al., 2025). 
+
+B.2 Robotic Control and Open-World Exploration 
+
+For tasks in these two domains, we employ SimBa and RNN architectures, SimBa (Lee et al., 2024) is a residual neural network tailored specifically for RL that incorporates a simplicity bias. Its efficacy has been well-validated in the original paper across environments such as DeepMind Control Suite (Tassa et al., 2018), MuJoCo (Todorov et al., 2012), and Craftax (Matthews et al., 2024). For RNN baseline, we adopt Recurrent-PPO (Akkaya et al., 2019, Berner et al., 2019), a widely used PPO variant. To minimize the confounding effects of network plasticity (Lyle et al., 2024b, Nauman et al., 2024), we introduce LayerNorm into the official implementation (Matthews et al., 2024). Furthermore, to explicitly evaluate the model’s continual learning capabilities, we maintain a constant learning rate throughout training rather than applying learning rate annealing. Unlike the LLM setup, we employ advantage-weighted penalty, formulated as η = |A| 
+
+> ϵ
+
+. Empirically, this dynamic formulation yields superior performance on control tasks compared to utilizing a fixed penalty coefficient (Xie et al., 2024). Aside from these specific modifications, we strictly adhere to the official hyperparameter configurations. All experiments were conducted on NVIDIA GeForce RTX 3090 GPU and completed within 12 hours. Table 1: SimBaBlock structure Step Layer Configuration 1. Norm LayerNorm( H)2. FC + Act Linear( H, 4H), ReLU 3. FC Linear( 4H, H )4. Residual Output = Step 3 Output + Block Input 19 Table 2: SimBa actor-critic network architectures Layer Actor Network Critic Network Fully Connected Linear( dobs , 128 ) Linear( dobs , 512 )SimBaBlock 1× SimBaBlock 2× SimBaBlock LayerNorm LayerNorm(128) LayerNorm(512) Output Head Linear( 128 , d act ) Linear( 512 , 1)Policy Std Learnable log std –Table 3: Layer-normalized GRU cell Step Layer Configuration 1. Gates Linear( x, 2H) + Linear( h, 2H)2. Gate Norm LayerNorm( 2H), sigmoid 3. Candidate Linear( x, H ) + Linear( r ⊙ h, H )4. Candidate Norm LayerNorm( H), tanh 5. Hidden Update h′ = (1 − z) ⊙ ˜h + z ⊙ h
+
+## C Additional experiments 
+
+Additionally, we conducted experiments on MetaWorld+ (McLean et al., 2025) and Proc-gen (Cobbe et al., 2020). For MetaWorld+, we utilized tanh-activated MLP on door open →close 
+
+and faucet open →close , repeated for three cycles. For Procgen, we utilized the original IMPALA-CNN (Cobbe et al., 2020) on starpilot. As these environments are relatively straightforward, we include the results in this section for completeness and reference. 0 10 20 30                                 
+
+> 0.0
+> 0.5
+> 1.0
+> Success / Return
+> Door
+> 010 20 30
+> 0.0
+> 0.5
+> 1.0
+> Faucet
+> 0246810 12 14 16 18 20
+> 0
+> 20
+> 40
+> 60
+> Starpilot
+> 010 20 30
+> Env Steps (1M)
+> 4
+> 8
+> 12
+> Entropy
+> 010 20 30
+> Env Steps (1M)
+> 0
+> 5
+> 10
+> 0246810 12 14 16 18 20
+> Env Steps (1M)
+> 0.8
+> 1.6
+> 2.4
+> GTR (Mix Gaussian) GTR (Gaussian) SPO PPO
+
+Figure 10: Aside from vanilla PPO, all variants demonstrate superior continual learnability. 20 Table 4: LN-RNN actor-critic architecture for Craftax, H = 512 by default Layer Actor Network Critic Network Input Projection Linear( dobs , H ), LayerNorm( H), ReLU Recurrent Core LayerNormGRUCell( H)Fully Connected Linear( H, H ), LayerNorm, ReLU Linear( H, H ), LayerNorm, ReLU Fully Connected Linear( H, H ), LayerNorm, ReLU Linear( H, H ), LayerNorm, ReLU Output Head Linear( H, d act ) Linear( H, 1)Policy Categorical logits –Table 5: PPO hyperparameter settings across the three domains Hyperparameter DMC MuJoCo-v5 Craftax Learning Rate 3 × 10 −4 3 × 10 −4 2 × 10 −4
+
+Optimizer Adam Adam Adam Optimizer ϵ 1 × 10 −5 1 × 10 −5 1 × 10 −5
+
+Discount Factor ( γ) 0.99 0.99 0.99 GAE Parameter ( λ) 0.95 0.95 0.8 Number of Environments 1 1 1024 Rollout Length 2048 2048 64 Batch Size 2048 2048 65536 Minibatches 32 32 8Minibatch Size 64 64 8192 Update Epochs 10 10 4PPO Clip Coefficient 0.2 0.2 0.2 Value Loss Clipping True True True Value Loss Coefficient 0.5 0.5 0.5 Entropy Coefficient 0.0 0.0 0.01 Max Gradient Norm 0.5 0.5 1.0 Advantage Normalization True True True Learning Rate Annealing False False False Training Budget 1 × 10 6 per task 1 × 10 6 per task 1 × 10 9 total 
+
+## D Connect with Student Authors 
+
+Core Contributor: Bingxu Liu ljshasdream@gmail.com . Project leader: Jiashun Liu 
+
+ljshasdream@gmail.com .Contributor: johan obando ceron jobando0730.gmail.com , Hao Wang 
+
+hao.wang@my.cityu.edu.hk , Runze Liu 1036433215@qq.com 
+
+21

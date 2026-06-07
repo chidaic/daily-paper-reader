@@ -1,0 +1,160 @@
+Title: Maximising the Set-Piece Return: Optimising Football Corner Tactics with Graph Reinforcement Learning
+
+URL Source: https://arxiv.org/pdf/2606.06353v1
+
+Published Time: Fri, 05 Jun 2026 01:24:37 GMT
+
+Number of Pages: 11
+
+Markdown Content:
+# Maximising the Set-Piece Return: Optimising Football Corner Tactics with Graph Reinforcement Learning 
+
+Sean Groom 1,2, Michael Groom 3, Francisco Belo 2, Axl Rice 2, Liam Anderson 4,Victor-Alexandru Darvariu 3, and Shuo Wang 1⋆ 
+
+> 1
+
+School of Computer Science, University of Birmingham, Birmingham, UK  
+
+> 2
+
+Nottingham Forest Football Club, Nottingham, UK  
+
+> 3
+
+Oxford Robotics Institute, University of Oxford, Oxford, UK  
+
+> 4
+
+School of Sport, Exercise and Rehabilitation Sciences, University of Birmingham, Birmingham, UK 
+
+Abstract. Machine learning is increasingly employed for the evaluation of football tactics. However, existing approaches focus on characterising historical actions or analyst-specified counterfactual scenarios. In this work, we seek to go beyond the imitation of historically observed pat-terns towards discovering new generalisable player configurations and strategies. To tackle this, we focus on optimising corner kick routines, and formulate a decision-making problem in which a central policy makes adjustments to attacking player positions and velocities to maximise first contact shot probability. Unlike classic optimisation that solves for iso-lated setups, we contribute a reinforcement learning architecture oper-ating on graph-structured data that yields a general policy for adjust-ing arbitrary starting player positions. Evaluated on over 3,000 Premier League corners, our approach strongly outperforms baseline optimisation techniques under matched inference budgets. Our results suggest that graph reinforcement learning can shift set-piece analysis from historical evaluation and imitation towards reward-driven tactical discovery. 
+
+## 1 Introduction 
+
+The widespread adoption of machine learning in sports analytics, driven by the increasing availability of event and tracking data, has transformed tactical anal-ysis and player evaluation [9]. In association football, modern datasets have expanded the analytical lens from traditional video analysis to encompass ma-chine learning-based, multi-agent evaluation methods [13,19]. Foundational mod-els such as Expected Goals [16,3], Pitch Control [27,25] and Expected Possession Value (EPV) [11,22,24,7,10], are immensely valuable for quantifying spatial own-ership and the value of dynamic game states. While highly effective at characterising and diagnosing historical player and coach decisions, their applicability does not extend to answering counterfactual  
+
+> ⋆
+
+Corresponding author. Email: s.wang.2@bham.ac.uk .       
+
+> arXiv:2606.06353v1 [cs.LG] 4 Jun 2026 2S. Groom et al. Base xFCS = 0.0474 →0.1374 (+190%)
+> Attacker (initial)
+> Attacker (final)
+> SAC movement
+> SAC velocity
+> Defender
+> Velocity (defender) Base xFCS = 0.0791 →0.1619 (+105%)
+
+Fig. 1: Our approach for set-piece optimisation applied to held-out Premier League test data. We take historical corner configurations as input and adjust the attacking team’s starting positions (pink circles) and velocities (black arrows) to increase the Expected First Contact Shot Probability by 190% and 105%. These variations translate easily into actionable coaching instructions, highlighting the framework’s capacity for automated tactical discovery .queries about what would have happened had a different decision been taken. Recent works have therefore adopted Markov Decision Process (MDP) formula-tions of football to explicitly reason about the value of alternative player actions or tactical decisions [28,21,20]. However, these approaches remain primarily tied to the historical state-action distribution. While they support counterfactual evaluation, they do not enable reward-driven discovery of novel configurations that may never have appeared in the data. Additionally, these works study open play, which is subject to large variations in tactics and player actions. In contrast to open play, corner kicks provide an ideal environment for auto-mated tactical exploration. Unlike the fluid phase shifts of open play, a corner kick is a highly structured, static restart with definitive start states. Furthermore, corners are heavily scripted, rely on repeatable tactical schemes, and account for a significant proportion of total goals (approximately 16% in the 2025/26 English Premier League season). The current state-of-the-art in automated set-piece tac-tic generation, TacticAI [31], leverages geometric deep learning to produce re-alistic, expert-preferred spatial adjustments. Yet, a critical gap remains: such architectures optimise for reconstruction loss, conditioning outputs to imitate 
+
+historically observed player trajectories. While this imitation ensures generative realism, it inherently restricts the discovery of novel, physically plausible tactical innovations to the boundaries of the historical training distribution. In this work, we shift the objective of automated set-piece design from the imitation of historical routines to true reward-driven optimisation. This cap-Maximising the Set-Piece Return 3
+
+Fig. 2: Illustration of one environment step underlying our set-piece optimisation approach. A step is performed for each attacking player, resulting in a final configuration that maximises xF CS in expectation. tures the dilemma faced by coaches between exploiting reliable, well-rehearsed routines versus exploring novel variations that opposition defences have yet to encounter, naturally paralleling one of the main challenges in Reinforcement Learning (RL) [26]. Our core contributions are: 1. Problem Formulation: We formalise corner kick optimisation as an MDP. A central decision-maker is tasked with adjusting attacking player positions and velocities based on the starting state when the corner is taken. To quan-tify success and provide rewards, we propose an objective function (Expected First Contact Shot probability, xF CS ), based on a predictive Graph Neural Network (GNN) model trained on Premier League data. 2. Computational Methodology: We contribute a Graph Reinforcement Learning (Graph RL) [8] method for learning a general policy to adjust at-tacking player positions in arbitrary corner states. Concretely, we integrate GNN embeddings with deep RL, evaluating both SAC [14] and PPO [23]. 3. Empirical Evaluation: We present an evaluation on a dataset of over 3,000 Premier League corners. Results show that our method yields significantly higher-reward tactical variations compared to traditional optimisation tech-niques (Random Search and Simulated Annealing [15]) with matched infer-ence computational budgets. Furthermore, our approach maintains compet-itive performance even when the metaheuristics are granted vastly dispro-portionate search budgets equal to the RL agent’s upfront training cost. 4 S. Groom et al. 
+
+## 2 Methods 
+
+2.1 Problem Formulation 
+
+We formulate the optimisation of corner kick routines as a Markov Decision Process comprising the tuple ( S, A, P, R, γ ). This framing allows an RL agent to discover configurations that directly maximise expected tactical yield. To provide an intuitive overview, Figure 2 illustrates a single agent-environment interaction step. The environment initialises a historical corner and passes the graph state st ∈ S to the agent. The policy π(s) outputs an action specifying the required positional and velocity adjustments at ∈ A for an attacker. The deterministic transition function P updates the pitch to the new state st+1 . The 
+
+reward function R calculates the objective function change against the frozen defence to return the reward rt. The discount factor γ ∈ [0 , 1] balances imme-diate spatial improvements with long-term expected returns. We next formally detail the states, actions, and rewards. 
+
+States S. To capture the spatial dynamics and permutation invariance of the 22 players on the pitch, we define the state s ∈ S as a fully-connected homogeneous graph G = ( V, E). The node set V contains the 11 attacking and 11 defending players. Each node vi carries a 12-dimensional feature vector encompassing scaled spatial coordinates ( x, y ), velocity vectors ( ux, u y ), physical attributes (height, weight), binary role identifiers (corner taker, defending goalkeeper, delivery type, attacking team), and a binary feature indicating which player’s position is to be adjusted in this state. In terms of the edges E, the graph is fully connected, and edges eij carry a single feature consisting of a binary flag indicating whether the source and target nodes belong to the same team. 
+
+Actions A. Optimising the spatial configuration occurs via a sequential update process across the attacking players. At each timestep t, the policy outputs a continuous action vector at that maps to two physical components: a spatial dis-placement ∆p t = [ ∆x, ∆y ] and a velocity delta ∆u t = [ ∆u x, ∆u y ]. Within the environment, these continuous outputs are bounded to enforce realistic move-ment limits, restricting maximum per-step displacement to ±2m and velocity changes to ±2m/s. Following the update step, if an attacker’s resulting velocity vector magnitude ∥uadj ∥2 exceeds 5 .2m/s (the 95 th percentile of all observed player speeds within the tracking data) the vector is proportionally scaled down to the safety boundary. This ensures that the policy cannot reach artificially high-reward states by recommending physiologically impossible sprints. 
+
+Rewards R. The reward function R(s) provides a dense signal quantifying the value of a given spatial configuration. We calculate this using a frozen, pre-trained GNN that maps a scene to the aforementioned xF CS metric. The model decomposes the probability of a shot into two conditional factors, mirroring the causal sequence of a set piece: the delivery, the first contact, and the subsequent shot. The probability of a shot occurring given a specific scene is formulated as: 
+
+xF CS (s) = X
+
+> i∈attackers
+
+P (contact = i | s) × P (shot | contact = i, s ). (1) Maximising the Set-Piece Return 5
+
+This factorisation is modelled by two separate GNNs: a reception probability model which performs corner recipient node classification, and a conditional shot model given attacker i wins first contact. Extensive details regarding the architecture, training pipeline, and validation of this baseline reward model are provided in [12]. Within the RL environment, the step reward rt is defined as the incremental change in the value of the spatial configuration following the kinematic adjustments of the attacking players: 
+
+rt = xF CS (st) − xF CS (st−1). (2) This dense, delta-based formulation inherently penalises the policy for moving players into sub-optimal configurations and rewards continuous spatial optimi-sation towards configurations that maximise gains in xF CS .
+
+2.2 Architecture and Implementation Parallelised JAX Environment . We implement the above problem formula-tion as an RL environment and simulator. We opt for JAX [4] to enable signifi-cant hardware acceleration. This is particularly relevant if set-piece optimisation is to be deployed in a time-sensitive analysis or live match context, as exploring many configurations benefits from parallelised vectorisation. Our simulator is built upon a 2D physics engine [18] that supports continuous-time dynamics, which can be exploited in future work. 
+
+Deep RL Algorithms . As RL algorithms, we consider Proximal Policy Opti-mization (PPO) [23] and Soft Actor-Critic (SAC) [14]. The former is a widely used on-policy actor-critic algorithm with a clipped surrogate objective for train-ing stability. The latter uses the objective J (π) = E[P R(s, a )+ αH(π(·| s))] that combines expected returns and a maximum-entropy component. This forces the agent to explore a diverse array of valid tactical adjustments rather than col-lapsing prematurely to a single local maximum. 
+
+Graph Neural Network Representations . The graph state st is passed through a Graph Attention Network v2 (GATv2) [30,5] to capture non-local, relational player interactions. The resulting embedding ϕ(st) of the state is the input that is fed to the actor and critic networks. Specifically, the actor and critic networks each consist of two GATv2 layers with separate, unshared parameters. GATv2 layers are also used in the reward model R. We note that the reward model for predicting shot probabilities is trained on historical data and frozen; while the parameters of the GATv2 layers for obtaining state representations 
+
+ϕ(st) evolve throughout the RL training process. 
+
+## 3 Experiments and Results 
+
+3.1 Evaluation Protocol and Training Process 
+
+To evaluate the generalisability of our Graph RL method, we utilise a dataset of 3,223 corner kicks from the English Premier League. Rather than a randomised 6 S. Groom et al. 0.0 0.5 1.0 1.5 2.0 2.5 
+
+> Environment Steps (M)
+> 0.00
+> 0.02
+> 0.04
+> 0.06
+> 0.08
+> IQM Episode Return
+> SAC
+> PPO
+
+Fig. 3: Learning curves showing performance on unseen corner kicks as a function of environment steps for the two considered RL algorithms. cross-validation split, we enforce a strict 80/20 sequential temporal split. Agents are trained exclusively on the chronologically earliest 80% corners of the season and evaluated zero-shot on the final 20% of unseen test corners. This constraint prevents temporal data leakage and mimics the operational reality of a football season, showing how the learned policy behaves when applied to late-season structural shifts and evolutionary tactical adjustments adopted by teams. During the training phase, the RL agents interact with the JAX environment to maximise the expected ∆xF CS . As illustrated in Figure 3, we train both the SAC and PPO agents for 2.5 million environment steps. To ensure robustness and account for training variance, we train 8 independent random seeds for each algorithm. Evaluating the policies on the held-out test set at regular intervals re-veals that test-set reward plateaus near the 2.5 million step mark, with SAC con-verging to a peak mean improvement of approximately +0 .068 xF CS , slightly outperforming PPO which reaches +0 .063 xF CS . This convergence point in-forms our stopping criterion and forms the basis for our total computational budget calculations. 
+
+3.2 Baselines and Evaluation Budgets 
+
+We benchmark the learned RL policies against two traditional, gradient-free metaheuristic baselines: 1. Random Search (RS): Uniformly samples continuous kinematic vectors within the defined bounding limits, acting as a brute-force spatial exploration baseline. For evaluation, we compute the mean performance across the 8 RS seeds for each individual corner; this RS mean serves as the baseline score against which all other approaches are normalised. Maximising the Set-Piece Return 70 1 2 3 4 5 6       
+
+> RS-Normalised Score ( )
+> 0.00
+> 0.25
+> 0.50
+> 0.75
+> 1.00
+> Fraction of corners
+> Underperforms RS
+> Outperforms RS 0.0 0.5 1.0 1.5 2.0 2.5
+> RS-Normalised Score ( )
+> 0.00
+> 0.25
+> 0.50
+> 0.75
+> 1.00
+> Fraction of corners
+> Underperforms RS
+> Outperforms RS
+> SAC
+> Simulated Annealing
+> PPO
+
+Fig. 4: Performance across the test set in the Inference Compute Matching (left) and Total Training Compute Matching (right) regimes. After training, RL signif-icantly outperforms traditional optimisation methods under the same inference time budget. 2. Simulated Annealing (SA): Iteratively perturbs the spatial coordinates of individual attacking players in sequence, utilizing a decaying geometric temperature schedule to probabilistically accept sub-optimal adjustments and escape local minima. Comparing a fully trained neural network against metaheuristic search algo-rithms requires establishing fair computational budgets. Therefore, we evaluate the baselines under two distinct regimes. Under Inference Compute Matching ,the metaheuristics have a search budget that matches the computational cost of a single episode executed by the RL agent, reflecting an operational time-sensitive scenario. In Total Training Compute Matching , the metaheuristics are granted an immense search budget equivalent to the entire 2.5 million environ-ment step cost required to train the RL agent, prorated across the test set. This serves as an approximate upper bound on the performance of the RL agent. 
+
+3.3 Performance Profiles 
+
+We use the rliable library [1] to construct performance profiles (Figure 4) that visualise the fraction of corners where a method achieves a relative performance score greater than or equal to a threshold τ . To ensure a fair aggregation across the dataset, we must account for varying task difficulty; some defensive config-urations natively possess more exploitable spatial flaws than others. Therefore, we define τ as the ratio of a method’s ∆xF CS to the RS baseline mean for that specific corner. This standardises performance regardless of the raw reward scale: τ = 1 .0 indicates parity with RS, τ < 1.0 indicates underperformance, and 
+
+τ = 2 .0 indicates the algorithm generated twice the danger of the RS baseline. To ensure numerical stability and prevent τ from exploding in scenarios where RS discovers negligible improvements, we enforce a minimum denominator of 0.001. The tight shaded regions in the plot represent 95% stratified bootstrap confidence intervals. 8 S. Groom et al. 
+
+Figure 4(a) evaluates the architectures under Inference Compute Match-ing , i.e., realistic operational constraints where the upfront RL training cost is amortised. In a production environment, generating a tactic via a forward pass through the SAC/PPO policy is relatively computationally inexpensive. Under these strict latency constraints, the generalised RL policies dominate. Because the SAC and PPO agents apply a policy informed by prior training rather than searching from scratch, they outperform RS in 94.2% and 92.6% of evaluated scenarios, respectively. Conversely, SA collapses under the restricted budget, outperforming RS in only 6.6% of cases. This confirms that Graph RL is uniquely equipped to provide high-quality tactical adjustments in real-time. Figure 4(b) shifts the lens to evaluate the methods under Total Training Compute Matching . Under these conditions, SA treats each corner as an isolated optimisation puzzle. Given 970 reward calls per individual corner, SA acts as a powerful per-scenario optimiser, outperforming RS in 76.8% of cases, compared to 69.4% for the generalised SAC policy and 63.3% for the PPO policy. While SA can outperform RL when granted a disproportionate, non-real-time compute budget, this approach scales poorly. The metaheuristic algorithm learns no over-arching tactical principles and must restart its search from the beginning for every new scenario. 
+
+3.4 Quantitative Performance Evaluation 
+
+Beyond comparative search efficiency, we evaluate the tactical value generated across the 645 unseen test corners (two examples were visualised in Figure 1). The generalised RL policies demonstrate strong reliability: both SAC and PPO successfully identify advantageous kinematic adjustments ( ∆xF CS > 0) in over 99% of the evaluated scenarios. In absolute terms, the SAC policy yields a mean improvement of +0 .068 xF CS (median +0 .046) per corner. Given the low-scoring nature of professional football, systematically increasing the expected number of shots from set pieces by this margin could represent a substantial competitive advantage. Under operational latency constraints (the inference bud-get), the SAC policy achieves a mean normalised score of 2 .40 (median 2 .05). This indicates that, on average, a single forward pass of the policy generates more than double the tactical value of a compute-matched RS. Even when the metaheuristic baselines are granted the disproportionate total training compute budget, SA only achieves a mean normalised score of 1 .22 against the expanded RS baseline compared to SAC and PPO scoring 1 .11 and 1 .08, respectively. 
+
+## 4 Discussion and Future Work 
+
+Qualitative inspection of the generated routines reveals several consistent tacti-cal preferences exhibited by the SAC agent. Most notably, the policy strongly favours dynamic routines. Rather than maintaining attackers in static, high-value zones (such as the centre of the six-yard box), the agent frequently dis-places attackers away from their markers only to have them attack the vacated Maximising the Set-Piece Return 9
+
+space at high velocities. This aligns with the physical reality of set pieces, where arriving in space at speed generates higher-quality shot opportunities than con-tested, stationary headers. However, evaluating the generated tactics also highlights the potential limits of a single-frame reward model. We hypothesise that while elite cooperative rou-tines, such as deliberate “pinning” or “pick-and-roll” blocking schemes [6,29,17], exist within the historical training set, they are inherently temporal events that unfold over a sequence of timesteps. Because the xF CS model evaluates a sin-gle spatial snapshot composed of positions and velocities, it may struggle to definitively distinguish a coordinated blocking manoeuvre from two players sim-ply being in close proximity. Consequently, we suspect the reward model learns a smoothed statistical expectation over these ambiguous spatial configurations. Potentially lacking a sharp, definitive signal to reward intricate blocking schemes, the RL agent may naturally gravitate toward exploiting unambiguous tactical signals that the model can confidently measure, such as generating high-velocity arrivals into undisputed space near the goal. While metaheuristic methods such as SA are competitive in raw performance within our current formulation, this parity is largely a function of the environ-ment’s constrained dimensionality. The present optimisation task was restricted to single-team kinematic adjustments against a static defence in order to pro-vide a proof-of-concept validation. If the environment is expanded to a reac-tive, multi-timestep domain, such as an adversarial Multi-Agent Reinforcement Learning (MARL) [2] setting where defenders dynamically adjust to counteract attacking movements, the growth of the search space would render memoryless metaheuristics computationally intractable. Conversely, our Graph RL method is better equipped to scale to these highly relational, reactive environments. Fu-ture work will move from static optimisation to adversarial MARL paradigms. 
+
+## 5 Conclusion 
+
+In this work, we aimed to transition the computational analysis of football set pieces from historical evaluation and imitation toward active, reward-driven tac-tical discovery. We formalised corner kick optimisation as a kinematically con-strained MDP and contributed a Graph RL method integrating GNN state em-beddings with continuous control policies (SAC and PPO). Our evaluation on more than 3,000 Premier League corners demonstrates that a generalised pol-icy can effectively optimise attacking spatial configurations without relying on exhaustive, per-scenario metaheuristic search. Our approach yields significant improvements in Expected First Contact Shot Probability, strongly outperform-ing traditional optimisation baselines under realistic operational inference con-straints. While the current methodology could provide immediate value for op-timising set-piece design, future work will seek to expand the scope of tactical generation to adversarial, reactive environments. 10 S. Groom et al. 
+
+## References 
+
+1. Agarwal, R., Schwarzer, M., Castro, P.S., Courville, A.C., Bellemare, M.: Deep reinforcement learning at the edge of the statistical precipice. Advances in neural information processing systems 34 , 29304–29320 (2021) 2. Albrecht, S.V., Christianos, F., Sch¨ afer, L.: Multi-Agent Reinforcement Learning: Foundations and Modern Approaches. MIT Press, Cambridge, MA (2024) 3. Anzer, G., Bauer, P.: A goal scoring probability model for shots based on synchro-nized positional and event data in football (soccer). Frontiers in Sports and Active Living 3, 624475 (2021) 4. Bradbury, J., Frostig, R., Hawkins, P., Johnson, M.J., Katariya, Y., Leary, C., Maclaurin, D., Necula, G., Paszke, A., VanderPlas, J., Wanderman-Milne, S., Zhang, Q.: JAX: composable transformations of Python+NumPy programs (2018), http://github.com/jax-ml/jax 5. Brody, S., Alon, U., Yahav, E.: How attentive are graph attention networks? In: International Conference on Learning Representations (ICLR) (2022) 6. Casal, C.A., Maneiro, R., Ard´ a, T., Losada, J.L., Rial, A.: Analysis of corner kick success in elite football. International Journal of Performance Analysis in Sport 
+
+15 (2), 430–451 (2015) 7. Cervone, D., D’Amour, A., Bornn, L., Goldsberry, K.: A multiresolution stochas-tic process model for predicting basketball possession outcomes. Journal of the American Statistical Association 111 (514), 585–599 (2016) 8. Darvariu, V.A., Hailes, S., Musolesi, M.: Graph reinforcement learning for combi-natorial optimization: A survey and unifying perspective. Transactions on Machine Learning Research (2024) 9. Davis, J., Bransen, L., Devos, L., Jaspers, A., Meert, W., Robberechts, P., Van Haaren, J., Van Roy, M.: Methodology and evaluation in sports analytics: challenges, approaches, and lessons learned. Machine Learning 113 (9), 6977–7010 (2024) 10. Decroos, T., Bransen, L., Van Haaren, J., Davis, J.: Actions speak louder than goals: Valuing player actions in soccer. In: ACM SIGKDD International Conference on Knowledge Discovery & Data Mining (KDD). pp. 1851–1861 (2019) 11. Fern´ andez, J., Bornn, L., Cervone, D.: A framework for the fine-grained evaluation of the instantaneous expected value of soccer possessions. Machine Learning 110 ,1389–1427 (2021) 12. Groom, S., Wang, S., Belo, F., Rice, A., Anderson, L.: A machine learning frame-work for off ball defensive role and performance evaluation in football. arXiv preprint arXiv:2601.00748 (2026) 13. Gudmundsson, J., Horton, M.: Spatio-temporal analysis of team sports. ACM Computing Surveys 50 (2) (2017) 14. Haarnoja, T., Zhou, A., Abbeel, P., Levine, S.: Soft actor-critic: Off-policy maxi-mum entropy deep reinforcement learning with a stochastic actor. In: International Conference on Machine Learning (ICML) (2018) 15. Kirkpatrick, S., Gelatt Jr., C.D., Vecchi, M.P.: Optimization by simulated anneal-ing. Science 220 (4598), 671–680 (1983) 16. Lucey, P., Bialkowski, A., Monfort, M., Carr, P., Matthews, I.: “Quality vs Quan-tity”: Improved shot prediction in soccer using strategic features from spatiotem-poral data. In: MIT Sloan Sports Analytics Conference (2015) 17. Maneiro, R., Losada, J.L., Portell, M., Ard´ a, A.: Observational analysis of corner kicks in high-level football: A mixed methods study. Sustainability 13 (14), 7562 (2021) Maximising the Set-Piece Return 11 18. Matthews, M., Beukman, M., Lu, C., Foerster, J.: Kinetix: Investigating the train-ing of general agents through open-ended physics-based control tasks. In: Interna-tional Conference on Learning Representations (ICLR) (2025) 19. Memmert, D., Rein, R.: Match analysis, big data and tactics: Current trends in elite soccer. Deutsche Zeitschrift f¨ ur Sportmedizin 69 (3), 65–72 (2018) 20. Nakahara, H., Tsutsui, K., Takeda, K., Fujii, K.: Action valuation of on-and off-ball soccer players based on multi-agent deep reinforcement learning. IEEE Access 
+
+11 , 131237–131244 (2023) 21. Rahimian, P., Toka, L.: A data-driven approach to assist offensive and defensive players in optimal decision making. International Journal of Sports Science and Coaching 19 (1), 245–256 22. Rudd, S.: A framework for tactical analysis and individual offensive production assessment in soccer using markov chains. In: New England Symposium on Statis-tics in Sports (NESSIS) (2011), https://nessis.org/nessis11/rudd.pdf, conference presentation; slides. 23. Schulman, J., Wolski, F., Dhariwal, P., Radford, A., Klimov, O.: Proximal policy optimization algorithms. arXiv preprint arXiv:1707.06347 (2017) 24. Singh, K.: Introducing expected threat (xT). https://karun.in/blog/ expected-threat.html (2018) 25. Spearman, W.: Beyond expected goals. In: MIT Sloan Sports Analytics Conference. pp. 1–17 (2018) 26. Sutton, R.S., Barto, A.G.: Reinforcement learning: An introduction. MIT Press, Cambridge, MA (2018) 27. Taki, T., Hasegawa, J.: Visualization of dominant region in team games and its application to teamwork analysis. In: International Conference of the Computer Graphics Society (CGI). pp. 227–235 (2000) 28. Van Roy, M., Robberechts, P., Yang, W.C., De Raedt, L., Davis, J.: A markov framework for learning and reasoning about strategies in professional soccer. Jour-nal of Artificial Intelligence Research 77 , 517–562 (2023) 29. Vaquera, A., Garc´ ıa-Tormo, J.V., G´ omez Ruano, M.A., Morante, J.C.: An explo-ration of ball screen effectiveness on elite basketball teams. International Journal of Performance Analysis in Sport 16 (2), 475–485 (2016) 30. Veliˇ ckovi´ c, P., Cucurull, G., Casanova, A., Romero, A., Li` o, P., Bengio, Y.: Graph attention networks. In: International Conference on Learning Representations (ICLR) (2018) 31. Wang, Z., Veliˇ ckovi´ c, P., Hennes, D., et al.: TacticAI: an AI assistant for football tactics. Nature Communications 15 (1), 1906 (2024)
