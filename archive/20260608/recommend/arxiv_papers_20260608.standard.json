@@ -1,0 +1,463 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-08T20:56:22.186129+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 2,
+    "deep_cap": 6,
+    "deep_selected": 2,
+    "quick_candidates": 9,
+    "quick_skim_target": 11,
+    "quick_selected": 9
+  },
+  "deep_dive": [
+    {
+      "id": "2606.06565v1",
+      "source": "arxiv",
+      "title": "AI Level of Detail: Distance-Aware ML Model Precision Selection for Real-Time Human Motion Prediction in Games",
+      "abstract": "Modern game engines spend significant compute animating NPCs with learned motion models. This paper proposes AI Level of Detail (AI LOD), a framework in which machine learning inference precision is adapted based on the distance between each NPC and the player camera. The core idea mirrors classical geometry LOD: substitute a cheaper approximation where the difference is imperceptible. Here, the approximation is a lower-precision quantized machine learning model rather than a lower-polygon mesh.   The contribution of this work is the AI LOD concept itself: that inference-time quantization can serve as the LOD axis for AI-driven character animation - and more broadly, for any AI-based runtime system where perceptual sensitivity varies with context. The convolutional sequence-to-sequence model of Li et al. is used as a representative example to demonstrate the concept, with its trained checkpoint exported into three ONNX Runtime variants (FP32, FP16, and INT8 per-tensor), intended to be routed by a distance-based selector at runtime. Evaluation on the CMU Mocap dataset provides initial evidence that each precision tier can be served at its assigned distance range with negligible perceptible degradation, supporting the broader premise that distance-aware ML model precision selection is a viable LOD strategy for AI-based character animation.",
+      "authors": [
+        "Mathew Varghese"
+      ],
+      "primary_category": "cs.GR",
+      "categories": [
+        "cs.GR",
+        "cs.HC",
+        "cs.LG"
+      ],
+      "published": "2026-06-04T17:27:00+00:00",
+      "link": "https://arxiv.org/pdf/2606.06565v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Distance-aware ML model precision for real-time NPC motion prediction in games",
+      "llm_evidence_cn": "游戏NPC实时运动预测中的距离感知ML模型精度选择",
+      "llm_evidence": "游戏NPC实时运动预测中的距离感知ML模型精度选择",
+      "canonical_evidence": "游戏NPC实时运动预测中的距离感知ML模型精度选择",
+      "llm_tldr_en": "AI LOD adapts ML inference precision based on NPC distance to camera, reducing compute cost in game engines.",
+      "llm_tldr_cn": "该论文提出AI LOD（AI细节层次）概念，根据NPC与玩家摄像机的距离动态调整机器学习模型推理精度，在不可察觉处使用低精度量化模型以节省计算资源。该方法借鉴传统几何LOD思想，将量化精度作为AI动画的LOD轴。实验表明在保持视觉质量的同时显著降低计算开销，适用于游戏引擎中的任何AI运行时系统。该工作直接将AI优化技术应用于游戏环境。",
+      "llm_tldr": "该论文提出AI LOD（AI细节层次）概念，根据NPC与玩家摄像机的距离动态调整机器学习模型推理精度，在不可察觉处使用低精度量化模型以节省计算资源。该方法借鉴传统几何LOD思想，将量化精度作为AI动画的LOD轴。实验表明在保持视觉质量的同时显著降低计算开销，适用于游戏引擎中的任何AI运行时系统。该工作直接将AI优化技术应用于游戏环境。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "artificial intelligence in games",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.07367v1",
+      "source": "arxiv",
+      "title": "Self-evolving LLM agents with in-distribution Optimization",
+      "abstract": "Large Language Models (LLMs) have recently emerged as powerful controllers for interactive agents in complex environments, yet training them to perform reliable long-horizon decision making remains a fundamental challenge. A key difficulty lies in credit assignment: agents often receive delayed rewards only at the end of episodes. In this paper, we propose Q-Evolve, a self-evolving framework for LLM agents that unifies automatic process-reward labeling and policy learning within a principled in-distribution reinforcement learning paradigm. In each evolving iteration, our method learns an in-distribution critic from a hybrid off-policy dataset that combines expert demonstrations with agent-generated trajectories, stabilizing Bellman backups in sparse-reward settings via a weighted Implicit Q-Learning objective. The learned value function is then used to derive step-wise process rewards through advantage estimation, enabling dense and reliable supervision without environment backtracking or human annotation. Leveraging these signals, we perform behavior-proximal policy optimization that evolves the agent over the data used for process reward labeling, allowing iterative self-improvement without exacerbating distribution shift. We evaluate our method on AlfWorld, WebShop, and ScienceWorld, showing Q-Evolve outperforms strong baselines in sample efficiency, robustness, and overall task performance. Our results demonstrate that stable agent self-evolution is achievable through the co-evolution of process-level supervision and policy, both grounded within a shared in-distribution learning loop.",
+      "authors": [
+        "Yudi Zhang",
+        "Meng Fang",
+        "Zhenfang Chen",
+        "Mykola Pechenizkiy"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-06-05T15:09:52+00:00",
+      "link": "https://arxiv.org/pdf/2606.07367v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "self-evolving LLM agents with in-distribution RL for long-horizon decision making, applicable to game environments",
+      "llm_evidence_cn": "适用于游戏环境的长时域决策自演化LLM代理",
+      "llm_evidence": "适用于游戏环境的长时域决策自演化LLM代理",
+      "canonical_evidence": "适用于游戏环境的长时域决策自演化LLM代理",
+      "llm_tldr_en": "Q-Evolve framework enables LLM agents to self-evolve via in-distribution RL with automatic process-reward labeling, improving long-horizon credit assignment.",
+      "llm_tldr_cn": "本文提出Q-Evolve框架，解决LLM代理在长时域决策中信用分配困难的问题。该框架通过混合专家演示与代理生成轨迹的离策略数据集，学习分布内评论家，稳定稀疏奖励下的Bellman备份。自动过程奖励标注与策略学习迭代进行，使代理能够自我演化。方法直接适用于游戏环境中AI代理的训练，尤其适合需要长时间序列决策的任务，如策略游戏中的agent行为优化。",
+      "llm_tldr": "本文提出Q-Evolve框架，解决LLM代理在长时域决策中信用分配困难的问题。该框架通过混合专家演示与代理生成轨迹的离策略数据集，学习分布内评论家，稳定稀疏奖励下的Bellman备份。自动过程奖励标注与策略学习迭代进行，使代理能够自我演化。方法直接适用于游戏环境中AI代理的训练，尤其适合需要长时间序列决策的任务，如策略游戏中的agent行为优化。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.02304v1",
+      "source": "arxiv",
+      "title": "Unified Context Evolution for LLM Agents",
+      "abstract": "LLM-based agents can solve multi-step interactive tasks by combining reasoning with environment feedback, yet each episode starts from the same fixed context and any useful strategy discovered along the way is lost once the task ends. Existing approaches either limit learning to the current task or pool all experience into a single untyped store, without distinguishing knowledge types, tracking quality through use, or balancing what the library still lacks. We introduce Unified Context Evolution (UCE), a gradient-free framework that externalizes agent experience into an evolving library of typed Evolvable Context Units (ECUs). UCE decomposes experience into four complementary types (Memory, Strategy, Workflow, and Skill), each generated from trajectories under type-specific conditions, retrieved at decision time, scored through repeated usage outcomes, and pruned when no longer valuable. A scheduling module allocates each cycle's generation budget toward the types where the library is weakest. Across two interactive benchmarks, UCE raises ALFWorld success from 75.4% to 96.3% and WebShop task score from 45.1% to 61.3%, and the accumulated library transfers to alternative actor backbones without retraining.",
+      "authors": [
+        "Zixuan Zhu",
+        "Yitong Hu",
+        "Yong Dai",
+        "Junfeng Fang",
+        "Chunyang Jiang",
+        "Senkang Hu",
+        "Yuzhi Zhao"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-06-01T14:25:29+00:00",
+      "link": "https://arxiv.org/pdf/2606.02304v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "LLM agent experience accumulation for interactive tasks",
+      "llm_evidence_cn": "LLM代理在交互任务中的经验积累",
+      "llm_evidence": "LLM代理在交互任务中的经验积累",
+      "canonical_evidence": "LLM代理在交互任务中的经验积累",
+      "llm_tldr_en": "Unified Context Evolution framework externalizes LLM agent experience into typed context units for reusability across episodes, applicable to game environments.",
+      "llm_tldr_cn": "本文提出统一上下文演化（UCE）框架，将LLM代理的经验外部化为四种类型的可演化上下文单元（ECUs），包括记忆、策略、工作流和技能。该方法解决了代理在每轮任务中丢失有用策略的问题，通过类型化经验库实现跨任务策略复用。在多个交互式任务上的实验表明，UCE显著提升了代理的样本效率和任务泛化能力，适用于AI代理在游戏环境中的训练。",
+      "llm_tldr": "本文提出统一上下文演化（UCE）框架，将LLM代理的经验外部化为四种类型的可演化上下文单元（ECUs），包括记忆、策略、工作流和技能。该方法解决了代理在每轮任务中丢失有用策略的问题，通过类型化经验库实现跨任务策略复用。在多个交互式任务上的实验表明，UCE显著提升了代理的样本效率和任务泛化能力，适用于AI代理在游戏环境中的训练。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.01528v1",
+      "source": "arxiv",
+      "title": "Joint Agent Memory and Exploration Learning via Novelty Signals",
+      "abstract": "In open-ended environments, exploration is fundamental for autonomous agents, yet current language model agents struggle with this. Effective exploration requires memory, but retaining raw interaction histories is computationally expensive over long trajectories. While latent memory offers a solution to compress interaction histories, its training lacks reliable supervisory signals. We introduce \\textbf{J}oint \\textbf{A}gent \\textbf{M}emory and \\textbf{E}xploration \\textbf{L}earning (\\textbf{JAMEL}), a framework that trains agentic memory and exploration policy together through novelty-driven interaction. We observe that memory and exploration form a mutually dependent loop: sustained exploration requires memory to distinguish exhausted behaviors from unseen ones, while novelty-seeking interaction provides the supervision needed to make memory useful for future exploration. By utilizing deterministic and persistent novelty signals such as code coverage in the GUI domain, we provide natural, annotation-free supervision for the memory module. Empirical evaluations demonstrate that \\ours successfully generalizes to unseen environments. Its exploration capability outperforms open-weight baselines and rivals the exploration depth of a closed-source model while reducing token consumption. Our code and model are open-sourced at https://github.com/MobileLLM/JAMEL.",
+      "authors": [
+        "Shizuo Tian",
+        "Xiaohong Weng",
+        "Rui Kong",
+        "Yuxuan Chen",
+        "Guohong Liu",
+        "Yuebing Song",
+        "Jiacheng Liu",
+        "Yuchen Li",
+        "Dawei Yin",
+        "Ting Cao",
+        "Yunxin Liu",
+        "Yuanchun Li"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-01T01:20:26+00:00",
+      "link": "https://arxiv.org/pdf/2606.01528v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "exploration and memory for agents in open-ended environments, applicable to game AI",
+      "llm_evidence_cn": "开放环境中代理的探索与记忆，可应用于游戏AI",
+      "llm_evidence": "开放环境中代理的探索与记忆，可应用于游戏AI",
+      "canonical_evidence": "开放环境中代理的探索与记忆，可应用于游戏AI",
+      "llm_tldr_en": "JAMEL jointly trains agent memory and exploration via novelty signals, enabling sustained exploration in open-ended environments relevant to game agents.",
+      "llm_tldr_cn": "开放环境中语言模型代理探索困难，有效探索需要记忆但原始交互历史计算昂贵。提出JAMEL框架，通过新颖性驱动交互联合训练代理记忆和探索策略。记忆和探索形成互依循环，使代理能区分已耗尽行为和未探索区域，为游戏AI代理在复杂环境中的持续探索提供方法。",
+      "llm_tldr": "开放环境中语言模型代理探索困难，有效探索需要记忆但原始交互历史计算昂贵。提出JAMEL框架，通过新颖性驱动交互联合训练代理记忆和探索策略。记忆和探索形成互依循环，使代理能区分已耗尽行为和未探索区域，为游戏AI代理在复杂环境中的持续探索提供方法。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.02337v1",
+      "source": "arxiv",
+      "title": "Coordination Graphs for Constrained Multi-Agent Reinforcement Learning",
+      "abstract": "Constrained Multi-agent reinforcement learning (CMARL) faces two intertwined challenges: the joint action space grows exponentially with the number of agents, and additional requirements couple agents in ways that reward structure alone does not capture. We introduce Coordination Graphs for Constrained Multi-Agent Reinforcement Learning (CG-CMARL), a framework that addresses both challenges by combining coordination graphs with Lagrangian duality. The system decomposes the joint problem into pairwise regions, each served by a set of shared Q-functions, one for the primary objective and one for each of the constraints, so that the number of learned models is independent of the number of agents. At execution time, Max-Sum message passing coordinates actions across the factor graph, while a Lagrangian multiplier controls the objective--constraint tradeoff, allowing a single trained model to trace a Pareto front without retraining. We provide convergence guarantees under mild conditions, together with a compositional error bound that decomposes into separate interpretable sources, each traceable to a specific design choice and independently controllable. Experiments on cooperative navigation tasks (where teams of up to 10 agents must coordinate to reach target positions while satisfying pairwise constraints) show that our method produces Pareto fronts dominating established baselines trained at fixed reward-shaping ratios, while scaling to team sizes where centralized approaches become intractable.",
+      "authors": [
+        "Santiago Amaya-Corredor",
+        "Miguel Calvo-Fullana",
+        "Anders Jonsson"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-01T14:46:16+00:00",
+      "link": "https://arxiv.org/pdf/2606.02337v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "multi-agent reinforcement learning with constraints, applicable to game environments",
+      "llm_evidence_cn": "带约束的多智能体强化学习，可应用于游戏环境",
+      "llm_evidence": "带约束的多智能体强化学习，可应用于游戏环境",
+      "canonical_evidence": "带约束的多智能体强化学习，可应用于游戏环境",
+      "llm_tldr_en": "Introduces coordination graphs for constrained multi-agent RL, decomposing joint problems into pairwise regions, reducing complexity independent of agent count.",
+      "llm_tldr_cn": "本文提出基于协调图的约束多智能体强化学习框架CG-CMARL，将联合问题分解为成对区域，学习模型数量与智能体数量无关。执行时通过最大和消息传递协调动作。该方法可扩展至多智能体游戏场景。",
+      "llm_tldr": "本文提出基于协调图的约束多智能体强化学习框架CG-CMARL，将联合问题分解为成对区域，学习模型数量与智能体数量无关。执行时通过最大和消息传递协调动作。该方法可扩展至多智能体游戏场景。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.06114v1",
+      "source": "arxiv",
+      "title": "Towards Healthy Evolution: Exploring the Role and Mechanisms of Human-Agent Interaction in Self-Evolving Systems",
+      "abstract": "Self-evolving agents improve through continual self-play and self-generated learning signals, but autonomous evolution can also cause capability degradation and safety drift. Although human feedback has proven effective for static and post-trained agents, its role in self-evolving systems remains underexplored. We introduce Agent Norm Correction through Human-like Oversight and Review (ANCHOR), an LLM-based framework that simulates human supervision and delivers feedback at various phases of self-evolution. With ANCHOR, we evaluate two representative open-source self-evolving agent systems across coding, mathematical reasoning, and safety. Our results show that even limited supervision substantially mitigates safety degradation while preserving stable performance on core evolutionary objectives. Further analysis shows that supervision over the output verification phase is the most effective for intervention, whereas increasing supervision frequency yields diminishing returns. These findings provide empirical evidence and practical guidance for designing more stable, controllable, and human-aligned self-evolving agent systems.",
+      "authors": [
+        "Dianxing Shi",
+        "Junqi He",
+        "Junhao Chen",
+        "Bowen Wang",
+        "Yuta Nakashima"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-04T13:03:16+00:00",
+      "link": "https://arxiv.org/pdf/2606.06114v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "self-evolving agents with self-play, relevant to AI agent learning in games",
+      "llm_evidence_cn": "自我进化智能体与自我对弈，与游戏中的AI智能体学习相关",
+      "llm_evidence": "自我进化智能体与自我对弈，与游戏中的AI智能体学习相关",
+      "canonical_evidence": "自我进化智能体与自我对弈，与游戏中的AI智能体学习相关",
+      "llm_tldr_en": "Explores human-agent interaction in self-evolving systems; uses LLM-based supervision to mitigate capability degradation in self-play training.",
+      "llm_tldr_cn": "本文研究了自我进化系统中人类与智能体交互的作用，提出基于大语言模型的监督框架ANCHOR，用于缓解自我对弈训练中的能力退化。实验表明有限的监督也能显著改善编码、数学推理和安全性。尽管不直接针对游戏，但自我对弈机制与游戏AI训练高度相关。",
+      "llm_tldr": "本文研究了自我进化系统中人类与智能体交互的作用，提出基于大语言模型的监督框架ANCHOR，用于缓解自我对弈训练中的能力退化。实验表明有限的监督也能显著改善编码、数学推理和安全性。尽管不直接针对游戏，但自我对弈机制与游戏AI训练高度相关。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.04781v1",
+      "source": "arxiv",
+      "title": "AIP: A Graph Representation for Learning and Governing Agent Skills",
+      "abstract": "Agent Skills today consist largely of free-form prose requiring the agent to read, interpret, and re-derive how to act in every session. This imposes two compounding costs: reduced reliability on implementation-heavy tasks, and difficulty in skill creation and improvement, since editing prose is a fragile process that both humans and agents struggle with, particularly for domain-specific procedural knowledge underrepresented in model training. The Agent Instruction Protocol (AIP) addresses both by modeling a skill as a directed execution graph: discrete steps as nodes backed by deterministic scripts or natural-language descriptions, connected by explicit typed input/output edges, and governed by a schema-validated YAML specification. A compiler meta-skill translates existing human-written skills into this form. The benefits are twofold. First, compiling human-written skills to AIP raised Claude Sonnet's mean task reward from 0.60 to 0.71 and pass rate from 53% to 67% across 27 real agent tasks from SkillsBench - a statistically significant gain (Wilcoxon signed-rank p = 0.011), winning 12 tasks to 2 with 13 ties - often in less wall-clock time. The graph delivers vetted, runnable units to the agent rather than asking it to re-derive code, commands, and tool calls from natural language. Second, on creation and improvement, because each skill is schema-validated, functionally testable, and addressable node-by-node, failures can be diagnosed and repaired precisely. Two authored-skill failures were traced to the script level. After adjusting the AIP spec and recompiling, both recovered with zero regressions (one task going from 0/5 to 5/5), turning skill improvement into a measurable tuning loop rather than a prose rewrite. That same graph structure supports corpus-level governance and skill introspection, and provides a natural action space for reinforcement learning over skills.",
+      "authors": [
+        "Zachary Blumenfeld",
+        "Jim Webber"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-06-03T12:02:49+00:00",
+      "link": "https://arxiv.org/pdf/2606.04781v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "agent skill representation for governing AI agent behaviors",
+      "llm_evidence_cn": "用于治理AI代理行为的技能表示方法",
+      "llm_evidence": "用于治理AI代理行为的技能表示方法",
+      "canonical_evidence": "用于治理AI代理行为的技能表示方法",
+      "llm_tldr_en": "A graph-based protocol (AIP) to model agent skills as directed execution graphs, improving reliability and editability for agentic AI.",
+      "llm_tldr_cn": "针对当前代理技能依赖自由文本导致可靠性低和编辑困难的问题，本文提出代理指令协议（AIP），将技能建模为有向执行图，节点为确定性脚本或自然语言描述，边为显式输入输出连接，并通过YAML规范管理。该表示方法可提升代理在实现密集型任务中的可靠性，并为AI代理学习与治理提供结构化基础，可推广至游戏代理技能设计。",
+      "llm_tldr": "针对当前代理技能依赖自由文本导致可靠性低和编辑困难的问题，本文提出代理指令协议（AIP），将技能建模为有向执行图，节点为确定性脚本或自然语言描述，边为显式输入输出连接，并通过YAML规范管理。该表示方法可提升代理在实现密集型任务中的可靠性，并为AI代理学习与治理提供结构化基础，可推广至游戏代理技能设计。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.06741v1",
+      "source": "arxiv",
+      "title": "OpenSkill: Open-World Self-Evolution for LLM Agents",
+      "abstract": "Self-evolving agents requires adaptation after deployment, but existing approaches assume a usable learning loop, such as curated skills, successful trajectories, or verifier signals. Real open-world deployments may provide none of these, offering only a task prompt. In this work, we study open-world self-evolution, where an agent must build both its skills and its own verification signals from scratch, using open-world resources but no target-task supervision. We propose OpenSkill, a framework that bootstraps this loop: it acquires grounded knowledge and verification anchors from documentation, repositories, and the web, synthesizes them into transferable skills, and refines those skills against self-built virtual tasks grounded in the anchors rather than in target answers. The open world thus supplies both the knowledge to be learned and a supervision-independent practice environment, with target-task supervision reserved for final evaluation. Across three benchmarks and two target agents, OpenSkill attains the best automated pass rate while satisfying the no-supervision constraint. Analysis shows its skills transfer across models without model-specific adaptation, and its self-built verifier aligns with ground-truth outcomes despite never accessing them.",
+      "authors": [
+        "Zhiling Yan",
+        "Dingjie Song",
+        "Hanrong Zhang",
+        "Wei Liang",
+        "Yuxuan Zhang",
+        "Yutong Dai",
+        "Lifang He",
+        "Philip S. Yu",
+        "Ran Xu",
+        "Xiang Li",
+        "Lichao Sun"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-06-04T21:55:48+00:00",
+      "link": "https://arxiv.org/pdf/2606.06741v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "LLM agent self-evolution in open world, applicable to game agents",
+      "llm_evidence_cn": "开放世界中LLM代理自进化，可应用于游戏代理",
+      "llm_evidence": "开放世界中LLM代理自进化，可应用于游戏代理",
+      "canonical_evidence": "开放世界中LLM代理自进化，可应用于游戏代理",
+      "llm_tldr_en": "OpenSkill enables LLM agents to self-evolve skills and verification from scratch in open-world settings, offering transferable methods for game AI agents.",
+      "llm_tldr_cn": "现有自进化代理假设存在可用的学习循环，但真实开放世界部署可能不提供这些。提出OpenSkill框架，让代理从文档、代码库和网络获取基础知识和验证锚点，合成可迁移技能，并通过自建虚拟任务精炼技能。该方法无需目标任务监督即可实现代理自进化，对游戏AI代理在开放环境中自主成长具有重要参考价值。",
+      "llm_tldr": "现有自进化代理假设存在可用的学习循环，但真实开放世界部署可能不提供这些。提出OpenSkill框架，让代理从文档、代码库和网络获取基础知识和验证锚点，合成可迁移技能，并通过自建虚拟任务精炼技能。该方法无需目标任务监督即可实现代理自进化，对游戏AI代理在开放环境中自主成长具有重要参考价值。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.06079v1",
+      "source": "arxiv",
+      "title": "SkillComposer: Learning to Evolve Agent Skills for Specification and Generalization",
+      "abstract": "Agent skills, which consist of reusable strategies that guide agent reasoning and action, have shown strong potential for improving model capability at inference time. However, current skill construction methods treat the problem as one-shot extraction, overlooking a fundamental tension: a skill tailored to the specific task fails to transfer, while the abstracted skill often provides insufficient guidance. We attribute this fragility to the absence of explicit mechanisms for skill specification and generalization. To address this gap, we introduce SkillComposer, a framework that decomposes skill construction into three learnable operations: create, improve, and merge. Trained via systematic rejection sampling recipe, SkillComposer enables language models to self-evolve skills at inference time and supports three deployment modes: offline for building generalized libraries, online for task-specific refinement, and hybrid for combining both. Comprehensive experiments on $τ^2$-Bench, LiveCodeBench v6, and AppWorld show that SkillComposer consistently outperforms baselines. Our SkillComposer-4B improves a 27B executor by up to +4.5 on agent tasks and +3.4 on code tasks, while generalizing across domains and task types unseen during training. Analysis reveals that merge and improve address orthogonal quality dimensions and that skill composition is a transferable meta-ability, providing a practical recipe for skill-augmented inference.",
+      "authors": [
+        "Qi Zhang",
+        "Zhaopeng Feng",
+        "Xiaonan Shi",
+        "Xiaomeng Hu",
+        "Chu Liu",
+        "Pengjun Xie",
+        "Xiaobin Wang",
+        "Jieping Ye",
+        "Bryan Hooi",
+        "Haobo Wang",
+        "Junbo Zhao"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-06-04T12:16:08+00:00",
+      "link": "https://arxiv.org/pdf/2606.06079v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Agent skill learning method enables AI agents to acquire reusable strategies, relevant to game agent training",
+      "llm_evidence_cn": "智能体技能学习方法使AI代理获得可复用策略，与游戏代理训练相关",
+      "llm_evidence": "智能体技能学习方法使AI代理获得可复用策略，与游戏代理训练相关",
+      "canonical_evidence": "智能体技能学习方法使AI代理获得可复用策略，与游戏代理训练相关",
+      "llm_tldr_en": "SkillComposer learns to create, improve, and merge agent skills, enabling better specification and generalization for AI agents.",
+      "llm_tldr_cn": "SkillComposer针对智能体技能构建中存在的泛化与特化矛盾，提出将技能构建分解为创建、改进和合并三种可学习操作。通过拒绝采样训练机制，该方法能自动生成既具体又可迁移的技能。实验表明技能质量显著提升，有助于AI代理应对多样化任务。该框架可直接用于游戏AI代理的技能训练。",
+      "llm_tldr": "SkillComposer针对智能体技能构建中存在的泛化与特化矛盾，提出将技能构建分解为创建、改进和合并三种可学习操作。通过拒绝采样训练机制，该方法能自动生成既具体又可迁移的技能。实验表明技能质量显著提升，有助于AI代理应对多样化任务。该框架可直接用于游戏AI代理的技能训练。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.06936v1",
+      "source": "arxiv",
+      "title": "Personality Anchoring for Social Simulation: Linking Personality, Social Behavior, and Interaction Success with LLM Agents",
+      "abstract": "Social interactions are shaped by the interplay of dispositional traits and situational context, yet systematically investigating how personality configurations between individuals jointly influence social behavior across diverse social contexts remains methodologically challenging. We address this gap by introducing a simulation pipeline adapted from the CHARISMA framework, which employs well-known movie characters and public figures as psychologically grounded agents for multi-LLM social simulation using a method we term personality anchoring. We present a large-scale empirical study examining how dyadic Agreeableness composition influences social interaction outcomes across 1,010 simulated conversations. Our results reveal a monotonic relationship between dyadic Agreeableness composition and shared goal achievement, with Homogeneous-Agreeable pairs achieving success 10 times the rate of Homogeneous-Disagreeable pairs (62% vs. 6%). Behavioral mediation analysis reveals that Agreeableness shapes goal achievement partially through cooperative strategy selection, though it continues to predict outcomes within the same dominant strategy, indicating pathways beyond observable conversational behavior. Robustness analyses confirm high consistency of results across repeated simulations (ICC = 0.89) and stable personality expression across diverse scenarios, validating personality anchoring as a viable operationalization strategy.",
+      "authors": [
+        "Vahid Sadiri Javadi",
+        "Aksa Aksa",
+        "Fryderyk Róg",
+        "Lucie Flek",
+        "Johanne R. Trippas"
+      ],
+      "primary_category": "cs.HC",
+      "categories": [
+        "cs.HC"
+      ],
+      "published": "2026-06-05T06:00:15+00:00",
+      "link": "https://arxiv.org/pdf/2606.06936v1",
+      "tags": [
+        "keyword:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Personality-based social simulation with LLM agents applicable to player behavior modeling",
+      "llm_evidence_cn": "基于人格的LLM社会模拟，可应用于玩家行为建模",
+      "llm_evidence": "基于人格的LLM社会模拟，可应用于玩家行为建模",
+      "canonical_evidence": "基于人格的LLM社会模拟，可应用于玩家行为建模",
+      "llm_tldr_en": "Personality Anchoring uses LLM agents grounded in fictional characters to simulate social interactions and study personality effects on behavior.",
+      "llm_tldr_cn": "该论文提出人格锚定方法，利用知名电影角色和公众人物作为心理锚点，驱动LLM进行多智能体社会模拟。通过大规模实验（1010次模拟对话）考察宜人性组合对社交互动的影响。该方法为研究人格与社交行为的关系提供了可控实验平台，其模拟技术可直接迁移至虚拟玩家行为建模领域。",
+      "llm_tldr": "该论文提出人格锚定方法，利用知名电影角色和公众人物作为心理锚点，驱动LLM进行多智能体社会模拟。通过大规模实验（1010次模拟对话）考察宜人性组合对社交互动的影响。该方法为研究人格与社交行为的关系提供了可控实验平台，其模拟技术可直接迁移至虚拟玩家行为建模领域。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "player behavior simulation techniques",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.07127v1",
+      "source": "arxiv",
+      "title": "Learning Explicit Behavioral Models with Adaptive Questions and World-Model Probes",
+      "abstract": "Interactive agents trained only against task return can achieve high scores while failing to represent the mechanisms that make their actions succeed. This makes brittle behavior difficult to diagnose and limits adaptation when environment dynamics change. Existing LLM reflection and policy-code repair can revise behavior from failed trajectories, but questions and world-understanding tests are usually used only after training. We introduce an Explicit Symbolic Behavioral Model (ESBM), a trainable behavioral model that couples task performance with evidence-grounded question answering and executable mechanism prediction. An ESBM represents behavior through typed predicates, weighted rules, bounded options and mechanism memory; the mechanism layer predicts symbolic events, object changes, rewards and terminal consequences under action interventions. After each rollout, adaptive questions and active world-model probes convert score failures, QA errors and transition-prediction errors into constraints for local ESBM edits. Candidate models are selected by a multi-criterion rule that jointly evaluates task score, answerability and active world-model consistency. Under the tested Atari-style protocols, ESBM learns high-scoring policies while producing explicit answers and executable mechanism predictions, indicating that adaptive questions can serve as both training pressure and reusable benchmarks for mechanistic policy learning in this setting.",
+      "authors": [
+        "Hikaru Shindo",
+        "Yu Deng",
+        "Teng Cao",
+        "Quentin Delfosse",
+        "Christopher Tauchmann",
+        "Jannis Blüml",
+        "Gopika Sudhakaran",
+        "Kristian Kersting"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-06-05T10:34:55+00:00",
+      "link": "https://arxiv.org/pdf/2606.07127v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "explicit behavioral model for agents, applicable to player behavior simulation",
+      "llm_evidence_cn": "显式行为模型用于代理，可应用于玩家行为模拟",
+      "llm_evidence": "显式行为模型用于代理，可应用于玩家行为模拟",
+      "canonical_evidence": "显式行为模型用于代理，可应用于玩家行为模拟",
+      "llm_tldr_en": "ESBM couples task performance with question answering and mechanism prediction to produce explainable behavioral models, relevant for player behavior simulation.",
+      "llm_tldr_cn": "交互代理仅通过任务回报训练会缺乏机制表示，导致行为脆弱。提出显式符号行为模型（ESBM），将任务性能与基于证据的问答和可执行机制预测结合。ESBM通过类型谓词、权重规则和机制记忆表示行为，能够诊断和适应环境变化，对玩家行为模拟技术有直接参考意义。",
+      "llm_tldr": "交互代理仅通过任务回报训练会缺乏机制表示，导致行为脆弱。提出显式符号行为模型（ESBM），将任务性能与基于证据的问答和可执行机制预测结合。ESBM通过类型谓词、权重规则和机制记忆表示行为，能够诊断和适应环境变化，对玩家行为模拟技术有直接参考意义。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "player behavior simulation techniques",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
