@@ -1,0 +1,54 @@
+{
+  "label": "2026-06-11",
+  "date": "2026-06-11",
+  "generated_at": "2026-06-11T21:45:39",
+  "count": 3,
+  "papers": [
+    {
+      "paper_id": "202606/11/2606.09236v1-self-paced-curriculum-reinforcement-learning-for-autonomous-superbike-racing-in-simulation",
+      "section": "deep",
+      "title_en": "Self-Paced Curriculum Reinforcement Learning for Autonomous Superbike Racing in Simulation",
+      "authors": "Luca Ghisi, Jacopo Essenziale, Carlo D'Eramo, Matteo Luperto",
+      "date": "2026-06-08",
+      "pdf": "https://arxiv.org/pdf/2606.09236v1",
+      "score": "9.0",
+      "evidence": "在物理精确的摩托车模拟器中训练AI智能体进行比赛",
+      "tldr": "自主摩托车赛跑因平衡和倾角控制而极具挑战。本文提出自定进度课程强化学习框架SPDL，结合Soft Actor-Critic算法，在模拟器中动态生成渐进任务训练智能体。通过设计包含姿态特征和赛道点的状态空间及针对两轮动力学的奖励函数，SPDL在多个赛道和摩托车型号上的训练效率、圈速和驾驶稳定性均优于标准SAC。该工作为基于强化学习的自主摩托车赛跑建立了首个基线。",
+      "tags": "query:player-ai",
+      "abstract_en": "Autonomous Racing has seen remarkable progress through deep Reinforcement Learning (RL), primarily for four-wheeled vehicles. However, motorbikes introduce substantially greater complexity due to the need to manage balance and lean angle, in addition to more reactive steering and throttle control, and a smaller weight. In this work, we present a framework for training an autonomous agent to race a superbike in VRider SBK, a physics-accurate Unity-based motorbike simulator. Our approach integrates Soft Actor-Critic (SAC) with Self-Paced curriculum Deep reinforcement Learning (SPDL), which dynamically generates progressively more challenging tasks based on the agent's performance, without requiring manual curriculum design. The agent's state space comprises proprioceptive features extended with lean-angle history, along with global track features via course points. The reward signal is shaped to encourage progress along the track while penalizing instability-inducing behaviors specific to two-wheeled dynamics. Preliminary experimental results demonstrate that SPDL outperforms SAC alone in training efficiency, lap time, and driving stability across multiple tracks and motorbike models, establishing a first baseline for RL-based autonomous motorbike racing.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/11/2606.11284v1-phi-actor-critic-steering-general-sum-games-to-pareto-efficient-correlated-equilibria",
+      "section": "deep",
+      "title_en": "Phi-Actor-Critic: Steering General-Sum Games to Pareto-Efficient Correlated Equilibria",
+      "authors": "Wongyu Lee, Francesco Lelli, Omran Ayoub, Massimo Tornatore",
+      "date": "2026-06-09",
+      "pdf": "https://arxiv.org/pdf/2606.11284v1",
+      "score": "8.0",
+      "evidence": "用于一般和博弈的MARL方法，引导至帕累托有效均衡",
+      "tldr": "多智能体系统中的一般和博弈常存在多个低效纳什均衡。现有深度多智能体强化学习方法难以收敛到社会高效均衡。本文提出Φ-Actor-Critic框架，通过交换遗憾最小化引导学习向高福利相关均衡收敛。该方法使用集中注意力评论家单次前向预测向量值遗憾，并采用拉格朗日均衡选择机制优化社会福利。实验表明其在多个混合动机场景中实现高效稳定的协调策略。",
+      "tags": "query:player-ai",
+      "abstract_en": "Real-world multi-agent systems, from traffic coordination to resource allocation, are often modeled as general-sum games where individual incentives conflict with collective welfare. In these settings, the central challenge is not merely finding an equilibrium, but selecting socially desirable outcomes among many suboptimal Nash equilibria. Standard deep multi-agent reinforcement learning (MARL) methods struggle with this problem, as value-decomposition approaches are constrained by monotonicity assumptions and policy-gradient methods often converge to stable but socially inefficient equilibria. To address this limitation, we propose $Φ$-Actor-Critic ($Φ$-AC), a framework that leverages swap regret minimization to steer learning toward high-welfare correlated equilibria (CE). To make counterfactual regret estimation tractable in deep MARL, $Φ$-AC employs a centralized attention critic that predicts vector-valued regrets in a single forward pass, avoiding computationally expensive counterfactual simulations. We further introduce a Lagrangian-based equilibrium selection mechanism that optimizes social welfare while enforcing stability through regret constraints. Experiments on matrix games, Multi-Agent Particle Environments (MPE), and the Melting Pot Harvest scenario demonstrate that $Φ$-AC learns efficient and stable coordination strategies across diverse mixed-motive settings while maintaining high collective return and competitive fairness.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/11/2606.09961v1-3spo-state-score-supervised-policy-optimization-for-llm-agents",
+      "section": "quick",
+      "title_en": "3SPO: State-Score-Supervised Policy Optimization for LLM Agents",
+      "authors": "Yu Han, Kailing Li, Yang Jiao, Yulin Dai, Yuqian Fu, Linhai Zhuo, Tianwen Qian",
+      "date": "2026-06-08",
+      "pdf": "https://arxiv.org/pdf/2606.09961v1",
+      "score": "6.0",
+      "evidence": "提出可在游戏智能体训练中应用的按步强化学习算法",
+      "tldr": "现有强化学习算法在训练LLM agent时仅在完整轨迹后更新策略，难以处理多轮交互中的稀疏延时奖励和信用分配问题。本文提出3SPO算法，利用历史成功率计算的状态得分进行逐步骤策略优化，无需值函数或辅助模型。在ALFWorld和WebShop上，3SPO分别比GRPO提升22.6%和15.6个点，且状态探索量增加2.4倍，收敛速度加快1.8倍。该工作为agent训练提供了高效的逐步骤RL新范式。",
+      "tags": "query:player-ai",
+      "abstract_en": "Training large language models (LLMs) as autonomous agents via reinforcement learning (RL) has enabled frontier models to achieve superhuman performance in long-horizon tasks. However, existing RL algorithms operate at the trajectory level, performing policy optimization only after collecting complete episode rollouts. This coarse-grained approach faces fundamental challenges in multi-turn agent settings where rewards are sparse, delayed, and credit assignment across individual steps is critical. In this work, we propose \\textbf{State-Score-Supervised Policy Optimization (3SPO)}, a novel RL algorithm that performs post-step policy optimization with dynamic state score supervision. At each step, 3SPO computes the state score based on historical success rates, supervising step-wise credit assignment, adaptive rollout and post-step policy optimization without requiring value function estimation or additional auxiliary models. Theoretically, under a per-state bandit abstraction, we show that the proposed score-supervised allocation mechanism achieves logarithmic allocation regret and provide sample-complexity guarantees for action identification, score distinguishability, and filtering stability. Experiments on ALFWorld and WebShop with Qwen2.5-1.5B/7B-Instruct show that 3SPO consistently outperforms GRPO by $+22.6\\%$ on ALFWorld and $+15.6$ points on WebShop, while using comparable resources to achieve $2.4\\times$ more state exploration and $1.8\\times$ faster convergence. Code is available at https://github.com/genalyu/3SPO.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
