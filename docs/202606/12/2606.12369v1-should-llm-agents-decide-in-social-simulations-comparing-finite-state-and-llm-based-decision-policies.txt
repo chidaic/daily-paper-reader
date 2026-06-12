@@ -1,0 +1,1039 @@
+Title: Should LLM Agents Decide in Social Simulations? Comparing Finite-State and LLM-Based Decision Policies
+
+URL Source: https://arxiv.org/pdf/2606.12369v1
+
+Published Time: Thu, 11 Jun 2026 01:22:57 GMT
+
+Number of Pages: 16
+
+Markdown Content:
+## Should LLM Agents Decide in Social Simulations? Comparing Finite-State and LLM-Based Decision Policies 
+
+Alejandro Buitrago López 1[0009 −0002 −1606 −8766] ,Javier Pastor-Galindo 1[0000 −0003 −4827 −6682] , and José A. Ruipérez-Valiente 1[0000 −0002 −2304 −6365] 
+
+Dept. of Information and Communications Engineering, University of Murcia, 30100, Spain 
+
+{alejandro.buitragol,javierpg,jruiperez}@umu.es 
+
+Abstract. Large language models (LLMs) are increasingly used as decision-making components in social simulations. This introduces a methodolog-ical risk: the simulation may deviate from the explicit behavioral policy defined by the researcher. In online social network (OSN) simulations, action choices shape system dynamics, interaction patterns, and model interpretability. This paper evaluates whether LLM action selectors preserve an inter-pretable reference policy in an OSN simulation. The reference is a finite state machine implemented as a first-order Markov model, with tran-sition probabilities depending on the user type. The evaluation uses a synthetic network with 1,000 agents and 10 ,000 action decisions. Three open-weight LLMs are tested: LLaMA 3.1, GPT-OSS, and Mistral 24B. Each model is evaluated under three prompting strategies: base, guided, and probabilistic. Alignment is measured using Jensen–Shannon Diver-gence with Laplace smoothing, and execution time is reported. Results show that LLMs can approximate the reference policy in some configu-rations, but do not preserve it reliably. Alignment varies across models and prompts, and additional guidance can introduce systematic action biases. Even the best-aligned LLM configurations are several hundred times slower than direct Markov chain sampling. These findings indicate that LLM-based action selection is not a direct replacement for explicit decision policies: it can alter the intended behavior while increasing com-putational cost. 
+
+Keywords: Agent-Based Simulation · Large Language Models · Social Simulation · Decision-Making 
+
+1 Introduction 
+
+Agent-based simulation is widely used to study complex social systems because it makes agents, interactions, and decision rules explicit, enabling researchers to examine the collective patterns that emerge from them [5]. In online social  
+
+> arXiv:2606.12369v1 [cs.CY] 10 Jun 2026 2Buitrago López et al.
+
+network (OSN) simulations, this is particularly important because exposure, interaction, diffusion, and network evolution all depend on the actions selected by individual users [15]. As a result, the validity of the simulation depends on how those actions are chosen: if the decision policy changes, the behavior of the system may also change. Traditional OSN simulations often rely on explicit behavioral rules, finite-state machines, or probabilistic transition policies [10]. These mechanisms sim-plify human behavior, but their assumptions are inspectable, their outputs are reproducible, and their computational cost is low. This is especially important in adversarial or risk-oriented simulations, where small changes in action selection can alter measured reach, engagement, diffusion, or campaign amplification [12]. If the decision policy is opaque, it becomes difficult to determine whether an observed outcome is due to the simulated scenario or to hidden biases in the mechanism controlling the agents. LLM-based agent simulations are increasingly used to model agents capable of interpreting context, using memory, interacting with others, and generating language [19]. In many cases, however, the LLM is not only used to generate content (e.g., messages or replies), but also to decide the agent’s next action. In an OSN simulation, deciding which actions to perform (e.g., reading, posting, or following) defines both agent behavior and the evolution of the simulation. When this decision is delegated to an LLM through prompting, the behavioral policy becomes dependent on the model, the prompt, and the context, which may introduce non-transparent biases and variability across settings [17]. Therefore, the key question is not only whether LLM agents can produce plausible content, but whether their action choices preserve the intended decision policy. In this paper, we study this problem by comparing two action selection mech-anisms within the same OSN simulation. The first is an explicit and interpretable finite-state decision policy, where agents move between social-media actions ac-cording to user-type-specific transition probabilities. The second delegates the same decision to an LLM through prompting. This comparison tests whether an LLM-based selector preserves the intended behavioral policy or introduces a dif-ferent action distribution. The research question is: to what extent do LLM-based action choices preserve an interpretable finite-state decision policy, and how does this alignment change across models and prompting strategies? 
+
+To conduct this evaluation, we use an agent-based OSN framework [4], where agents perform common social-media actions: read , like , share , reply , post , follow ,and unfollow . The paper makes three main contributions: 
+
+– A controlled comparison is performed between two action-selection approaches under identical agents, network, action space, and simulation context: an explicit FSM/Markov policy based on user-type-specific transition matrices, and LLM-based selectors that choose one valid action through prompting. 
+
+– The evaluation is conducted in a synthetic OSN with 1,000 agents and 10,000 action-selection steps, using three open-weight LLMs (LLaMA 3.1, GPT-OSS, and Mistral 24B) and three prompting strategies. Should LLM Agents Decide? 3
+
+– Alignment with the FSM is measured using Jensen–Shannon Divergence (JSD) with Laplace smoothing, and the execution cost of each decision policy is reported. 
+
+2 Related work 
+
+Agent-based simulation has traditionally used explicit rules, finite-state ma-chines, probabilistic policies, or Markov-based models to define how agents be-have [5, 13, 10]. These approaches simplify human behavior, but their assump-tions are inspectable, reproducible, and computationally efficient. This is im-portant in OSN simulations, where user actions shape exposure, diffusion, and network structure [19, 7]. For example, the frequency of sharing affects diffusion [2], while following and unfollowing affect network structure. LLM-based agents have expanded this setting. LLMs enable agents to inter-pret context, use memory, generate language, plan behavior, and interact with other agents [14]. This makes simulations more flexible, but it also changes how agent behavior is controlled. In some systems, the LLM is used mainly to gener-ate text. In others, it also decides what the agent should do next. When action selection is delegated to an LLM, the resulting behavior becomes dependent not only on explicit rules, but also on model-specific responses to prompts and contextual inputs. Several recent simulators give LLMs a direct role in agent behavior. OASIS uses LLM agents in a social media environment where agents receive platform context and produce actions within a broad OSN action space [19]. Y Social pro-poses an LLM-powered social media digital twin where agents interact through actions such as reading, posting, commenting, sharing, reacting, and following [16]. MOSAIC models social media behavior with agents that choose actions such as liking, sharing, or ignoring posts [7]. Other works use hybrid forms of control. In rumor-spreading simulations, the LLM generates posts and updates agents’ beliefs, while external activation strategies decide which agent acts at each step [6]. In influence-dynamics sim-ulations, LLM agents generate persuasive or corrective messages, while opinion changes are governed by explicit update rules [12]. A similar distinction appears in recent work on AI-enabled influence operations in synthetic social networks, where agent behavior is controlled through deterministic state machines and the LLM is used for organic content generation and bounded analytic tasks [8]. These designs retain partial control over the simulation while delegating specific com-ponents to the LLM, separating explicit decision mechanisms from generative behavior. Empirical studies of LLM-driven social behavior suggest that model out-puts should not be assumed to match the intended behavior. Evidence from Chirper.ai, LLM-generated reactions to Spanish online news, and survey-based evaluations shows that outputs can differ from human behavior and depend strongly on prompting and configuration [20, 9, 17]. These findings do not in-validate LLM-based simulations, but they do show that observed outcomes may 4 Buitrago López et al. 
+
+reflect the implicit decision policy induced by the model rather than the behavior intended by the simulator. The reviewed works can be grouped into three broad forms of simulation control. First, explicit approaches use rules, finite-state machines, probabilistic policies, or Markov-based models [5, 13, 10]. Second, three reviewed LLM-based systems delegate part of agent behavior directly to the LLM, including action selection, planning, or reaction to the environment: OASIS, Y Social, and MO-SAIC [19, 16, 7]. Third, three works use hybrid control, where LLM-generated content or analysis is combined with explicit activation rules, workflows, belief updates, or opinion dynamics [6, 12, 8]. Despite these advances, most existing work evaluates complete simulation outcomes, so the specific behavior induced by the LLM action-selection policy often remains implicit. As a result, it remains unclear whether LLM-based agents reproduce the intended behavioral assumptions or implicitly implement a differ-ent policy. This work studies this problem in a controlled OSN setting. The same simulation is run under two forms of action control. In one case, agents choose ac-tions through an explicit FSM/Markov policy based on transition probabilities. In the other, the next action is chosen by an LLM through prompting. Building on a framework where action selection and language generation are separated [4], the study compares both approaches under the same agents, network, context, and action space. The goal is to quantify how LLM-based action selection aligns with or deviates from an explicit reference policy under controlled conditions. 
+
+3 Experimental setup 
+
+Figure 1 summarizes the experimental setup. All conditions are evaluated on the same synthetic OSN, with the same agents, network structure, action space, and context-construction procedure. The only component that changes is the action-selection policy: an explicit FSM/Markov baseline or one of three LLM-based policies defined by different prompting strategies. The resulting action distri-butions are compared with the FSM reference using JSD. Laplace smoothing with α = 10 −6 is applied before normalization to avoid zero-count artifacts. JSD is computed with base-2 logarithms, so values lie in [0 , 1] , where lower values indicate closer alignment with the FSM reference policy. 
+
+3.1 OSN simulation environment and action selection 
+
+The evaluation is conducted using an agent-based OSN simulation framework [4], representing a microblogging platform with synthetic users, directed social links, and a fixed action space. The simulation follows three stages: agent generation, network construction, and sequential interaction. Agents are generated with structured profiles including demographic and behavioral attributes (e.g., age, personality, occupation, interests, and user type), which define their semantic characteristics. The social graph is constructed using a homophily-based generation process, following the same framework described Should LLM Agents Decide? 5OSN Simulator OSN Generator           
+
+> OSN Simulation Framework
+> Context LLM Models Memory
+> Users
+> Friendships Agents Behavior
+> Content Generation
+> FSM
+> Minimal
+> prompt (v1)
+> Decision -making
+> Guided
+> prompt (v2)
+> Probabilistic
+> prompt (v3)
+> Generative Module
+
+Fig. 1: Overview of the experimental setup. The OSN generator creates the syn-thetic users and friendships. The OSN simulator activates agents sequentially. At each step, the activated agent selects one action using either the FSM baseline or one of the three LLM-based prompting strategies. in [11], and remains fixed across all conditions. The simulation proceeds through sequential agent activations for a configurable number of steps. At each step, an agent is activated, its local context is derived from the current network state, and one valid action is selected from the common action space. 
+
+A = {read , like , share , reply , post , follow , unfollow }.
+
+The selected action is executed and updates the simulation state. For exam-ple, read exposes the agent to content; like , share , and reply require available content; post creates new content; and follow or unfollow modify the social graph when valid candidates exist. All experimental conditions share identical simula-tion dynamics; only the decision policy differs. The following subsection defines the four action-selection policies compared in this study. 
+
+3.2 Action-selection policies 
+
+Four action-selection policies are compared. The first one is the original FSM-based decision policy of the simulator. The other three replace the FSM decision with an LLM-based action selector under different prompting strategies. All policies receive the same agent profile, current state, valid actions, and local simulation context. 
+
+FSM baseline The FSM is the original action-selection mechanism of the sim-ulator [4] and serves as the interpretable reference policy. It represents agent behavior as transitions between discrete OSN actions. Each state corresponds to 6 Buitrago López et al. 
+
+an action, and the next action is sampled according to a transition matrix. The transition probabilities depend on the current state and the agent’s user type. Formally, given a current action state ai and a user type u, the FSM defines a probability distribution over the next action aj :
+
+p(u) 
+
+> ij
+
+= P (At+1 = aj | At = ai, U = u), X
+
+> j
+
+p(u) 
+
+> ij
+
+= 1 .
+
+Base prompt (Prompt v1) Base prompt (v1) provides the LLM with the agent metadata, recent state, platform constraints, available actions, and short definitions of each action. It includes only minimal behavioral framing to avoid two potential artifacts: framing the task as an optimization problem and artifi-cially balancing actions. This prompt captures the model’s default action pref-erences under a constrained OSN decision context, without user-type-specific calibration or numerical transition probabilities. 
+
+Guided prompt (Prompt v2) Guided prompt (v2) extends the base prompt with explicit behavioral guidance derived from empirical observations of OSN use. This guidance acts as an explicit intervention on the decision process rather than neutral background information. It summarizes five decision rules: users normally consume available feed content before reacting to it [3]; content creation is unequally distributed across users [1]; actions differ in effort, from low-cost signals such as like to higher-initiative actions such as reply and post [2]; user roles shape engagement patterns [18]; and relational actions such as follow and 
+
+unfollow should be treated as ordinary candidates when available. The prompt includes calibration rules discouraging the model from over-selecting actions that are easier to justify linguistically, such as post or reply ,and from ignoring lower-effort or relational actions such as like , share , follow ,or unfollow . This specificity is important for interpreting the results: if guided prompt (v2) induces a strong shift toward a particular action, this reflects how a model applies the provided behavioral rules, not only its baseline preference. 
+
+Probabilistic prompt (Prompt v3) Probabilistic prompt (v3) gives the LLM the numerical information used by the FSM to choose the next action. For each decision, the model receives the fixed action order, the current state, the tran-sition probabilities for the corresponding user type, the contextual mask, the final normalized probabilities, the allowed actions, and short validity notes. The mask reflects the current situation of the agent, for example whether the agent has already read a post, whether like , share , or reply are possible, whether there are concrete follow or unfollow candidates, and whether repeated actions such as post or reply should be downweighted. The model must choose one action from the allowed set. It is instructed to use the final probabilities as strong behavioral priors, but not to always select the highest-probability action, ignore the probabilities, or artificially balance Should LLM Agents Decide? 7
+
+Table 1: Representative content and length of the three prompting strategies.                             
+
+> Words Prompt Representative content
+> 213 Base prompt (v1)
+> Decide as a realistic human social media user, not as an opti-mizer. [...] Do not try to maximize action diversity. [...] Prefer the action that feels most natural and plausible right now.
+> 670 Guided prompt (v2)
+> When readable feed content exists, users normally consume content before reacting. [...] Follow and unfollow are ordi-nary relationship-management actions. [...] Do not choose post merely because the user is Advanced, Debater, or Socializer.
+> 538 Probabilistic prompt (v3)
+> Final normalized probabilities after masking, e.g., read=0.55, like=0.20, share=0.08, reply=0.07, post=0.05, follow=0.05, un-follow=0.00. [...] Use the final normalized probabilities as strong behavioral priors. Do not simply choose the highest-probability action every time.
+
+the actions. The prompt also includes short action definitions and user-type calibration rules, so the model can interpret the numerical policy within the current OSN context. Thus, Probabilistic prompt (v3) provides numerical priors derived from the FSM while leaving final action selection to the model. Table 1 shows representative content and word lengths for the three prompt templates. For probabilistic prompt (v3), the probability values are illustrative; actual values vary across decision instances. The full prompts are provided in the supplementary material. 
+
+4 Experimental results 
+
+This section evaluates how action distributions change when the FSM-based decision policy is replaced by LLM-based action selection under controlled con-ditions. All models are tested within the same experimental setup: a synthetic OSN with 1,000 agents divided into four behavioral profiles: 547 Passive users (54.7%), 221 Socializers (22.1%), 135 Debaters (13.5%), and 97 Advanced users (9.7%). Each configuration consists of 10,000 action-selection steps with identi-cal action space, decision context-construction procedure, prompts, and decoding settings. We compare three open-weight LLMs: Llama-3.1-8B , gpt-oss-20b-BF16 ,and Mistral-Small-3.2-24B . These models were selected to cover different open-weight model families while allowing deployment under the same local inference setup. This design tests whether prompt-induced effects are consis-tent across models rather than specific to a single implementation. All experi-ments were conducted on a dedicated Ubuntu server with 10 CPU cores (Intel Xeon, 2.3 GHz) and 100 GB of RAM. The models were served through a local vLLM endpoint. For each decision instance, the model received the correspond-ing decision context and was required to return exactly one valid action from the predefined action space. All requests use the same decoding configuration: 
+
+temperature =0.7, top_p =0.9, and top_k =40. 8 Buitrago López et al. 
+
+4.1 LLaMA 3.1 
+
+Figure 2 reports the action proportions produced by LLaMA 3.1 for each user type and prompt, with the FSM shown as the reference distribution. The rows correspond to the FSM baseline and the three prompting strategies, while the columns show the seven possible actions. In the FSM row, read is the dominant action across all user types. The remaining actions appear with lower propor-tions, with post , reply , like , and share appearing at lower but non-zero levels across profiles. 0%          
+
+> 25%
+> 50%
+> 75%
+> 100%
+> FSM
+> 0%
+> 25%
+> 50%
+> 75%
+> 100%
+> Prompt v1
+> 0%
+> 25%
+> 50%
+> 75%
+> 100%
+> Prompt v2
+> read like share reply post follow unfollow
+> Action
+> 0%
+> 25%
+> 50%
+> 75%
+> 100%
+> Prompt v3
+> Proportion within user type
+> User type
+> Advanced Debater Passive Socializer
+
+Fig. 2: Action distributions produced by LLaMA 3.1 under the three prompting strategies, compared with the FSM baseline. Bars show the proportion of each action within each user type. The three LLaMA 3.1 prompt rows show substantial differences in the distri-bution of actions. Under base prompt (v1), the bars for read are much smaller than in the FSM row, while reply and post become the most prominent actions. Guided prompt (v2) reduces the over-selection of reply and post , but it remains different from the FSM profile. Instead, it increases the proportion of like , espe-Should LLM Agents Decide? 9
+
+cially among Passive users and Socializers. Probabilistic prompt (v3) produces a more diverse distribution for some user types and partially restores share , but it still differs from the FSM baseline, particularly for Passive users, where the largest deviations are observed. Figure 3 reports the action counts produced by LLaMA 3.1 for each user type. The figure is organized into four panels, one for each user profile. Within each panel, rows correspond to the FSM baseline and the three prompts, while columns correspond to the seven actions. Each cell reports the raw action count; for the LLM rows, the value below the count indicates the difference with respect to the FSM for the same user type and action. The color scale represents the row-wise percentage, so lighter cells identify the actions that dominate each policy. read       
+
+> like
+> share
+> reply
+> post
+> follow
+> unfollow
+> FSM
+> N=870
+> Prompt v1
+> N=804
+> Prompt v2
+> N=610
+> Prompt v3
+> N=650
+> 468 44 71 74 189 13 11
+> 115
+> -353
+> 72
+> +28
+> 0
+> -71
+> 379
+> +305
+> 238
+> +49
+> 0
+> -13
+> 0
+> -11
+> 253
+> -215
+> 336
+> +292
+> 14
+> -57
+> 1
+> -73
+> 5
+> -184
+> 0
+> -13
+> 1
+> -10
+> 180
+> -288
+> 164
+> +120
+> 90
+> +19
+> 90
+> +16
+> 126
+> -63
+> 0
+> -13
+> 0
+> -11
+
+Advanced — users=97       
+
+> read
+> like
+> share
+> reply
+> post
+> follow
+> unfollow
+> FSM
+> N=1,520
+> Prompt v1
+> N=1,679
+> Prompt v2
+> N=1,440
+> Prompt v3
+> N=1,400
+> 900 92 146 213 134 20 15
+> 194
+> -706
+> 140
+> +48
+> 2
+> -144
+> 862
+> +649
+> 481
+> +347
+> 0
+> -20
+> 0
+> -15
+> 747
+> -153
+> 562
+> +470
+> 30
+> -116
+> 66
+> -147
+> 30
+> -104
+> 2
+> -18
+> 3
+> -12
+> 246
+> -654
+> 123
+> +31
+> 42
+> -104
+> 800
+> +587
+> 189
+> +55
+> 0
+> -20
+> 0
+> -15
+
+Debater — users=135       
+
+> read
+> like
+> share
+> reply
+> post
+> follow
+> unfollow
+> FSM
+> N=5,910
+> Prompt v1
+> N=5,567
+> Prompt v2
+> N=6,230
+> Prompt v3
+> N=6,270
+> 5,124 421 167 88 40 55 15
+> 1,071
+> -4,053
+> 998
+> +577
+> 15
+> -152
+> 1,652
+> +1,564
+> 1,810
+> +1,770
+> 3
+> -52
+> 18
+> +3
+> 2,651
+> -2,473
+> 3,423
+> +3,002
+> 3
+> -164
+> 0
+> -88
+> 134
+> +94
+> 0
+> -55
+> 19
+> +4
+> 1,052
+> -4,072
+> 1,720
+> +1,299
+> 1,095
+> +928
+> 1,605
+> +1,517
+> 792
+> +752
+> 6
+> -49
+> 0
+> -15
+
+Passive — users=547       
+
+> read
+> like
+> share
+> reply
+> post
+> follow
+> unfollow
+> FSM
+> N=1,700
+> Prompt v1
+> N=1,950
+> Prompt v2
+> N=1,720
+> Prompt v3
+> N=1,680
+> 967 196 174 153 158 42 10
+> 231
+> -736
+> 213
+> +17
+> 3
+> -171
+> 752
+> +599
+> 751
+> +593
+> 0
+> -42
+> 0
+> -10
+> 543
+> -424
+> 1,152
+> +956
+> 10
+> -164
+> 0
+> -153
+> 14
+> -144
+> 1
+> -41
+> 0
+> -10
+> 268
+> -699
+> 375
+> +179
+> 191
+> +17
+> 586
+> +433
+> 260
+> +102
+> 0
+> -42
+> 0
+> -10
+
+Socializer — users=221 
+
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+> Row-wise percentage (%)
+
+Fig. 3: Action counts produced by LLaMA 3.1 by user type and prompt. Cell values report raw counts, while secondary values indicate the difference with respect to the FSM baseline for the same user type. The heatmap shows differences between LLaMA 3.1 and the FSM that ex-tend across multiple actions rather than being confined to individual cases. Each prompt produces a distinct distribution pattern. Base prompt (v1) moves deci-sions away from read and toward more active actions, especially reply and post .Guided prompt (v2) reduces this shift, but concentrates a large proportion on 
+
+like . Probabilistic prompt (v3) distributes decisions across more action types and partially restores some lower-frequency actions, although it still differs from the FSM pattern, particularly for Passive users. JSD results confirm this pattern. At the global level, guided prompt (v2) achieves the closest alignment with the FSM ( JSD = 0 .223 ), followed by prob-abilistic prompt (v3) ( JSD = 0 .278 ) and base prompt (v1) ( JSD = 0 .359 ). The weighted user-type averages show the same ordering, with guided prompt 10 Buitrago López et al. 
+
+(v2) obtaining the lowest divergence ( JSD = 0 .243 ) and base prompt (v1) the highest ( JSD = 0 .390 ). However, this global improvement is not uniform across user types. Probabilistic prompt (v3) achieves the lowest divergence for Ad-vanced users ( JSD = 0 .108 ) and Socializers ( JSD = 0 .181 ), whereas guided prompt (v2) performs best for Debaters ( JSD = 0.158 ) and Passive users (JSD = 0 .234 ). Probabilistic prompt (v3) shows higher divergence for the Pas-sive profile, where divergence remains high ( JSD = 0 .420 ). 
+
+4.2 GPT-OSS 
+
+Figure 4 shows the action proportions produced by GPT-OSS under the three prompts, compared with the FSM baseline. Base prompt (v1) shifts part of the distribution toward like , reducing several lower-frequency actions. Guided prompt (v2) departs most strongly from the FSM, with follow dominating across user types. Probabilistic prompt (v3) restores read for several user types and re-duces the concentration on follow , although some actions remain less represented. 0%          
+
+> 20%
+> 40%
+> 60%
+> 80%
+> 100%
+> FSM
+> 0%
+> 20%
+> 40%
+> 60%
+> 80%
+> 100%
+> Prompt v1
+> 0%
+> 20%
+> 40%
+> 60%
+> 80%
+> 100%
+> Prompt v2
+> read like share reply post follow unfollow
+> Action
+> 0%
+> 20%
+> 40%
+> 60%
+> 80%
+> 100%
+> Prompt v3
+> Proportion within user type
+> User type
+> Advanced Debater Passive Socializer
+
+Fig. 4: Action distributions produced by GPT-OSS under the three prompting strategies, compared with the FSM baseline. Should LLM Agents Decide? 11 
+
+Figure 5 complements the proportional view by showing the raw action counts and their differences with respect to the FSM. Base prompt (v1) shifts many deci-sions toward like while reducing several less frequent actions, remaining relatively closer to a consumption-oriented distribution. Guided prompt (v2) produces a strong concentration on follow , with this action dominating the counts across user types. Probabilistic prompt (v3) reduces this concentration and restores 
+
+read as the most frequent action, although differences with respect to the FSM remain for some actions. read       
+
+> like
+> share
+> reply
+> post
+> follow
+> unfollow
+> FSM
+> N=870
+> Prompt v1
+> N=960
+> Prompt v2
+> N=890
+> Prompt v3
+> N=670
+> 468 44 71 74 189 13 11
+> 523
+> +55
+> 348
+> +304
+> 3
+> -68
+> 74
+> +0
+> 12
+> -177
+> 0
+> -13
+> 0
+> -11
+> 108
+> -360
+> 0
+> -44
+> 0
+> -71
+> 0
+> -74
+> 3
+> -186
+> 747
+> +734
+> 32
+> +21
+> 479
+> +11
+> 8
+> -36
+> 172
+> +101
+> 3
+> -71
+> 6
+> -183
+> 2
+> -11
+> 0
+> -11
+
+Advanced — users=97       
+
+> read
+> like
+> share
+> reply
+> post
+> follow
+> unfollow
+> FSM
+> N=1,520
+> Prompt v1
+> N=1,530
+> Prompt v2
+> N=1,180
+> Prompt v3
+> N=1,140
+> 900 92 146 213 134 20 15
+> 808
+> -92
+> 167
+> +75
+> 6
+> -140
+> 538
+> +325
+> 11
+> -123
+> 0
+> -20
+> 0
+> -15
+> 146
+> -754
+> 0
+> -92
+> 0
+> -146
+> 9
+> -204
+> 3
+> -131
+> 1,004
+> +984
+> 18
+> +3
+> 632
+> -268
+> 0
+> -92
+> 8
+> -138
+> 495
+> +282
+> 3
+> -131
+> 2
+> -18
+> 0
+> -15
+
+Debater — users=135       
+
+> read
+> like
+> share
+> reply
+> post
+> follow
+> unfollow
+> FSM
+> N=5,910
+> Prompt v1
+> N=5,680
+> Prompt v2
+> N=6,120
+> Prompt v3
+> N=6,460
+> 5,124 421 167 88 40 55 15
+> 3,531
+> -1,593
+> 2,051
+> +1,630
+> 17
+> -150
+> 69
+> -19
+> 11
+> -29
+> 1
+> -54
+> 0
+> -15
+> 763
+> -4,361
+> 4
+> -417
+> 0
+> -167
+> 0
+> -88
+> 9
+> -31
+> 5,139
+> +5,084
+> 205
+> +190
+> 6,052
+> +928
+> 355
+> -66
+> 0
+> -167
+> 0
+> -88
+> 3
+> -37
+> 50
+> -5
+> 0
+> -15
+
+Passive — users=547       
+
+> read
+> like
+> share
+> reply
+> post
+> follow
+> unfollow
+> FSM
+> N=1,700
+> Prompt v1
+> N=1,830
+> Prompt v2
+> N=1,810
+> Prompt v3
+> N=1,730
+> 967 196 174 153 158 42 10
+> 941
+> -26
+> 605
+> +409
+> 11
+> -163
+> 247
+> +94
+> 25
+> -133
+> 1
+> -41
+> 0
+> -10
+> 227
+> -740
+> 1
+> -195
+> 0
+> -174
+> 3
+> -150
+> 4
+> -154
+> 1,564
+> +1,522
+> 11
+> +1
+> 1,095
+> +128
+> 615
+> +419
+> 8
+> -166
+> 4
+> -149
+> 1
+> -157
+> 7
+> -35
+> 0
+> -10
+
+Socializer — users=221 
+
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+> Row-wise percentage (%)
+
+Fig. 5: Action counts produced by GPT-OSS by user type and prompt. The JSD results are consistent with the distributional differences observed in the figures. At the global level, probabilistic prompt (v3) achieves the closest alignment with the FSM ( JSD = 0 .035 ), followed by base prompt (v1) ( JSD =0.113 ), whereas guided prompt (v2) shows the largest divergence ( JSD = 0 .672 ). The weighted user-type averages follow the same pattern, with v3 obtaining the lowest divergence ( JSD = 0 .087 ), v1 remaining moderately aligned ( JSD =0.120 ), and v2 remaining highly divergent ( JSD = 0 .676 ). However, this align-ment is not uniform across user types. Probabilistic prompt (v3) is closest for Passive users ( JSD = 0 .027 ), but shows higher divergence for Advanced users (JSD = 0 .180 ), Debaters ( JSD = 0 .166 ), and Socializers ( JSD = 0 .179 ). In contrast, guided prompt (v2) exhibits high divergence across all user types, with values ranging from 0.660 to 0.686 .
+
+4.3 Mistral 24B 
+
+Figure 6 shows the action proportions produced by Mistral 24B under the three prompts, compared with the FSM baseline. Base prompt (v1) preserves read as 12 Buitrago López et al. 
+
+the dominant action across user types and does not concentrate the distribu-tion on a single alternative action. However, some differences with respect to the FSM appear, including reduced representation of lower-frequency actions such as share , follow , and unfollow . Guided prompt (v2) further increases the proportion of read , producing a narrower distribution across actions. This effect is particularly visible for Passive users, where read accounts for most decisions. Probabilistic prompt (v3) produces a broader distribution by increasing like and 
+
+share , while reducing the dominance of read for some user types, especially Pas-sive users, resulting in a distribution that differs more from the FSM baseline. 0%          
+
+> 20%
+> 40%
+> 60%
+> 80%
+> 100%
+> FSM
+> 0%
+> 20%
+> 40%
+> 60%
+> 80%
+> 100%
+> Prompt v1
+> 0%
+> 20%
+> 40%
+> 60%
+> 80%
+> 100%
+> Prompt v2
+> read like share reply post follow unfollow
+> Action
+> 0%
+> 20%
+> 40%
+> 60%
+> 80%
+> 100%
+> Prompt v3
+> Proportion within user type
+> User type
+> Advanced Debater Passive Socializer
+
+Fig. 6: Action distributions produced by Mistral 24B under the three prompting strategies, compared with the FSM baseline. Figure 7 shows the count-level differences underlying these patterns. Base prompt (v1) remains relatively close to the FSM, mainly because it preserves the dominance of read , although it reduces several less frequent actions. Guided prompt (v2) further concentrates decisions on read , particularly for Passive users. Probabilistic prompt (v3) redistributes decisions across a wider set of actions by increasing like and share , while reducing read for some user types. Should LLM Agents Decide? 13 read       
+
+> like
+> share
+> reply
+> post
+> follow
+> unfollow
+> FSM
+> N=870
+> Prompt v1
+> N=910
+> Prompt v2
+> N=700
+> Prompt v3
+> N=740
+> 468 44 71 74 189 13 11
+> 657
+> +189
+> 125
+> +81
+> 0
+> -71
+> 21
+> -53
+> 107
+> -82
+> 0
+> -13
+> 0
+> -11
+> 641
+> +173
+> 50
+> +6
+> 0
+> -71
+> 0
+> -74
+> 0
+> -189
+> 9
+> -4
+> 0
+> -11
+> 447
+> -21
+> 7
+> -37
+> 215
+> +144
+> 19
+> -55
+> 13
+> -176
+> 39
+> +26
+> 0
+> -11
+
+Advanced — users=97       
+
+> read
+> like
+> share
+> reply
+> post
+> follow
+> unfollow
+> FSM
+> N=1,520
+> Prompt v1
+> N=1,590
+> Prompt v2
+> N=1,450
+> Prompt v3
+> N=1,190
+> 900 92 146 213 134 20 15
+> 802
+> -98
+> 45
+> -47
+> 0
+> -146
+> 337
+> +124
+> 406
+> +272
+> 0
+> -20
+> 0
+> -15
+> 810
+> -90
+> 329
+> +237
+> 62
+> -84
+> 235
+> +22
+> 2
+> -132
+> 12
+> -8
+> 0
+> -15
+> 578
+> -322
+> 1
+> -91
+> 288
+> +142
+> 321
+> +108
+> 2
+> -132
+> 0
+> -20
+> 0
+> -15
+
+Debater — users=135       
+
+> read
+> like
+> share
+> reply
+> post
+> follow
+> unfollow
+> FSM
+> N=5,910
+> Prompt v1
+> N=5,680
+> Prompt v2
+> N=6,080
+> Prompt v3
+> N=6,500
+> 5,124 421 167 88 40 55 15
+> 4,817
+> -307
+> 728
+> +307
+> 0
+> -167
+> 3
+> -85
+> 132
+> +92
+> 0
+> -55
+> 0
+> -15
+> 6,077
+> +953
+> 3
+> -418
+> 0
+> -167
+> 0
+> -88
+> 0
+> -40
+> 0
+> -55
+> 0
+> -15
+> 2,817
+> -2,307
+> 2,264
+> +1,843
+> 1,333
+> +1,166
+> 0
+> -88
+> 0
+> -40
+> 86
+> +31
+> 0
+> -15
+
+Passive — users=547       
+
+> read
+> like
+> share
+> reply
+> post
+> follow
+> unfollow
+> FSM
+> N=1,700
+> Prompt v1
+> N=1,820
+> Prompt v2
+> N=1,770
+> Prompt v3
+> N=1,570
+> 967 196 174 153 158 42 10
+> 1,128
+> +161
+> 329
+> +133
+> 0
+> -174
+> 86
+> -67
+> 277
+> +119
+> 0
+> -42
+> 0
+> -10
+> 1,254
+> +287
+> 505
+> +309
+> 0
+> -174
+> 0
+> -153
+> 0
+> -158
+> 10
+> -32
+> 1
+> -9
+> 538
+> -429
+> 442
+> +246
+> 301
+> +127
+> 277
+> +124
+> 2
+> -156
+> 10
+> -32
+> 0
+> -10
+
+Socializer — users=221 
+
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+> Row-wise percentage (%)
+
+Fig. 7: Action counts produced by Mistral 24B by user type and prompt. The JSD results are consistent with these distributional patterns. At the global level, base prompt (v1) achieves the closest alignment with the FSM (JSD = 0 .045 ), followed closely by guided prompt (v2) ( JSD = 0 .055 ), whereas probabilistic prompt (v3) shows higher divergence ( JSD = 0 .132 ). The weighted user-type averages follow the same ordering, with v1 obtaining the lowest diver-gence ( JSD = 0 .060 ), followed by v2 ( JSD = 0 .105 ) and v3 ( JSD = 0 .165 ). At the profile level, v1 shows lower divergence for Advanced users, Passive users, and Socializers, while v2 is slightly closer for Debaters. In contrast, v3 shows higher divergence for Passive users, indicating that changes in the balance be-tween actions affect alignment for this profile. 
+
+4.4 Cross-Method Comparison 
+
+Table 2 summarizes global action-distribution alignment and execution cost of all configurations. Here, global alignment is computed as JSD over the full ac-tion distribution after the 10 ,000 action-selection steps, without separating user types. Lower JSD values indicate that the LLM-selected actions are closer to the FSM reference distribution. Execution time reports the cost of selecting the same 10 ,000 actions. The FSM is included as the reference policy: it has zero divergence by definition and only requires direct sampling from the transition matrix. At the prompting-strategy level, the results show that LLM-based policies can approximate the FSM distribution in some configurations, but no prompt-ing strategy is consistently best across models. Averaging JSD across the three models, probabilistic prompt (v3) obtains the lowest mean divergence ( 0.148 ), followed by base prompt (v1) ( 0.172 ), while guided prompt (v2) has the high-est mean divergence across models ( 0.317 ). However, this average ranking masks 14 Buitrago López et al. 
+
+Table 2: Global distributional alignment and execution cost across decision poli-cies and models. Execution time is computed over 10 ,000 action-selection steps. Bold values indicate the best LLM alignment and the fastest LLM execution time.                                               
+
+> Decision policy Model JSD Execution cost Time (s) s/action vs. FSM
+> FSM –0.000 70.0007 1.0
+> Prompt v1 LLaMA 3.1 0.359 946 0.0946 135 .1
+> GPT-OSS 0.113 2,172 0.2172 310 .3
+> Mistral 24B 0.045 2,989 0.2989 427 .0
+> Prompt v2 LLaMA 3.1 0.223 3,089 0.3089 441 .3
+> GPT-OSS 0.672 6,334 0.6334 904 .9
+> Mistral 24B 0.055 9,360 0.9360 1,337 .1
+> Prompt v3 LLaMA 3.1 0.278 1,816 0.1816 259 .4
+> GPT-OSS 0.035 2,990 0.2990 427 .1
+> Mistral 24B 0.132 5,794 0.5794 827 .7
+
+model-specific effects: probabilistic prompt (v3) is best for GPT-OSS, base prompt (v1) is best for Mistral 24B, and guided prompt (v2) is best for LLaMA 3.1. These results show that adding behavioral or numerical guidance does not consistently lead to closer alignment with the FSM. At the model level, Mistral 24B has the lowest average divergence from the FSM across prompts. Its mean JSD across prompts is 0.077 , clearly lower than GPT-OSS ( 0.273 ) and LLaMA 3.1 ( 0.287 ). GPT-OSS achieves the best single result with probabilistic prompt (v3) ( JSD = 0 .035 ), but it also produces the worst configuration with guided prompt (v2) ( JSD = 0 .672 ), indicating prompt sensitivity. LLaMA 3.1 is the fastest model, but its alignment remains weaker than Mistral 24B in all prompting strategies. The latency ranking differs from the alignment ranking: LLaMA 3.1 is the fastest model on average, followed by GPT-OSS and Mistral 24B. Therefore, fidelity and efficiency do not point to the same configuration: the model with the lowest average divergence is also the most expensive, while the fastest model does not achieve the lowest divergence from the FSM. 
+
+5 Conclusion 
+
+This paper examined whether LLM-based action selection preserves an inter-pretable finite-state decision policy in an agent-based OSN simulation. The comparison was conducted under identical agents, network, action space, and decision contexts, using three open-weight LLMs and three prompting strate-gies. Alignment with the FSM reference policy was measured using JSD, and execution time was reported. The results provide a conditional answer to the research question. LLM-based selectors can approximate the FSM policy in some cases, but they do not Should LLM Agents Decide? 15 
+
+preserve it consistently. Across the nine LLM configurations, the mean global JSD was 0.212 , which indicates that the average action distribution remains different from the FSM. However, some configurations achieved close alignment, showing that LLM-based action selection is not inherently unable to reproduce an explicit policy. Prompt design alone was not sufficient to preserve the FSM policy, and it did not define a stable decision policy across models. Additional behavioral guidance or numerical transition information did not consistently improve alignment, and the same prompting strategy could move one model closer to the FSM while moving another further away. Therefore, LLM-based action selection should not be assumed to follow an intended policy solely because the prompt describes it. The computational cost results were unambiguous. Across all LLM config-urations, action selection was on average 563 .3× slower than the FSM, and even the fastest LLM configuration was 135 .1× slower. Replacing an explicit FSM/Markov policy with an LLM selector should therefore be treated as a modeling trade-off rather than a direct substitution. LLMs may add contex-tual flexibility, but replacing an explicit policy with an LLM changes both the computational cost and the effective decision mechanism. Future work should connect this decision-level benchmark with full OSN simulations and study how action-level divergence affects diffusion, engagement, network evolution, and narrative amplification. 
+
+Acknowledgments. This work has been partially funded by the University of Murcia with the FPI/0000902983 contract. 
+
+Disclosure of Interests. The authors have no competing interests to declare that are relevant to the content of this article. 
+
+References 
+
+1. Antelmi, A., Malandrino, D., Scarano, V.: Characterizing the behavioral evolution of twitter users and the truth behind the 90-9-1 rule. In: Companion Proceedings of The 2019 World Wide Web Conference. pp. 1035–1038. WWW ’19, Association for Computing Machinery (2019). https://doi.org/10.1145/3308560.3316705 2. Bakshy, E., Hofman, J.M., Mason, W.A., Watts, D.J.: Everyone’s an influencer: Quantifying influence on twitter. In: Proceedings of the Fourth ACM International Conference on Web Search and Data Mining. pp. 65–74. WSDM ’11, Association for Computing Machinery (2011). https://doi.org/10.1145/1935826.1935845 3. Benevenuto, F., Rodrigues, T., Cha, M., Almeida, V.: Characterizing user navi-gation and interactions in online social networks. Information Sciences 195 , 1–24 (2012). https://doi.org/10.1016/j.ins.2011.12.009 4. Buitrago López, A., Ortega Pastor, A., Montoro Aguilera, D., Fernández Tár-raga, M., Verdú Chacón, J., Pastor-Galindo, J., Ruipérez-Valiente, J.A.: Agent-based simulation of online social networks and disinformation. arXiv preprint arXiv:2512.22082 (2025) 5. Epstein, J.M.: Generative Social Science: Studies in Agent-Based Computational Modeling. Princeton University Press (2006) 16 Buitrago López et al. 6. Hu, T., Liakopoulos, D., Wei, X., Marculescu, R., Yadwadkar, N.J.: Sim-ulating rumor spreading in social networks using llm agents (2025), https://arxiv.org/abs/2502.01450 7. Liu, G., Rahman, S., Kreiss, E., Ghassemi, M., Gabriel, S.: Mosaic: Modeling social ai for content dissemination and regulation in multi-agent simulations. In: Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing. Association for Computational Linguistics (2025) 8. López, A.B., Aguilera, D.M., Pastor-Galindo, J., Ruipérez-Valiente, J.A.: Execu-tion and assessment of agentic influence operations in simulated social networks (2026), https://arxiv.org/abs/2605.28725 9. López, A.B., Pastor, A.O., Pastor-Galindo, J., Ruipérez-Valiente, J.A.: Evaluating the realism of llm-powered social agents: A case study of reactions to spanish online news (2026), https://arxiv.org/abs/2605.28598 10. López, A.B., Pastor-Galindo, J., Ruipérez-Valiente, J.A.: Frameworks, modeling and simulations of misinformation and disinformation: A systematic literature re-view (2024), https://arxiv.org/abs/2406.09343 11. López, A.B., Pastor-Galindo, J., Ruipérez-Valiente, J.A.: Synthetic generation of online social networks through homophily. IEEE Transactions on Computational Social Systems pp. 1–12 (2026). https://doi.org/10.1109/TCSS.2026.3662883 12. Nasim, M., Gilani, S.M., Qasmi, A., Naseem, U.: Simulating influence dynamics with llm agents. arXiv preprint arXiv:2503.08709 (2025) 13. Norris, J.R.: Markov Chains. Cambridge University Press, Cambridge, UK (1997) 14. Park, J.S., O’Brien, J.C., Cai, C.J., Morris, M.R., Liang, P., Bernstein, M.S.: Gen-erative agents: Interactive simulacra of human behavior. In: Proceedings of the 36th Annual ACM Symposium on User Interface Software and Technology (2023). https://doi.org/10.1145/3586183.3606763 15. Pastor-Galindo, J., Nespoli, P., Ruipérez-Valiente, J.A.: Large-language-model-powered agent-based framework for misinformation and disinformation research: Opportunities and open challenges. IEEE Security & Privacy 22 (3), 24–36 (2024). https://doi.org/10.1109/MSEC.2024.3380511 16. Rossetti, G., Stella, M., Cazabet, R., Abramski, K., Cau, E., Citraro, S., Failla, A., Improta, R., Morini, V., Pansanella, V.: Y social: an llm-powered social media digital twin (2024), https://arxiv.org/abs/2408.00818 17. Taday Morocho, E.E., Cima, L., Fagni, T., Avvenuti, M., Cresci, S.: As-sessing the reliability of persona-conditioned llms as synthetic survey re-spondents. In: Companion Proceedings of the ACM Web Conference 2026. p. 320–329. WWW Companion ’26, Association for Computing Machin-ery, New York, NY, USA (2026). https://doi.org/10.1145/3774905.3795477, https://doi.org/10.1145/3774905.3795477 18. Uddin, M.M., Imran, M., Sajjad, H.: Understanding types of users on twitter (2014), https://arxiv.org/abs/1406.1335 19. Yang, Z., Zhang, Z., Zheng, Z., Jiang, Y., Gan, Z., Wang, Z., Ling, Z., Chen, J., Ma, M., Dong, B., Gupta, P., Hu, S., Yin, Z., Li, G., Jia, X., Wang, L., Ghanem, B., Lu, H., Lu, C., Ouyang, W., Qiao, Y., Torr, P., Shao, J.: Oasis: Open agent social interaction simulations with one million agents. arXiv preprint arXiv:2411.11581 (2024) 20. Zhu, Y., He, Y., Haq, E.U., Tyson, G., Hui, P.: Characterizing llm-driven social network: The chirper.ai case (2026), https://arxiv.org/abs/2504.10286

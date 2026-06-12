@@ -6,31 +6,37 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-11
-- 运行时间：2026-06-11 21:45:29 UTC
+- 最新运行日期：2026-06-12
+- 运行时间：2026-06-12 21:28:21 UTC
 - 运行状态：成功
-- 本次总论文数：3
-- 精读区：2
-- 速读区：1
+- 本次总论文数：5
+- 精读区：1
+- 速读区：4
 
 ### 今日简报（AI）
-1) 今日精读聚焦自主模拟赛车中的自步课程强化学习（9.0分），以及博弈论中导向帕累托有效均衡的Phi-Actor-Critic算法（8.0分），速读一篇LLM智能体状态-分数监督策略优化（6.0分）。  
-2) 最值得关注的是赛车场景下通过课程学习平衡探索与专家先验，以及多智能体博弈中兼顾个体与全局效率的均衡求解框架。  
-3) 下步可优先尝试将自步课程思想应用到复杂连续控制问题，并探索Phi-Actor-Critic在真实多智能体协作任务中的调参策略。
-- 详情：[/202606/11/README](/202606/11/README)
+1) 今日精读1篇、速读4篇论文，重点研究了行为隐式神经表示与LLM智能体决策机制。
+2) 最值得关注的是9.0分的《Implicit Neural Representations of Individual Behavior》，该方向通过神经表示捕捉个体行为模式；同时7.0分的LLM智能体决策论文也值得速读。
+3) 建议从精读论文入手，理解隐式表示在行为建模中的核心原理，再扩展阅读速读论文中的博弈论与LLM决策框架。
+- 详情：[/202606/12/README](/202606/12/README)
 
 ### 精读区论文标签
-1. [Self-Paced Curriculum Reinforcement Learning for Autonomous Superbike Racing in Simulation](/202606/11/2606.09236v1-self-paced-curriculum-reinforcement-learning-for-autonomous-superbike-racing-in-simulation)  
+1. [Implicit Neural Representations of Individual Behavior](/202606/12/2606.12200v1-implicit-neural-representations-of-individual-behavior)  
    标签：评分：9.0/10、query:player-ai
-   evidence：在物理精确的摩托车模拟器中训练AI智能体进行比赛
-2. [Phi-Actor-Critic: Steering General-Sum Games to Pareto-Efficient Correlated Equilibria](/202606/11/2606.11284v1-phi-actor-critic-steering-general-sum-games-to-pareto-efficient-correlated-equilibria)  
-   标签：评分：8.0/10、query:player-ai
-   evidence：用于一般和博弈的MARL方法，引导至帕累托有效均衡
+   evidence：从无标签数据中学习玩家行为模拟
 
 ### 速读区论文标签
-1. [3SPO: State-Score-Supervised Policy Optimization for LLM Agents](/202606/11/2606.09961v1-3spo-state-score-supervised-policy-optimization-for-llm-agents)  
+1. [An Entropy-based Framework for Hybrid Coalitions in Game Theory. Part I: Human Arbitration](/202606/12/2606.11288v1-an-entropy-based-framework-for-hybrid-coalitions-in-game-theory-part-i-human-arbitration)  
+   标签：评分：7.0/10、query:player-ai
+   evidence：人机混合联盟的博弈论框架，与AI玩游戏相关
+2. [Should LLM Agents Decide in Social Simulations? Comparing Finite-State and LLM-Based Decision Policies](/202606/12/2606.12369v1-should-llm-agents-decide-in-social-simulations-comparing-finite-state-and-llm-based-decision-policies)  
+   标签：评分：7.0/10、query:player-ai
+   evidence：比较LLM与有限状态机在代理模拟中的决策策略，可迁移至游戏玩家行为建模
+3. [3SPO: State-Score-Supervised Policy Optimization for LLM Agents](/202606/12/2606.09961v1-3spo-state-score-supervised-policy-optimization-for-llm-agents)  
    标签：评分：6.0/10、query:player-ai
-   evidence：提出可在游戏智能体训练中应用的按步强化学习算法
+   evidence：提出状态分数监督策略优化用于LLM代理，可应用于游戏环境训练
+4. [STAGE-Claw: Automated State-based Agent Benchmarking for Realistic Scenarios](/202606/12/2606.10394v1-stage-claw-automated-state-based-agent-benchmarking-for-realistic-scenarios)  
+   标签：评分：6.0/10、query:player-ai
+   evidence：自动化智能体基准测试框架，适用于游戏场景
 
 
 <div class="dpr-home-promo-card">
