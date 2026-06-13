@@ -6,37 +6,40 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-12
-- 运行时间：2026-06-12 21:28:21 UTC
+- 最新运行日期：2026-06-13
+- 运行时间：2026-06-13 20:14:08 UTC
 - 运行状态：成功
-- 本次总论文数：5
+- 本次总论文数：6
 - 精读区：1
-- 速读区：4
+- 速读区：5
 
 ### 今日简报（AI）
-1) 今日精读1篇、速读4篇论文，重点研究了行为隐式神经表示与LLM智能体决策机制。
-2) 最值得关注的是9.0分的《Implicit Neural Representations of Individual Behavior》，该方向通过神经表示捕捉个体行为模式；同时7.0分的LLM智能体决策论文也值得速读。
-3) 建议从精读论文入手，理解隐式表示在行为建模中的核心原理，再扩展阅读速读论文中的博弈论与LLM决策框架。
-- 详情：[/202606/12/README](/202606/12/README)
+基于6篇论文，今天聚焦于多模态LLM在参考游戏中如何实现非人类式的对齐，以及智能体社会的长期模拟与拜占庭鲁棒性。  
+最值得关注精读方向：多模态LLM在参考游戏中未形成人类式伙伴特异约定却能成功对齐（8.0/10）；速读中《Agentopia》的长期社会模拟与《Byzantine Cheap Talk》的对抗韧性同样值得一读。  
+建议普通读者重点跟进多模态对齐与智能体协作的鲁棒性研究，关注其在实际交互中的泛化能力与安全边界。
+- 详情：[/202606/13/README](/202606/13/README)
 
 ### 精读区论文标签
-1. [Implicit Neural Representations of Individual Behavior](/202606/12/2606.12200v1-implicit-neural-representations-of-individual-behavior)  
-   标签：评分：9.0/10、query:player-ai
-   evidence：从无标签数据中学习玩家行为模拟
+1. [Aligned but Not Partner-Specific: Distinguishing How Multimodal LLM Agents Succeed in Reference Games Without Human-Like Conventions](/202606/13/2606.08081v1-aligned-but-not-partner-specific-distinguishing-how-multimodal-llm-agents-succeed-in-reference-games-without-human-like-conventions)  
+   标签：评分：8.0/10、query:player-ai
+   evidence：多模态LLM代理在参考游戏中的表现
 
 ### 速读区论文标签
-1. [An Entropy-based Framework for Hybrid Coalitions in Game Theory. Part I: Human Arbitration](/202606/12/2606.11288v1-an-entropy-based-framework-for-hybrid-coalitions-in-game-theory-part-i-human-arbitration)  
+1. [Agentopia: Long-Term Life Simulation and Learning in Agent Societies](/202606/13/2606.07513v1-agentopia-long-term-life-simulation-and-learning-in-agent-societies)  
    标签：评分：7.0/10、query:player-ai
-   evidence：人机混合联盟的博弈论框架，与AI玩游戏相关
-2. [Should LLM Agents Decide in Social Simulations? Comparing Finite-State and LLM-Based Decision Policies](/202606/12/2606.12369v1-should-llm-agents-decide-in-social-simulations-comparing-finite-state-and-llm-based-decision-policies)  
+   evidence：模拟长期代理社会以学习人类行为
+2. [Byzantine Cheap Talk: Adversarial Resilience and Topology Effects in LLM Coordination Games](/202606/13/2606.07790v1-byzantine-cheap-talk-adversarial-resilience-and-topology-effects-in-llm-coordination-games)  
    标签：评分：7.0/10、query:player-ai
-   evidence：比较LLM与有限状态机在代理模拟中的决策策略，可迁移至游戏玩家行为建模
-3. [3SPO: State-Score-Supervised Policy Optimization for LLM Agents](/202606/12/2606.09961v1-3spo-state-score-supervised-policy-optimization-for-llm-agents)  
+   evidence：研究LLM智能体在协调博弈中的表现及对抗韧性
+3. [Do Not Discretize, Optimize: Almost Greedy Fictitious Play](/202606/13/2606.12149v1-do-not-discretize-optimize-almost-greedy-fictitious-play)  
+   标签：评分：7.0/10、query:player-ai
+   evidence：零和博弈中虚构博弈的新变体，游戏博弈算法
+4. [Agentic Environment Engineering for Large Language Models: A Survey of Environment Modeling, Synthesis, Evaluation, and Application](/202606/13/2606.12191v1-agentic-environment-engineering-for-large-language-models-a-survey-of-environment-modeling-synthesis-evaluation-and-application)  
    标签：评分：6.0/10、query:player-ai
-   evidence：提出状态分数监督策略优化用于LLM代理，可应用于游戏环境训练
-4. [STAGE-Claw: Automated State-based Agent Benchmarking for Realistic Scenarios](/202606/12/2606.10394v1-stage-claw-automated-state-based-agent-benchmarking-for-realistic-scenarios)  
+   evidence：智能体环境工程综述，涵盖建模与合成，对游戏环境有参考价值
+5. [APPO: Agentic Procedural Policy Optimization](/202606/13/2606.12384v1-appo-agentic-procedural-policy-optimization)  
    标签：评分：6.0/10、query:player-ai
-   evidence：自动化智能体基准测试框架，适用于游戏场景
+   evidence：面向多轮工具使用的智能体强化学习信用分配方法，可应用于游戏智能体训练
 
 
 <div class="dpr-home-promo-card">
