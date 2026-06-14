@@ -1,0 +1,549 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-14T20:30:03.150590+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 6,
+    "deep_cap": 6,
+    "deep_selected": 6,
+    "quick_candidates": 7,
+    "quick_skim_target": 11,
+    "quick_selected": 7
+  },
+  "deep_dive": [
+    {
+      "id": "2606.12384v1",
+      "source": "arxiv",
+      "title": "APPO: Agentic Procedural Policy Optimization",
+      "abstract": "Recent advances in agentic Reinforcement Learning (RL) have substantially improved the multi-turn tool-use capabilities of large language model agents. However, most existing methods assign credit over coarse heuristic units, such as tool-call boundaries or fixed workflows, making it difficult to identify which intermediate decisions influence downstream outcomes. In this work, we study agentic RL from two perspectives: \\textit{where to branch and how to assign credit after branching}. Our pilot analysis shows that influential decision points are broadly distributed throughout the generated sequence rather than concentrated at tool calls, while token entropy alone does not reliably reflect their impact on final outcomes. Motivated by these observations, we propose \\textbf{Agentic Procedural Policy Optimization (APPO)}, which shifts branching and credit assignment from coarse interaction units to fine-grained decision points in the sequence. APPO selects branching locations using a Branching Score that combines token uncertainty with policy-induced likelihood gains of subsequent continuations, enabling more targeted exploration while filtering out spurious high-entropy positions. It further introduces procedure-level advantage scaling to better distribute credit across branched rollouts. Experiments on 13 benchmarks show that APPO consistently improves strong agentic RL baselines by nearly 4 points, while keeping efficient tool-calls and maintaining behavior interpretability.",
+      "authors": [
+        "Xucong Wang",
+        "Ziyu Ma",
+        "Yong Wang",
+        "Yuxiang Ji",
+        "Shidong Yang",
+        "Guanhua Chen",
+        "Pengkun Wang",
+        "Xiangxiang Chu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-06-10T17:47:07+00:00",
+      "link": "https://arxiv.org/pdf/2606.12384v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "agentic RL with improved credit assignment for tool-use, directly useful for game agents",
+      "llm_evidence_cn": "改进信用分配的智体强化学习，直接适用于游戏智能体",
+      "llm_evidence": "改进信用分配的智体强化学习，直接适用于游戏智能体",
+      "canonical_evidence": "改进信用分配的智体强化学习，直接适用于游戏智能体",
+      "llm_tldr_en": "Proposes APPO, a policy optimization method for agentic RL that addresses credit assignment over distributed decision points, enhancing multi-turn tool-use for agents in dynamic environments like games.",
+      "llm_tldr_cn": "现有智体强化学习方法通常按粗粒度单元（如工具调用边界）分配信用，难以识别影响最终结果的关键中间决策。本文提出APPO方法，从分支点和信用分配两个角度优化，实验表明其能有效提升大语言模型智能体在多轮工具使用任务中的性能，非常适用于游戏环境中的智能体训练。",
+      "llm_tldr": "现有智体强化学习方法通常按粗粒度单元（如工具调用边界）分配信用，难以识别影响最终结果的关键中间决策。本文提出APPO方法，从分支点和信用分配两个角度优化，实验表明其能有效提升大语言模型智能体在多轮工具使用任务中的性能，非常适用于游戏环境中的智能体训练。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.12852v1",
+      "source": "arxiv",
+      "title": "WISE: A Long-Horizon Agent in Minecraft with Why-Which Reasoning",
+      "abstract": "Rapid advances have been made in developing general-purpose embodied agent in environments like Minecraft through the adoption of LLM-augmented hierarchical approaches. Despite their promise, low-level controllers often become performance bottlenecks due to repeated execution failures. We argue that a key limitation is not only the lack of episodic memory, but also the decoupling of \\textit{what-where-when} memory from \\textit{which-why} reasoning. To address this, we propose \\textbf{WISE} (Which-Why Informed Semantic Explorer), a long-horizon agent framework with an enhanced low-level controller equipped with a Causal Event Graph that augments episodic memory with explicit causal structure linking observations to task relevance. Unlike prior work such as MrSteve, which relies on feature similarity for retrieval, WISE enables robust recall under viewpoint changes and supports opportunistic task reordering through causal reasoning. Building on this memory, we propose an Opportunistic Task Scheduler that dynamically re-prioritizes subtasks when causally relevant opportunities are detected. We further equip WISE with a multi-scale progressive exploration strategy to provide spatially comprehensive observations for downstream reasoning. Experiments show that WISE largely improves task success and efficiency on long-horizon sparse tasks, particularly in settings requiring adaptive decision-making.",
+      "authors": [
+        "Renmin Cheng",
+        "Changhao Chen"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-11T03:35:02+00:00",
+      "link": "https://arxiv.org/pdf/2606.12852v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Minecraft long-horizon agent with reasoning",
+      "llm_evidence_cn": "Minecraft中的长期代理及推理",
+      "llm_evidence": "Minecraft中的长期代理及推理",
+      "canonical_evidence": "Minecraft中的长期代理及推理",
+      "llm_tldr_en": "Presents WISE, a Minecraft agent with causal event graph for which-why reasoning; directly addresses game AI.",
+      "llm_tldr_cn": "本文提出WISE框架，在Minecraft环境中利用因果事件图增强低层控制器，将“是什么-在哪里-何时”记忆与“为什么-哪个”推理结合。实验表明该方法显著减少了重复执行失败，提升了长时间跨度任务的完成率，为游戏中的具身智能体提供了有效方案。",
+      "llm_tldr": "本文提出WISE框架，在Minecraft环境中利用因果事件图增强低层控制器，将“是什么-在哪里-何时”记忆与“为什么-哪个”推理结合。实验表明该方法显著减少了重复执行失败，提升了长时间跨度任务的完成率，为游戏中的具身智能体提供了有效方案。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.08310v1",
+      "source": "arxiv",
+      "title": "To Nuke or Not to Nuke: LLMs' (Missing) Ethical Reasoning and Actions in a High-Stakes Decision-Making Simulation",
+      "abstract": "Large language models (LLMs) are increasingly deployed as long-horizon agents with decision-making capacities. While LLMs can show ethical competence on dilemmas such as trolley problems, this competence may not translate to complex, agentic scenarios. We study this gap in Civilization V, a multiplayer game with a complex decision-making landscape including economy, diplomacy, technology, and military strategy. Starting from 130 high-tension LLM self-play episodes, in which an LLM player spontaneously escalated nuclear authorization, we replay them across 13 models with three prompt interventions: an ethical prompt naming nuclear harm, removal of the previous model's decision-making rationale, and high-stakes framing emphasizing real-world impacts. No interventions nor their combinations reliably eliminate emergent escalation. We identify three failure pathways: ethical reasoning that fails to surface without prompting, fails to appear even when prompted, or surfaces but fails to take effect when strategic counter-factors dominate. Evaluations of agentic models, therefore, must test whether ethical reasoning is spontaneously invoked and behaviorally effective in complex decision-making contexts, beyond whether it can be elicited in isolation.",
+      "authors": [
+        "John Chen",
+        "Sihan Cheng",
+        "Can Gurkan",
+        "H M Abdul Fattah"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.MA"
+      ],
+      "published": "2026-06-06T19:43:53+00:00",
+      "link": "https://arxiv.org/pdf/2606.08310v1",
+      "tags": [
+        "keyword:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "LLM playing Civilization V; agent decision-making in games",
+      "llm_evidence_cn": "LLM游玩文明V；游戏中的代理决策",
+      "llm_evidence": "LLM游玩文明V；游戏中的代理决策",
+      "canonical_evidence": "LLM游玩文明V；游戏中的代理决策",
+      "llm_tldr_en": "Studies LLMs' ethical reasoning and actions in Civilization V, revealing gaps in complex game scenarios.",
+      "llm_tldr_cn": "基于文明V游戏，研究LLM在高风险决策中的伦理行为。通过130场高紧张度自对弈回放，发现LLM在复杂游戏情境中缺乏伦理推理能力。提出三种提示干预措施，揭示模型在权衡伦理与实际策略时的不足。该工作凸显了游戏环境作为AI伦理评估平台的价值。",
+      "llm_tldr": "基于文明V游戏，研究LLM在高风险决策中的伦理行为。通过130场高紧张度自对弈回放，发现LLM在复杂游戏情境中缺乏伦理推理能力。提出三种提示干预措施，揭示模型在权衡伦理与实际策略时的不足。该工作凸显了游戏环境作为AI伦理评估平台的价值。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.12571v1",
+      "source": "arxiv",
+      "title": "Cross-Validation Equilibrium",
+      "abstract": "We study strategic interaction when players delegate belief formation to predictive machine learning (ML). In a static Bayesian game, each player's ML agent predicts a payoff-relevant outcome variable as a function of the player's type. The ML agent's training sample is endogenous: it is drawn from the outcome distribution generated by players' ML-guided behavior. In Cross-Validation Equilibrium (CVE), each player's ML agent selects a predictive model to minimize expected out-of-sample squared error, given its realized training sample, and each player best-replies to the belief generated by the model her ML agent selected. We analyze CVE and relate it to other equilibrium concepts. We apply CVE to jury voting, speculative betting, and games with linear-quadratic payoffs. E.g., in a team-effort game, endogenous model selection can give rise to multiple equilibria.",
+      "authors": [
+        "Ran Spiegler",
+        "Stephan Waizmann"
+      ],
+      "primary_category": "econ.TH",
+      "categories": [
+        "econ.TH"
+      ],
+      "published": "2026-06-10T18:22:26+00:00",
+      "link": "https://arxiv.org/pdf/2606.12571v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Game-theoretic analysis of AI agents playing games with ML-based beliefs",
+      "llm_evidence_cn": "基于博弈论分析使用机器学习信念的AI智能体玩游戏",
+      "llm_evidence": "基于博弈论分析使用机器学习信念的AI智能体玩游戏",
+      "canonical_evidence": "基于博弈论分析使用机器学习信念的AI智能体玩游戏",
+      "llm_tldr_en": "Cross-Validation Equilibrium studies strategic interaction when players use ML for belief formation in Bayesian games, providing equilibrium analysis with applications to voting and betting.",
+      "llm_tldr_cn": "在博弈中，玩家可能委托ML智能体进行信念预测。本文提出交叉验证均衡（CVE），每个玩家的ML智能体根据内生训练样本选择预测模型，玩家对模型生成的信念做出最佳响应。分析了CVE的性质，并应用于陪审团投票、投机赌博等场景。该工作为理解AI智能体在游戏中的策略互动提供了理论基础。",
+      "llm_tldr": "在博弈中，玩家可能委托ML智能体进行信念预测。本文提出交叉验证均衡（CVE），每个玩家的ML智能体根据内生训练样本选择预测模型，玩家对模型生成的信念做出最佳响应。分析了CVE的性质，并应用于陪审团投票、投机赌博等场景。该工作为理解AI智能体在游戏中的策略互动提供了理论基础。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.12908v1",
+      "source": "arxiv",
+      "title": "SENTINEL: Failure-Driven Reinforcement Learning for Training Tool-Using Language Model Agents",
+      "abstract": "Language model agents are increasingly effective in solving realistic tasks through multi-turn tool use. However, training reliable tool-using agents remains challenging in practice. While reinforcement learning provides an on-policy paradigm for improving agents from their own environment interactions, its effectiveness depends heavily on the training task distribution. When tasks are fixed before training, the task distribution can become increasingly mismatched with the policy's evolving capabilities, causing many rollouts to be spent on uninformative tasks. We propose SENTINEL, a failure-driven reinforcement learning framework that turns the Solver's rollout failures into targeted training tasks. SENTINEL follows a Controller--Proposer--Solver loop: the Controller analyzes failed trajectories and summarizes recurring error patterns, the Proposer generates executable tasks that stress these weaknesses, and the Solver is trained on the targeted tasks. On Tau2-Bench Retail with Qwen3-4B-Thinking-2507, SENTINEL improves Pass\\^{}1 from 66.4 to 74.9 and outperforms RL on general synthetic tasks across Pass\\^{}k metrics. These results demonstrate that model failures provide an effective and scalable source of targeted training signal for improving tool-using language model agents.",
+      "authors": [
+        "Ziyi Wang",
+        "Yuxuan Lu",
+        "Yimeng Zhang",
+        "Qun Liu",
+        "Chen Luo",
+        "Jiri Gesi",
+        "Hanqing Lu",
+        "Yisi Sang",
+        "Manling Li",
+        "Jing Huang",
+        "Dakuo Wang"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-06-11T05:06:50+00:00",
+      "link": "https://arxiv.org/pdf/2606.12908v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "RL training of tool-using language model agents in environments",
+      "llm_evidence_cn": "在环境中使用强化学习训练工具型语言模型智能体",
+      "llm_evidence": "在环境中使用强化学习训练工具型语言模型智能体",
+      "canonical_evidence": "在环境中使用强化学习训练工具型语言模型智能体",
+      "llm_tldr_en": "Proposes SENTINEL, a failure-driven RL framework that transforms rollout failures into targeted training tasks to improve tool-using language model agents, addressing distribution mismatch in fixed-task training.",
+      "llm_tldr_cn": "针对现有强化学习中任务固定导致的分布不匹配问题，提出SENTINEL框架，通过将智能体失败轨迹转化为针对性训练任务，实现更高效的在线策略学习。该方法在工具型语言模型智能体上验证了有效性，可迁移至游戏环境中的智能体训练。",
+      "llm_tldr": "针对现有强化学习中任务固定导致的分布不匹配问题，提出SENTINEL框架，通过将智能体失败轨迹转化为针对性训练任务，实现更高效的在线策略学习。该方法在工具型语言模型智能体上验证了有效性，可迁移至游戏环境中的智能体训练。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.13093v1",
+      "source": "arxiv",
+      "title": "Equilibrium Computation in Extensive-Form Games with Stochastic Action Sets",
+      "abstract": "Extensive-form games (EFGs) are a standard model for sequential decision-making in games. A fundamental and typically implicit assumption in EFGs is that players always have access to all of their actions at every decision point. However, in many realistic settings, certain actions might be unavailable during game-play due to exogenous stochasticity, hindering the expressivity of the standard EFG model. Given a `base' EFG, we formalize a model that allows for actions to be stochastically restricted, leading to a corresponding Extensive-Form Games with Stochastic Action Sets (EFGSAS). In EFGSAS, we derive an expansion procedure that results in an equivalent EFG, thus showing that standard strategy formalisms could require exponentially-large representations. However, under an appropriate independence assumption, we show that compact strategy representations polynomial in the size of the base EFG exist. Computationally, we introduce an algorithm called SI-CFR that minimizes sleeping internal regret, converging to Nash equilibria with high probability in two-player zero-sum EFGSAS. Finally, we utilize a stochastic approximation procedure to recover compact representations of Nash equilibria, utilizing only the iterates of SI-CFR.",
+      "authors": [
+        "Thomas Schwarz",
+        "Ryann Sim",
+        "Chun Kai Ling"
+      ],
+      "primary_category": "cs.GT",
+      "categories": [
+        "cs.GT"
+      ],
+      "published": "2026-06-11T09:23:04+00:00",
+      "link": "https://arxiv.org/pdf/2606.13093v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "extensive-form games with stochastic action sets",
+      "llm_evidence_cn": "具有随机动作集的扩展式博弈",
+      "llm_evidence": "具有随机动作集的扩展式博弈",
+      "canonical_evidence": "具有随机动作集的扩展式博弈",
+      "llm_tldr_en": "Extends extensive-form game model to include stochastic action availability; relevant to AI in games.",
+      "llm_tldr_cn": "本文将扩展式博弈模型扩展为具有随机动作集的形式，解决了传统模型无法表达游戏过程中动作可能随机不可用的问题。提出的扩展过程在理论上展示了标准策略形式可能需要指数级表示，为游戏AI中的均衡计算提供了新视角。",
+      "llm_tldr": "本文将扩展式博弈模型扩展为具有随机动作集的形式，解决了传统模型无法表达游戏过程中动作可能随机不可用的问题。提出的扩展过程在理论上展示了标准策略形式可能需要指数级表示，为游戏AI中的均衡计算提供了新视角。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "artificial intelligence in games",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.12780v1",
+      "source": "arxiv",
+      "title": "ProPlay: Procedural World Models for Self-Evolving LLM Agents",
+      "abstract": "Self-evolving agents are expected to improve through interaction without external supervision, but this remains difficult in partially observable environments where agents must explore actively, learn from limited feedback, and decide when to trust prior experience. Existing LLM-agent methods often rely on memory or planning modules, yet they rarely close the loop between them to continually refine an internal understanding of environment dynamics. We introduce ProPlay, a procedural world model that supports procedure-level preplay, where agents can rehearse future procedural paths using the learned world knowledge. Rather than representing experience as isolated rules or low-level action constraints, ProPlay abstracts successful trajectories into procedures and organizes them in a procedure graph that captures causal transitions among task stages. Each transition is associated with a reliability record embedding to estimate its task-specific contribution from past outcomes. Before each episode, ProPlay simulates future procedural trajectories over known graph structures as structured soft guidance; after execution, it refines the graph using environment feedback. Experiments on public benchmarks show that ProPlay consistently improves environment understanding and self-evolution capability over strong baselines. Our code has been released in https://github.com/antman9914/proplay.",
+      "authors": [
+        "Yijun Ma",
+        "Zehong Wang",
+        "Yiyang Li",
+        "Ziming Li",
+        "Xiaoguang Guo",
+        "Weixiang Sun",
+        "Chuxu Zhang",
+        "Yanfang Ye"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CL"
+      ],
+      "published": "2026-06-11T00:47:37+00:00",
+      "link": "https://arxiv.org/pdf/2606.12780v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "procedural world models for self-evolving agents, applicable to games",
+      "llm_evidence_cn": "过程世界模型用于自进化代理，可应用于游戏",
+      "llm_evidence": "过程世界模型用于自进化代理，可应用于游戏",
+      "canonical_evidence": "过程世界模型用于自进化代理，可应用于游戏",
+      "llm_tldr_en": "Proposes procedural world models for agents to rehearse future paths; general method usable for game AI training.",
+      "llm_tldr_cn": "本文提出过程世界模型ProPlay，支持智能体在部分可观察环境中通过预演未来过程路径进行自我进化。该方法抽象成功轨迹为过程，可迁移至游戏场景中玩家行为建模与AI代理训练。实验表明该方法能有效提升代理在复杂环境下的适应能力。",
+      "llm_tldr": "本文提出过程世界模型ProPlay，支持智能体在部分可观察环境中通过预演未来过程路径进行自我进化。该方法抽象成功轨迹为过程，可迁移至游戏场景中玩家行为建模与AI代理训练。实验表明该方法能有效提升代理在复杂环境下的适应能力。",
+      "llm_tags": [
+        "query:player-ai:composite"
+      ],
+      "matched_query_tag": "query:player-ai:composite",
+      "matched_query_text": "Papers central to 请帮我查找虚拟游戏玩家建模、AI Agent 游戏游玩相关论文, especially work that connects or combines: virtual game player modeling; AI agent playing games; artificial intelligence in games; player behavior simulation techniques; Find papers on virtual game player modeling; Search for AI agent training in game environments.",
+      "matched_requirement_id": "req-composite-player-ai",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.08702v1",
+      "source": "arxiv",
+      "title": "ConMem: Structured Memory-Guided Adaptation in Training-Free Multi-Agent Systems",
+      "abstract": "Recent advances have improved the adaptive capabilities of LLM-based multi-agent systems (MAS) through memory-, skill-, and learning-based approaches, yet these approaches remain challenged by noisy trajectories, insufficient modeling of memory-skill relations, and reliance on additional training or high-quality supervision. To address these limitations, we propose ConMem, a relation-aware and training-free framework that enables efficient multi-agent adaptation through cross-experience coordination. Specifically, ConMem distills historical interaction trajectories into structured memory cards to capture reusable strategies and cues, organizing them into a relation-aware memory graph. At runtime, ConMem retrieves cards according to task needs and coordinates them through the card graph to resolve strategy conflicts and recover their dependencies. Combined, these modules yield structured and relation-aware guidance, enabling robust, lightweight adaptation in multi-agent systems without additional training. Extensive experiments across multiple benchmarks and mainstream MAS architectures show consistent gains over existing memory architectures, with improved inference-time efficiency through pruning more than 50% of expanded candidates and reducing planning overhead by over 80%. Our codes are available at https://anonymous.4open.science/r/ConMemCode",
+      "authors": [
+        "Zhixun Tan",
+        "Qiang Chen",
+        "Tairan Huang",
+        "Xiu Su",
+        "Yi Chen"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-07T15:59:15+00:00",
+      "link": "https://arxiv.org/pdf/2606.08702v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "multi-agent memory graph adaptation, general method",
+      "llm_evidence_cn": "多代理记忆图适应，通用方法",
+      "llm_evidence": "多代理记忆图适应，通用方法",
+      "canonical_evidence": "多代理记忆图适应，通用方法",
+      "llm_tldr_en": "Proposes relation-aware memory graph for multi-agent adaptation; could be adapted to game player modeling.",
+      "llm_tldr_cn": "本文提出ConMem框架，通过结构化记忆卡片和关系感知记忆图实现多代理系统免训练适应。该方法从历史交互中提取可重用策略，可迁移至游戏中的玩家行为建模与协作学习场景，具有潜在适用性。",
+      "llm_tldr": "本文提出ConMem框架，通过结构化记忆卡片和关系感知记忆图实现多代理系统免训练适应。该方法从历史交互中提取可重用策略，可迁移至游戏中的玩家行为建模与协作学习场景，具有潜在适用性。",
+      "llm_tags": [
+        "query:player-ai:composite"
+      ],
+      "matched_query_tag": "query:player-ai:composite",
+      "matched_query_text": "Papers central to 请帮我查找虚拟游戏玩家建模、AI Agent 游戏游玩相关论文, especially work that connects or combines: virtual game player modeling; AI agent playing games; artificial intelligence in games; player behavior simulation techniques; Find papers on virtual game player modeling; Search for AI agent training in game environments.",
+      "matched_requirement_id": "req-composite-player-ai",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.10709v1",
+      "source": "arxiv",
+      "title": "Effective Reinforcement Learning for Agentic Search by Recycling Zero-Variance Queries During Training",
+      "abstract": "The use of GRPO-style algorithms has become the standard strategy for training LLM search agents under outcome-only rewards. With these algorithms, a query contributes to parameter updates only when its rollout group mixes successes and failures; all-correct (too-easy) and all-incorrect (too-hard) groups are zero-variance and waste rollout cost. Existing approaches treat zero-variance as a static property and either discard or pre-filter such groups. We hypothesize and empirically validate that queries flip between zero-variance and signal-bearing states as the policy evolves during training. Building on this intuition, we propose query recycling, which returns zero-variance groups to a mutable pool for future resampling, so that the effective training distribution co-evolves with the policy. With the proposed technique, a 1.7B parameter model trained on synthetic data can reach 66.0 average Pass@1 accross seven multi-hop QA benchmarks, matching or surpassing systems with up to 7B parameters trained on benchmark-derived supervision. Analysis of recycling patterns shows that recycled queries supply roughly three quarters of the effective batch by the end of training, with contributions split between recovery from policy improvement and policy drift.",
+      "authors": [
+        "João Coelho",
+        "João Magalhães",
+        "Bruno Martins",
+        "Chenyan Xiong"
+      ],
+      "primary_category": "cs.IR",
+      "categories": [
+        "cs.IR",
+        "cs.AI"
+      ],
+      "published": "2026-06-09T11:12:58+00:00",
+      "link": "https://arxiv.org/pdf/2606.10709v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "RL method for agentic search with query recycling, transferable to game agent training",
+      "llm_evidence_cn": "通过查询回收的智能体搜索强化学习方法，可迁移至游戏智能体训练",
+      "llm_evidence": "通过查询回收的智能体搜索强化学习方法，可迁移至游戏智能体训练",
+      "canonical_evidence": "通过查询回收的智能体搜索强化学习方法，可迁移至游戏智能体训练",
+      "llm_tldr_en": "Proposes query recycling for GRPO-style RL training, turning zero-variance groups into reusable signals; improves sample efficiency and can be adapted for training game agents.",
+      "llm_tldr_cn": "使用GRPO算法训练智能体时，全正确或全错误的查询组不贡献梯度，浪费计算资源。本文发现查询的难易状态会随策略演化而改变，提出查询回收机制将零方差组重新采样。该方法显著提升了训练效率，并可直接迁移至游戏环境中的智能体强化学习。",
+      "llm_tldr": "使用GRPO算法训练智能体时，全正确或全错误的查询组不贡献梯度，浪费计算资源。本文发现查询的难易状态会随策略演化而改变，提出查询回收机制将零方差组重新采样。该方法显著提升了训练效率，并可直接迁移至游戏环境中的智能体强化学习。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.11119v1",
+      "source": "arxiv",
+      "title": "TRACE: A Unified Rollout Budget Allocation Framework for Efficient Agentic Reinforcement Learning",
+      "abstract": "Reinforcement learning with verifiable rewards (RLVR) is a promising approach for enhancing reasoning and agentic behavior in large language models. However, rollout-intensive policy optimization is often limited by insufficient reward contrast, arising when overly simple or complex prompts generate low-variance feedback and when outcome-only rewards assign the same terminal assessment to every decision in a multi-turn rollout. Past efforts have focused on allocating available rollout resources to promising prompts, yet they only leverage sample informativeness at the prompt level and neglect variation in prefix-level informativeness across turns within the same rollout. This work targets multi-turn agentic RL by modeling each ReAct-style thought-action-observation turn as a semantically distinct node, allowing budget allocation to extend from prompt roots to turn-level prefixes with further continuations, which naturally forms tree-structured rollouts. We introduce Tree Rollout Allocation for Contrastive Exploration (TRACE), a unified rollout allocation framework that enhances reward contrast within a fixed sampling budget. Technically, TRACE allocates rollout budget to both prompt roots and intermediate prefixes that are most likely to yield mixed terminal rewards. A shared generalizable predictor estimates conditional success probability at these anchors from prefix histories to guide this allocation. The resulting adaptive tree structure enriches outcome-only feedback and amplifies the policy-update signal. Empirically, TRACE achieves competitive performance and efficiency gains on typical agentic benchmarks, e.g., improving Qwen3-14B Multi-Hop QA average accuracy by 2.8 points over competitive baselines at equal sampling cost.",
+      "authors": [
+        "Heming Zou",
+        "Qi Wang",
+        "Yun Qu",
+        "Yuhang Jiang",
+        "Lizhou Cai",
+        "Yixiu Mao",
+        "Ru Peng",
+        "Xin Xu",
+        "Weijie Liu",
+        "Kai Yang",
+        "Saiyong Yang",
+        "Xiangyang Ji"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-06-09T17:16:03+00:00",
+      "link": "https://arxiv.org/pdf/2606.11119v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "efficient reinforcement learning for agentic tasks; applicable to game agent training",
+      "llm_evidence_cn": "高效的代理强化学习；可应用于游戏代理训练",
+      "llm_evidence": "高效的代理强化学习；可应用于游戏代理训练",
+      "canonical_evidence": "高效的代理强化学习；可应用于游戏代理训练",
+      "llm_tldr_en": "Proposes TRACE, a unified rollout budget allocation framework for efficient agentic RL with verifiable rewards.",
+      "llm_tldr_cn": "针对多轮代理强化学习中奖励对比不足的问题，提出TRACE框架，在prompt和prefix层面动态分配rollout预算。通过建模每轮决策的信息量，提升训练效率。在多个agentic任务上取得更优性能。该分配策略可直接优化游戏代理的RL训练过程。",
+      "llm_tldr": "针对多轮代理强化学习中奖励对比不足的问题，提出TRACE框架，在prompt和prefix层面动态分配rollout预算。通过建模每轮决策的信息量，提升训练效率。在多个agentic任务上取得更优性能。该分配策略可直接优化游戏代理的RL训练过程。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.12882v1",
+      "source": "arxiv",
+      "title": "HarnessBridge: Learnable Bidirectional Controller for LLM Agent Harness",
+      "abstract": "Large language models are increasingly deployed as agents for long-horizon tasks, yet their performance is shaped not only by model capability and environment design, but also by the harness that mediates agent--environment interaction. Existing harnesses are largely manually engineered, making them difficult to scale as trajectories grow longer and interactions become more complex. In this work, we ask whether harness can be generated by a learnable plug-in module that can be trained in an end-to-end fashion. We introduce HarnessBridge, a lightweight learnable harness controller that parameterizes the agent--environment interface as a bidirectional projection. HarnessBridge learns two bidirectional projections: observation projection, which distills raw trajectories into compact, decision-relevant states, and action projection, which converts proposed actions into executable transitions or trajectory-grounded rejections. We train HarnessBridge on a harness supervision dataset via unified instruction tuning. On Terminal-Bench~2.0 and SWE-bench Verified, HarnessBridge matches or surpasses strong specialized harnesses while substantially reducing token usage and trajectory length, and generalizes from smaller generators to larger commercial models.",
+      "authors": [
+        "Xiaoxuan Wang",
+        "Haixin Wang",
+        "Alexander Taylor",
+        "Jason Cong",
+        "Yizhou Sun",
+        "Wei Wang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-11T04:18:37+00:00",
+      "link": "https://arxiv.org/pdf/2606.12882v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "learnable harness controller for LLM agent-environment interaction, applicable to game agent development",
+      "llm_evidence_cn": "可学习的LLM智能体与环境交互控制器，适用于游戏智能体开发",
+      "llm_evidence": "可学习的LLM智能体与环境交互控制器，适用于游戏智能体开发",
+      "canonical_evidence": "可学习的LLM智能体与环境交互控制器，适用于游戏智能体开发",
+      "llm_tldr_en": "Proposes HarnessBridge, a learnable bidirectional controller that parameterizes the agent-environment interface, enabling more efficient agent training and scaling to complex tasks like games.",
+      "llm_tldr_cn": "智能体性能不仅受模型能力影响，还受中介层（控制与环境交互的“驾驭”）设计制约。本文提出HarnessBridge，一种轻量级可学习控制器，通过双向投影参数化接口，端到端学习观察和动作投影。该方法能提升智能体在长周期任务中的效率，可应用于游戏环境。",
+      "llm_tldr": "智能体性能不仅受模型能力影响，还受中介层（控制与环境交互的“驾驭”）设计制约。本文提出HarnessBridge，一种轻量级可学习控制器，通过双向投影参数化接口，端到端学习观察和动作投影。该方法能提升智能体在长周期任务中的效率，可应用于游戏环境。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.13598v1",
+      "source": "arxiv",
+      "title": "Reward Modeling for Multi-Agent Orchestration",
+      "abstract": "Multi-Agent Systems (MAS) built on Large Language Models (LLMs) require effective orchestration to coordinate specialized agents, yet training such orchestrators is hindered by limited supervision and high computational cost. We propose Orchestration Reward Modeling (OrchRM), a self-supervised framework for evaluating orchestration quality without human annotations. OrchRM leverages intermediate artifacts from multi-agent executions to construct win-lose pairs for Bradley-Terry reward model training. Unlike existing MAS test-time scaling and orchestrator training frameworks that rely on costly sub-agent rollouts, OrchRM operates directly at the orchestration level, enabling efficient and high-performing reward-guided orchestrator training and MAS test-time scaling. OrchRM improves training efficiency by up to 10x in token usage while improving MAS test-time scaling performance by up to 8% in accuracy. These gains consistently transfer across multiple domains, including mathematical reasoning, web-based question answering, and multi-hop reasoning, demonstrating orchestration-level reward modeling as a scalable direction for robust multi-agent orchestration. Code will be available at https://github.com/Wang-ML-Lab/OrchRM.",
+      "authors": [
+        "King Yeung Tsang",
+        "Zihao Zhao",
+        "Vishal Venkataramani",
+        "Haizhou Shi",
+        "Zixuan Ke",
+        "Semih Yavuz",
+        "Shafiq Joty",
+        "Hao Wang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CL",
+        "cs.LG",
+        "cs.MA"
+      ],
+      "published": "2026-06-11T17:16:24+00:00",
+      "link": "https://arxiv.org/pdf/2606.13598v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "reward modeling for multi-agent orchestration, applicable to game agent training",
+      "llm_evidence_cn": "多智能体编排的奖励建模，可应用于游戏智能体训练",
+      "llm_evidence": "多智能体编排的奖励建模，可应用于游戏智能体训练",
+      "canonical_evidence": "多智能体编排的奖励建模，可应用于游戏智能体训练",
+      "llm_tldr_en": "Proposes OrchRM, a self-supervised reward modeling framework for multi-agent orchestration, enabling efficient training of orchestrators without human annotations; applicable to game AI coordination.",
+      "llm_tldr_cn": "多智能体系统需要有效的编排机制，但训练编排器常缺乏监督且计算成本高。本文提出OrchRM自监督框架，利用中间产物构建胜负对训练奖励模型，避免了昂贵的子智能体展开。该框架可直接用于游戏环境中多智能体的协调训练，提升协作效率。",
+      "llm_tldr": "多智能体系统需要有效的编排机制，但训练编排器常缺乏监督且计算成本高。本文提出OrchRM自监督框架，利用中间产物构建胜负对训练奖励模型，避免了昂贵的子智能体展开。该框架可直接用于游戏环境中多智能体的协调训练，提升协作效率。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.13681v1",
+      "source": "arxiv",
+      "title": "EvoArena: Tracking Memory Evolution for Robust LLM Agents in Dynamic Environments",
+      "abstract": "Large language model (LLM) agents have achieved strong performance on a wide range of benchmarks, yet most evaluations assume static environments. In contrast, real-world deployment is inherently dynamic, requiring agents to continually align their knowledge, skills, and behavior with changing environments and updated task conditions. To address this gap, we introduce EvoArena, a benchmark suite that models environment changes as sequences of progressive updates across terminal, software, and social domains. We further propose EvoMem, a patch-based memory paradigm that records memory evolution as structured update histories, enabling agents to reason about environmental evolution through changes in their memory. Experiments show that current agents struggle on EvoArena, achieving an average accuracy of 39.6% across evolving terminal, software, and social-preference domains. EvoMem consistently improves performance, yielding an average gain of 1.5% on EvoArena and also improving standard benchmarks such as GAIA and LoCoMo by 6.1% and 4.8%. Beyond individual tasks, EvoMem further improves chain-level accuracy by 3.7% on EvoArena, where success requires completing a consecutive sequence of related evolutionary subtasks. Mechanistic analysis shows that EvoMem improves evidence capture in the memory, indicating better preservation of complete evolving environment states. Our results highlight the importance of modeling evolution in both evaluation and memory for reliable agent deployment.",
+      "authors": [
+        "Jundong Xu",
+        "Qingchuan Li",
+        "Jiaying Wu",
+        "Yihuai Lan",
+        "Shuyue Stella Li",
+        "Huichi Zhou",
+        "Bowen Jiang",
+        "Lei Wang",
+        "Jun Wang",
+        "Anh Tuan Luu",
+        "Caiming Xiong",
+        "Hae Won Park",
+        "Bryan Hooi",
+        "Zhiyuan Hu"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-06-11T17:59:59+00:00",
+      "link": "https://arxiv.org/pdf/2606.13681v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "benchmark and memory mechanism for LLM agents in dynamic environments, applicable to game agent adaptation",
+      "llm_evidence_cn": "动态环境中LLM智能体的基准与记忆机制，适用于游戏智能体适应",
+      "llm_evidence": "动态环境中LLM智能体的基准与记忆机制，适用于游戏智能体适应",
+      "canonical_evidence": "动态环境中LLM智能体的基准与记忆机制，适用于游戏智能体适应",
+      "llm_tldr_en": "Introduces EvoArena, a benchmark for LLM agents in dynamic environments, and EvoMem, a memory paradigm for tracking environment changes; relevant for training game agents that must adapt.",
+      "llm_tldr_cn": "大多数智能体评估假设环境静态，但真实世界环境动态变化。本文提出EvoArena基准和EvoMem记忆范式，模拟终端、软件和社交领域的渐进式变化，使智能体通过结构化更新历史推理环境演化。该方法可直接用于游戏智能体在动态游戏环境中的适应能力提升。",
+      "llm_tldr": "大多数智能体评估假设环境静态，但真实世界环境动态变化。本文提出EvoArena基准和EvoMem记忆范式，模拟终端、软件和社交领域的渐进式变化，使智能体通过结构化更新历史推理环境演化。该方法可直接用于游戏智能体在动态游戏环境中的适应能力提升。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

@@ -1,0 +1,3852 @@
+Title: Equilibrium Computation in Extensive-Form Games with Stochastic Action Sets
+
+URL Source: https://arxiv.org/pdf/2606.13093v1
+
+Published Time: Fri, 12 Jun 2026 00:49:14 GMT
+
+Number of Pages: 35
+
+Markdown Content:
+# EQUILIBRIUM COMPUTATION IN EXTENSIVE -F ORM 
+
+# GAMES WITH STOCHASTIC ACTION SETS 
+
+## Thomas Schwarz ∗ Ryann Sim ∗ Chun Kai Ling 
+
+NUS NUS NUS 
+
+tschwarz@comp.nus.edu.sg ryann.sim@nus.edu.sg chunkail@nus.edu.sg 
+
+## ABSTRACT 
+
+Extensive-form games (EFGs) are a standard model for sequential decision-making in games. A fundamental and typically implicit assumption in EFGs is that players always have access to all of their actions at every decision point. However, in many realistic set-tings, certain actions might be unavailable during game-play due to exogenous stochastic-ity, hindering the expressivity of the standard EFG model. Given a ‘base’ EFG, we formal-ize a model that allows for actions to be stochastically restricted, leading to a corresponding Extensive-Form Games with Stochastic Action Sets (EFGSAS). In EFGSAS, we derive an expansion procedure that results in an equivalent EFG, thus showing that standard strategy formalisms could require exponentially-large representations. However, under an appropri-ate independence assumption, we show that compact strategy representations polynomial in the size of the base EFG exist. Computationally, we introduce an algorithm called SI-CFR that minimizes sleeping internal regret, converging to Nash equilibria with high probability in two-player zero-sum EFGSAS. Finally, we utilize a stochastic approximation procedure to recover compact representations of Nash equilibria, utilizing only the iterates of SI-CFR. 
+
+Keywords Extensive-form games · Stochastic action sets · Nash equilibrium · Sleeping internal regret · Counterfactual regret minimization. 
+
+## 1 Introduction 
+
+Extensive-form games (EFGs) model sequential decision-making under imperfect information, with many applications spanning economics and artificial intelligence [25, 7, 30]. A fundamental assumption enabling efficient equilibrium analysis in EFGs is that at each decision point, players always have access to all of their actions. However, in many realistic settings, this assumption hinders the expressivity of the standard EFG model. For instance, consider a game where players are drivers who face multiple intersections sequentially while driving. Due to possibly inclement weather, some exits might be closed, forcing the driver to select pos-sibly suboptimal routes. This simple modification greatly complicates the driver’s decision-making process, since players’ action distribution at each information set should now be conditioned on available actions, not to mention additional considerations about distributions over opponent actions. We introduce a formal model of this setting, which we call Extensive-Form Games with Stochastic Actions Sets (EFGSAS). An EFGSAS G requires as part of its definition a base EFG Gorig . Then, the sets 
+
+SI,i ⊆ 2|AI,i |\{ ∅} encodes the possible action availability subsets in information sets (hereafter ‘infosets’) 
+
+I ∈ I i belonging to player i. Finally, ρI,i ∈ ∆( SI,i ) is a probability distribution over elements SI,i known to all players. Each time the game is played, Nature draws from ρI,i , which determines the available actions at each infoset in the game, and players are restricted to only playing available actions. 
+
+> ∗Joint first authors
+> arXiv:2606.13093v1 [cs.GT] 11 Jun 2026
+
+In this work, we focus on understanding the computational properties of EFGSAS, focusing on efficient ways to represent and compute Nash equilibria. As it turns out, even defining a strategy in an EFGSAS is non-trivial. In a normal-form GSAS [39], the natural approach is to expand the game into a larger ‘induced normal-form’ representation similar to Bayesian games, which then allows for strategies to naively be represented as mappings from all possible action subsets to distributions over actions. However, the sequential nature of EFGSAS leads to a fresh but important modeling decision: though action availabilities might be sampled before game-play occurs, the time at which the information is disclosed can significantly affect players’ strategy sets. Here, there are two extremes, ex-ante disclosures, where action availabilities of all infosets are given before the game begins, and ex-interim disclosures, where available actions are known to the player upon reaching an infoset. Thus, formalizing the representation of a strategy in an EFGSAS requires care. In order for the standard definitions of pure, mixed, and behavioral strategies from EFGs to carry over to EFGSAS, the game needs to be converted into an exponentially larger ‘expanded form’ that introduces chance nodes to model Nature sampling action availabilities. The conversion needs to be consistent with both extremes of action disclosure, and implies that even specifying a NE in EFGSAS can be prohibitively large. We seek conditions under which compact (i.e. polynomial in the size of the base EFG) representations of NE can be obtained. This type of result is in principle analogous to Kuhn’s theorem [25], which establishes that in EFGs with perfect recall, NE can be captured by behavioral, as opposed to exponentially-sized normal-form mixed strategies. Beyond equilibrium representation, the canonical framework of counterfactual regret minimization (CFR) has seen significant success in solving large-scale imperfect information EFGs [41, 27, 7], particularly in the two-player zero-sum (2p0s) setting. However, in EFGSAS, the connection between (external)-regret minimization and NE fails, since the action sets for each player can vary each time the game is played. In the case that the solver is fully aware of the action availability distribution ρ, it is possible to perform the naive expansion, which would allow for the application of CFR-type algorithms. However, these algorithms scale poorly, since the regret accrued depends on the (possibly exponential) size of the expanded game tree. Overall, this motivates the design of computational techniques that can efficiently compute compact repre-sentations of sequence-form NE in 2p0s-EFGSAS. 
+
+Our contributions. We seek to formalize strategy representation and NE computation in EFGSAS. Our pri-mary computational contribution is a novel framework that can efficiently compute a compact representation of NE in 2p0s-EFGSAS. We first formalize EFGSAS and analyze properties of strategic representation in the ex-interim action disclosure setting, showing that it suffices to consider a compressed ‘DAG-plex’ rather than larger treeplexes (typical of CFR) for the purposes of sequence-form strategy representation. Then, we estab-lish that under an appropriate independence assumption, sequence-form strategies of an EFGSAS can further be represented compactly by a vector which is of size polynomial in the base game. Subsequently, we intro-duce a procedure called SI-CFR which is based on the CFR framework. We show that SI-CFR minimizes a suitable notion of sleeping internal regret in EFGSAS, converging in average iterates to marginal NE in 2p0s-EFGSAS. Finally, requiring only the iterates of SI-CFR, we utilize stochastic approximation techniques to recover the compact representation of a NE. 
+
+## 2 Related Work 
+
+Equilibrium computation in EFGs. CFR has been one of the most widely successful frameworks for learning equilibria in large-scale imperfect information EFGs via self-play [41, 27, 12], leading to develop-ment of state-of-the-art Poker algorithms [6, 7]. More broadly, regret minimization techniques have been used to obtain Nash equilibria in zero-sum EFGs [18, 11, 28], as well as extensive-form correlated equilibria (EFCE) in general-sum EFGs [13, 8, 1]. 
+
+Sleeping regret. In the multi-armed bandit literature, the sleeping bandit setting studies regret minimization when arms are available stochastically or adversarially [2, 4, 21, 23, 22, 38, 35]. These techniques have been applied to online combinatorial optimization [34, 20] and reinforcement learning [10]. [15] introduced the notion of (expected) sleeping internal regret which we use, though we additionally derive high probability bounds beyond expected regret. 2Normal-Form GSAS. The notion of games with stochastic action sets (GSAS) was introduced by [39], who focused on normal-form games. Given a normal-form base game, the corresponding GSAS includes in its specification the possible action availability subsets and a distribution over the action availabilities. While some of our definitions and results are analogous to the normal-form case, the sequential nature of EFGSAS requires additional technical insights and a novel algorithm to guarantee convergence to NE. For completeness, we provide the formal definitions and key properties of GSAS in Section A.1. 
+
+## 3 Preliminaries 
+
+Notation. Denote the n-dimensional nonnegative quadrant by Rn
+
+> ≥0
+
+. For a finite set S, ∆( S) is the associ-ated probability simplex {x ∈ R|S|≥0| P|S| 
+
+> i
+
+xi = 1 }, such that if y ∈ ∆( S), s ∈ S, y (s) is the probability that item s is selected. 
+
+Extensive-Form Games. A standard n-player extensive form game G (without stochastic action sets) is a tuple G := ⟨H , A, Z, u, I⟩ where: • The nonempty, finite set H denotes the states of the game which form a tree rooted at an initial state 
+
+r ∈ H . We denote terminal nodes in H by Z. Each nonterminal state h ∈ H \ Z is associated with a set of possible actions Ah.• Given N = {1, . . . , n }, the set N ∪ { c} denotes the n + 1 players of the game. Each state h ∈ H \ Z 
+
+admits a label player( h) ∈ N ∪ { c} which denotes the acting player at state h. The letter c denotes a chance player , representing exogenous stochasticity. Hi ⊆ H \ Z denotes the states h ∈ H \ Z 
+
+with player( h) = i. Each chance node h ∈ H c is associated with a fixed distribution Pc(·| h) over 
+
+Ah, denoting the distribution over actions chosen by the chance player at each node. • For each i ∈ N , payoff function ui : Z → [−1, 1] specifies the payoff that player i receives if the game ends at terminal state z ∈ Z .• The players’ decision points H \ Z are partitioned into information sets (infosets) ascribed to each player, namely Ii ∈ (I1, . . . , In). Each infoset I ∈ I i contains nodes that the acting player i cannot distinguish between, i.e., h1, h 2 ∈ I implies Ah1 = Ah2 . We let AI,i denote the shared action set of infoset I belonging to player i and use AI when there is no player ambiguity. • For notational convenience, we ascribe a singleton information set to each chance node and define 
+
+Ic as the collection of these chance node infosets. For each non-terminal node h ∈ H \ Z , we thus define Ih ∈ (I1, . . . , In) ∪ I c to be the infoset it belongs to. In this paper, we make the standard assumption that EFGs exhibit perfect recall . That is, no player ever forgets their past history, namely, the sequence of information sets visited, actions taken within those information sets, and any information acquired along the way. Formally, for any player i, any information set I ∈ I i and any two nodes h1, h 2 ∈ I, the sequence of Player i’s actions from the root r to h1 must coincide with the action sequence from r to h2.
+
+Strategy Formalisms. In EFGs, a pure strategy specifies a deterministic action at every information set of a player. A (normal-form) mixed strategy is a probability distribution over pure strategies. A behavioral strategy specifies independent distributions at each infoset. Formally, for any infoset I ∈ I i, ∆( AI ) denotes the probability simplex over the available actions AI . A behavioral strategy for player i is a mapping βi :
+
+Ii → S 
+
+> I∈I i
+
+∆( AI ), assigning to each infoset I a distribution βi(· | I) ∈ ∆( AI ). We denote the set of all behavioral strategies for each player by Bi. The joint behavioral strategy profile for all players is denoted by 
+
+β := ( βi)i∈N ∈ B . Kuhn’s theorem [25] establishes the outcome equivalence of behavioral and normal form mixed strategies in EFGs with perfect recall. The expected utility of player i ∈ N following (joint) behavioral strategy β ∈ B is denoted Ui(β) := P 
+
+> z∈Z
+
+P(z|β, r ) · ui(z), where P(z|β, r ) is the probability that leaf z ∈ Z is reached from root r following 3β. We call β∗ an ϵ-(behavioral) Nash equilibrium if for every player i ∈ N , it holds that Ui(β∗) ≥
+
+max βi∈B i Ui(βi, β ∗−i) − ϵ, i.e., no player can profitably deviate from β∗ to any other behavioral strategy. 
+
+Sequence-Form and Treeplexes. The set of sequences of Player i is defined as Σi := {(I, a ) : I ∈ I i, a ∈
+
+AI } ∪ { ∅}, where the special element ∅ is the empty sequence. Given an infoset I ∈ I i, σ(I) denotes the parent sequence of I, defined as the last pair (I′, a ′) ∈ Σi encountered on the path from the root to any node 
+
+h ∈ I. If no such pair exists (i.e., player i never acts before any node h ∈ I), let σ(I) = ∅. We (recursively) define a sequence τ ∈ Σi to be a descendant of τ ′ ∈ Σi, denoted by τ ⪰ τ ′, if τ = τ ′ or if τ = ( I, a ) and 
+
+σ(I) ⪰ τ ′.In the sequence-form representation [37, 40], players select strategies which are represented by a vector 
+
+x indexed by sequences σ ∈ Σi. For σ = ( I, a ), the entry x[σ] ≥ 0 captures the product of probabilities of Player i’s actions from the root r to I, including playing action a. By convention x[∅] = 1 . This gives a set of linear constraints encoding the probability mass conservation for valid sequence-form strategies: for all 
+
+I ∈ I i, P 
+
+> a∈AI
+
+x[( I, a )] = x[σ(I)] . The set of sequence-form strategies forms a convex polytope commonly called a treeplex [18]. Treeplexes are generalizations of the simplex tailored towards sequential decision making. Under this formulation, [40] showed that in 2p0s-EFGs (where n = 2 and u1(z) = −u2(z), ∀z ∈ Z ), the expected utilities of the players can be written in a bilinear form. In particular, consider the |H 1| × |H 2|-dimensional matrix A (called the sequence-form payoff matrix), with [A]zz := u1(z) for all z ∈ Z ,and 0 otherwise. A similar construction for player 2’s utilities gives −A, since the game is zero-sum. Let 
+
+(x, y ) be sequence-form strategies on the players’ treeplexes. Then, the expected utility of player 1 can be written concisely as U1(x, y ) = x⊤Ay , and Nash equilibria are saddle-points of the function U1 = −U2,i.e., solutions to min x max y (x⊤Ay ) = max y min x(x⊤Ay ). Crucially, the equivalence between behavioral and sequence-form strategies in 2p0s-EFGs implies that NE computation can be performed over treeplexes, allowing for efficient algorithms such as CFR to be applied based on suitable regret minimizers over the treeplex. We give additional preliminaries on normal-form games with stochastic action sets (GSAS) and coun-terfactual regret minimization (CFR) in Section A.1 and Section B.1 respectively. To improve clarity, we also provide a notation table for important symbols used throughout the paper in Table 1. Finally, throughout the paper we work in the unit-cost real-arithmetic model, where exact arithmetic operations take constant time. 
+
+## 4 EFGs with Stochastic Action Sets 
+
+In this section, we define and analyze properties of extensive-form games with stochastic action sets (EFGSAS). 
+
+Definition 4.1 (EFGSAS) . Given an EFG Gorig = ⟨H , A, Z, u, I⟩ , let SI,i ⊆ 2|AI,i |\{ ∅} for all infosets 
+
+I ∈ I i belonging to player i. Let ρI,i ∈ ∆( SI,i ) be a distribution over elements SI,i , such that ρI,i (SI,i )
+
+gives the probability that action subset SI,i is observed in each I ∈ I i, for each SI,i ∈ S I,i . Let S and ρ
+
+denote the ensemble of action subsets and distributions over all infosets and players. An EFG with Stochastic 
+
+Action Sets is given by the tuple G = ( Gorig , S, ρ ).
+
+We additionally consider two-player zero-sum (2p0s) EFGSAS, where Gorig is two-player zero-sum, i.e., n = 2 , and ∀z ∈ Z , u 1(z) = −u2(z). Going forward, we make the technical assumption that in each infoset ascribed to a player, the action availabilities are independent. 
+
+Assumption 4.2. There exists ρ(S) = Qni=1 
+
+Q 
+
+> I∈I i
+
+ρI,i (SI,i ) for probability distributions ρI,i : SI,i →
+
+[0 , 1] , i.e., the availability of actions are independent across all infosets and players. Moreover, the utility ui
+
+for reaching z ∈ Z does not depend on the realization of ρ.
+
+44.1 Information Disclosure and Strategy Representation in EFGSAS 
+
+In standard EFG literature, equilibrium computation typically relies on ex-ante strategy formulations, mean-ing that players fix a strategy before the game begins. This requires all information about the game (e.g. in-fosets, game structure and so on) to be revealed upfront. However, EFGSAS belong to a class of games where information disclosure (and in particular, action availability disclosure) can be done sequentially . Two natu-ral regimes of action disclosures arise: (i) the ex-interim regime, where players only observe their available actions upon reaching an infoset, and (ii) the ex-ante regime, where players can observe all available actions at each infoset I ∈ I before game-play. This introduces new challenges in terms of strategy formalisms in EFGSAS, since players need to take their action availabilities into account when selecting strategies. 
+
+Definition 4.3 (Ex-interim EFGSAS) . In an ex-interim EFGSAS, the action availability set SI,i ∈ S I,i for an infoset I ∈ I i is sampled from ρ(SI,i ) and observed by player i only when infoset I is reached by that player. 
+
+Ex-interim EFGSAS capture some interesting settings: (i) board games such as Backgammon, Dice Chess, and the ancient Mesopotamian game ‘The Royal Game of Ur’, in which at the start of each turn, players roll dice to determine how pieces can be moved, and (ii) pursuit-evasion games where Nature restricts actions randomly over time due to e.g., inclement weather, resulting in players only observing their available actions at every timestep. For an ex-interim EFGSAS G meeting Assumption 4.2, a naive expansion procedure can be applied to obtain a strategically equivalent expanded EFG G† with infosets I†. Informally, for each infoset I ∈ I i,the procedure adds a chance node encoding the distribution over all action subsets SI,i , with corresponding probabilities following ρI,i ∈ ∆( SI,i ). The formal definition of this procedure is given in Section C.1. We illustrate the expansion procedure using an example. 
+
+Example 4.4 (Running Example) . Consider an EFGSAS with base game Gorig based on an example 2p0s game of [9]. Gorig comprises a defender (player 1) and an attacker (player 2), shown in Figure 1 (Left). The defender simply to chooses between actions H or T at the start. The attacker has two decision points, selecting between {H1, T 1} at infoset A and {H2, T 2} at infosets B and C. The attacker receives a payoff of -1 if they ever choose the same action as the defender ( H or T ), and otherwise receives 1. It is easy to see that the unique NE in Gorig for the defender is x∗
+
+> 1
+
+(H) = x∗
+
+> 1
+
+(T ) = 0 .5, while the attacker plays 
+
+x∗
+
+> 2
+
+(H1H2) = x∗
+
+> 2
+
+(T1T2) = 0 .5 and x∗
+
+> 2
+
+(H1T2) = x∗
+
+> 2
+
+(T1H2) = 0 ; there is clearly no reason why the attacker will play the dominated strategy of H1T2 or T1H2.In the EFGSAS G, at infoset A the attacker observes an action availability set of {H1} with probability 
+
+α, and {H1, T 1} otherwise. At infoset B and C, the attacker observes {H2} w.p. λ and {H2, T 2} otherwise. In Figure 1 (Right), we show the naive expansion when α = 0 , λ > 0. Notice that defining a strategy in this expanded form requires a larger representation. From this example, we can intuitively see that EFGSAS may have significantly different solutions. For example, consider the degenerate case where α = λ = 1 . Then, since the attacker is forced to always play H1 and H2, the defender’s optimal strategy H.
+
+Beyond ex-interim action disclosures, an EFGSAS may have ex-ante information disclosure, with the action availability sets for every infoset I ∈ I i sampled and revealed to player i prior to game-play. Such an EFGSAS can be expanded with a similar procedure, with a chance node added at the root encoding the distribution among all possibly observed SI,i across all infosets. 
+
+Remark 4.5. The same EFGSAS G can differ significantly between the ex-interim and ex-ante setting. In the game in Example 4.4, it is possible in the ex-ante setting for the attacker to avoid ever playing T1H2, a strictly dominated strategy in Gorig . However, in the ex-interim setting, any attacker strategy that plays T1
+
+with strictly positive probability might be forced to play T1H2, depending on the sampled action availability set. 
+
+In a G† associated with EFGSAS G for both ex-interim and ex-ante regimes, standard definitions of mixed, behavioral and sequence-form strategies apply (cf. Section 3). However, the representation size of these strategies scale poorly with G, since all possible observed action subsets need to be encoded. Consider an EFGSAS G where Gorig has depth d with a actions at every infoset, with each action available indepen-dently at random (provided at least one action is available). In the ex-interim setting, the number of sequences 5A A                                                    
+
+> BCBC
+> −1−1−1+1 +1 −1−1−1
+> HT
+> H1T1H1T1
+> H2T2H2T2H2T2H2T2
+> −1−1+1 −1−1−1−1+1 +1 −1−1−1
+> HT
+> H1T1H1T1
+> λ1−λλ1−λλ1−λλ1−λ
+> H2H2H2H2H2T2H2T2H2T2H2T2
+
+Figure 1: (Left) Game tree of Gorig . (Right) Expanded game G† for α = 0 , i.e. at infoset A, actions {H1, T 1}
+
+are always available. Circular nodes ( , ) denote decision points for defender (resp. attacker). Diamonds 
+
+( ) denote chance nodes and dotted lines connect nodes belonging to the same infoset. At infosets B and C,the attacker observes action availability set {H2} w.p. λ and {H2, T 2} otherwise. in the treeplex of the naively expanded EFG G† is |Σ†| = (a2a−1)d+1 −a2a−1 
+
+> a2a−1−1
+
+≥ (a2a−1)d (see Section C.2 for a derivation). Similarly, EFGSAS in the ex-ante setting also exhibit a doubly exponential increase in size. However, due to the structure afforded by EFGSAS, it turns out that in the ex-interim case, it is possible to further reduce the representation size of the players’ decision problems. As such, for the reminder of this paper we exclusively focus on the class of ex-interim EFGSAS. 
+
+4.2 Sequence-Form Strategies Over DAG-plexes 
+
+In the naive expansion, behavioral strategies need to be defined at each new infoset generated by the action availability sets. This requires strategies to account for the history of action availability sets that have been observed. We now show that for any behavioral strategy on G†, there exists a behavioral strategy with equal utility that considers only the observed action availabilities at the current infoset, and not prior ones. We define obs : I† 
+
+> i
+
+→ ∪ I∈I i SI,i such that obs( I†) is the action availability set SI,i which I† corresponds to observing in the EFG. 
+
+Proposition 4.6. For any behavioral strategy βi in G†, there exists 
+
+bi : {S I,i | I ∈ I i} → ∪ I∈I i ∆( AI )
+
+such that supp( bi(SI,i )) ⊆ SI,i and the strategy ˆβi(I†) = bi(obs( I†)) has 
+
+Ui(βi, β −i) = Ui( ˆβi, β −i) for any other joint strategy β−i.
+
+Proposition 4.6 allows us to consider strategies over the space where all infosets I† that correspond to observing the same SI,i are merged, shrinking the decision problem from the doubly exponential sized tree (c.f. Section C.2) to a smaller, though possibly still exponential, directed acyclic graph (DAG). Every node in the DAG uniquely corresponds to an observed action availability set SI,i in G, and we denote that node S†
+
+> I,i
+
+.We abuse notation where needed to treat the node S† 
+
+> I,i
+
+as the corresponding action availability set SI,i in G
+
+and vice versa, e.g., by writing a particular node in the DAG as S† 
+
+> I,i
+
+∈ S i or bi(SI,i ) as the strategy from bi
+
+at S†
+
+> I,i
+
+.A bi as defined in Proposition 4.6 is referred to as an EFGSAS behavioral strategy, and we let bi(a|S†
+
+> I,i
+
+)
+
+be the probability bi(S†
+
+> I,i
+
+) assigns to action a. Player i’s expected payoff from a joint behavioral strategy profile b = ( bi)i∈N is given by the utility of ˆβ in the expanded EFG and is equal to 
+
+Ui(b) = ES∼ρ
+
+"X
+
+> z∈Z
+
+P(z|b(S), r ) · ui(z)
+
+#
+
+, (1) where P(z|b(S), r ) is the probability that leaf z ∈ Z is reached from root r following b under action avail-ability set ensemble S. In line with standard definitions of NE, we call b∗ an ϵ-Nash equilibrium (NE) if 6no player can unilaterally deviate to increase their expected payoff by more than ϵ, i.e., ∀i ∈ N and ∀bi,
+
+Ui(b∗) ≥ Ui(bi, b ∗−i) − ϵ.The utility equivalence established in Proposition 4.6 implies that we can define the sequence-form strategies of ex-interim EFGSAS with perfect recall over smaller, ‘compressed’ decision polytopes, as op-posed to the much larger standard treeplexes. We refer to these polytopes as DAG-plexes .
+
+Definition 4.7 (DAG-plex) . The class of DAG-plexes is recursively defined as: 1. Simplices : Every simplex ∆m := {x ∈ [0 , 1] m | Pmi=1 xi = 1 } is a DAG-plex. 2. Cartesian product : If Q1, . . . , Q k are DAG-plexes, so is Q1 × . . . × Qk.3. Recombination : If P ⊆ [0 , 1] p and Q ⊆ [0 , 1] q are DAG-plexes and j ⊆ { 1, ..., p }, j ̸ = ∅ then 
+
+{(x, y ) ∈ Rp+q | x ∈ P, y ∈ Q · P 
+
+> i∈j
+
+xi} is a DAG-plex.                                         
+
+> −1−1−1−1−1+1 +1 −1+1 −1−1−1
+> HT
+> α1−αα1−α
+> H1H1T1H1H1T1
+> H2T2H2T2H2T2H2T2H2T2H2T2
+> ∅
+> {H1}{H1, T 1}
+> H1H1T1
+> H2T2H2T2H2T2
+> ∅
+> {H1}{H1, T 1}
+> H1H1T1
+> H2T2H2T2
+
+Figure 2: (Left) Expanded game tree for Example 4.8, refer to Figure 1 for the legend. (Middle) The corre-sponding treeplex for the attacker. Empty vertices ( □) represent infosets. Filled vertices ( ■) are observation nodes that lead to parallel information sets. Solid edges are actions that can be taken. Dotted edges are possible observations, in this case, the only observations are the action availabilities; though in general, these could instead be related to Gorig . The empty sequence is labeled ∅. (Right) The DAG-plex representation, with nodes and edges meaning the same as the treeplex. 
+
+Example 4.8 (DAG-plex for Example 4.4 game) . Consider an instance of the game in Example 4.4 where 
+
+α > 0 and λ = 0 , i.e., H2 and T2 are always available, but {H1} is available w.p. α and {H1, T 1} is available w.p. 1 − α. The expanded game tree is shown in Figure 2. Note that the chance node appears earlier as compared to Figure 1. The treeplex and DAG-plex for this game are also displayed in Figure 2. In the treeplex, there are two decision points after taking action H1, corresponding to encountering action sets 
+
+{H1} and {H1, T 1}. However, in the DAG-plex, these two decision points are collapsed to one, i.e., after action H1, the player essentially “forgets” the action availabilities that were available before, resulting in a more compact structure. 
+
+Next, we proceed to define sequence-form strategies over the DAG-plex. Let 
+
+Ξi = {(S†
+
+> I,i
+
+, a ) | I ∈ I i; S† 
+
+> I,i
+
+∈ S I,i ; a ∈ S†
+
+> I,i
+
+} ∪ { ∅}
+
+be the set of sequences of player i in an EFGSAS and ξ(S†
+
+> I,i
+
+) be the parent sequences of S†
+
+> I,i
+
+, defined as the set of pairs {(S†
+
+> I,i
+
+, a )} immediately preceding infoset S† 
+
+> I,i
+
+on the path from the root to any infoset for action availabilities SI,i .
+
+Definition 4.9 (EFGSAS sequence-form strategies) . An EFGSAS sequence-form strategy is a vector χi in-dexed by sequences ξi ∈ Ξi such that for any ξi = ( S†
+
+> I,i
+
+, a ), χi(ξi) captures the product of probabilities of player i’s actions from the root to S† 
+
+> I,i
+
+and then playing action a. Furthermore, χi must conserve probability mass with χi(∅) = 1 and ∀I ∈ I i, ∀S† 
+
+> I,i
+
+∈ S I,i , P
+
+> a∈S†
+> I,i
+
+χi(S†
+
+> I,i
+
+, a ) = P
+
+> S†′ ∈ξi(S†
+> I,i )
+
+P 
+
+> a′∈S†′
+
+χi(S†′, a ′).
+
+7Given an ensemble of EFGSAS sequence-form strategies χ = ( χi)i∈N , the expected utility of player i
+
+is: Ui(χ) := ES∼ρ
+
+P  
+
+> z∈Z
+
+P(z|χ, r ) · ui(z), where P(z|χ, r ) is the probability that leaf z ∈ Z is reached from root r following χ. Combining the above with Proposition 4.6 ensures that all strategies in the expanded EFG G† have a utility-equivalent EFGSAS sequence-form strategy. Indeed, since we consider EFGSAS with perfect recall, it follows that any NE in the DAG-plex is equivalent to a NE of G. This implies that for the purposes of equilibrium computation, it suffices to obtain NE of the smaller DAG-plex, compared to the much larger expanded game. 
+
+4.3 Compact representation 
+
+Thus far, we have established that expressing a player’s decision problem over the DAG-plex Ξi instead of the naively expanded sequences Σ† 
+
+> i
+
+mitigates the exponential dependence of a player’s decision problem size on the depth of the decision tree. However, there remains an exponential dependence on the number of actions at each infoset, since each chance node enumerates an action availability subset. To deal with this, we show under Assumption 4.2 that it suffices to consider the restricted space of ‘implementable sequence-form strategies’, which can be constructed using marginal behavioral strategies at each infoset. 
+
+Implementable strategies. For an EFGSAS behavioral strategy bi, due to Assumption 4.2, its corresponding 
+
+marginal behavioral strategy μI,i (a) for each a ∈ AI,i at an infoset I ∈ I is: μI,i (a) := P[a; ρI,i , b i] = P 
+
+> SI,i ∈S I,i
+
+ρI,i (SI,i ) · bi(a|SI,i ) · 1{a ∈ SI,i }. Let μi be the ensemble over I ∈ I i of marginal behavioral strategies belonging to player i. Then, the expected utility of the joint EFGSAS behavioral strategy b =(bi)i∈N can be written as 
+
+Ui(b) = X
+
+> z∈Z
+
+ui(z) Y
+
+> i∈N
+
+P[z|μi, r ], (2) where P[z|μi, r ] is the probability that z ∈ Z is reached from root r under μi. Hence, at an infoset I ∈ I i, it suffices to work in the space of μI,i ∈ ∆( AI,i ), rather than the much larger bi(SI,i ) : SI,i → ∆( AI,i ). Note that multiple behavioral strategies can share the same marginal behavioral strategy μ.
+
+Definition 4.10 (Implementable sequence-form strategy) . We call a sequence-form strategy for Gorig ‘ωi’ an ‘implementable sequence-form strategy’ if there exists some EFGSAS behavioral strategy bi with marginal behavioral strategies μI,i (a) such that P[a; ωi] = μI,i (a). The set of implementable sequence-form strategies for player i is denoted Ωi and is a subset of the treeplex of Σorig  
+
+> i
+
+. We say an EFGSAS sequence-form strategy 
+
+χi ‘implements’ ωi if its behavioral strategy representation has marginal behavioral strategies such that 
+
+P[a; ωi] = μI,i (a).
+
+It turns out that under Assumption 4.2, each player’s ‘effective’ strategy space is the compact, convex set of implementable sequence-form strategies. The following results ensure that (i) implementable sequence-form strategies suffice to capture all Nash equilibria of an EFGSAS, and (ii) a version of the minimax theorem holds for implementable strateiges in 2p0s-EFGSAS. 
+
+Proposition 4.11 (Nash equilibrium equivalence) . Consider an EFGSAS sequence-form strategy profile χ =(χ1, . . . , χ n) which implements ω = ( ω1, . . . , ω n). Then χ is an ϵ-Nash equilibrium if and only if ∀i ∈ [n],
+
+Ui(ω) ≥ max 
+
+> ω′
+> i∈Ωi
+
+Ui(ω′
+
+> i
+
+, ω −i) − ϵ (3) 
+
+Proposition 4.12 (Minimax theorem for EFGSAS) . For a 2p0s-EFGSAS, a strategy profile (χ∗
+
+> 1
+
+, χ ∗
+
+> 2
+
+) is a NE if and only if their associated (ω∗ 
+
+> 1
+
+, ω ∗ 
+
+> 2
+
+) is a saddle point of the function U = U1 = −U2
+
+i.e. ω∗ 
+
+> 1
+
+= argmax ω1∈Ω1 min ω2∈Ω2 U (ω1, ω 2) and ω∗ 
+
+> 2
+
+= argmin ω2∈Ω2 max ω1∈Ω1 U (ω1, ω 2) where 
+
+max ω1∈Ω1 min ω2∈Ω2 U (ω1, ω 2) = min ω2∈Ω2 max ω1∈Ω1 U (ω1, ω 2).
+
+Despite the above, it remains unclear how one can recover χi from ωi efficiently. To deal with this, we show that there exists a compact vector Wi ∈ R|Σorig   
+
+> i|≥0
+
+that implements each ωi ∈ Ωi and can be used to obtain valid EFGSAS strategies for any observed action availability set. 
+
+Theorem 4.13. Let χi implement ωi ∈ Ωi. There exists a vector Wi ∈ R|Σorig   
+
+> i|≥0
+
+such that an EFGSAS sequence-form strategy χ′
+
+> i
+
+(Si) implementing ωi can be constructed in time linear in the size of Gorig .
+
+8Thus, while the expansion process creates an exponentially large EFG with regards to Gorig , for ex-interim EFGSAS meeting Assumption 4.2 we can represent any implementable strategy with a vector of size 
+
+|Σorig  
+
+> i
+
+|, i.e., independent of |S i|.
+
+Example 4.14 (Compact Representation for LSG) . We focus on the special case of LSG (Figure 1) with 
+
+α = 0 , λ = 0 .5, i.e. at infoset A, both H1 and T1 are always available. We fix the indexing of sequence-form strategies as [∅, H, T ] for the defender (player 1), and as [∅, H 1, T 1, H 1H2, H 1T2, T 1H2, T 1T2] for the attacker (player 2). By Theorem 4.13, there exists a compact vector which is of the size of sequence-form strategies in the base game. It can be shown that when λ = 0 .5, the following are compact vectors W ∗ 
+
+> 1
+
+and 
+
+W ∗ 
+
+> 2
+
+that represent a NE in LSG. 
+
+W ∗ 
+
+> 1
+
+= [1 , 1/3, 2/3] , W ∗ 
+
+> 2
+
+= [1 , 2/3, 1/3, 2/3, 0, 0, 1/3] 
+
+Utilizing the procedure given in Algorithm 6, we can easily obtain the appropriate sequence-form strategy to play, given any possible action availabilities in the game. For instance, consider the case that at infoset 
+
+B, player 2 learns that they only have access to H2. Then, Algorithm 6 ensures that the strategy played is a valid EFGSAS sequence-form strategy, i.e. χ({H2}) = [1 , 2/3, 1/3, 1, 0, 0, 0] , which recovers a NE strategy since player 2 cannot play T2. Note that Algorithm 6 also deals with the children of unavailable sequences: if the game continued for more rounds after infoset B, the strategies which are descendants of T2 are played with probability 0.
+
+Until this point, though we have established the existence of compact strategy representations in ex-interim EFGSAS, it remains unclear whether these strategies can be efficiently computed. In the following section, we give one such procedure based on the framework of sleeping internal regret minimization. 
+
+## 5 Computing Compact Equilibria in EFGSAS 
+
+5.1 Sleeping Regret Minimization in EFGSAS 
+
+A common paradigm for equilibrium computation in games relies on a connection between online learn-ing and game-theoretic equilibria. In this setting, at each timestep t ≤ T , each player i ∈ [n] selects a strategy xti ∈ X i from a compact, convex strategy set Xi and observes reward vector ui(·, x t
+
+> −i
+
+). The typical performance metric is (cumulative) external regret, defined for each player i over timesteps T as 
+
+REXT 
+
+> T,i
+> def
+
+= PTt=1 max x′ 
+
+> i∈X i
+
+(ui(x′
+
+> i
+
+, x t
+
+> −i
+
+)−ui(xti, x t
+
+> −i
+
+)) . Intuitively, low regret implies that the algorithm/player is not outperformed by any single fixed strategy. The folk result of no-regret learning in 2p0s-games states if an algorithm achieves sublinear external regret (i.e., REXT  
+
+> T,i
+
+= o(T )), then the time-average over played strategies is an approximate Nash equilibrium. In EFGs, the strategy sets Xi are typically the set of sequence-form strategies. However, [41] showed that the external regret over the game-tree can be upper-bounded by individual, per-infoset counterfactual regrets, leading to the development of the counterfactual regret minimization (CFR) framework as a theoretically sound yet practically efficient method for computing Nash equilibria in 2p0s-EFGs under self-play. In the setting of 2p0s-EFGSAS, the fundamental connection between external regret minimization and Nash equilibria fails. Intuitively, due to the fact that a competing strategy for a player might not be available at a given infoset, external regret is an ill-defined performance metric. To deal with this, we utilize concepts from the sleeping bandits literature [23]. The appropriate regret variant that we study going forward is called 
+
+sleeping internal regret (SI-regret), which was introduced and formalized in [15]. For clarity, we first give a per-infoset definition of SI-regret, with respect to EFGSAS behavioral strategies for a player. 
+
+Definition 5.1 (Sleeping Internal Regret) . For any pair of actions ˆai ∈ AI.i and ˆa′ 
+
+> i
+
+∈ AI,i at an infoset 
+
+I ∈ I i, the sleeping internal regret (SI-regret) for player i using behavioral strategy bi in T timesteps, 
+
+RINT 
+
+> T,I,i
+
+(ˆ ai → ˆa′
+
+> i
+
+), is 
+
+ES∼ρI,i 
+
+"
+
+Ea∼b(S)
+
+" TX
+
+> t=1
+
+1{ati = ˆ ai, ˆa′ 
+
+> i
+
+∈ StI,i }  ui(ˆ a′
+
+> i
+
+, a t
+
+> −i
+
+) − ui(ati, a t
+
+> −i
+
+)## 
+
+. (4) 9In the case where a player’s SI-regret vanishes for each action pair over all of their infosets, i.e. 
+
+max I∈I i max ˆai,ˆa′ 
+
+> i
+
+RINT  
+
+> T,I,i
+
+= o(T ) as T → ∞ , they are said to have no-SI-regret . The intuition is that player i does not regret not playing action ˆa′ 
+
+> i
+
+(if ˆa′ 
+
+> i
+
+was available) every time they played ˆai, for any ˆai, ˆa′ 
+
+> i
+
+at infoset I ∈ I i. Moreover, notice that if the SI-regret is minimized over all infosets, then it follows that the SI-regret of an implementable sequence-form strategy induced by the marginal behavioral strategies is also sublinear. [39] showed that sublinear SI-regret is necessary to guarantee convergence to Nash equilibria in normal-form GSAS, and gave an algorithm called SI-MWU that guarantees sublinear SI-regret. Our goal is to design an efficient procedure that minimizes SI-regret over implementable sequence-form strategies in ex-interim 2p0s-EFGSAS. To this end, we propose a modification of the CFR algorithm by first introducing an SI-regret minimizer over EFGSAS sequence-form strategies (Algorithm 1). We write Algorithm 1 in terms of the scaled extension framework of [13] (Definition C.3). Given two SI-regret minimizers over compact, convex sets X and ∆, the scaled extension allows the construction of an SI-regret minimizer over X scaled by ∆ via affine function f (x), and composed recursively this leads to an SI-regret minimizer over EFGSAS sequence-form strategies. 
+
+Algorithm 1 SI-Regret Minimizer via Scaled Extension 
+
+Input: SI-Regret minimizer over X ⊆ Rn
+
+> ≥0
+
+: RINT 
+
+> X
+
+Input: SI-Regret minimizer over ∆: RINT 
+
+> ∆
+
+Input: f : X → R+ 
+
+> 1:
+
+for t = 1 , 2, . . . , T do  
+
+> 2:
+
+xt ← strategy from RINT  
+
+> X
+
+; 
+
+> 3:
+
+yt ← strategy from RINT  
+
+> ∆
+
+(i.e. SI-MWU) ;  
+
+> 4:
+
+Play σt := ( xt, f (xt) · yt) 
+
+> 5:
+
+Receive utility ut := ( ut 
+
+> X
+
+, u t
+
+> ∆
+
+) ; 
+
+> 6:
+
+Pass utility ut 
+
+> ∆
+
+to RINT  
+
+> ∆
+
+; 
+
+> 7:
+
+Pass utility ut 
+
+> X
+
++ f · ut
+
+> ∆
+
+(yt) to RINT  
+
+> X
+
+; 
+
+> 8:
+
+end for 
+
+Composing Algorithm 1 recursively over all infosets of an EFGSAS gives the SI-CFR algorithm, the full pseudocode of which is given in Section B.2. Informally, SI-CFR runs SI-MWU at each infoset of the game, and performs traversals of the game tree similarly to CFR. However, unlike CFR where a sequence-form vector is maintained and updated with each traversal, SI-CFR needs to maintain, for each infoset I ∈ I i, a vector of size |AI,i |(|AI,i − 1|) which can be viewed as the ‘experts’ for each SI-MWU instance. Then, in each traversal, the counterfactual utilities are used to compute the SI-MWU losses, and the experts at each infoset are updated according to Algorithm 3. Under SI-CFR, we show that sublinear SI-regret is obtained, incurring constant factors that depend on the size of the sequence-form strategy set of the base game Gorig ,
+
+|Σorig  
+
+> i
+
+|. In particular, let RINT  
+
+> T,i
+
+denote the total SI-regret of the EFGSAS sequence-form strategies for player 
+
+i running SI-CFR after T traversals of the game tree. Then, we have 
+
+Theorem 5.2. In a 2p0s-EFGSAS, with probability at least 1−p, a player running SI-CFR has total SI-regret 
+
+RINT  
+
+> T,i
+
+bounded by O
+
+
+
+|Σorig  
+
+> i
+
+|pT log (1 /p )
+
+
+
+.
+
+We also show that in 2p0s-EFGSAS, minimizing SI-regret leads to (time-averaged) NE convergence, by averaging over EFGSAS sequence-form strategies. 
+
+Proposition 5.3. Consider a 2p0s-EFGSAS G where players achieve sublinear SI-regret of RINT  
+
+> T, 1
+
+and RINT 
+
+> T, 2
+
+after T timesteps. Let ¯ω1 := 1
+
+> T
+
+PTt=1 χt
+
+> 1
+
+(St
+
+> 1
+
+) and ¯ω2 := 1
+
+> T
+
+PTt=1 χt
+
+> 2
+
+(St
+
+> 2
+
+) be the empirical marginal sequence-form strategies of the players, respectively. Then, any strategy (χ1, χ 2) that implements (¯ ω1, ¯ω2) is a (RINT  
+
+> 1
+
++ RINT  
+
+> 2
+
+)/T -approximate NE of G.
+
+This ensures that with high probability, the marginals of the sequence-form strategies played by SI-CFR converge to an approximate NE. 10 5.2 Extracting Compact NE via Stochastic Approximation 
+
+Simply minimizing SI-regret is not sufficient to constitute a ‘playable’ Nash equilibrium strategy for the play-ers, since it is only optimal in the marginal sense. One method to deal with this is to compute a ‘compact’ version of the EFGSAS sequence-form NE strategy, the existence of which was established in Theorem 4.13. In the remainder of this section, we outline such a procedure based on stochastic approximation (SA) tech-niques. Due to Theorem 5.2 and Proposition 5.3, SI-CFR outputs a sequence of strategies {χti}t=1 ,...,T such that 1
+
+> T
+
+PTt=1 χti(Sti ) → ω∗ 
+
+> i
+
+as T → ∞ , where ω∗ 
+
+> i
+
+is a marginal sequence-form strategy induced by an (ap-proximate) Nash equilibrium χ∗. Specifically, for a vector Wi ∈ R|Σorig   
+
+> i|≥0
+
+, let ˆχi(σi|Si, W i) be the EFGSAS sequence-form strategy of player i indexed by sequences of the base game σi, given availability sets Si and computed via an appropriate renormalization with Wi as input. Let ˆωi(Wi) be the corresponding marginal distribution where ˆωi(σi|Wi) = ESi∼ρI,i [ ˆ χi(σi|Si, W i)] for all σi ∈ Σi. Then, the proposed SA procedure seeks a root of the problem ˆωi(Wi) = ω∗ 
+
+> i
+
+in the space of ‘compact’ sequence-form strategies. 
+
+Algorithm 2 Stochastic Approximation for Compact NE 
+
+Input: θ1 
+
+> i
+
+a uniform sequence-form strategy 
+
+Input: {χt}t=1 ,...,T a set of sequence-form strategies  
+
+> 1:
+
+for t = 1 , 2, . . . , T do  
+
+> 2:
+
+Observe Sti , compute 1
+
+> t
+
+Ptτ =1 χτi (Sτi ) using χτi (Sτi ) from SI-CFR;  
+
+> 3:
+
+Gti ← 1
+
+> t
+
+Ptτ =1 χτi (Sτi ) − χ′
+
+> i
+
+(θti , S ti ), with χ′
+
+> i
+
+(θti , S ti ) obtained via Algorithm 6;  
+
+> 4:
+
+θt+1  
+
+> i
+
+← θti + ηtGti; 
+
+> 5:
+
+end for  
+
+> 6:
+
+return W Ti = NORMALIZE (θTi )
+
+First, Algorithm 2 utilizes a ‘uniform’ sequence-form initialization, which is simply the sequence-form strategy associated with the uniform behavioral strategy (i.e., if there are k actions at an infoset, each action is played w.p. 1/k ). However, note that any valid sequence-form strategy can be used in the algorithm. At each iteration, Algorithm 2 relies on a renormalization subroutine (defined in Algorithm 6), which ensures that action availabilities are correctly propagated downstream in the EFGSAS sequence-form strategies. For clarity, the final θTi ∈ R|Σorig   
+
+> i|≥0
+
+vector is normalized into a valid sequence-form vector using the operation 
+
+> NORMALIZE
+
+. Moreover, Algorithm 2 utilizes the marginal strategies up to time t of SI-CFR, implying that it can be run in tandem with SI-CFR. The following result ensures that the SA procedure converges asymptotically to a ‘true’ compact vector associated with a NE of G.
+
+Proposition 5.4. Let W Ti be the vector produced by Algorithm 2. Assume that 1
+
+> T
+
+PTt=1 χti(Sti ) → ω∗ 
+
+> i
+
+as 
+
+T → ∞ , and that P∞ 
+
+> t=1
+
+ηt = ∞ and P∞ 
+
+> t=1
+
+η2 
+
+> t
+
+< ∞. Then, almost surely, W Ti → W ∗ 
+
+> i
+
+as T → ∞ where 
+
+W ∗ 
+
+> i
+
+is a compact representation of an EFGSAS sequence-form strategy that implements ω∗ 
+
+> i
+
+.
+
+Beyond asymptotic convergence, we are also interested in finite-time convergence rates to recover W ∗ 
+
+> i
+
+.To this end, we utilize the robust stochastic approximation (RSA) approach introduced by [33, 32], which modifies Algorithm 2 by taking Cesàro means over θ (which we call robust time-averaging ) and utilizing diminishing stepsize schedule ηt = O(1 /√t) (details in Section C.11). Under the RSA procedure, we obtain a finite-time convergence result. Crucially, our bound is given in terms of the duality gap γ (cf. Definition C.9) of the strategies induced by a player utilizing the compact EFGSAS sequence-form vector Wi.
+
+Theorem 5.5. Suppose Algorithm 2 is run for T timesteps with stepsizes O(1 /√t) on a sequence of iterates 
+
+χti where 1
+
+> T
+
+PTt=1 χti(Sti ) → ω∗ 
+
+> i
+
+as T → ∞ . Let ˜W denote the robust time-averaged value of W for both players obtained after T timesteps. Then, for all p ∈ (0 , 1) , with probability at least 1 − p, we have 
+
+γ2( ˜W ) ≤ O
+
+ 1
+
+> p√T
+
+
+
+.
+
+In the upper bound, O(·) hides polynomially-sized constant factors which depend on |Σ|, the maximal size of either player’s sequence-form strategy set in the base game, and |I| , the maximal number of infosets belonging to either player in the base game. Note that these factors depend on Gorig , and not the expanded game G†. Combining the statements of Theorems 5.2 and 5.5 ensure that with high probability, running 11 0 1000 2000 3000 4000 5000       
+
+> Iterations
+> 0
+> 100
+> 200
+> Max SI-Regret
+> P1 avg [max i˜RINT T,i]
+> P2 avg [max i˜RINT T,i]
+> P1 central 95% interval P2 central 95% interval
+
+Figure 3: The max ˆai,ˆa′ 
+
+> i,I
+
+RINT  
+
+> t,I
+
+accrued by SI-CFR for both players. 0 1000 2000 3000 4000 5000    
+
+> Iterations
+> 0.00.20.40.60.81.0
+> Wi
+> P1 avg Wi
+> P2 avg Wi
+> P1 central 95% interval P2 central 95% interval
+> W∗
+> i
+
+Figure 4: W ti entries obtained via the RSA proce-dure. The entries converge to the optimal W ∗ 
+
+> i
+
+values from Example 4.14. RSA in tandem with SI-CFR leads to a compact vector W that encodes a strategy with low duality gap in 2p0s-EFGSAS. Moreover, asymptotic convergence to the theoretically optimal W ∗ holds. 
+
+Example 5.6 (Computing Compact NE using SI-CFR and RSA) . To corroborate our proposed computational procedure, we run SI-CFR and RSA on the game from Example 4.4 with α = 0 , λ = 0 .5. We repeat for 100 runs, sampling the stochastic action availabilities with different random seeds each run. In each plot, we also show the mean and central 95% interval across all runs. Figure 3 shows the maximum SI-regret over all infosets obtained by running SI-CFR, indicating that SI-CFR indeed obtains sublinear SI-regret. Figure 4 shows the computed values of Wi obtained via the RSA procedure outlined in Section 5.2. 
+
+## 6 Discussion and Future Work 
+
+In this paper, we have formalized and studied the properties of strategy representation in EFGSAS, and pro-vided a new algorithm for compact Nash equilibrium computation in 2p0s-EFGSAS. Our analysis leaves open several research directions. First, in this paper we focused on the ex-interim setting of action availabil-ities. However, it is important to study the computational properties of the ex-ante setting and conditions under which similar ‘compactification’ of players’ strategies can be derived. Second, the duality gap bound for computing compact Nash equilibria is relatively loose due to the additional quadratic factor introduced by the RSA procedure. Improving upon this bound using tailored stochastic approximation techniques is crucial. Finally, we have utilized SI-MWU as a sleeping internal regret minimizer for SI-CFR, rather than a ‘standard’ regret matching algorithm. Deriving a suitable notion of ‘SI-RM’ that obtains sublinear SI-regret in EFGSAS would be a significant computational contribution. 
+
+## References 
+
+[1] Anagnostides, I., Farina, G., Kroer, C., Celli, A., Sandholm, T.: Faster no-regret learning dynamics for extensive-form correlated and coarse correlated equilibria. In: Proceedings of the 23rd ACM Conference on Economics and Computation. pp. 915–916 (2022) [2] Auer, P., Cesa-Bianchi, N., Fischer, P.: Finite-time analysis of the multiarmed bandit problem. Machine learning 47 (2), 235–256 (2002) [3] Azuma, K.: Weighted sums of certain dependent random variables. Tohoku Mathematical Journal, Sec-ond Series 19 (3), 357–367 (1967) 12 [4] Blum, A., Mansour, Y.: From external to internal regret. Journal of Machine Learning Research 8(6) (2007) [5] Borkar, V.S.: Stochastic approximation: A dynamical systems viewpoint, vol. 100. Springer (2008) [6] Bowling, M., Burch, N., Johanson, M., Tammelin, O.: Heads-up limit hold’em poker is solved. Science 
+
+347 (6218), 145–149 (2015) [7] Brown, N., Sandholm, T.: Superhuman AI for heads-up no-limit poker: Libratus beats top professionals. Science 359 (6374), 418–424 (2018) [8] Celli, A., Marchesi, A., Farina, G., Gatti, N.: No-regret learning dynamics for extensive-form correlated equilibrium. Advances in Neural Information Processing Systems 33 , 7722–7732 (2020) [9] ˇCern` y, J., Ling, C.K., Kroer, C., Iyengar, G.: Layered graph security games. In: Proceedings of the Thirty-Third International Joint Conference on Artificial Intelligence. pp. 2695–2703 (2024) [10] Drago, S., Mussi, M., Metelli, A.M., et al.: Sleeping reinforcement learning. In: 42nd International Conference on Machine Learning, ICML 2025. pp. 1–60 (2025) [11] Farina, G., Kroer, C., Sandholm, T.: Optimistic regret minimization for extensive-form games via di-lated distance-generating functions. Advances in Neural Information Processing Systems 32 (2019) [12] Farina, G., Kroer, C., Sandholm, T.: Stochastic regret minimization in extensive-form games. In: Inter-national Conference on Machine Learning. pp. 3018–3028. PMLR (2020) [13] Farina, G., Ling, C.K., Fang, F., Sandholm, T.: Efficient regret minimization algorithm for extensive-form correlated equilibrium. Advances in Neural Information Processing Systems 32 (2019) [14] Freund, Y., Schapire, R.E.: Adaptive game playing using multiplicative weights. Games and Economic Behavior 29 (1-2), 79–103 (1999) [15] Gaillard, P., Saha, A., Dan, S.: One arrow, two kills: A unified framework for achieving optimal regret guarantees in sleeping bandits. In: International Conference on Artificial Intelligence and Statistics. pp. 7755–7773. PMLR (2023) [16] Harsanyi, J.C.: Games with incomplete information played by “Bayesian” players part ii. Bayesian equilibrium points. Management science 14 (5), 320–334 (1968) [17] Hart, S., Mas-Colell, A.: A simple adaptive procedure leading to correlated equilibrium. Econometrica 
+
+68 (5), 1127–1150 (2000) [18] Hoda, S., Gilpin, A., Pena, J., Sandholm, T.: Smoothing techniques for computing Nash equilibria of sequential games. Mathematics of Operations Research 35 (2), 494–512 (2010) [19] Hoeffding, W.: Probability inequalities for sums of bounded random variables. Journal of the American Statistical Association 58 (301), 13–30 (1963) [20] Kale, S., Lee, C., Pál, D.: Hardness of online sleeping combinatorial optimization problems. Advances in Neural Information Processing Systems 29 (2016) [21] Kanade, V., McMahan, H.B., Bryan, B.: Sleeping experts and bandits with stochastic action availability and adversarial rewards. In: Artificial Intelligence and Statistics. pp. 272–279. PMLR (2009) [22] Kanade, V., Steinke, T.: Learning hurdles for sleeping experts. ACM Transactions on Computation Theory (TOCT) 6(3), 1–16 (2014) [23] Kleinberg, R., Niculescu-Mizil, A., Sharma, Y.: Regret bounds for sleeping experts and bandits. Ma-chine Learning 80 (2), 245–272 (2010) 13 [24] Kroer, C., Waugh, K., Kilinç-Karzan, F., Sandholm, T.: Faster first-order methods for extensive-form game solving. In: Proceedings of the Sixteenth ACM Conference on Economics and Computation. pp. 817–834 (2015) [25] Kuhn, H.W.: Extensive games and the problem of information. Contributions to the Theory of Games 
+
+2(28), 193–216 (1953) [26] Kushner, H.J., Clark, D.S.: Stochastic approximation methods for constrained and unconstrained sys-tems, vol. 26. Springer Science & Business Media (2012) [27] Lanctot, M., Waugh, K., Zinkevich, M., Bowling, M.: Monte Carlo sampling for regret minimization in extensive games. Advances in Neural Information Processing Systems 22 (2009) [28] Lee, C.W., Kroer, C., Luo, H.: Last-iterate convergence in extensive-form games. Advances in Neural Information Processing Systems 34 , 14293–14305 (2021) [29] Menon, M., Schneider, H.: The spectrum of a nonlinear operator associated with a matrix. Linear Algebra and its applications 2(3), 321–334 (1969) [30] Meta Fundamental AI Research Diplomacy Team (FAIR), Bakhtin, A., Brown, N., Dinan, E., Farina, G., Flaherty, C., Fried, D., Goff, A., Gray, J., Hu, H., et al.: Human-level play in the game of Diplomacy by combining language models with strategic reasoning. Science 378 (6624), 1067–1074 (2022) [31] Moulines, E., Bach, F.: Non-asymptotic analysis of stochastic approximation algorithms for machine learning. Advances in Neural Information Processing Systems 24 (2011) [32] Nemirovski, A., Juditsky, A., Lan, G., Shapiro, A.: Robust stochastic approximation approach to stochastic programming. SIAM Journal on optimization 19 (4), 1574–1609 (2009) [33] Nemirovski, A., Yudin, D.: On Cezari’s convergence of the steepest descent method for approximat-ing saddle point of convex-concave functions. In: Soviet Mathematics. Doklady. vol. 19, pp. 258–269 (1978) [34] Neu, G., Valko, M.: Online combinatorial optimization with stochastic decision sets and adversarial losses. Advances in Neural Information Processing Systems 27 (2014) [35] Nguyen, Q.M., Mehta, N.: Near-optimal per-action regret bounds for sleeping bandits. In: International Conference on Artificial Intelligence and Statistics. pp. 2827–2835. PMLR (2024) [36] Robbins, H., Monro, S.: A stochastic approximation method. The Annals of Mathematical Statistics pp. 400–407 (1951) [37] Romanovskii, I.: Reduction of a game with complete memory to a matrix game. Soviet Mathematics 3,678–681 (1962) [38] Saha, A., Gaillard, P., Valko, M.: Improved sleeping bandits with stochastic action sets and adversarial rewards. In: International Conference on Machine Learning. pp. 8357–8366. PMLR (2020) [39] Schwarz, T., Sim, R., Ling, C.K.: Computing equilibria in games with stochastic action sets. ICLR AIMS Workshop (2026) [40] Von Stengel, B.: Efficient computation of behavior strategies. Games and Economic Behavior 14 (2), 220–246 (1996) [41] Zinkevich, M., Johanson, M., Bowling, M., Piccione, C.: Regret minimization in games with incomplete information. Advances in Neural Information Processing Systems 20 (2007) 14 Appendix 
+
+This supplementary material contains additional preliminaries and algorithmic details for normal-form GSAS in Section A, additional details on SI-CFR in Section B, and proofs omitted from the main paper for space considerations in Section C. 
+
+## A Additional Preliminaries and Algorithms 
+
+A.1 Normal-Form GSAS Setting and Properties 
+
+In this section, we provide preliminaries and relevant properties of normal-form GSAS, as introduced and analyzed by [39]. Consider a n-player normal/strategic-form game Gorig with finite action set Ai, strategy profiles A =
+
+A1 × · · · × An, and utility functions ui : A → [−1, 1] . In line with prevailing conventions, we denote 
+
+a = ( a1, . . . , a n) to be a strategy profile, and as shorthand ui(a) = ui(a1, . . . , a n). We also denote by −i
+
+the set of players other than i, such that uj (a′
+
+> i
+
+, a −i) = uj (a1, . . . , a ′
+
+> i
+
+, . . . , a n).
+
+Definition A.1 (GSAS) . Given a game Gorig = ( A1, . . . , A n, u 1, . . . , u n), let Si ⊆ 2|Ai|\{ ∅} such that 
+
+S = Si × · · · × S n, and ρ ∈ ∆S be a distribution over elements S, such that ρ(S), S ∈ S gives the probability that stochastic action set S is observed. A normal form Game with Stochastic Action Sets is given by the tuple G = ( Gorig , S, ρ ).
+
+Definition A.2 (2p0s-GSAS) . A two-player zero-sum GSAS (2p0s-GSAS) G is one where Gorig is two-player zero-sum, i.e., n = 2 , u 1(a) = −u2(a) for all action profiles a ∈ A.
+
+A GSAS proceeds as follows. At the start of the game, each player privately receives their action set 
+
+Si ∈ S i from Nature based on ρ. Each then plays an action ai ∈ Si simultaneously and receives a reward 
+
+ui(a) based on the strategy profile a ∈ A. While each player i observes its action set Si and might have full knowledge of ρ, they do not observe their opponents’ action set S−i at any point. The analogous independence assumption made for GSAS is: 
+
+Assumption A.3. ρ(S) = Qni ρi(Si) for some probability distributions ρi : Si → [0 , 1] , i.e., the availability of actions is independent across players. 
+
+Despite this assumption, a GSAS remains large since |S i| remains exponential in the size of Ai. A pure strategy in a GSAS is a deterministic mapping πi : Si → Ai where πi(Si) ∈ Si. A mixed strategy (or simply strategy) for player i as a mapping πi : Si → ∆( Ai) such that supp( πi(Si)) ⊆ Si. A player’s strategy gives, for every possible subset of actions they could observe, a distribution of actions corresponding to the observed action subset. Notice that this definition is compatible to strategies in Bayesian games [16]. In particular, since we assume that players have full knowledge of ρ, they can expand the game into a Bayesian game where action availabilities are modeled as ‘types’. Hence, strategies can be viewed as mappings from types of distributions over actions. We further clarify that while this connection is intuitive and immediate in normal-form GSAS, the nuance of the EFGSAS setting is that when the players observe the realization of their action availabilities has a significant effect on the strategy representation. Given a joint action set S ∈ S , π denotes the joint strategy of all players and π(a | S) = Q 
+
+> i∈I
+
+πi(ai |
+
+Si) is the probability of an action profile a for every a ∈ A. The expected payoff to player i is then given by Ui(π) = ES∼ρ
+
+Ea∼π(S)[ui(a)] , where the inner expectation is over the actions sampled independently according to each player’s strategy given their available action sets, and the outer expectation is over the stochastic action set S drawn from ρ. The expected payoff of a specific action ai of player i w.r.t. the ensemble of the opponents’ strategies π−i is given by Ui(ai; π−i) = ES∼ρ
+
+Ea−i∼π−i(S−i)[ui(ai)] .Similarly to the EFG setting, an ϵ-NE of a GSAS is a strategy profile from which no player has incentive to unilaterally deviate, i.e. 15 Ui(πi, π −i) ≥ Ui(π′
+
+> i
+
+, π −i) − ϵ, ∀i ∈ [n], ∀π′
+
+> i
+
+. (5) These definitions extend the classical normal-form Nash equilibrium to GSAS and are consistent with Bayesian games and Bayesian-Nash equilibria [16]. Under Assumption A.3, GSAS have several key properties which were shown in [39]. For the sake of brevity, we review the most relevant properties to our work. First, a player’s expected utility can be written in terms of the marginal distribution over actions ai ∈ Ai induced by strategy πi. In particular, let 
+
+P [ai; ρi, π i] = X
+
+> Si∈S i
+
+(ρi(Si)πi(ai|Si)1{ai ∈ Si}) . (6) Then, the expected utility of a player for joint strategy profile π is 
+
+Ui(π) = X
+
+> a∈A
+
+ui(a) Y
+
+> j∈[n]
+
+P [aj ; ρj , π j ] . (7) An analogous definition of implementable strategies to the EFGSAS setting was also given. 
+
+Definition A.4. Let μi ∈ ∆( Ai) be a probability distribution over player i’s possible actions. μi is called implementable if there exists a strategy πi : Si → ∆( Ai) such that, for every action ai ∈ Ai, μi(ai) = 
+
+P[ai; ρi, π i]. In this case, we also say that πi implements μi, or that π = ( π1, . . . , π n) implements μ =(μ1, . . . , μ n) if πi implements μi for all i. The set of implementable strategies for player i is denoted by 
+
+Mi ⊆ ∆( Ai).
+
+Given a implementable strategy μ, the expected payoff to player i following μ is Ui(μ) =
+
+ES∼ρ [Ea∼μ[ui(a)]] . Then, let Ui(ai; μ−i) = ES∼ρ
+
+Ea−i∼μ−i [ui(ai)] . By definition of μ,
+
+ES∼ρ
+
+Ea∼π(S)[ui(a)]  = ES∼ρ [Ea∼μ[ui(a)]] . Similarly to EFGSAS, implementable strategies suffice to capture NE in GSAS. 
+
+Proposition A.5. Consider a GSAS where π = ( π1, . . . , π n) is a strategy profile that implements μ =(μ1, . . . , μ n). Then π is a ϵ-Nash equilibrium if and only if for all i ∈ [n], Ui(μ) ≥ max μ′ 
+
+> i∈Mi
+
+Ui(μ′
+
+> i
+
+, μ −i) −
+
+ϵ.
+
+A version of the minimax theorem also holds for implementable strategies in 2p0s-GSAS under As-sumption A.3. 
+
+Proposition A.6. For a 2p0s-GSAS, a strategy profile (π∗ 
+
+> 1
+
+, π ∗ 
+
+> 2
+
+) is a NE if and only if their associated (μ∗
+
+> 1
+
+, μ ∗
+
+> 2
+
+)
+
+is a saddle point of the function U = U1 = −U2, i.e., 
+
+μ∗ 
+
+> 1
+
+= argmax 
+
+> μ1∈M1
+
+min 
+
+> μ2∈M2
+
+U (μ1, μ 2), and μ∗ 
+
+> 2
+
+= argmin 
+
+> μ2∈M2
+
+max 
+
+> μ1∈M1
+
+U (μ1, μ 2),
+
+where max μ1∈M1 min μ2∈M2 U (μ1, μ 2) = min μ2∈M2 max μ1∈M1 U (μ1, μ 2).
+
+Moreover, it holds that any implementable NE in Gorig correspond to NE in G. Note that even in the 2p0s-case, Proposition A.7 requires the NE in Gorig , x∗, to be implementable for both players, i.e., x∗ 
+
+> i
+
+being implementable does not imply a solution to the max-min problem (or optimal strategy for player i). 
+
+Proposition A.7. Consider GSAS G = ( Gorig , S, ρ ). Let x∗ = ( x∗
+
+> 1
+
+, . . . , x ∗
+
+> n
+
+) be a ϵ-NE of Gorig , where 
+
+x∗ 
+
+> i
+
+∈ ∆( Ai). If μ∗ = x∗ is implementable in G by π∗ = ( π1, . . . , π n), then π∗ is a ϵ-NE in G.
+
+The above discussion indicates that for the purposes of equilibrium representation, and analogous to the EFGSAS setting, it suffices to work over the space of Mi rather than the larger set of possible πi for the purposes of equilibrium representation. A key result is that in a GSAS satisfying Assumption A.3, every 
+
+μi ∈ Mi can be implemented by a (possibly non-unique) compact, polynomially-sized vector wi. This is formally stated in Lemma C.2. 16 A.2 SI-MWU 
+
+SI-MWU is a modification to the ubiquitous multiplicative weights update (MWU) algorithm [14] that prov-ably minimizes SI-regret in normal-form GSAS. SI-MWU is also closely related to the SI-EXP3 algorithm which was developed by [15] for the sleeping bandit setting [4, 23]. Here, we present the standard implemen-tation of the algorithm, which utilizes MWU as a subroutine. 
+
+Algorithm 3 SI-MWU 
+
+Input: E ← { ai → a′ 
+
+> i
+
+: ai, a ′ 
+
+> i
+
+∈ Ai, a i̸ = a′
+
+> i
+
+};
+
+Input: ˜q1 ←
+
+ 1 
+
+> |E|
+
+, . . . , 1
+
+> |E|
+
+
+
+∈ ∆( E); 
+
+> 1:
+
+for t = 1 , 2, . . . , T do  
+
+> 2:
+
+Observe the set of available action Sti ; 
+
+> 3:
+
+Normalization among awake experts: 
+
+qt(ai → a′
+
+> i
+
+) ← ˜qt(ai → a′
+
+> i
+
+)1{a′ 
+
+> i
+
+∈ Sti }
+
+P 
+
+> bi̸=b′
+> i
+
+˜qt(bi → b′
+
+> i
+
+)1{b′ 
+
+> i
+
+∈ Sti } , ∀ai̸ = a′
+
+> i
+
+; 
+
+> 4:
+
+Calculate πti (Sti ) by solving system πti (Sti ) = P 
+
+> ai̸=a′
+> i
+
+πti,a i→a′
+
+> i
+
+(Sti )qt(ai → a′
+
+> i
+
+); 
+
+> 5:
+
+Play πti (Sti ) and observe ui(·, π t
+
+> −i
+
+); 
+
+> 6:
+
+Update ˜qt+1 (ai → a′
+
+> i
+
+) ∝ ˜qt(ai → a′
+
+> i
+
+)e(−ηℓ t(ai→a′ 
+
+> i))
+
+▷ MWU with ℓt as in (8);  
+
+> 7:
+
+end for 
+
+Sleeping Internal Regret MWU (SI-MWU) is a two-level procedure outline in Algorithm 3 where the upper level manages a vector πti (Sti ) ∈ ∆( Ai) where supp( πti (Sti )) ⊆ Sti . In the lower level, the algorithm maintains |Ai|(|Ai| − 1) ‘experts’ indexed by ai → a′ 
+
+> i
+
+with ai, a ′ 
+
+> i
+
+∈ Ai, a i̸ = a′
+
+> i
+
+, where the expert ai → a′
+
+> i
+
+recommends switching to a′ 
+
+> i
+
+whenever ai is played. In expectation, this is equivalent to switching from 
+
+πti (Sti ) to a strategy πti,a i→a′
+
+> i
+
+(Sti ) ∈ ∆( Ai) where all probability mass of πti (Sti ) on ai is moved to a′
+
+> i
+
+. If, at the lower level, the external regret with respect to all action swaps ai → a′ 
+
+> i
+
+vanishes, then it follows that the SI-regret also vanishes. Hence, MWU is utilized at the lower level, with loss function defined as: 
+
+ℓt(ai → a′
+
+> i
+
+) = 
+
+(ˆℓt(πti,a i→a′
+
+> i
+
+(Sti ), a t
+
+> −i
+
+), if a′ 
+
+> i
+
+∈ Sti
+
+ˆℓt(πti (Sti ), a t
+
+> −i
+
+) otherwise, (8) where for any p ∈ ∆( Ai), ˆℓt(p, a t
+
+> −i
+
+) is given by ˆℓt(p, a t
+
+> −i
+
+) = 1 − P 
+
+> ai∈Ai
+
+p(ai)ui(ai, a t
+
+> −i
+
+).[39] showed that SI-MWU achieves sublinear SI-regret in normal-form GSAS. In particular, for any sequence of available action sets {Sti }t and payoffs {ui(·, a t
+
+> −i
+
+)}t in a GSAS, a player using SI-MWU with stepsizes ηt = p2 log |Ai|/√t enjoys SI-regret bounded by RINT  
+
+> T,i
+
+(ai → a′
+
+> i
+
+) ≤ O(pT log |Ai|) for all 
+
+ai, a ′ 
+
+> i
+
+∈ Ai, a i̸ = a′
+
+> i
+
+. Notice here that the SI-regret is indexed for every pair of available actions in the game, and SI-MWU guarantees sublinear regret for any pair of available actions, under appropriate choice of stepsizes. 
+
+## B CFR and SI-CFR 
+
+B.1 CFR Preliminaries 
+
+Algorithm 4 can be composed recursively to construct an external regret minimizer for any set that is ex-pressed via a chain of scaled extensions (cf. Definition C.3), such as the polytope of sequence-form strategies in a standard EFG. When applied to the polytope of sequence-form strategies, this gives the standard CFR al-gorithm of [41] if all external regret minimizers for the individual simplexes in the chain of scaled extensions are implemented using the regret matching (RM) algorithm [17]. The convergence of the procedure nonethe-less holds for any external regret minimizers, though RM is typically used in practice since it does not require 17 Algorithm 4 (External) Regret Minimizer via Scaled Extension 
+
+Input: Regret minimizer over X ⊆ Rn
+
+> ≥0
+
+: REXT 
+
+> X
+
+Input: Regret minimizer over ∆: REXT 
+
+> ∆
+
+Input: f : X → R+ 
+
+> 1:
+
+for t = 1 , 2, . . . , T do  
+
+> 2:
+
+xt ← strategy from REXT  
+
+> X
+
+; 
+
+> 3:
+
+yt ← strategy from REXT  
+
+> ∆
+
+(i.e. RM/MWU) ;  
+
+> 4:
+
+Play σt := ( xt, f (xt) · yt) 
+
+> 5:
+
+Receive utility ut := ( ut 
+
+> X
+
+, u t
+
+> ∆
+
+) ; 
+
+> 6:
+
+Pass utility ut 
+
+> ∆
+
+to REXT  
+
+> ∆
+
+; 
+
+> 7:
+
+Pass utility ut 
+
+> X
+
++ a · ut
+
+> ∆
+
+(yt) to REXT  
+
+> X
+
+; 
+
+> 8:
+
+end for 
+
+any parameter tuning. Our proposed algorithm, SI-CFR, uses SI-MWU in place of a ‘sleeping internal regret matching’ (SI-RM). Extending our analysis by analyzing SI-regret minimization under an appropriate notion of SI-RM is left for future work. 
+
+B.2 Detailed Description and Discussion of SI-CFR 
+
+A natural idea for solving 2p0s-EFGSAS is to use a sample efficient CFR-type algorithm such as external-sampling MCCFR [27] to obtain sublinear regret bounds for 2p0s-EFGSAS. Unfortunately, several issues arise when applying MCCFR to the expanded game tree: (i) representing a sequence-form strategy is still exponential, and (ii) the convergence bound of MCCFR contains a factor that is upper bounded by the number of infosets in the expanded game G†, which is exponential in our case. We propose a modified version of CFR which we call SI-CFR (Algorithm 1) that exploits the additional structure afforded by EFGSAS, allowing it to be run on the base game Gorig directly. Consider a decision point h for a player with action set Ah. In the naive sequence-form expansion, the player’s strategy has to specify a behavioral strategy for each possible action subset. By utilizing the compact structure outlined earlier, we can instead perform the SI-CFR update in implementable sequence-form space. In particular, our aim is to minimize the SI-regret over the whole game tree. Assume that RINT  
+
+> ∆
+
+is an SI-regret minimizer on the simplex (in SI-CFR we use SI-MWU). Then, one can recursively perform ‘scaled extensions’ of the simplex that constructs sequence-form strategies in the game tree (see e.g. [13] for more details). The full specification of SI-CFR requires some additional notation for clarity. First, SI-CFR is run on a player’s treeplex associated with Gorig , which is partitioned into infosets/decision nodes I and observation nodes K. At a decision node I ∈ I , the player selects an action a ∈ AI . At observation node k ∈ K , player observes a signal from Nature/other players denoted by o ∈ Ok. In EFGSAS, this observation node also includes the action availability of the upcoming infoset. ρ denotes a transition function such that (i) selecting action a at j results in the subsequent node ρ(I, a ) ∈ I ∪ K ∪ {⊥} , and (ii) observing o at k results in subsequent node ρ(k, o ) ∈ I ∪ K ∪ {⊥} . The set of sequences are Σ = {(I, a ) : I ∈ I , a ∈ AI }, and p(I)
+
+denotes the parent of a decision node I. If the player does not act before I (i.e. if I is the root node or there are only observation points preceding it), then p(I) = ∅.SI-CFR needs to maintain a set of |AI |2 ‘experts’ at each infoset I that encode all possible action swaps in the infoset. In Algorithm 5, the N EXT STRATEGY function invokes SI-regret minimizers at each decision point/infoset of the player, which returns a valid sequence-form strategy over the whole treeplex, taking into account the action availabilities. In our setting, in each traversal of the game tree, SI-CFR runs SI-MWU at each infoset, and obtains a behavioral strategy βI at each infoset. Here, we require the ex-interim action disclosure setting, so action availabilities are sampled whenever the player reaches an infoset. At the end of the traversal, a valid sequence-form strategy xt is returned. Then, the O BSERVE UTILITY function updates ‘counterfactual’ utilities in a bottom-up fashion, then propagates these utilities through the tree, which are then used to update the SI-regret minimizer experts at each infoset. In particular, since we use SI-MWU, the 18 Algorithm 5 SI-CFR Pseudocode 
+
+Input: One SI-regret minimizer RINT  
+
+> I
+
+for each infoset I ∈ I 
+
+Input: A set of experts EI ← { a → a′ : a, a ′ ∈ AI,i , a ̸ = a′} at each I ∈ I 
+
+Input: ˜q1 ←
+
+ 1  
+
+> |EI|
+
+, . . . , 1 
+
+> |EI|
+
+
+
+∈ ∆( EI );
+
+Input: Action availability set S 
+
+> 1:
+
+function NEXT STRATEGY (S) 
+
+> 2:
+
+for each infoset I ∈ I do  
+
+> 3:
+
+βtI ∈ ∆( AI ) ← R INT  
+
+> I
+
+.NEXT STRATEGY (StI ) 
+
+> 4:
+
+end for  
+
+> 5:
+
+xt ∈ 0|Σ| 
+
+> 6:
+
+for each infoset I ∈ I in top-down order do  
+
+> 7:
+
+for each action a ∈ StI do  
+
+> 8:
+
+if pI = ∅ then  
+
+> 9:
+
+xt[Ia ] = βtI [a] 
+
+> 10:
+
+else  
+
+> 11:
+
+xt[Ia ] = x[pI ] · βtI [a] 
+
+> 12:
+
+end if  
+
+> 13:
+
+end for  
+
+> 14:
+
+end for  
+
+> 15:
+
+return xt 
+
+> 16:
+
+end function  
+
+> 17:
+
+function OBSERVE UTILITY (ℓ ∈ R|Σ|) 
+
+> 18:
+
+V t ← empty dictionary  
+
+> 19:
+
+V t[⊥] ← 0 
+
+> 20:
+
+for each node in the tree v ∈ I ∪ K in bottom-up order do  
+
+> 21:
+
+if v ∈ I then  
+
+> 22:
+
+Let I = v 
+
+> 23:
+
+V t[I] = P 
+
+> a∈AI
+
+βtI [a] · (ℓt[Ia ] + V t[ρ(I, a )])  
+
+> 24:
+
+else  
+
+> 25:
+
+Let k = v 
+
+> 26:
+
+V t[k] ← P 
+
+> o∈Ok
+
+V t[ρ(k, o )]  
+
+> 27:
+
+end if  
+
+> 28:
+
+end for  
+
+> 29:
+
+for each infoset I ∈ I do  
+
+> 30:
+
+ℓtI ← 0 ∈ R|AI | 
+
+> 31:
+
+for each action a ∈ AI do  
+
+> 32:
+
+ℓtI [a] ← ℓt[Ia ] + V t[ρ(I, a )]  
+
+> 33:
+
+end for  
+
+> 34:
+
+RINT  
+
+> I
+
+.N EXT STRATEGY (ℓtI ) 
+
+> 35:
+
+Update ˜qt using ℓtI according to RINT  
+
+> I
+> 36:
+
+end for  
+
+> 37:
+
+end function 
+
+19 experts are updated using the MWU subroutine utilizing the counterfactual utilities as the loss function as per Algorithm 3 (Line 6). 
+
+## C Omitted Proofs and Technical Details 
+
+C.1 EFGSAS Ex-Interim Expansion Details 
+
+Recall that in an ex-interim EFGSAS G, for each information set I ∈ I i assigned to player i, the action set available at that infoset is given by AI,i . Moreover, ρI,i ∈ ∆( SI,i ) is the probability distribution of observing each action availability subset SI,i = 2 |A I,i |\{ ∅}. Any ex-interim EFGSAS G meeting Assumption 4.2 can be naively expanded into an EFG G† using the following procedure in a top-down traversal: 1. Replace the infoset I ∈ I i with a chance node with children encoding all subsets SI,i . Each edge is associated with the corresponding probability given by ρI,i ∈ ∆( SI,i ).2. Each child of the chance node then incorporates the realizations of action availability sets SI,i ∈SI,i ⊆ A I,i . In particular, each action which is not available is removed from the corresponding action set according to the realized availability set SI,i . For all nodes h within the subtree of SI,i 
+
+and are a decision point of i, move from infoset Ih to a new infoset (Ih, S I,i ) (i.e. preserve perfect recall). All nodes within the subtree of SI,i that are not a decision point of i stay in the same infoset (i.e. do not observe SI,i )
+
+C.2 Ex-Interim Expansion Size Analysis 
+
+We analyze the size of a player’s decision problem in an EFGSAS. Consider the case where at each decision point, the player has a actions with action availabilities encoding every non-empty subset of actions, and the game tree has depth d.Each infoset in the ex-interim expansion is replaced with a chance node enumerating all non-empty subsets of actions. If a child of the chance node has k available actions, after making a decision at that node there are k possible infosets the player could arrive at. Thus, we expand infoset I into: 
+
+X
+
+> SI,i ∈2[a]\∅
+
+|SI,i | = a2a−1 (9) Performing this expansion for every infoset, with l the layer of the tree considered, implies that the l-th layer contributes (a2a−1)l many sequences. Thus, over the entire treeplex, the number of sequences can be lower bounded as 
+
+|Σ† 
+
+> i
+
+| =
+
+> d
+
+X
+
+> l=1
+
+(a2a−1)l (10) 
+
+= (a2a−1)d+1 − a2a−1
+
+a2a−1 − 1 (11) 
+
+≥ (a2a−1)d. (12) 
+
+C.3 Proof of Proposition 4.6 
+
+We use an exchange argument, showing we can incrementally modify any strategy βi to one which, at all infosets that correspond to observing the same SI,i , plays the same distribution. In a bottom up traversal in the EFGSAS game tree of player i’s infosets, for an infoset I ∈ I i and action availability set SI,i , we consider the set M (I, S I,i ) = {I† ∈ I †i | I† an expanded infoset for observing SI,i at I ∈ I i}. We construct a new 20 behavioral strategy β′
+
+> i
+
+, which (i) at an infoset I† ∈ M (I, S I,i ) outputs the ‘average’ strategy played by βi
+
+across M (I, S I,i ), and (ii) at all other infosets plays identically to βi. We show for any joint strategy β−i,
+
+Ui(βi, β −i) = Ui(β′
+
+> i
+
+, β −i). Repeatedly performing this procedure over all the infosets gives us the desired strategy from which we can extract bi.We start by making a key definition and proving a key lemma. We let M (I, S I,i ) be the infosets in I†
+
+which represent observing SI,i at I. Similarly, let M †(I†) be the infosets that represent observing the same action availability set at the same infoset as I†. Formally, for an infoset I ∈ I i and an action availability set 
+
+SI,i ∈ S I,i let 
+
+M (I, S I,i ) := {I† ∈ I †i | I† an infoset for observing SI,i at I ∈ I i} (13) 
+
+M †(I†) := M (obs( I†), S obs( I†),i ) (14) where Sobs( I†),i is the action availability set I† corresponds to observing. 
+
+Lemma C.1. Let βi be a behavioral strategy for G†, I ∈ I i an infoset in G and SI,i ∈ S I,i . Let I† ∈ I † 
+
+> i
+
+be an infoset in G† corresponding to observing SI,i at I.If for any child infoset I†′ ∈ I i of I† we have 
+
+∀I†′′ ∈ M †(I†), β i(I†′) = βi(I†′′ ), (15) 
+
+then we can construct a new behavioral strategy β′ 
+
+> i
+
+for G† such that 
+
+∀β−i, U i(βi, β −i) = Ui(β′
+
+> i
+
+, β −i).
+
+Proof. We define p(a, I †) as the contribution from βi and action availability towards reaching infoset I† and playing action a. Let Q(I†) be the set of action availabilities observed from the root to infoset I†. Let 
+
+p(a, I †) := Y
+
+> (I†,a )⪰(I†′ ,a ′)
+
+βi(a′|I†′) Y
+
+> q∈Q(I†)
+
+ρi(q).
+
+With ˆbi : Si → [0 , 1] , let 
+
+ˆbi(a) := X 
+
+> I†∈M(I,S I,i )
+
+βi(a|I†)p(a, I †) (16) 
+
+β′
+
+> i
+
+(I†′) := 
+
+(
+
+[ˆbi(a1), . . . , ˆbi(a|AI,i |)] if I†′ ∈ M (I, S I,i )
+
+βi(I†′) otherwise (17) For any joint strategy β−i, with hist( z) the set of nodes on the path from the root to node z (which is unique from perfect recall), with ah,z the unique action at h that leads towards node z, we have: 
+
+Ui(βi, β −i) = X
+
+> z∈Z †
+
+ui(z) Y
+
+> h∈hist( z)
+
+βplayer( h)(ah,z |Ih) (18) 
+
+= X
+
+> z∈Z †
+
+ui(z)
+
+Y
+
+> h∈hist( z)player( h)̸=i
+
+βplayer( h)(ah,z |Ih) Y
+
+> h∈hist( z)player( h)= i
+
+βi(ah,z |Ih)
+
+ (19) We split Z† into two disjoint sets Z† 
+
+> M
+
+with terminals whose history includes a node in M (I, S I,i ) and 
+
+Z†¬M with their history never intersecting M (I, S I,i ). Formally, 
+
+Z† 
+
+> M
+
+:= {z ∈ Z † | ∃ h ∈ hist( z) s.t. I† 
+
+> h
+
+∈ M (I, S I,i )}Z†¬M := {z ∈ Z † | ∀ h ∈ hist( z), I † 
+
+> h
+
+/∈ M (I, S I,i )} = Z† \ Z †
+
+> M
+
+21 As these sets are disjoint and include all terminal nodes, 
+
+Ui(βi, β −i) = X
+
+> z∈Z †
+> M
+
+ui(z)
+
+Y
+
+> h∈hist( z)player( h)̸=i
+
+βplayer( h)(ah,z |Ih) Y
+
+> h∈hist( z)player( h)= i
+
+βi(ah,z |Ih)
+
+
+
++ X
+
+> z∈Z †¬M
+
+ui(z)
+
+Y
+
+> h∈hist( z)player( h)̸=i
+
+βplayer( h)(ah,z |Ih) Y
+
+> h∈hist( z)player( h)= i
+
+βi(ah,z |Ih)
+
+ (20) We analyze these two sums individually. For the sum over Z†¬M , by construction of β′ 
+
+> i
+
+and Z†¬M , β′
+
+> i
+
+plays identically to βi i.e. we have ∀z ∈ Z †¬M ∀h ∈ hist( z) with player (h) = i, β i(Ih) = β′
+
+> i
+
+(Ih). Therefore, 
+
+X
+
+> z∈Z †
+> M
+
+ui(z)
+
+Y
+
+> h∈hist( z)player( h)̸=i
+
+βplayer( h)(ah,z |Ih) Y
+
+> h∈hist( z)player( h)= i
+
+βi(ah,z |Ih)
+
+
+
+= X
+
+> z∈Z †
+> M
+
+ui(z)
+
+Y
+
+> h∈hist( z)player( h)̸=i
+
+βplayer( h)(ah,z |Ih) Y
+
+> h∈hist( z)player( h)= i
+
+β′
+
+> i
+
+(ah,z |Ih)
+
+ (21) For the sum over Z†¬M , we consider the sum over the nodes corresponding to a single terminal in the EFGSAS ˆz ∈ Z , formally for ˆz ∈ Z , let Z† 
+
+> M
+
+(ˆ z) = {z ∈ Z † 
+
+> M
+
+| z corresponds to ˆz}. Note Z† 
+
+> M
+
+=
+
+F 
+
+> ˆz∈Z
+
+Z† 
+
+> M
+
+(ˆ z).We also split the product further into whether the node is an action availability chance node, and whether the nodes for player i are a child of I† or not. To this end, let H† 
+
+> ρi
+
+be the set of action availability chance nodes for player i.(21) = X
+
+> ˆz∈Z
+
+ui(ˆ z) X 
+
+> z∈Z †
+> M(ˆ z)
+
+" Y
+
+> h∈hist( z)\H†
+> ρi
+> player( h)̸=i
+
+βplayer( h)(ah,z |Ih) Y  
+
+> h∈hist( z)player( h)= iha descendant of I†
+
+βi(ah,z |Ih)
+
+Y
+
+> h∈hist( z)∩H†
+> ρi
+
+βc(ah,z |Ih) Y    
+
+> h∈hist( z)player( h)= iha parent of I†or h∈I†
+
+βi(ah,z |Ih)
+
+#
+
+(22) As all other players’ infosets are such that they can not distinguish between player i’s received action avail-ability sets, Y
+
+> h∈hist( z)\H†
+> ρi
+> player( h)̸=i
+
+βplayer( h)(ah,z |Ih)
+
+is equal for all z ∈ Z † 
+
+> M
+
+(ˆ z). Similarly, by the condition in Equation (15), 
+
+Y  
+
+> h∈hist( z)player( h)= iha descendant of I†
+
+βi(ah,z |Ih)
+
+22 is also equal for all z ∈ Z † 
+
+> M
+
+(ˆ z). Thus, for any choice of z′ ∈ Z † 
+
+> M
+
+(ˆ z), as for a particular choice of z′ player i
+
+has chosen the same action, and by condition Equation (15), 
+
+= X
+
+> ˆz∈Z
+
+ui(ˆ z) Y 
+
+> h∈hist( z′)\H†
+> ρi
+> player( h)̸=i
+
+βplayer( h)(ah,z ′ |Ih) Y  
+
+> h∈hist( z′)player( h)= iha descendant of I†
+
+βi(ah,z ′ |Ih)
+
+X 
+
+> z∈Z †
+> M(ˆ z)
+
+" Y
+
+> h∈hist( z)∩H†
+> ρi
+
+βc(ah,z |Ih) Y    
+
+> h∈hist( z)player( h)= iha parent of I†or h∈I†
+
+βi(ah,z |Ih)
+
+#! 
+
+(23) By the definition of β′
+
+> i
+
+, the inner sum takes equal value when performed over βi or β′
+
+> i
+
+. By definition of β′
+
+> i
+
+,for all terms outside the inner sum, βi(ah,z ′ |Ih) = β′
+
+> i
+
+(ah,z ′ |Ih). Thus we have 
+
+= X
+
+> ˆz∈Z
+
+ui(ˆ z) Y
+
+> h∈hist( z′)\H†
+> ρi
+> player( h)̸=i
+
+βplayer( h)(ah,z ′ |Ih) Y  
+
+> h∈hist( z′)player( h)= iha descendant of I†
+
+β′
+
+> i
+
+(ah,z ′ |Ih)
+
+X 
+
+> z∈Z †
+> M(ˆ z)
+
+" Y
+
+> h∈hist( z)∩H†
+> ρi
+
+βc(ah,z |Ih) Y    
+
+> h∈hist( z)player( h)= iha parent of I†or h∈I†
+
+β′
+
+> i
+
+(ah,z |Ih)
+
+#! 
+
+(24) 
+
+= X
+
+> z∈Z †M
+
+ui(z)
+
+Y
+
+> h∈hist( z)player( h)̸=i
+
+βplayer( h)(ah,z |Ih) Y
+
+> h∈hist( z)player( h)= i
+
+β′
+
+> i
+
+(ah,z |Ih)
+
+ (25) Substituting Equation (19) and Equation (25) into Equation (20) gives 
+
+Ui(βi, β −i) = X
+
+> z∈Z †
+> M
+
+ui(z)
+
+Y
+
+> h∈hist( z)player( h)̸=i
+
+βplayer( h)(ah,z |Ih) Y
+
+> h∈hist( z)player( h)= i
+
+β′
+
+> i
+
+(ah,z |Ih)
+
+
+
++ X
+
+> z∈Z †¬M
+
+ui(z)
+
+Y
+
+> h∈hist( z)player( h)̸=i
+
+βplayer( h)(ah,z |Ih) Y
+
+> h∈hist( z)player( h)= i
+
+β′
+
+> i
+
+(ah,z |Ih)
+
+ (26) 
+
+= X
+
+> z∈Z †
+
+ui(z)
+
+Y
+
+> h∈hist( z)player( h)̸=i
+
+βplayer( h)(ah,z |Ih) Y
+
+> h∈hist( z)player( h)= i
+
+β′
+
+> i
+
+(ah,z |Ih)
+
+ (27) 
+
+= Ui(β′
+
+> i
+
+, β −i) (28) as required. We now give the proof of Proposition 4.6. 
+
+Proof. Perform a bottom up traversal of the EFGSAS decision tree, and for each infoset I ∈ I i and for each action availability set SI,i ∈ S I,i , consider M (I, S I,i ). Note that since we perform a bottom-up traversal, the condition Equation (15) is met. If there exist infosets I†, I †′ ∈ M (I, S I,i ) such that I†̸ = I†′ and βi(I†)̸ =
+
+23 βi(I†′), apply Lemma C.1 to construct a new behavioral strategy β′ 
+
+> i
+
+with ∀β−i, U i(βi, β −i) = Ui(β′
+
+> i
+
+, β −i),and continue the traversal with β′
+
+> i
+
+.At the end of the bottom-up traversal we have a behavioral strategy β′ 
+
+> i
+
+such that 
+
+∀I ∈ I i ∀SI,i ∈ S I,i ∀I†, I †′ ∈ M (I, S I,i ), β ′
+
+> i
+
+(I†) = β′
+
+> i
+
+(I†′). (29) Define M ′ : Si → I † 
+
+> i
+
+to, for each SI,i , pick an arbitrarily element from M (I, S I,i ). Using Equation (29), we can define bi : {S I,i | I ∈ I i} → ∪ I∈I i ∆( AI ) so that 
+
+bi(SI,i ) = β′
+
+> i
+
+(M ′(SI,i )) . (30) Note that by Equation (29), any arbitrary choice made by M ′ results in the same expected utility. In addition, note that by the construction of β′ 
+
+> i
+
+from a valid EFGSAS strategy βi we have ∀SI,i ∈ S i, supp( β′
+
+> i
+
+(SI,i )) ⊆
+
+SI,i and thus supp( bi(SI,i )) ⊆ SI,i . Furthermore by the transitive property of equality, which was main-tained throughout the exchange argument, ∀β−i, U i(βi, β −i) = Ui(β′
+
+> i
+
+, β −i). Defining ˆβi(I†) = bi(obs( I†)) 
+
+thus gives us Ui(βi, β −i) = Ui( ˆβi, β −i) as required. 
+
+C.4 Proof of Proposition 4.11 
+
+Proof. ( ⇐= ) Consider a strategy ω which is implemented by χ. We have that Ui(ω) ≥
+
+max ω′ 
+
+> i∈Ωi
+
+Ui(ω′
+
+> i
+
+, ω −i) − ϵ. Expanding the expression for expected utility of χ and substituting the equivalent expected utility for its corresponding behavioral strategy b, we get: 
+
+Ui(χ) = ES∼ρ
+
+"X
+
+> z∈Z
+
+P(z|b(S), r ) · ui(z)
+
+#
+
+(31) 
+
+= X
+
+> z∈Z
+
+ui(z) Y
+
+> i∈N
+
+P[z|μi, r ] (32) 
+
+= Ui(ω) (33) 
+
+≥ max 
+
+> ω′
+> i∈Ωi
+
+Ui(ω′
+
+> i
+
+, ω −i) − ϵ (34) 
+
+= max 
+
+> bi
+
+X
+
+> z∈Z
+
+ui(z)P[z|μi, r ] · X
+
+> z∈Z
+
+u−i(z) Y
+
+> −i
+
+P[z|μ−i, r ] − ϵ (35) 
+
+= max 
+
+> χ′
+> i
+
+Ui(χ′
+
+> i
+
+, χ −i) − ϵ (36) where we utilize the fact that μI,i (a) = P[a; ρI,i , b i] and the payoff equivalence between EFGSAS behavioral and sequence-form strategies on the DAG-plex. The proof for the forward direction is similar. 
+
+C.5 Proof of Proposition 4.12 
+
+Proof. Consider (χ∗
+
+> 1
+
+, χ ∗
+
+> 2
+
+) that implements (ω∗ 
+
+> 1
+
+, ω ∗ 
+
+> 2
+
+). By definition of implementable strategies and Propo-sition 4.6, it follows that U (χ∗
+
+> 1
+
+, χ ∗
+
+> 2
+
+) = U (ω∗ 
+
+> 1
+
+, ω ∗ 
+
+> 2
+
+) when χ implements ω. Then, invoking von Neumann’s minimax theorem ensures that the statement holds. 
+
+C.6 Proof of Theorem 4.13 
+
+Proof. First, we consider an arbitrary infoset I of the EFGSAS. Let I have action set AI,i and action avail-ability distribution ρI,i . Then, we will require the following lemma adapted from [39], which establishes that, under Assumption A.3, the behavioral strategy at the infoset can be represented compactly. In particular, the lemma was originally written for a mixed strategy π : S → ∆( A) in the normal-form GSAS setting. Here, μ
+
+denotes implementable strategies in the normal-form sense (as given in Definition A.4). 24 Lemma C.2. Consider a normal-form GSAS G = ( Gorig , S, ρ ). Let πi be a normal-form mixed strategy that implements μi ∈ Mi. Then, there exists some π′ implementing μi and wi ∈ ∆( Ai) where π′
+
+> i
+
+(ai | Si) =     
+
+> wi(ai)1{ai∈Si}P
+> a′
+> i∈Aiwi(a′
+> i)1{a′
+> i∈Si}
+
+for all Si ∈ S i, a i ∈ Ai.
+
+The proof of Lemma C.2 relies on a linear algebraic result [29] which establishes the existence of a vector which captures any possible action subset Si ∈ S i under an appropriate rescaling. We will adapt the above in order to show the existence of a ‘compact’ implementable sequence-form strategy in EFGSAS satisfying Assumption 4.2. Crucially, the existence of an implementable behavioral strategy over all infosets holds because at each infoset, by Lemma C.2 there exists an EFGSAS behavioral strategy bi that implements ωi and admits compact 
+
+wI,i so that 
+
+bi(a|SI,i ) = wI,i (a)1{a ∈ SI,i }
+
+P 
+
+> a′∈AI,i
+
+wI,i (a′)1{a′ ∈ SI,i } (37) Then, the existence of an implementable sequence-form follows trivially from [40], since the EFGSAS has perfect recall. Moreover, given a set of action availability sets Si = [ S1,i , . . . , S |I i|,i ] associated with player 
+
+i in an EFGSAS, the compact vectors wi belonging to player i at each infoset can be used to recover their EFGSAS sequence-form strategy χi(Si) over an ensemble of action availabilities Si using the relation 
+
+χi[ξa ] = χi[ξ] · wI,i (a)1{a ∈ SI,i }
+
+P 
+
+> a′∈AI,i
+
+wI,i (a′)1{a′ ∈ SI,i } (38) for all a ∈ AI,i , SI,i ∈ S I,i and I ∈ I i.Indeed, the existence of wI,i at each infoset ensures that there exists a compact Wi ∈ R|Σorig   
+
+> i|≥0
+
+defined on the set of sequences in the base EFG Gorig . The relation in Equation (38) can be extended to compact sequence-form vectors given a sampled action availability subset, the full procedure of which is given in Al-gorithm 6. To this end, any player’s sequence-form strategy in an EFGSAS can be represented as a collection of vectors wI,i , each of size |AI,i | and constructed according to Si in time linear in P 
+
+> I∈I i
+
+|AI,i |. However, for representational purposes, it is often more practical to work in the space of sequence-form strategies, and so we focus on the compact sequence-form vectors Wi ∈ R|Σorig   
+
+> i|≥0
+
+. This leads to a possibly exponential repre-sentation improvement compared to the expanded game G†, which is required to explicitly define strategies in G (cf. Section 4.1). 
+
+C.7 Calculation of NE Compact Vectors in Example 4.14 
+
+We focus on the setting α = 0 (i.e. at first decision point, {H1, T 1} are both always available) and λ ∈ [0 , 1] .Let the attacker choose H1 at A with probability p, and the defender choose H with probability q.As H1T2 and T1H2 are strictly dominated by strategies H1H2 and T1T2, the attacker will never choose these actions unless forced to by the stochastic action availability. Therefore, in the NE the defender wins either when (i) the defender chooses H and the attacker either also chooses H1, or chose T1 and was forced at the second decision point to choose H2 or (ii) both players choose T :
+
+P[defender wins ] = pq + p(1 − q)λ + (1 − p)(1 − q) (39) Given that the defender seeks to maximize the chance of intersection, and attacker seeks to minimize it, the above can be written as a min-max problem, and applying the minimax theorem yields: 
+
+max  
+
+> q
+
+min  
+
+> p
+
+[pq + p(1 − q)λ + (1 − p)(1 − q)] (40) 
+
+= min  
+
+> p
+
+max  
+
+> q
+
+[pq + p(1 − q)λ + (1 − p)(1 − q)] (41) 25 Solving this gives p = 12−λ and q = 1 − 12−λ .Since the defender has no stochastic action availabilities, we can write their sequence-form NE strategy directly. For the attacker, since α = 0 , the sequence form entries for the first decision point can also be written directly. For the second decision point, since H1T2 and T1H2 are strictly dominated, the attacker will never play them unless forced and the corresponding entries can be set to zero. The remaining sequences can be set so as to conserve probability mass: 
+
+W ∗ 
+
+> 1
+
+=
+
+
+
+1, 1 − 12 − λ , 12 − λ
+
+
+
+, W ∗ 
+
+> 2
+
+=
+
+
+
+1, 12 − λ , 1 − 12 − λ , 12 − λ , 0, 0, 1 − 12 − λ
+
+
+
+Setting λ = 0 .5 gives the compact NE vectors desired for Example 4.14. 
+
+C.8 Proof of Theorem 5.2 
+
+Proof. The proof of this result consists of two major steps: • Step (i): we show that the total expected SI-regret of the SI-CFR procedure is bounded by O(√T )
+
+after T traversals of the game tree, and • Step (ii): we show that with high probability, a sampled sequence of SI-regrets approaches the expected regret bound. In order to show Step (i), we need to utilize the notion of scaled extensions introduced in [13]: 
+
+Definition C.3 (Scaled Extension) . Let X and Y be nonempty, compact and convex sets, and let f → R≥0
+
+be a non-negative affine real function. The scaled extension of X with Y via f , where f (x) = ⟨a, x ⟩ + b is defined by the set: 
+
+X f
+
+◁ Y := {(x, y ) : x ∈ X , y ∈ f (x)Y} . (42) In SI-CFR as defined in Algorithm 1, the induction starts from a leaf infoset, and our goal is to bound the total SI-regret by utilizing the fact that at each infoset, we run an SI-regret minimizer (SI-MWU, in our case) whose SI-regret is bounded by O(pT log( |AI,i |). First, given two convex, compact sets X and ∆, we show an auxiliary lemma which bounds the overall SI-regret of the scaled extension of X by ∆.
+
+Lemma C.4. Let RINT  
+
+> T,i
+
+(Y) be the SI-regret of the scaled extension Y := X f
+
+◁ ∆, where ∆ and X are nonempty, compact and convex sets. Then, the following holds 
+
+RINT  
+
+> T,i
+
+(Y)+ ≤ RINT  
+
+> T,i
+
+(X )+ + RINT  
+
+> T,i
+
+(∆) + (43) 
+
+Proof of Lemma C.4. Define [x]+ = max( x, 0) . For simplicity, we will work in the space of normal-form strategies associated with the implementable sequence-form strategies Σi. We first show a relationship be-tween the expected sleeping external regret for a normal-form strategy which is a scaled extension of a normal-form strategy in the simplex. Concretely, the notion of Sleeping External Regret (SE-Regret) was introduced in [4, 23]. 
+
+Definition C.5 (Sleeping External Regret) . For any strategy xi ∈ X i, the sleeping external regret for player 
+
+i is defined as: 
+
+RT,i (x) := E
+
+" TX
+
+> t=1
+
+1{xi ∈ Sti }(ui(xi, x t
+
+> −i
+
+) − ui(xti, x t
+
+> −i
+
+)) 
+
+#
+
+where the expectation is taken over the randomness of action availabilities and player strategies. 
+
+26 In other words, the sleeping external regret captures the amount that player i benefits if they always swapped to strategy xi in their strategy set Xi for all t ∈ [T ] where possible, regardless of the original (distri-bution over) strategies xti taken. Then, by definition of the scaled extension, the non-negative component of the SE-regret for Y is given by 
+
+[RT,i (Y)] +
+
+=
+
+"
+
+max  
+
+> x∈X ,y ∈∆m
+
+(
+
+E(StX ,S t
+
+> ∆)∼ρX, ∆
+
+" TX
+
+> t=1
+
+1[x ∈ StX , y ∈ St
+
+> ∆
+
+] ut 
+
+> X
+
+(x)+ (44) 
+
+f (x)ut
+
+> ∆
+
+(y) − ut 
+
+> X
+
+(xt) − f (xt)ut
+
+> ∆
+
+(yt)#)# +
+
+=
+
+"
+
+max  
+
+> x∈X ,y ∈∆m
+
+(
+
+EStX ∼ρX ,S t
+
+> ∆∼ρ∆
+
+" TX
+
+> t=1
+
+1[x ∈ StX , y ∈ St
+
+> ∆
+
+] ut 
+
+> X
+
+(x)+ (45) 
+
+f (x)ut
+
+> ∆
+
+(y) − ut 
+
+> X
+
+(xt) − f (xt)ut
+
+> ∆
+
+(yt)#)# +
+
+=
+
+"
+
+max  
+
+> x∈X ,y ∈∆m
+
+(
+
+EStX ∼ρX ,S t
+
+> ∆∼ρ∆
+
+" TX
+
+> t=1
+
+1[x ∈ StX , y ∈ St
+
+> ∆
+
+] ut 
+
+> X
+
+(x)−
+
+ut 
+
+> X
+
+(xt) − f (xt)ut
+
+> ∆
+
+(yt)#)# +
+
+| {z }
+
+> (A)
+
++
+
+"
+
+max  
+
+> x∈X ,y ∈∆m
+
+(
+
+EStX ∼ρX ,S t
+
+> ∆∼ρ∆
+
+" TX
+
+> t=1
+
+1[x ∈ StX , y ∈ St
+
+> ∆
+
+]  f (x)ut
+
+> ∆
+
+(y)#)# +
+
+| {z }
+
+> (B)
+
+(46) The first term (A) in the summand will bound regrets in X , while (B) will bound regrets in ∆. We will begin with the first. 
+
+(A) = 
+
+"
+
+max  
+
+> x∈X ,y ∈∆m
+
+(
+
+EStX ∼ρX ,S t
+
+> ∆∼ρ∆
+
+" TX
+
+> t=1
+
+1[x ∈ StX , y ∈ St
+
+> ∆
+
+] ut 
+
+> X
+
+(x)− (47) 
+
+ut 
+
+> X
+
+(xt) − f (xt)ut
+
+> ∆
+
+(yt)#)# +
+
+=
+
+"
+
+max  
+
+> x∈X ,y ∈∆m
+
+(
+
+EStX ∼ρX ,S t
+
+> ∆∼ρ∆
+
+" TX
+
+> t=1
+
+1[x ∈ StX ]1[y ∈ St
+
+> ∆
+
+] ut 
+
+> X
+
+(x)− (48) 
+
+ut 
+
+> X
+
+(xt) − f (xt)ut
+
+> ∆
+
+(yt)#)# +
+
+=
+
+"
+
+max   
+
+> x∈X ,y ∈∆m
+
+P[y ∈ S∆] ·
+
+(
+
+EStX ∼ρX
+
+" TX
+
+> t=1
+
+1[x ∈ StX ] ut 
+
+> X
+
+(x)− (49) 
+
+ut 
+
+> X
+
+(xt) − f (xt)ut
+
+> ∆
+
+(yt)#)# +
+
+There are two cases for the equality above. 
+
+Case 1: The term in the maximum is negative, so the entire expression evaluates to zero, which is clearly 
+
+≤ [RT,i (X )] +.27 Case 2: It is non-negative. Fix y∗ to be the argument achieving the maximum. The expression is then equal to 
+
+P[y∗ ∈ S∆] max 
+
+> x∈X
+
+(
+
+EStX ∼ρX
+
+" TX
+
+> t=1
+
+1[x ∈ StX ]  ut 
+
+> X
+
+(x) − ut 
+
+> X
+
+(xt) − f (xt)ut
+
+> ∆
+
+(yt)#) | {z }
+
+> ≥0
+
+≤ max 
+
+> x∈X
+
+(
+
+EStX ∼ρX
+
+" TX
+
+> t=1
+
+1[x ∈ StX ]  ut 
+
+> X
+
+(x) − ut 
+
+> X
+
+(xt) − f (xt)ut
+
+> ∆
+
+(yt)#) 
+
+≤[RT,i (X )] +
+
+Combining both cases, we have (A) ≤ [RT,i (X )] +.Now let us consider (B). The method is similar: if (B) is negative, then it is by definition bounded by 
+
+[RT,i (∆ m)] +. If it is non-negative, let x∗ be the argument maximizing it, such that 
+
+(B) = max  
+
+> x∈X ,y ∈∆m
+
+(
+
+EStX ∼ρX ,S t
+
+> ∆∼ρ∆
+
+" TX
+
+> t=1
+
+1[x ∈ StX , y ∈ St
+
+> ∆
+
+]  f (x)ut
+
+> ∆
+
+(y)#) 
+
+= P[x∗ ∈ SX ] max 
+
+> y∈∆m
+
+(
+
+ESt
+
+> ∆∼ρ∆
+
+" TX
+
+> t=1
+
+1[y ∈ St
+
+> ∆
+
+]  f (x∗)ut
+
+> ∆
+
+(y)#) 
+
+≤ f ∗[RT,i (∆ m)] +
+
+≤ [RT,i (∆ m)] +
+
+Combining the inequalities from (A) and (B), we have 
+
+[RT,i (Y)] + ≤ [RT,i (X )] + + [ RT,i (∆ m)] +. (50) In other words, the sleeping external regret in Y, if non-negative, is upper bounded by the sum of the (non-negative) sleeping external regrets within X and ∆ respectively. Next, we use the inequality above to bound the SI-regret of the strategy Y. Indeed, by definition, the SE-regret for an action replacement in Y is the sum of the SI-regrets over all actions in Y. However, for the inequality to hold in SI-regret, we require the further restriction that each SI-regret term in all actions is non-negative by taking RINT  
+
+> T,i
+
+(∆) + for any ∆ in every infoset of the game. Then, this ensures that we have: 
+
+RINT  
+
+> T,i
+
+(Y)+ ≤ [RINT  
+
+> T,i
+
+(X )] + + [ RINT  
+
+> T,i
+
+(∆ m)] +. (51) This completes the proof. Under Lemma C.4, we have established that the SI-regrets are bounded in the normal-form strategy formalism , but this also implies the boundedness of SI-regrets in the sequence-form strategy space [8]. With this, an inductive argument starting from the leaf infosets and applying the inequality to the imple-mentable sequence-form strategy of the player in reverse topological order suffices to conclude that the max-imal cumulative SI-regret over the whole game tree is bounded by O(√T ). In particular, [39, Theorem 5.4] showed that over a probability simplex in a normal-form GSAS, the SI-regret of SI-MWU is bounded by 
+
+O(pT log( |Ai|)) . Thus, we have 
+
+RINT 
+
+> T,i
+
+ ≤ X
+
+> I∈I i
+
+RINT 
+
+> T,I,i
+
+ ≤ |I i| · 
+
+q
+
+log( |AI,i |)T ≤ O(|Σorig  
+
+> i
+
+|√T ) (52) Hence, the regret grows with the size of the implementable sequence-form strategy space, rather than the naive expanded sequence-form strategy space. 28 We now proceed to show Step (ii). Thus far we have worked in the space of expectations over ρ,assuming that the counterfactual SI-regrets obtained are precisely aligned with the expectation over action availabilities and strategies. Next, we consider the fact that our procedure is effectively ‘external-sampling’ MCCFR [27], in the sense that at each infoset, instead of expanding the game tree using the naive expansion procedure, we simply run SI-MWU on the sampled realization of the action availabilities. In order to derive a high-probability bound, we can apply the Azuma-Hoeffding inequality on the cumulative SI-regrets at each infoset. 
+
+Theorem C.6 (Azuma-Hoeffding Inequality [3, 19]) . Let Y1, . . . , Y N be a martingale difference sequence with ak ≤ Yk ≤ bk for each k, for suitable constants ak, b k. Then, for any τ ≥ 0:
+
+P
+
+" NX
+
+> k=1
+
+Yk ≥ ϵ
+
+#
+
+≤ exp − 2ϵ2
+
+PNk=1 (bk − ak)2
+
+!
+
+Consider the (expected) SI-regret at a leaf infoset, denoted RINT  
+
+> T,i
+
+(∆) . We first show the following lemma on the sampled SI-regrets at the infoset, utilizing the Azuma-Hoeffding inequality. 
+
+Lemma C.7. Suppose a SI-regret minimizer is run for T timesteps on leaf infoset I with strategy set ∆ of dimension AI,i and utilities ui : AI,i → [−1, 1] . Let ˜RINT  
+
+> T,i
+
+(∆) denote the sampled SI-regrets in time T . Then, for all p ∈ (0 , 1) ,
+
+P
+
+"
+
+max 
+
+> ∆
+
+˜RINT  
+
+> T,i
+
+(∆) − RINT  
+
+> T,i
+
+(∆) ≥
+
+s
+
+8T log 
+
+ 2|AI,i || AI,i − 1|
+
+p
+
+#
+
+≤ p. 
+
+Proof of Lemma C.7. Given there are |AI,i | actions at a leaf infoset, the SI-regret at I encodes the sum of regrets for each action replacement across T samples, which gives |AI,i |(|AI,i | − 1) random variables. Consider an arbitrary such R.V. associated with an action replacement a → a′, which we denote by ˜RINT  
+
+> t
+
+.Here, the instantaneous SI-regret is defined for the subset of {T } where both a, a ′ are available. Denote by E[RINT  
+
+> t
+
+] the expected SI-regret obtained at time t, and observe that for any strategy xt, −2 ≤ ˜RINT  
+
+> t
+
+−
+
+E[ ˜RINT  
+
+> t
+
+] ≤ 2. Moreover, E[ ˜RINT  
+
+> t
+
+− E[ ˜Rt]] = 0 , so the sequence { ˜RINT  
+
+> t
+
+− E[ ˜RINT t]}Tt=1 is a martingale difference sequence. Then, by Theorem C.6, we get that for every action replacement pair a, a ′ ∈ AI,i , a̸ = a′:
+
+P[ ˜RINT  
+
+> T,i
+
+− RINT  
+
+> T,i
+
+≥ ϵ] = P[
+
+> T
+
+X
+
+> t=1
+
+˜Rt(a, a ′) −
+
+> T
+
+X
+
+> t=1
+
+E[ ˜Rt(a, a ′)] ≥ ϵ] (53) 
+
+≤ exp − 2ϵ2
+
+PTt=1 (2 − (−2)) 2
+
+!
+
+(54) 
+
+= exp 
+
+
+
+− ϵ2
+
+8T
+
+
+
+(55) The inequality P[ ˜RINT  
+
+> T,i
+
+− RINT  
+
+> T,i
+
+≤ − ϵ] ≤ exp 
+
+
+
+− ϵ2
+
+> 8T
+
+
+
+is also true, so applying the union bound we get: 
+
+P[| ˜RINT  
+
+> T,i
+
+− RINT  
+
+> T,i
+
+| ≥ ϵ] ≤ 2 exp 
+
+
+
+− ϵ2
+
+8T
+
+
+
+(56) We wish to bound the probability that the maximum error over all |AI,i |(|AI,i | − 1) R.V.s (i.e., one for each action replacement) is large, which can be done using the union bound: 
+
+P[max  
+
+> ∆
+
+| ˜RINT  
+
+> T,i
+
+(∆) − RINT  
+
+> T,i
+
+(∆) | ≥ ϵ] ≤ X
+
+> (a,a ′)
+
+P[| ˜RINT  
+
+> T,i
+
+− RINT  
+
+> T,i
+
+| ≥ ϵ] (57) 
+
+≤ 2|Ai|| Ai − 1| exp 
+
+
+
+− ϵ2
+
+8T
+
+
+
+(58) 29 Finally, substituting ϵ =
+
+r
+
+8T log 
+
+ 2|AI,i || AI,i −1|
+
+> p
+
+
+
+yields the statement. Next, we proceed with the proof of Step (ii) utilizing Lemma C.7. A similar chain of inequalities as in Equation (52) can be derived in order to obtain a probablistic bound over all infosets. In particular, we have that RINT  
+
+> T,i
+
+≤ O(|Σorig  
+
+> i
+
+|√T ), and so we get that for any p ∈ (0 , 1) , it holds that 
+
+P
+
+"
+
+| ˜RINT  
+
+> T,i
+
+− RINT  
+
+> T,i
+
+| ≥ | Σorig  
+
+> i
+
+|
+
+s
+
+T log 
+
+ 1
+
+p
+
+#
+
+. (59) 
+
+C.9 Proof of Proposition 5.3 
+
+Proof. Since ¯ω1, ¯ω2 are the empirical marginal distributions of players’ sequence-form strategies that achieve sublinear SI-regret, we have 
+
+max 
+
+> ω′
+> 1
+
+U1(ω′
+
+> 1
+
+, ¯ω2) − U1(¯ ω1, ¯ω2) ≤ 1
+
+T RINT 
+
+> T, 1
+
+and 
+
+max 
+
+> ω′
+> 2
+
+U2(¯ ω1, ω ′
+
+> 2
+
+) − U2(¯ ω1, ¯ω2) ≤ 1
+
+T RINT 
+
+> T, 2
+
+Moreover, letting U := U1 = −U2 and summing the above, we have 
+
+max 
+
+> ω′
+> 1
+
+U (ω′
+
+> 1
+
+, ¯ω2) − min 
+
+> ω′
+> 2
+
+U (¯ ω1, ω ′
+
+> 2
+
+) ≤ 1
+
+T RINT  
+
+> T, 1
+
++ 1
+
+T RINT  
+
+> T, 2
+
+(60) The maxmin strategy can be bounded as 
+
+max 
+
+> ω′
+> 1
+
+min 
+
+> ω′
+> 2
+
+U (ω′
+
+> 1
+
+, ω ′
+
+> 2
+
+) ≥ min 
+
+> ω′
+> 2
+
+U (¯ ω1, ω ′
+
+> 2
+
+) (61) 
+
+≥ max 
+
+> ω′
+> 1
+
+U (ω′
+
+> 1
+
+, ¯ω2) − 1
+
+T
+
+ RINT  
+
+> T, 1
+
++ RINT 
+
+> T, 2
+
+ (62) 
+
+≥ min 
+
+> ω′
+> 2
+
+max 
+
+> ω′
+> 1
+
+U (ω′
+
+> 1
+
+, ω ′
+
+> 2
+
+) − 1
+
+T
+
+ RINT  
+
+> T, 1
+
++ RINT 
+
+> T, 2
+
+ (63) Then, by the minimax theorem for implementable sequence-form strategies in EFGSAS (Proposition 4.12), it follows that (¯ ω1, ¯ω2) is an RINT   
+
+> 1+RINT
+> 2
+> T
+
+-approximate NE of G. In particular, since any (sequence-form) strat-egy (χ1, χ 2) that implements (¯ ω1, ¯ω2) has U (ω1, ω 2) = U (¯ ω1, ¯ω2), such a (χ1, χ 2) is also a RINT   
+
+> 1+RINT
+> 2
+> T
+
+-approximate NE of G.
+
+C.10 Proof of Proposition 5.4 
+
+Proof. First, as a consequence of Theorem 4.13, the existence of a set of compact vectors wI,i encoding per-infoset implementable behavioral strategies also implies the existence of a ‘global’ Wi ∈ R|Σorig   
+
+> i|≥0
+
+, defined on the set of sequences in the base game. This can be constructed easily using wI,i , and we note that for representational purposes it is often more useful to work in the space of sequence-form strategies. Let us rewrite the update of θti as a stochastic approximation (SA) procedure in the sense of [36]. It is well known that the asymptotic behavior of the SA iterates can be characterized by the stability of a limiting ODE [26, 5]. 30 Suppose we have a sequence of EFGSAS sequence-form strategies {χti}Tt=1 such that 1
+
+> T
+
+PTt=1 χti(Sti ) →
+
+ω∗ where ω∗ is the marginal sequence-form strategy induced by some Nash equilibrium χ∗. Unlike in normal-form games, the vector of sequence-form strategies for a player does not lie in a simplex. As such, we require an additional renormalization procedure that recovers a valid sequence-form strategy given an original sequence-form strategy and the action availability set Si. Intuitively, action availabilities need to be consistent within sequences: if an action is unavailable at a decision point, probability mass should be diverted away from sequences that contain that action over all infosets, not just at that decision point. We formalize this procedure, parametrized by a ‘primal’ sequence-form strategy χ ∈ R|Σorig   
+
+> i|≥0
+
+and action availability sets S,in Algorithm 6. Note that the renormalization process requires time linear in |Σorig  
+
+> i
+
+|.
+
+Algorithm 6 EFGSAS Sequence-Form Renormalization 
+
+Input: χ, S 
+
+> 1:
+
+χ′(∅) ← 1 
+
+> 2:
+
+for I ∈ I in topological order do  
+
+> 3:
+
+Let ξ be parent sequence to infoset I 
+
+> 4:
+
+if χ′[ξ] > 0 then  
+
+> 5:
+
+WI ← P 
+
+> a′∈AI
+
+χ[ξa ′] · I{a′ ∈ SI } 
+
+> 6:
+
+for each action a ∈ AI do  
+
+> 7:
+
+χ′[ξa ] ← χ′[ξ] · χ[ξa ]·1{a∈SI } 
+
+> WI
+> 8:
+
+end for  
+
+> 9:
+
+else  
+
+> 10:
+
+χ′[ξa ] ← 0 for all a ∈ AI 
+
+> 11:
+
+end if  
+
+> 12:
+
+end for  
+
+> 13:
+
+return χ′
+
+Using the above procedure, we can efficiently compute valid EFGSAS sequence-form strategies using an arbitrary sequence-form vector θ ∈ R|Σorig   
+
+> i|≥0
+
+. In particular, let ˆχi(ξi|Si, θ i) be the sequence-form strategy for sequence ξi given availability set Si, obtained via a vector θi in place of χ in Algorithm 6. Moreover, 
+
+ˆωi(ξi|θi) = ESi∼ρI,i [ ˆ χi(ξi|Si, θ i)] is the corresponding marginal distribution for ξi ∈ Ξi.Under Algorithm 2, we can rewrite the update step of θti as 
+
+θt+1  
+
+> i
+
+= θti + ηt(g(θti ) + M t+1 )
+
+where g(θti ) is the mean-field given by 
+
+g(θti ) = ω∗ 
+
+> i
+
+− ESi∼ρI,i [ ˆ χi(Si, θ ti )] 
+
+and M t+1 is the martingale difference given by 
+
+M t+1 =  ˆωti − ω∗
+
+> i
+
+ +  ESi∼ρI,i [ ˆ χi(Si, θ ti )] − ˆχi(Sti , θ ti ) .
+
+Thus Algorithm 2 is a stochastic approximation seeking a root of g(θi) = 0 .By construction, and under the condition that P∞ 
+
+> t=1
+
+ηt = ∞ and P∞ 
+
+> t=1
+
+η2 
+
+> t
+
+< ∞, we have from the analysis of [36] that M t+1 is bounded and E[M t+1 |F t] = 0 where Ft = σ(θτi , S τi , τ ≤ t) is the filtration. Moreover, it is easy to check that g(θi) is a Lipschitz function. Therefore, the iterates θti will follow the limiting ODE ˙θi(t) = g(θi(t)) , t ≥ 0.
+
+Since P 
+
+> ξi∈Ξi
+
+Gti(ξi) = 0 for every t, it follows that θti lies on a hyperplane P 
+
+> ξi∈Ξi
+
+θti (ξi) = c for every 
+
+t and for some c. By Theorem 4.13, we know that there exists a θ∗ 
+
+> i
+
+on this hyperplane such that g(θ∗ 
+
+> i
+
+) = ω∗ 
+
+> i
+
+.Hence, it suffices to show that θ∗ 
+
+> i
+
+is a globally asymptotically stable fixed point of the limiting ODE. To this end, we seek to construct a strict Lyapunov function of θi. Our Lyapunov function relies on a notion of 31 dilated divergence between the optimal EFGSAS sequence-form strategy χ∗ induced by θ∗ 
+
+> i
+
+and the strategy 
+
+χ(θi) induced by θi. In particular, for two sequence-form strategies χ1 and χ2, let b1 and b2 denote the EFGSAS behavioral strategies of the players at infoset I having played according to χ1 and χ2 respectively. Let p(I|χ1) be the probability of reaching infoset I following χ1. Then, the dilated KL-divergence between 
+
+χ1 and χ2 is given by 
+
+Ddil (χ1∥χ2) = X
+
+> I∈I i
+
+p(I|χ1) · DKL (b1∥b2) (64) where DKL (p∥q) is the standard KL divergence on the simplex (i.e., DKL (p∥q) := P 
+
+> z∈Z
+
+p(z) log p(z) 
+
+> q(z)
+
+). The above definition follows from the notion of dilated entropy studied by [24]. We claim that V (θ∗) = 
+
+Ddil (χ∗∥χ(θi)) is a strict Lyapunov function for the limiting ODE. Crucially, note that V (θi) ≥ 0 for all 
+
+θi ∈ R|Σorig   
+
+> i|≥0
+
+and V (θi) = 0 if and only if θi = θ∗. Moreover, V (θi) is continuously differentiable in θi and we have 
+
+˙V (θi(t)) = ⟨∇ θi V (θi), ˙θi(t)⟩ = ⟨− (ω∗ 
+
+> i
+
+− ωi(θ)) , ω ∗ 
+
+> i
+
+− ωi(θ)⟩ = −|| ω∗ 
+
+> i
+
+− ωi(θi)|| 2.
+
+Thus, ˙V (θi) = 0 if and only if θi = θ∗. Hence, V (θi) is a strict Lyapunov function and the limiting ODE of the SA procedure is globally asymptotically stable and almost surely θi converges to θ∗. This implies convergence of W Ti , as desired. 
+
+C.11 Proof of Theorem 5.5 
+
+Proof. As discussed in the main text, while almost sure convergence is established via the limiting ODE method [5], it is also important to obtain explicit finite convergence rate [31]. As applied to our setting, Algo-rithm 2 is an instantiation of the well-known Robbins-Monro algorithm [36]. While asymptotic convergence to the optimal value W ∗ is established in Proposition 5.4, the objective is convex but not strongly convex everywhere in the domain. Hence, the finite convergence rate is sensitive to the stepsize schedule (see e.g., Section 2.1 of [32]). This motivates the adaptation of an approach introduced by [33, 32] which we call the 
+
+robust stochastic approximation (RSA) procedure. The RSA procedure modifies Algorithm 2 in the following ways: 1. A diminishing stepsize schedule is used: ηt = O(1 /√t).2. For any timesteps 1 ≤ i ≤ j, let νt = ηt 
+
+> Pjt=iηt
+
+. Then, output the Cesàro mean of the θ iterates from 
+
+i to j, i.e. ˜θji = Pjt=i νtθt.We will show that under these conditions, one can obtain finite-time convergence of the RSA procedure in 
+
+W -space via the following lemma: 
+
+Lemma C.8. Suppose Algorithm 2 is run for T timesteps with stepsizes O(1 /√t) on a sequence of iterates 
+
+χti where 1
+
+> T
+
+PTt=1 χti(Sti ) → ω∗ 
+
+> i
+
+as T → ∞ . Let ˜W denote the robust time-averaged value of W obtained after T timesteps. Then, for all p ∈ (0 , 1) , we have P
+
+h
+
+∥ ˜W − W ∗∥22 ≥ O
+
+ 1
+
+> p√T
+
+i 
+
+≤ p.Proof of Lemma C.8. The analysis of [33, 32] establishes that under RSA, one can bound the expected dif-ference between g(˜θT 
+
+> 1
+
+) (obtained by setting i = 1 and j = T in the Cesàro mean) and g(θ∗) as follows: 
+
+E[g(˜θT 
+
+> 1
+
+) − g(θ∗)] ≤ DM 
+
+√T , (65) where D := max θ ∥θ − θ1∥2 and M is a positive constant such that E[∥g(θt)∥22] ≤ M 2. In our setting the θ’s are sequence-form strategies, which allows us to derive bounds on the values of D and M . First, D
+
+is the maximal one-step different in ℓ2-norm of θ from the initial condition θ1. By definition of the RSA 32 procedure, this is upper bounded by the maximal ℓ2-norm of G1 
+
+> i
+
+. This is the max ℓ2-norm of the difference between two sequence-form strategies, which we denote δmax for clarity. However, g(θt) is also given by a difference between two sequence-form strategies, and thus the maximal value of M is also δmax . It holds that 
+
+δmax ≤ p2|I i|, and so we can conclude that E[g(˜θT 
+
+> 1
+
+) − g(θ∗)] ≤ O
+
+ |I i|√T
+
+
+
+.Moreover, we have from the argument in the proof of Proposition 5.4 that g is Lipchitz continuous, and combining with the bound from the RSA procedure gives 
+
+E[∥˜θT 
+
+> 1
+
+− θ∗∥22] ≤ O
+
+ |I i|√T
+
+
+
+, (66) i.e., the Cesàro mean of the θ iterates converges with rate O(1 /√T ) to the optimal θ∗ in expectation. Then, setting ˜W Ti := ˜θTi suffices to bound the expected ℓ2-error in Wi from the true W ∗ 
+
+> i
+
+, i.e. E[∥ ˜W T 
+
+> 1
+
+− W ∗∥22] ≤
+
+O
+
+ |I i|√T
+
+
+
+.Nevertheless, we wish to obtain high probability bounds on the above. Indeed, we can directly apply Markov’s inequality to obtain that for all p ∈ (0 , 1) ,
+
+P
+
+
+
+∥ ˜W − W ∗∥22 ≥ |I i|
+
+p√T
+
+
+
+≤ p. (67) Using Lemma C.8, we can proceed to bound the duality gap of the strategy induced by ˜W . In 2p0s-EFGSAS, NE are solutions to bilinear saddle-point problems over the implementable strategy space. For-mally, the duality gap for a pair of sequence-form strategies in an EFG of perfect recall is: 
+
+Definition C.9 (Duality gap) . Given a pair (x, y ) ∈ X × Y of implementable sequence-form strategies for Player 1 and 2 respectively, the duality gap is 
+
+γ(x, y ) := max  
+
+> y′∈Y
+
+x⊤Ay ′ − min  
+
+> x′∈X
+
+x′⊤ Ay 
+
+where A is the sequence-form payoff matrix belonging to Player 2. 
+
+γ(x, y ) measures the distance of (x, y ) from being a Nash equilibrium, and the pair is a Nash equilibrium if and only if γ(x, y ) = 0 . Next, we note that by a similar argument to the normal form case in [39], we have the following 
+
+Lemma C.10. Let W and W ′ be the compact representations of ω and ω′ that are implementable by χ and 
+
+χ′ respectively. Then, it holds that ∥ωi − ω′∥1 ≤ ∥ Wi − W ′∥1.
+
+Let γ(W ) be the duality gap for the pair of EFGSAS sequence-form strategies (χ1, χ 2) induced by 
+
+W := ( W1, W 2). Then, letting D1, D2 be the maximal entry of the sequence-form payoff matrix of Player 1 and 2 respectively and letting D = max {D1, D 2}, we get that 
+
+γ(W ) ≤ D1∥ω1 − ω∗ 
+
+> 1
+
+∥1 + D2∥ω2 − ω∗ 
+
+> 2
+
+∥1 (68) 
+
+≤ D · (∥ω1 − ω∗ 
+
+> 1
+
+∥1 + ∥ω2 − ω∗ 
+
+> 2
+
+∥1) (69) 
+
+≤ D · (∥W1 − W ∗ 
+
+> 1
+
+∥1 + ∥W2 − W ∗ 
+
+> 2
+
+∥1) (70) where the initial inequality follows from Hölder’s inequality and the latter follows due to Lemma C.10. Then, noting that in the compact strategy spaces, ∥W ∥1 ≤
+
+q
+
+|Σorig  
+
+> i
+
+|∥ W ∥2 by Cauchy-Schwarz, so we have 
+
+γ2(W ) ≤ D2 · | Σ| · (∥W1 − W ∗ 
+
+> 1
+
+∥22 + ∥W2 − W ∗ 
+
+> 2
+
+∥22) (71) 33 where Σ = max {Σorig 1 , Σorig 2 }. Applying Lemma C.8 gives that for any p ∈ (0 , 1) , with probability at least 
+
+1 − p, it holds that 
+
+∥ ˜Wi − W ∗ 
+
+> i
+
+∥22 ≤ O
+
+ |I i|
+
+p√T
+
+
+
+, (72) and so with probability at least 1 − p, it also holds that 
+
+γ2( ˜W ) ≤ D2 · | Σ| · |I| 
+
+p√T , (73) where |I| := max {|I 1|, |I 2|} . This completes the proof. 34 Table 1: Notation table for symbols used throughout the paper Section Symbol Meaning EFG H Player decision points 
+
+Z Terminal nodes 
+
+Ah Possible actions at state h 
+
+N Set of players 
+
+ui Utility function for player i
+
+Ii Information sets for player iI An information set I ∈ I i
+
+AI Action set for infoset Iβi Behavioral strategy for player i
+
+Σi Sequences of player iσ A sequence for player i (σ ∈ Σi)
+
+σ(I) Parent sequence of Ix An EFG sequence-form strategy EFGSAS G An EFGSAS 
+
+Gorig Original EFG for an EFGSAS 
+
+G† Expanded EFG for an EFGSAS 
+
+I† Infosets in expanded EFG for an EFGSAS 
+
+SI,i Set of all action availabilities for infoset I belonging to player iSI,i An action availability set from SI,i for infoset IρI,i Probability distribution of observing SI,i ∈ S I,i at I
+
+obs( I†) For an infoset I† ∈ I †, the action availability set observed in the EFGSAS that I† corresponds to EFGSAS Σorig Set of sequences in Gorig 
+
+strategies Σ† Set of sequences in expanded EFG 
+
+Ξ Set of DAG-plex sequences (DAG-plex equivalent of Σ)
+
+ξ A DAG-plex sequence ( ξ ∈ Ξ, DAG-plex equivalent of σ)
+
+ξ(SI,i ) Parent sequence of SI,i (Recall SI,i corresponds to a I† ∈ I †)
+
+χi A DAG-plex sequence-form strategy for player ibi A behavioral strategy for player i, playing the same distribution for infos-ets with same last observed action availability set 
+
+μI,i (a) A marginal probability distribution for playing action a at infoset I ∈ I 
+
+μi An ensemble of marginal probability distributions for all infosets I ∈ I 
+
+for player iωi An implementable sequence-form strategy for player i
+
+Ωi Set of all implementable sequence-form strategies for player i
+
+35
