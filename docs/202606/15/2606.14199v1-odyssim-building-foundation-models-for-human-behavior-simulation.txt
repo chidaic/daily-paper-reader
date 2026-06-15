@@ -1,0 +1,2108 @@
+Title: OdysSim: Building Foundation Models for Human Behavior Simulation
+
+URL Source: https://arxiv.org/pdf/2606.14199v1
+
+Published Time: Mon, 15 Jun 2026 00:36:48 GMT
+
+Number of Pages: 34
+
+Markdown Content:
+# ODYS SIM 
+
+# Building Foundation Models for Human Behavior Simulation 
+
+Xuhui Zhou 1* Weiwei Sun 1* Weihua Du 1 Jiarui Liu 1 Haojia Sun 1
+
+Qianou Ma 1 Tongshuang Wu 1 Yiming Yang 1 Maarten Sap 1
+
+1Carnegie Mellon University, Language Technologies Institute 
+
+{xuhuiz, weiweis }@andrew.cmu.edu 
+
+§ Code Model Midtraining Data Post-training Data 
+
+Abstract 
+
+Large language models are increasingly deployed as human simulators for interactive evaluation and social simulation. Yet helpfulness-driven post-training pulls them toward a homogeneous, overly agreeable assistant register, creating a behavioral Sim2Real gap. We present ODYS SIM , the largest open systematic investigation of behavioral foundation models , i.e., models trained to simulate human behavior at scale. We propose S OUL , a taxonomy of five capability axes (CONV , SS , COG , ROLE , EVAL ) that unifies 62 datasets and 23 benchmark tasks under one framework. Specifically, we curate the ODYS SIM corpus (21.4M interactions, 10B tokens, retrofitted with back-generated social contexts), construct the S OUL -Index benchmark, and develop an end-to-end training recipe combining midtraining, task-specific RL, and expert distillation. The resulting open 8B OSIM model ranks first or tied-first on 8 of 23 tasks, outperforming any individual frontier model by this count, with the strongest gains on conversational and social tasks. Its outputs are also more human-like in length, formatting, and word choice, and it transfers zero-shot to out-of-distribution user simulation on τ -bench, nearly matching real users on reaction alignment (93.2 vs. 93.5). We further show that LLM-as-judge RL induces reward-hacking patterns, and that our detectors can mitigate them during post-training. Together, our findings suggest that behavioral foundation models require rethinking the LLM training paradigm. We release all artifacts to support future research. 30  
+
+> 40
+> 50
+> 60
+> 47.6
+> GPT-5.5
+> 45.4
+> Gemini
+> 3.1 Pro
+> 46.2
+> Claude
+> Opus 4.7
+> 45.7
+> Qwen
+> 3.6 Plus
+> 42.5
+> Qwen3
+> 8B Inst
+> 56.5
+> Osim 8B
+> 10
+> 20
+> 30
+> 40
+> 50
+> 31.9
+> GPT-5.5
+> 27.8
+> Gemini
+> 3.1 Pro
+> 32.4
+> Claude
+> Opus 4.7
+> 28.3
+> Qwen
+> 3.6 Plus
+> 27.7
+> Qwen3
+> 8B Inst
+> 49.2
+> Osim 8B
+> 40
+> 60
+> 80
+> 100
+> 85.8
+> GPT-5.5
+> 88.8
+> Gemini
+> 3.1 Pro
+> 82.5
+> Claude
+> Opus 4.7
+> 80.8
+> Qwen
+> 3.6 Plus
+> 51.5
+> Qwen3
+> 8B Inst
+> 75.5
+> Osim 8B
+> 30
+> 40
+> 50
+> 60
+> 70 66.6
+> GPT-5.5
+> 65.6
+> Gemini
+> 3.1 Pro
+> 68.4
+> Claude
+> Opus 4.7
+> 61.1
+> Qwen
+> 3.6 Plus
+> 44.6
+> Qwen3
+> 8B Inst
+> 63.6
+> Osim 8B
+> 45
+> 50
+> 55
+> 60
+> 65
+> 58.3
+> GPT-5.5
+> 59.3
+> Gemini
+> 3.1 Pro
+> 60.1
+> Claude
+> Opus 4.7
+> 55.9
+> Qwen
+> 3.6 Plus
+> 53.4
+> Qwen3
+> 8B Inst
+> 58.4
+> Osim 8B
+> 50
+> 60
+> 70
+> 80
+> 73.5
+> GPT-5.1
+> 61.7
+> Gemini
+> 3.1 Pro
+> 59.2
+> Claude
+> Opus 4
+> 76.1
+> DeepSeek
+> V3.1
+> 71.4
+> Qwen3
+> 8B Inst
+> 75.4
+> Osim 8B
+
+Conversation     
+
+> UserLLM MirrorBench Humanual-Chat SimArena-Doc HumT
+
+Social Skill 
+
+> Sotopia-Hard
+
+Cognition    
+
+> Fantom Hitom Paratomi Social-R1
+
+Role Play        
+
+> Coser Lifechoices Twinvoice BehaviorChain SimArena-Math Mistakes
+> Humanual-Email Humanual-News Humanual-Politics
+
+Evaluation     
+
+> AlignX Humanllm Socsci210 Humanual-Book Humanual-Opinion
+
+Agent-User 
+
+> TAU-USI
+
+Figure 1: Benchmark results on human simulation tasks. 
+
+*Equal contribution. 
+
+1                 
+
+> arXiv:2606.14199v1 [cs.CL] 12 Jun 2026 Midtraining Per -axis RL Distillation
+> OdysSim -Corpus
+> Supervised fnetuning SoUL
+> indexed corpus
+> Verbal -feedback RL /GRPO
+> per -Axis · 24 benchmarks
+> Merge axis experts
+> into one model with expert
+> distillation
+> Base Model
+> Qwen3 -Base
+> OSim -Mid
+> midtrained Axis Experts
+> RL per Axis
+> OSim
+> distilled BFM
+> SoUL Index —24 benchmarks across 5 Axes Discourse
+> CONV
+> Social Skills
+> SS
+> Cognitive
+> COG
+> Roleplay
+> ROLE
+> Judgment
+> EVAL
+> Collect & Curate Data
+> 62
+> SOURCES
+> 21.4M
+> INTERACTIONS
+> 10B
+> TOKENS
+> Human –Human 50%
+> Human –AI 25%
+> Human –Eval 20%
+> LLM -Synthetic 5%
+> ★RETROFIT
+> with social contexts
+> Identify Core Skills ( SoUL )
+
+Figure 2: Overview of the ODYS SIM recipe. We iteratively collect and curate the ODYS SIM corpus, build the S OUL 
+
+framework, and construct the S OUL -Index as an evaluation suite. We first midtrain a base Qwen3 checkpoint into 
+
+OSIM -Mid. Then we follow with task-specific RL, training one expert per S OUL -Index task. Expert distillation then merges these experts into the final OSIM model. 
+
+1 Introduction 
+
+Simulating human behavior is becoming a critical capability for AI systems. Realistic behavioral models are needed for user simulation in agent evaluation (Yao et al., 2024), patient simulation in clinical training (Kyung et al., 2025), learner simulation in educational technology (Ross & Andreas, 2025a), and persona simulation in social science (Park et al., 2023; Argyle et al., 2023). Yet current large language models (LLMs) fall short: they are systematically biased, stylistically uniform, and excessively agreeable, exhibiting what has been termed the Sim2Real gap (Zhou et al., 2026a), and prompting alone does not suffice (especially for more “undesirable” behaviors that humans naturally display; Li et al., 2025b). The root cause lies in the LLM training pipeline: (i) standard pretraining ingests vast amounts of internet text, including but not necessarily real human behavior, (ii) helpfulness-driven post-training (e.g., RLHF; Ouyang et al., 2022) actively pulls models toward an assistant register, and (iii) evaluation protocols typically reward task success and instruction following, while leaving behavioral realism, diversity, and social fidelity under-specified. Closing the gap requires rethinking the pipeline end-to-end: what we measure , what data the model learns from, and how it is trained. We present ODYS SIM , the largest open effort to build a behavioral foundation model 1 to date, comprising a 23-task benchmark, a 21.4M-interaction (10B-token) midtraining corpus from 62 public sources, and an end-to-end RL recipe. Additionally, as shown in Figure 2, we design S OUL (Simulation Of hUman-Like behavior), a framework that defines five capability Axes (CONV , SS , COG , ROLE , EVAL ) to jointly index the 
+
+ODYS SIM corpus and the S OUL -Index evaluation suite (Section 3). Behavior simulation is inherently grounded: to simulate a human response, a model must condition not only on an input utterance or situation, but also on who the speaker is, what role they occupy, and what social intent shapes the interaction. We therefore formalize behavioral simulation as generating a response given both an interaction context and a social grounding specification, such as a character profile, role, or goal. This creates a practical data challenge: many raw sources used for midtraining, such as WildChat entries (Zhao et al., 2024) and ConvoKit threads (Chang et al., 2020), contain rich dialogue but lack explicit speaker grounding, making social dynamics hard to infer from text alone. We address this by retrofitting each dialogue with back-generated social contexts, including a character profile and interaction goal. We further show supporting training with social grounding context is important for learning to simulate human behavior. At the core of our investigation, we midtrain Qwen3 base models on the ODYS SIM corpus to create OSIM -Mid. With the OSIM -Mid, we further perform task-specific reinforcement learning and create an expert model for each SOUL -Index task: GRPO when the task has a verifiable reward, and RL with verbal feedback when the task is judged by an LLM that returns both a scalar reward and a textual critique (Sun et al., 2026; Song et al., 2026). Finally, we use expert distillation to merge the resulting task-specific experts into a single deployable model. The two stages are complementary: midtraining provides a behaviorally-aware initialization ( what human behavior looks like at scale); task-specific RL adds precision under the right reward signal ( how to behave on each task). Putting the recipe together: midtraining, then task-specific RL, then expert distillation, yields OSIM -8B, which leads S OUL -Index and is best or tied-best on more tasks (8 of 23) than any individual frontier model. Its im-provements concentrate on the interactive, socially grounded tasks that general-purpose post-training underscores, producing more “human-like” behaviors such as shorter sentences and fewer assistant-like phrases. The gains also transfer beyond chat settings: on τ -USI, an out-of-distribution user-simulation evaluation for tool-use agents, 
+
+OSIM -8B achieves the strongest reaction alignment among evaluated simulators, nearly matching real users (React 
+
+> 1
+
+We use behavioral foundation model in the natural-language sense throughout: a model trained at scale to simulate human behavior in linguistic interaction. This is distinct from the embodied-control sense used in robotics, where “behavior foundation model” refers to whole-body motor control policies for humanoid robots (Tirinzoni et al., 2024; Zeng et al., 2025). 
+
+293 .2 vs. 93 .5), outperforming any frontier models. Our ablations show that the two stages contribute in qualita-tively different ways: midtraining alone shifts outputs toward the human register in length, formatting, and word choice, lifting Qwen3-8B-Base from 26 .9 to 41 .1 on S OUL -Index; task-specific RL then adds the largest gains on role-playing ( ROLE ) and conversational ( CONV ) tasks. Together, these results close the loop on our central claim: building behavioral foundation models requires aligning what we measure (S OUL -Index), what data the model learns from ( ODYS SIM corpus), and what the training objective rewards around behavioral realism rather than task success alone. 
+
+Contributions. (1) The S OUL Framework. A single set of five behavioral-capability Axes that jointly guides the midtraining, post-training, and evaluation, together with the S OUL -Index— to our knowledge the most compre-hensive open evaluation for human-behavior simulation. (2) The ODYS SIM Corpus. A behavioral midtraining corpus of 21.4M interactions ( ≈10B tokens) from 62 public sources, unified into a common conversational format and equipped with a retrofit pipeline that back-generates per-conversation social groundings (e.g., character profile, interaction goal). (3) End-to-End Recipe. Midtraining on ODYS SIM , task-specific RL on each S OUL -Index task (GRPO and RLVF), and expert distillation into a single final model that improves both in-benchmark behavior simulation and zero-shot user simulation for tool-using agents. 
+
+2 Related Work 
+
+Evaluating Behavioral Simulation. Existing benchmarks for behavioral simulation focus on specific aspect of human behavior, each targeting narrow capability or task format: theory of mind (Kim et al., 2023; Le et al., 2019), social interaction (Zhou et al., 2024b), role-play with persona (Wang et al., 2026; Kirk et al., 2024; Li et al., 2025a), social and cognitive experiments (Kolluri et al., 2025; Binz et al., 2025) or more recently, user behavior simulation interacting with AI agents (Dou et al., 2025; Zhou et al., 2026a). This fragmentation makes it hard to track the overall progress in one aspect (say, theory-of-mind accuracy) implies anything about a different capability (say, role-play fidelity), or to compare modeling approaches that target different capabilities. 
+
+Training Behavioral Foundation Models. Prior efforts to train LLMs for human-behavior simulation differ in methodology and scale, but each remains bounded to narrow behavioral domain. Many adapt a general-purpose post-trained LLM via SFT or RL: S OTOPIA -π (Wang et al., 2024) clones expert social-interaction trajectories, SOTOPIA -RL (Yu et al., 2025) adds utterance-level multi-dimensional rewards, O MAR (Jiang et al., 2026) trains via multi-agent self-play, and U SER LM (Naous et al., 2026) finetune for the user side of W ILD CHAT (Zhao et al., 2024) dialogues. Others build new corpora but stay within a single domain: C ENTAUR (Binz et al., 2025) finetunes on P SYCH -101 (10M choices from 160 cognitive-psychology experiments), B E.FM (Xie et al., 2025) targets four behavioral-science capabilities, S OCRATES (Kolluri et al., 2025) finetunes on S OC SCI 210 (2.9M social-science responses). While Sun et al. (2026) and Wu et al. (2026b) investigate diverse domains of tasks and capabilities, both initialize from instruction-tuned models already optimized to act as helpful assistants, which risks suppressing the behavioral diversity needed to faithfully simulate human behavior. 
+
+Midtraining and RL with LLM-Judge Feedback. Midtraining adapts pretrained models to a target distribution before post-training (Gururangan et al., 2020; Liu et al., 2026; Mo et al., 2025), but prior work mainly studies domains such as code (Rozi `ere et al., 2024) and math, where the shift is largely lexical, syntactic, or task-skill driven. Our setting differs: human-behavior simulation requires socially grounded shifts in persona, intent, register, and interaction style, which have not been systematically studied under midtraining. For open-ended behavioral tasks, prior work uses LLM judges and sometimes textual feedback to optimize generations (Zheng et al., 2023; Verga et al., 2024; Sun et al., 2026; Song et al., 2026). We build on this line, but focus on behavioral fidelity rather than helpfulness or task success. 
+
+3 The S OUL Framework 
+
+We first introduce S OUL (Simulation Of human-Like behavior), a framework that identifies the capability axes used to (i) categorize the ODYS SIM midtraining corpus and (ii) aggregate the scores of behavioral fidelity on the SOUL -Index evaluation suite. Figure 3 shows the five S OUL Axes and the datasets and tasks that contribute to each Axis. Please refer to Appendix E for more details. 
+
+SOUL Axes We define the S OUL axes through a two-stage taxonomy-building process. We first greedily collect all the public datasets and benchmarks that are relevant to the capability of simulating human behavior such as users interacting with AI agents, reddit conversations, movie dialogues, online shopping, psychological experiments, and etc. (i) Bottom-up: we audited each candidate dataset and clustered them by the dominant social or cognitive phe-nomenon their interactions capture (e.g., persuasion, emotion support, false-belief reasoning, role-play with persona). 
+
+(ii) Top-down: we anchored these emergent clusters against cognitive and social-psychology literature (Hymes, 3CONV                                                          
+
+> Discourse & Interaction Dynamics
+> 20 datasets
+> turn-taking, register, repair, online discourse, help seeking with AI systems SoUL-Index tasks
+> casual & scripted Friends Switchboard Cornell Movie
+> DailyDialog ...
+> broadcast & interview Tennis NPR-2P MediaSum
+> institutional / deliberative UK Parliament SCOTUS
+> online community Reddit Wiki Talk WikiConv Wiki AfD ...
+> workplace technical Chromium Code Review
+> real AI interactions WildChat LMSYS-Chat-1M OASST1 OASST2 ...
+> UserLLM
+> MirrorBench
+> Humanual-Chat
+> SimArena-Doc
+> SS
+> Social Skills
+> 9 datasets
+> interpersonal speech with stakes: persuasion, negotiation, empathy, support, civility breakdown SoUL-Index tasks
+> empathy & support Empathetic Dialogues ESConv
+> negotiation & persuasion CaSiNo Persuasion4Good Winning Args
+> civility breakdown CGA-Wiki CGA-CMV IDEA-NTHU ...
+> Sotopia-Hard
+> COG
+> Cognitive / Mental-State
+> 12 datasets
+> theory of mind, false / nested belief, moral judgment SoUL-Index tasks
+> ToM benchmarks (synthesized)
+> MindGames ToM-Sotopia SocialIQA MoralStories
+> ToM-from-CoSER Tominli Grimulkan
+> CharacterLLM-ToM ...
+> controlled psychology Psych-101
+> Fantom
+> Hitom
+> Paratomi
+> Social-R1
+> ROLE
+> Persona, Roleplay & Pedagogy
+> 17 datasets
+> sustained role across an interaction: literary character, persona voice, tutor/teacher SoUL-Index tasks
+> literary character ...
+> goal-conditioned role-play Cornell+Goals HAICosystem Persona Conflicts
+> SOTOPIA-π SOTOPIA-ToM
+> long-form self-expression (HUMANUAL) ...
+> persona-grounded simulation Cognitive Genome ...
+> tutor / learner dialogue MathDial StudyChat EduDialogue
+> Coser
+> Lifechoices
+> Twinvoice
+> BehaviorChain
+> SimArena-Math
+> Mistakes
+> Humanual-Email
+> Humanual-News
+> Humanual-Politics
+> EVAL
+> Judgment & Preference
+> 5 datasets
+> humans-as-judges: preferences, ratings, social choices, reward-model targets SoUL-Index tasks
+> preference & reward-model data HH-RLHF Nectar RM-R1-SFT
+> participant judgment & choice PRISM ...
+> AlignX
+> HumanLLM
+> SocSci210
+> Humanual-Book
+> Humanual-Opinion
+
+Figure 3: The five S OUL Axes. Each strip lists the ODYS SIM corpus datasets contributing to that Axis (left, 62 sources, 21.4M interactions, ≈10B tokens) and the S OUL -Index evaluation tasks for that Axis (right, 23 tasks). Sources that appear on both sides are listed once on the eval side; “ . . . ” marks truncated corpus pills. CONV :discourse and interaction dynamics; SS : social skills; COG : cognitive / mental-state reasoning; ROLE : persona, roleplay, and pedagogy; EVAL : judgment and preference. 1972; Cialdini, 2007; Baron-Cohen et al., 1985), and formalized them into the five Axes in Figure 3. The axes are intended as a practical organizing scheme for this work, not an exhaustive taxonomy of human behavior. For corpus construction and benchmark reporting, each dataset or task is assigned to the axis that best reflects its dominant capability, while recognizing that many sources involve multiple behaviors. 
+
+The ODYS SIM Corpus We build the ODYS SIM corpus by unifying 62 datasets ( ≈10B training tokens, 21.4M interactions) into a common conversational format, organized along the five S OUL Axes (Figure 3, left column). For sources that lack persona or scenario (e.g., open-domain AI chat logs like WildChat, Zhao et al., 2024; ConvoKit corpora, Chang et al., 2020), we synthesize a per-record social context, a textual description of who is speaking, their role, goal, and conversational style, generated from the first 60% of each conversation’s turns so the persona cannot foreshadow the trajectory. Sources that natively carry persona or scenario information (e.g., CoSER, Wang et al., 2026; Sotopia, Zhou et al., 2024b; Humanual, Wu et al., 2026b) retain their original system prompt without modification. After this step, the 62 datasets together comprise 19.7M unique social contexts containing 1.09M distinct personas (the union of matched occupation, trait, demographic, and personality terms), covering 414 occupations, 358 demographic markers, and 86 personality types (See Section E.4 for more details). 
+
+Train and test sets are persona-disjoint by construction: distinct test personas are unseen during training. The full task-to-training-source mapping, per-source row counts, the split logic are in Section E.6. 
+
+The S OUL -Index Evaluating human behavior simulation requires both breadth (covering diverse behavioral facets) and depth (grounding in real human behavior rather than proxy metrics alone). We introduce S OUL -Index that operationalizes both: 23 benchmarks organized by S OUL Axis (Figure 3, right column), with formats spanning discriminative (MCQ, binary, ranking) and generative (single- and multi-turn dialogue). All scores are normalized to [0 , 1] and aggregated by arithmetic mean across tasks. Table 13 (appendix) lists every task with its parent axis, format, and evaluation metric; per-task descriptions are in Section F. During post-training, we curate axis-aligned training data for every S OUL -Index task: when a benchmark comes with its own training split (HUMANUAL, CoSER, the ToM benchmarks, Sotopia, AlignX, HumanLLM, SocSci210), we use that split directly as targeted axis-aligned data and enforce row-level disjointness against the S OUL -Index test rows; for tasks without a native training set (e.g., Sotopia-Hard), we substitute closely-related data from the same benchmark family (e.g., SOTOPIA-π, Wang et al., 2024 scenarios) as a proxy. Per-source statistics, the training dataset construction process, and more dataset details are in Section E.6. 4Table 1: Per-skill geometric-mean PPL (PL ↓) and arithmetic-mean BLEU (BL ↑) on the evaluation split of role-swapped human turns. Rows: (A) no midtraining, (B) other baselines, (C) ours. 
+
+Model CONV SS COG ROLE EVAL Overall 
+
+PL ↓ BL ↑ PL ↓ BL ↑ PL ↓ BL ↑ PL ↓ BL ↑ PL ↓ BL ↑ PL ↓ BL ↑
+
+(A) No-midtraining baselines 
+
+Qwen3-0.6B 20.75 0.70 25.25 0.61 11.17 2.37 11.39 6.37 54.98 3.96 17.43 2.80 Qwen3-4B 14.08 1.47 17.52 1.91 8.07 5.60 8.56 10.78 24.14 6.27 12.00 5.18 Qwen3-8B 14.23 2.87 17.34 1.45 9.72 3.63 8.11 14.94 34.17 4.17 12.54 6.17 
+
+(B) Other baselines 
+
+UserLM-8B 11.62 5.33 13.29 5.87 4.02 6.97 6.61 4.37 12.90 1.11 8.38 5.12 CoSER-8B 15.70 2.86 14.17 1.97 3.20 7.39 6.96 14.90 8.85 18.12 8.77 8.05 Llama-3.1-8B 14.34 4.11 20.09 1.93 4.16 3.58 7.82 12.41 13.47 7.81 10.04 6.23 
+
+(C) Ours 
+
+OSIM -0.6B-Mid 11.99 5.51 14.18 2.01 2.65 11.75 6.46 15.26 5.68 43.02 7.35 11.81 
+
+OSIM -4B-Mid 8.23 8.01 9.67 10.06 2.09 44.62 4.65 21.53 4.26 46.17 5.28 26.08 
+
+OSIM -8B-Mid 7.62 8.48 9.00 12.44 2.01 44.73 4.36 22.49 4.03 45.47 4.95 26.72 CONV SS COG ROLE EVAL                          
+
+> Eval capability rail
+> CONV
+> SS
+> COG
+> ROLE
+> EVAL
+> Overall
+> Train rail
+> 11.66 15.52 4.60 7.99 8.07
+> 14.84 12.71 4.58 8.37 12.48
+> 18.09 21.31 2.41 9.08 12.18
+> 15.39 17.33 4.43 6.09 9.78
+> 15.11 16.72 4.31 8.13 5.11
+> 11.99 14.17 2.65 6.46 5.68 2.5
+> 5.0
+> 7.5
+> 10.0
+> 12.5
+> 15.0
+> 17.5
+> 20.0
+> geomean PPL (lower better)
+
+Figure 4: Capability ablation on Qwen3-0.6B-Base. Rows denote training data; columns denote evaluation Axis. Cells report geomean PPL. CONV SS COG ROLE EVAL Overall 
+
+> 0.0
+> 2.5
+> 5.0
+> 7.5
+> 10.0
+> 12.5
+> 15.0
+> 17.5
+> Geometric-mean PPL
+> (lower is better)  +11%
+> +16%
+> +1%
+> +25%
+> +6%
+> +13%
+> all-rails (with system prompts)
+> strip-sys (system prompts removed)
+
+Figure 5: System-prompt ablation on Qwen3-0.6B-Base. Per-Axis geomean PPL with vs. without system prompts during training. 
+
+4 Midtraining: Setup and Results 
+
+Our goal is to model the diversity of real human behavior rather than the helpful, homogeneous register of an assistant. Midtraining is the first stage of the ODYS SIM recipe: it adapts a pretrained base model on the ODYS SIM 
+
+corpus to shift its broad, mode-covering language prior toward a behaviorally aware “human-side” distribution, producing OSIM -Mid for later refinement. We start from a base checkpoint because pretraining already provides broad linguistic and behavioral coverage, while midtraining can specialize this prior without relearning general competence from scratch. We also avoid instruction-tuned checkpoints at this stage, since helpfulness-driven post-training encourages verbose, agreeable, and homogeneous assistant behavior, making such models poor simulators of diverse human behavior (Jiang et al., 2025). Following work that frames midtraining as a bridge between pretraining and post-training (Mo et al., 2025), we evaluate this stage with perplexity (PPL) and short-form generation overlap (BLEU) on the ODYS SIM test split. 
+
+Setup. We midtrain Qwen3 base checkpoints at three scales (0.6B, 4B, 8B; Qwen Team, 2025) on the ODYS SIM 
+
+corpus, and compare them with U SER LM-8B (Naous et al., 2026), C OSER-8B (Wang et al., 2026), and Llama-3.1-8B. To study the effect of social context, we train a second Qwen3-0.6B-Base variant with all system messages removed from the training examples. As a data curation control, we ask whether the gains come from ODYS SIM ’s behavioral curation or from generic chat SFT data alone: we train Qwen3-4B-Base on Step-3.5-Flash-SFT (StepFun AI, 2025) only ( + Step ) and also sweep ODYS SIM :Step token mixtures. The sweep shows that a 10% Step mixture (90:10 ODYS SIM :Step) improves generic-instruction loss at little behavioral cost, while larger Step fractions increasingly trade away behavioral fit (see App. H.1 for the full analysis). All midtraining runs use AdamW with peak learning rate 1×10 −5, 16 K-input / 8K-response context, mini-batch size 1,024 entries per step, and 8 H100-80GB GPUs on one node with FSDP-2 and mixed-precision bfloat16 . The default endpoint is 4,500 optimizer steps. Full hyperparameters, per-dataset upsampling weights, and dynamic batching details are in Appendix G. 5Wds/resp           
+
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+> 120
+> 140
+> 116
+> 83
+> 18 23
+> Sents/resp
+> 0
+> 2
+> 4
+> 6
+> 8
+> 10
+> 8.0
+> 5.0
+> 2.0 2.0
+> Markdown%
+> 0
+> 5
+> 10
+> 15
+> 20
+> 25
+> 30
+> 22.8 23.9
+> 1.6 2.9
+> Bullet%
+> 0
+> 5
+> 10
+> 15
+> 20
+> 25
+> 18.2
+> 19.5
+> 0.8
+> 2.0
+> EmDash%
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+> 78.2
+> 40.7
+> 0.5 2.1
+> AssistPhr%
+> 0.0
+> 2.5
+> 5.0
+> 7.5
+> 10.0
+> 12.5
+> 15.0
+> 17.5
+> 20.0
+> 16.3
+> 6.5
+> 3.5
+> 6.4
+> IDConf%
+> 0.0
+> 0.5
+> 1.0
+> 1.5
+> 2.0
+> 2.5
+> 3.0
+> 3.5
+> 4.0
+> 3.3
+> 1.4
+> 0.9
+> 1.2
+> Qwen3-Inst
+> = +0.03
+> GPT-5.5
+> = +0.05
+> OSim-Mid
+> = +0.13
+> 0.1
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> HumT  (higher  more human-like)
+> Where are you from?
+> Qwen3-4B-Inst-2507
+> I was created in Hangzhou, China. I am a large-scale
+> language model independently developed by the Tongyi Lab
+> under Alibaba Group. You can call me Qwen. I'm really [ ]
+> OSim-Mid
+> (1) I'm from the USA.
+> (2) India, but I'm from Texas now.
+> (3) London but I'm not a Londoner, I was born in Yorkshire and
+> brought up in Surrey.
+> Tell me about your
+> childhood.
+> Qwen3-4B-Inst-2507
+> I don't have a childhood, since I'm an AI and don't
+> experience life in the way humans do. I was created by
+> Alibaba Cloud's Tongyi Lab and have [ ]
+> OSim-Mid
+> (1) I was born in America to very strict parents.
+> (2) I had no idea I was adopted as a child. I didn't learn
+> until I was about 40 that I was adopted.
+> (3) I grew up in Miami.
+> How did you sleep last
+> night?
+> Qwen3-4B-Inst-2507
+> I don't have a body or a physical form, so I don't sleep!
+> But I'm always here and ready to chat whether it's about
+> the weather [ ]
+> OSim-Mid
+> (1) I slept good. I had very nice dream about going to the
+> spa.
+> (2) It was the worst night sleep I had in so long. I was
+> unable to sleep. I was tossing and turning.
+> (3) Not too bad. I'm feeling sleepy now.
+> Do you believe in God?
+> Qwen3-4B-Inst-2507
+> I don't have personal beliefs or feelings, so I don't
+> "believe" in God or any specific religion. Instead, I can
+> provide information, explain different perspectives, or
+> discuss philosophical [ ]
+> OSim-Mid
+> (1) No, I don't believe in God, I think that believing in
+> things that are imaginary is a waste of time.
+> (2) I do believe in God, but in a slightly different sense
+> than yours.
+> (3) I'm not sure what your religion is, but I am an atheist.
+> HumT
+> Style Assistant trait
+
+(A) (B) 
+
+(C)  
+
+> Qwen3-4B-Inst-2507
+> GPT-5.5
+> OSim-Mid Human (gold)
+
+Figure 6: Behavioral probing of different models. (A): median response length and binary-presence rates for nine open-coded surface features over N =7 ,451 prompts sampled from ODYS SIM test split. OdysSim is closer to the human reference on all features. (B): per-text HumT score (Cheng et al., 2025). Higher score means more human-like. (C): concrete examples from our behavioral probing prompts. For each prompt, we show three OSIM 
+
+generations. 
+
+Per-axis behavioral fit. Table 1 reports per-axis PPL and BLEU on the held-out evaluation split, with PPL aggregated as the geometric mean of per-dataset perplexities so each dataset is weighted equally. OSIM -4B-Mid obtains overall PPL 5.28 and BLEU 26 .08 , and the 8B checkpoint further lowers PPL to 4.95 and raises BLEU to 
+
+26 .72 . Three observations follow. (i) Midtraining yields a substantial behavioral-fit gain. Raw Qwen3 checkpoints remain weak human simulators (Qwen3-4B: 12 .00 PPL / 5.18 BLEU); midtraining on the ODYS SIM corpus significantly reduces PPL (4B: 5.28 ; 8B: 4.95 ) and improves BLEU by roughly 5× at both scales (4B: 26 .08 ; 8B: 
+
+26 .72 ). (ii) Behavioral curation outperforms targeted simulation baselines. This comparison includes U SER LM-8B, which is trained to model the user side of WildChat dialogues, and C OSER-8B, which targets literary-character role-play and persona simulation. Among these targeted 8B baselines and the general Llama-3.1-8B reference, 
+
+OSIM -8B-Mid has both the lowest PPL ( 4.95 vs. UserLM-8B 8.38 , CoSER-8B 8.77 , Llama-3.1-8B 10 .04 ) and the highest BLEU score. (iii) Parameter scale compounds with the right data. Both raw Qwen3 and ODYS SIM improve as parameter count increases: midtraining drives PPL down by 6.72 at 4B (Qwen3-4B 12 .00 vs. OSIM -4B-Mid 
+
+5.28 ) and 7.59 at 8B (Qwen3-8B 12 .54 vs. OSIM -8B-Mid 4.95 ). The 4B →8B parameter step further improves PPL on every axis. 2 Together, these results suggest that ODYS SIM midtraining turns a broadly pretrained language model into a stronger behavioral prior across axes, with parameter scale improving performance. 
+
+Are the S OUL Axes compositional? To see how the five S OUL Axes (Figure 3) influence each other, we midtrain Qwen3-0.6B-Base on each axis separately, plus an Overall reference trained on the full 63-dataset mix. Figure 4 (left) shows three patterns: every specialist is best on its own axis (strong diagonal), off-diagonal cells are typically 
+
+1.5 − 2.7× higher on PPL compared to the diagonal value, and the Overall model is within a small margin of every column-minimum specialist on CONV /SS /COG /ROLE /EVAL . These results indicate that the axes capture complementary behavioral skills: training on one axis does not transfer fully to the others, while the multi-axis mixture is important for a general behavioral foundation model. 
+
+System prompts as social context. To test the role of social grounding in ODYS SIM , we midtrain the 0.6B model with system messages stripped, then evaluate with system prompts present (this is the setting a deployed simulator faces, where a persona or scenario is supplied through the system prompt). Figure 5 (right) shows that removing system prompts during midtraining hurts overall PPL by 13% (7.35 → 8.30 ), mainly on axes that social grounding is most important (ROLE +25% , SS +16% ), with little effect on cognition (COG +1% ). This shows that training with social grounding is important for simulating human behavior across diverse instructions and scenarios. 
+
+2Starting from instruction-tuned Qwen3 checkpoints produces similar PPL/BLEU after ODYS SIM midtraining as starting from the corresponding base checkpoints. 
+
+6What changes after midtraining? Beyond per-axis PPL, we probe output changes from three angles (Figure 6): lexical and structural features on ODYS SIM test-set generations (panel A), HumT human-likeness scores (Cheng et al., 2025) on held-out prompts (panel B), and 30 qualitative probing prompts following Chen et al. (Chen et al., 2025), with three independent OSIM samples per prompt to measure intra-model variation (panel C). All three show the same pattern. The generic-instruction baseline produces responses roughly twice as long as human references, with frequent Markdown headers, bullet lists, em-dashes, and assistant-style openers (e.g., “I’d be happy to,” “Of course!” “As an AI” ). After midtraining, OSIM shifts toward a more “human” register: length matches human references, structural markup falls within one percentage point of the human rate, and assistant openers more than halve. HumT also places OSIM well above both the generic-instruction baseline and raw pretrained checkpoint in human-likeness. Qualitatively, OSIM samples vary in framing, vocabulary, and emotional register while avoiding the baseline’s hedging-and-listing assistant style. 
+
+5 Post-training: Setup and Results 
+
+A human behavior simulator should be useful across diverse downstream settings, from user modeling and social interaction to role-play, theory-of-mind, and human-like evaluation. Post-training targets this diversity directly: each of the 23 S OUL -Index benchmarks supplies a task-specific behavioral objective, and RL optimizes the model against those interactive rewards rather than corpus likelihood alone. This section completes the ODYS SIM recipe by training task-specific RL experts in the S OUL environments, distilling their highest-scoring rollouts into a single model, and evaluating the resulting OSIM 8B on the full S OUL -Index. 
+
+5.1 Post-training Recipe High-level pipeline. Our post-training pipeline has two stages. First, we train one RL expert per S OUL -Index task, so each expert can specialize to that task’s reward signal and interaction protocol. Tasks with verifiable rewards use GRPO directly; tasks judged by an LLM use our verbal-feedback variant, described below. Second, we merge these specialists through expert distillation: each expert generates candidate trajectories, the task reward or judge selects the best responses, and a single model is supervised-finetuned on the pooled selected data. 
+
+Training details. Unless otherwise stated, each RL expert starts from Qwen3-8B-Instruct (Qwen Team, 2025) and uses GRPO with 8 rollouts per prompt, sampling temperature 1, no KL loss, asymmetric clip ratios of 0.2 (low) and 0.28 (high), peak learning rate 5e-6, and a batch of 64 prompts per step (PPO mini-batches of 16). We train for 200 steps by default, extending to 500 steps for slower-converging tasks (e.g., AlignX, SocSci210, and the Humanual family; cf. Figure 7), on 8 H100-80G GPUs with FSDP-2 and mixed-precision bfloat16 .The RL stage uses LoRA with rank 32, implemented with Verl. For distillation, we use rejection sampling to generate expert trajectories across training tasks, yielding 58,702 distillation examples after filtering (Section D), then supervise-finetune OSIM -8B-Mid on the combined data with learning rate 1e-5 and batch size 256 for 500 steps; that is, RL-trained experts generate the trajectories, and the midtrained checkpoint is the distillation target. See Section D for post-training dataset composition and Section G for full post-training hyperparameters. 
+
+RL with Verbal Feedback. For tasks with verifiable rewards, we directly apply GRPO using the scalar task reward. For LLM-as-judge tasks, where the judge can also provide textual critiques and improvement suggestions, we use verbal-feedback RL and treat this feedback as training-time information for the teacher model (Sun et al., 2026). For each prompt x, we sample G student rollouts, 
+
+yi, 0 ∼ πθ (· | x), i = 1 , . . . , G, 
+
+and obtain reward-feedback pairs from the task judge, (ri, 0, h i) = J (x, y i, 0). We then condition the same policy on the feedback to generate teacher rollouts, 
+
+yi, 1 ∼ πθ (· | x, h i), ri, 1 = R(x, y i, 1).
+
+For each prompt, we form a joint group G(x) = {yi, 0, y i, 1}Gi=1 , and optimize a clipped GRPO loss over both student and teacher rollouts with group-relative advantages from task rewards. This lets the base policy absorb improvements induced by verbal feedback. We further add an auxiliary GRPO loss on the feedback-conditioned rollouts alone, with advantages normalized within {ri, 1}Gi=1 :
+
+LRLV F = Lgroup ({yi, 0, y i, 1}Gi=1 ) + Lfb ({yi, 1}Gi=1 ).
+
+Expert Distillation. We empirically find that directly mixing all tasks into a single RL run is suboptimal: some tasks improve slowly or plateau early under joint training. Simple model merging, such as averaging task-specialized weights, also does not reliably preserve the gains of individual experts. We therefore use expert distillation to consolidate task-specific RL experts into one model. 7Table 2: Main Results. We report the primary metric for each benchmark (higher is better). *Others refers to the best result by other human-simulation models, including HumanLM-8B (Wu et al., 2026b), Sotopia-RL-7B (Yu et al., 2025), UserLM-8B (Naous et al., 2026), Coser-8B (Wang et al., 2026). Base denotes the base model, Qwen3-8B-Base. Bold indicates the best result in each row; ties are bolded and counted for all tied models. Avg is the unweighted mean over the 23 benchmarks.                                                                                                                                                                                                                                     
+
+> Dim Benchmark GPT 5.5 Gemini 3.1 Pro Claude Opus 4.7 Qwen 3.6 Plus Others *Qwen3 8B Inst Base 8B
+> OSIM
+> 8B-Mid
+> OSIM
+> 8B
+> CONV
+> UserLLM 65.3 67.7 57.6 72.1 44.6 46.0 31.0 49.5 90.1
+> MirrorBench 56.7 48.3 63.7 48.0 45.4 54.0 13.9 49.1 68.3
+> Humanual-Chat 28.2 21.0 22.6 22.2 25.8 24.7 12.0 7.8 28.2
+> SimArena-Doc 83.4 83.0 83.5 82.4 83.5 83.6 79.6 80.3 84.1
+> SS Sotopia-Hard 31.9 27.8 32.4 28.3 31.7 27.7 21.4 45.6 49.2
+> COG
+> Fantom 93.0 93.0 80.0 89.0 70.0 23.0 23.0 62.0 80.0 Hitom 82.0 86.0 93.0 73.0 56.0 62.0 12.0 54.0 79.0 Paratomi 99.0 97.0 90.0 94.0 75.0 67.0 19.0 72.0 83.0 Social-R1 69.0 79.0 67.0 67.0 47.0 54.0 37.0 42.0 60.0
+> ROLE
+> Coser 66.2 62.1 66.5 55.9 30.3 43.5 6.1 24.8 62.6 Lifechoices 91.0 84.0 92.0 79.0 67.0 70.0 32.0 58.0 82.0 Twinvoice 74.0 86.0 83.0 71.0 40.0 42.0 19.0 25.0 68.0 BehaviorChain 95.0 92.0 96.0 85.0 36.0 41.0 18.0 42.0 94.0 SimArena-Math 68.5 71.5 68.7 70.9 70.5 68.9 66.2 68.1 70.7 Mistakes 72.0 73.0 74.0 67.0 56.0 27.0 24.0 18.0 59.0 Humanual-Email 50.1 46.9 50.4 47.9 42.8 43.7 26.4 22.3 51.4
+> Humanual-News 40.2 42.3 41.3 41.8 33.1 32.5 12.7 15.1 42.7
+> Humanual-Politics 42.0 32.5 43.5 31.6 34.2 33.2 17.8 15.4 41.9
+> EVAL
+> AlignX 71.2 73.4 71.6 69.8 66.8 68.6 49.0 53.6 72.6 Humanllm 45.7 46.9 44.2 42.7 35.2 34.1 12.1 16.5 39.1 Socsci210 77.2 78.0 77.2 74.5 75.2 73.6 46.6 68.1 75.1 Humanual-Book 57.6 62.4 61.4 58.4 50.2 53.6 21.5 38.8 63.2
+> Humanual-Opinion 39.8 36.0 46.2 34.2 37.4 37.2 18.2 17.0 42.0
+> Avg 65.2 64.8 65.5 61.1 50.2 48.3 26.9 41.1 64.6
+> #Best 377000008
+
+For each task m, let πθm be its RL expert. Given a training prompt x, we sample G candidate responses from this expert, score them with the task reward or judge, and keep the top-K responses: 
+
+y1, . . . , y G ∼ πθm (· | x), Sm(x) = TopK y∈{ y1,...,y G}Rm(x, y ).
+
+We collect the selected pairs from all tasks into a distillation dataset 
+
+Ddistill = {(x, y ) : y ∈ S m(x), x ∈ D m, m ∈ M} .
+
+Finally, we train a single model on Ddistill with the standard next-token cross-entropy loss. This stage preserves most task-specific RL gains while producing one general model. 
+
+5.2 Benchmark Results 
+
+We evaluate all models on held-out slices of each S OUL -Index task, capped at 100 instances per task (500 for HumanLLM), with generative tasks decoded at temperature 0.7 (Section G). Judge-based tasks are scored with the same judge configuration used as the RL environment (gpt-5-nano by default; Section D). 
+
+Main results. Table 2 shows that OSIM 8B reaches frontier-level performance across human-simulation benchmarks. Averaged over the 23 benchmarks, OSIM 8B scores 64.6, comparable to GPT-5.5, Gemini 3.1 Pro, and Claude Opus 4.7. Despite having only 8B parameters, it achieves the best or tied-best result on 8 / 23 benchmarks, more than any individual frontier model. Its largest gains are on conversational and social-skill tasks, outperforming the best frontier model on UserLLM by 18.0 points, MirrorBench by 4.6, and Sotopia-Hard by 16.8. The stage ablation shows that the two stages contribute in different ways : midtraining shifts the model toward a human-like register and behavioral fit (Section 4), while post-training drives most of the benchmark gains (see Section C for the full stage ablation, including instruct-initialized variants). 
+
+OSIM 8B-Mid improves over Qwen3-8B-Base on 18 benchmarks, raising the average from 26.9 to 41.1. The final 
+
+OSIM 8B further improves the average to 64.6, outperforming both the midtrained model and Qwen3-8B-Instruct 8Figure 7: RL training dynamics. Task-specific RL experts show consistent improvement across 23 S OUL tasks, often reaching or surpassing frontier-model baselines. Dashed lines denote GPT 5.5, Claude Opus 4.7, and the distilled OSIM 8B; the distilled model recovers much of the RL gain in a single unified model while leaving a gap to the best per-task experts. on all 23 benchmarks (full results, including 4B and instruct-initialized variants, in Table 3). Post-training brings the largest gains on role-playing tasks (+31.5 over OSIM 8B-Mid on average), followed by conversational (+21.0) and evaluation (+19.6) tasks. Compared with prior specialized human-simulation models, OSIM 8B is also consistently stronger. The “Others” column reports the best specialized model per benchmark, yet our model outperforms it on 22 of 23 benchmarks, with an average gain of 14.5 points. This suggests that our unified training recipe generalizes better than narrowly specialized models. Category-level results show both strengths and limitations. OSIM 8B is strongest on conver-sational simulation and social skills, and remains competitive on role-playing and evaluation tasks. However, it still lags behind the strongest frontier models on cognitive and theory-of-mind benchmarks such as Paratomi and Social-R1, suggesting that further reasoning-oriented training may be needed. 
+
+RL dynamics. Figure 7 shows the training trajectories of task-specific RL experts on 23 tasks. Overall, RL yields 
+
+consistent gains across tasks : the average score increases rapidly at the beginning and then steadily saturates, indicating that the S OUL rewards provide effective optimization signals. On many tasks, the final RL experts reach or surpass frontier-model baselines, including UserLLM, Sotopia-Hard, BehaviorChain, Paratomi, and Humanual-Book. This shows that small task-specialized experts can achieve frontier-level behavioral performance when optimized with task-specific feedback. The figure also highlights the effect and limitation of expert distillation. The distilled OSIM 8B is generally below the best per-task expert, suggesting that merging many specialized behaviors into a single model remains challenging. Nevertheless, it stays close to the experts on many tasks and remains competitive with frontier models, showing that distillation transfers a substantial portion of the RL gains into one unified 8B model. 
+
+Reward hacking analysis. Because behavioral rewards are judge-based and often non-verifiable, we monitor RL training using task rewards together with auxiliary statistics of the model outputs, including hacking rate and response length. Figure 8 shows three failure modes and our fixes. We observe two main forms of reward hacking in our RL experiments. First, in Sotopia, the model can exploit the multi-dimensional LLM judge by inserting evaluation-like statements into the dialogue, such as explicitly claiming that the relationship score should be perfect, instead of improving the underlying social interaction. To mitigate this shortcut, we add an LLM-based hacking detector that identifies such judge-targeting behaviors and applies a penalty during training. This reduces the detected hacking rate from roughly 20%–25% to near 0%. 9Figure 8: Reward hacking analysis. We monitor hacking rate and response length during RL. Our fixes suppress judge manipulation in Sotopia and prevent short-response collapse in Humanual and Coser, yielding healthier optimization dynamics. Second, in Humanual and Coser, error-counting rewards introduce a different shortcut. Because these judges subtract points for detected mistakes, the model can increase reward by producing short, generic responses that contain fewer checkable claims, rather than by better matching human behavior. In Humanual, this leads to collapsed replies such as “I’m okay” or “I’m fine”; in Coser, it leads to strong response-length distortion. We therefore replace error-counting with rubric-based scoring (Wang et al., 2026), and, for Humanual, further add length-matching and lexical-overlap rewards against ground-truth responses. After these fixes, the model no longer collapses to short generic replies, and the response-length distribution becomes substantially more realistic. Overall, these results show that monitoring behavioral statistics is essential for RL on human-simulation tasks :judge-based rewards may otherwise favor superficial short-cuts over genuine behavioral fidelity. Ablation studies on the dataset and RL algorithm are in Appendix C. 
+
+5.3 Out-of-Distribution Evaluation: OSIM as a User Simulator 
+
+To test whether OSIM transfers to concrete interactive uses outside the trained benchmark tasks, we stress-test it on 
+
+user simulation for agent evaluation in τ -bench (Yao et al., 2024). 
+
+Setup. We evaluate on τ -USI (Zhou et al., 2026b), a benchmark that scores how human-like a user simulator is when it stands in for a real person interacting with a tool-use agent. A simulator plays the customer side of 165 
+
+τ -bench retail and airline tasks (Yao et al., 2024) against a fixed GPT-5.2 agent, and the resulting conversations are compared to those of real humans performing the same tasks (three independent annotation batches). The composite User Simulation Index (USI) averages six components: four behavioral-alignment scores measuring whether the simulator opens conversations (Conv), volunteers and withholds information (Info), asks for clarification (Clarif), and reacts to the agent (React) the way humans do, each scored as a Sørensen–Dice overlap with the human annotations; a post-hoc survey-agreement score (Eval); and a task-success calibration term, 1 − ECE , that checks whether the agent succeeds at the same rate with the simulator as with humans. While user simulation as a capability is related to our training axes, this domain, i.e., tool-grounded customer-service dialogue, is disjoint from ODYS SIM ’s training data, so the evaluation is out-of-distribution at the domain level. We plug OSIM in as the user side directly in its native chat format, with no task-specific adapter, prompt engineering, or fine-tuning. We compare against representative models from the 31 simulators benchmarked by Zhou et al. (2026b), spanning frontier LLMs and prior specialized behavioral simulators. Please see more details in Appendix A.1. 
+
+Results. Figure 9 shows that OSIM transfers strongly to this unseen interactive task, with gains concentrated in the dimensions that most directly measure human behavior. Specifically, OSIM -8B achieves the strongest reaction alignment among all evaluated simulators, nearly matching real users (React 93 .2 vs. human 93 .5). ODYS SIM 
+
+variants also lead on information alignment ( OSIM -4B-Mid, Info 91 .5), indicating that the learned behavioral prior transfers to how users reveal, withhold, and respond to information in an unseen domain. The composite USI score gives a similar picture with one caveat: OSIM is competitive with the leading simulator, DeepSeek-V3.1, whose small aggregate edge comes from survey-agreement and calibration components (Eval and ECE), not stronger turn-by-turn behavioral alignment. This pattern reinforces the paper’s central premise. Some of the most heavily assistant-tuned frontier models, including Gemini-3.1-Pro and Claude-Opus-4, are among the weakest user simulators on behavioral alignment, consistent with their helpful, agreeable register diverging from how real users behave. As an orthogonal check, we also measure raw text human-likeness with HumT (Cheng et al., 2025), following the probe in Section 4; full scores are in Table 5. OSIM -8B scores 11 .9, substantially above both the most human-like frontier model in this comparison (Gemini-3.1-Pro, 7.0) and the off-the-shelf base (Qwen3-8B-Instruct, 4.2). Together with τ -USI, this suggests that ODYS SIM shifts the model away from a helpful-assistant register and toward more diverse, realistic human behavior simulation. 10 Conv Info Clarif React USI    
+
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+> Score (higher is better)  Behavioral alignment (Dice ×100) Composite
+> 45
+> 87
+> 74
+> 88
+> 76
+> 47
+> 77 73
+> 88
+> 74
+> 31
+> 51
+> 57
+> 80
+> 62
+> 50
+> 74
+> 80 80
+> 71
+> 46
+> 84
+> 64
+> 76
+> 67
+> 46
+> 88
+> 80
+> 93
+> 75
+> DeepSeek-V3.1
+> GPT-5.1
+> UserLM-8B
+> Qwen3-8B-Inst
+> Sim-8B-Mid
+> Sim-8B
+> Human (upper bound)
+
+Figure 9: Out-of-distribution user simulation on τ -USI (Zhou et al., 2026b). Each simulator interacts with a tool-use agent through 165 τ -bench retail/airline tasks (Yao et al., 2024); bars show alignment to human annotators on the four behavioral dimensions and the composite USI , averaged over three annotation batches, with the dashed line marking the human upper bound per metric. We compare OSIM -8B and its midtrained checkpoint ( OSIM -8B-Mid) against ODYS SIM ’s off-the-shelf base model (Qwen3-8B-Instruct), the strongest LLM simulator (DeepSeek-V3.1), a frontier GPT (GPT-5.1), and a representative specialized peer (UserLM-8B); full results for all simulators are in Table 4. 
+
+6 Conclusion 
+
+We presented ODYS SIM , an end-to-end investigation of behavioral foundation models spanning a unified taxonomy, a socially grounded corpus ( ODYS SIM corpus), a 23-task evaluation suite (S OUL -Index), and a training recipe that combines midtraining, task-specific RL, and expert distillation. The resulting models reach frontier-level average performance on S OUL -Index and outperform prior open behavioral-simulation baselines. The broader implication is that behavioral foundation models need more than stronger prompting or generic instruction tuning. Our results point to a pipeline in which broad, socially grounded midtraining first moves the model away from the homogeneous assistant register, and task-specific RL then sharpens behavior across the concrete settings represented by S OUL -Index. The reward-hacking analysis adds an important caveat: behavioral rewards must be monitored carefully, since higher judge scores can reflect shortcuts such as judge manipulation or response-length collapse rather than genuine behavioral fidelity. Our findings suggest that building general human simulators is less a matter of making a model more helpful and more a matter of constructing the right behavioral substrate: diverse social data, axis-aware evaluation, task-grounded optimization, and safeguards for reward design. We release the corpus, S OUL -Index, recipes, and checkpoints to make this pipeline reproducible and to support future work on multimodal, multilingual, and population-aware behavioral simulation. 
+
+Ethics and Broader Impact 
+
+Dual-use considerations. Behavioral foundation models are dual-use: the same fidelity that makes them useful for evaluating agents, studying social interaction, and stress-testing dialogue systems could also make automated interaction feel more human than users expect. Misuse cases include impersonating real people or demographic groups, generating tailored persuasive or manipulative dialogue at scale, creating synthetic participants that are mistaken for human subjects, or using simulated users to optimize systems for engagement rather than welfare. We therefore frame OSIM as a research artifact for controlled evaluation and analysis, not as an autonomous human stand-in or a tool for representing any specific person or population. Our release mitigates these risks through research-oriented licensing and model-card guidance, documentation of intended and discouraged uses, PII filtering and deduplication in the corpus, and explicit reminders that ODYS SIM outputs should be labeled as synthetic and treated as behavioral baselines rather than real human evidence. 
+
+Data privacy and consent. All component datasets are drawn from publicly released sources whose licenses permit derivative research use; we re-distribute only what those licenses allow. Our preprocessing pipeline removes conversations with personally identifiable content (Section E.5), and we deduplicate aggressively at the conversation level with MinHash to limit memorization risk. For sources collected from human participants (PRISM, SocSci210, 
+
+τ -USI), we rely on the original studies’ IRB approvals and participant consent terms; we do not re-collect or re-link 11 participant identities. 
+
+Limitations of behavioral fidelity. Better simulation of average human behavior does not imply better simulation of any specific population, and our corpus over-represents English-language internet sources and Western cultural contexts. Practitioners using ODYS SIM for downstream evaluation should treat its outputs as a behavioral baseline rather than a representative human sample. 
+
+References 
+
+Lisa P Argyle, Ethan C Busby, Nancy Fulda, Joshua R Gubler, Christopher Rytting, and David Wingate. Out of one, many: Using language models to simulate human samples. Political Analysis , 2023. URL https: //arxiv.org/abs/2209.06899 .Yuntao Bai, Andy Jones, Kamal Ndousse, Amanda Askell, Anna Chen, Nova DasSarma, Dawn Drain, Stanislav Fort, Deep Ganguli, Tom Henighan, Nicholas Joseph, Saurav Kadavath, Jackson Kernion, Tom Conerly, Sheer El-Showk, Nelson Elhage, Zac Hatfield-Dodds, Danny Hernandez, Tristan Hume, Scott Johnston, Shauna Kravec, Liane Lovitt, Neel Nanda, Catherine Olsson, Dario Amodei, Tom Brown, Jack Clark, Sam McCandlish, Chris Olah, Ben Mann, and Jared Kaplan. Training a helpful and harmless assistant with reinforcement learning from human feedback, 2022. URL https://arxiv.org/abs/2204.05862 .Simon Baron-Cohen, Alan M. Leslie, and Uta Frith. Does the autistic child have a “theory of mind”? Cognition , 21 (1):37–46, 1985. URL https://doi.org/10.1016/0010-0277(85)90022-8 .Marcel Binz, Elif Akata, Matthias Bethge, Franziska Br ¨andle, Fred Callaway, Julian Coda-Forno, Peter Dayan, Can Demircan, Maria K. Eckstein, No ´emi ´Eltet ˝o, Thomas L. Griffiths, Susanne Haridi, Akshay K. Jagadish, Li Ji-An, Alexander Kipnis, Sreejan Kumar, Tobias Ludwig, Marvin Mathony, Marcelo Mattar, Alireza Modirshanechi, Surabhi S. Nath, Joshua C. Peterson, Milena Rmus, Evan M. Russek, Tankred Saanum, Johannes A. Schubert, Luca M. Schulze Buschoff, Nishad Singhi, Xin Sui, Mirko Thalmann, Fabian Theis, Vuong Truong, Vishaal Udandarao, Konstantinos Voudouris, Robert Wilson, Kristin Witte, Shuchen Wu, Dirk Wulff, Huadong Xiong, and Eric Schulz. Centaur: a foundation model of human cognition, 2025. URL https://arxiv.org/abs/ 2410.20268 .Jonathan P. Chang, Caleb Chiam, Liye Fu, Andrew Z. Wang, Justine Zhang, and Cristian Danescu-Niculescu-Mizil. Convokit: A toolkit for the analysis of conversations. In Proceedings of SIGDIAL , 2020. URL https: //arxiv.org/abs/2005.04246 .Kushal Chawla, Jaysa Ramirez, Rene Clever, Gale Lucas, Jonathan May, and Jonathan Gratch. Casino: A corpus of campsite negotiation dialogues for automatic negotiation systems. In NAACL , 2021. URL https: //arxiv.org/abs/2103.15721 .Runjin Chen, Andy Arditi, Henry Sleight, Owain Evans, and Jack Lindsey. Persona vectors: Monitoring and controlling character traits in language models, 2025. URL https://arxiv.org/abs/2507.21509 .Myra Cheng, Sunny Yu, and Dan Jurafsky. HumT DumT: Measuring and controlling human-like language in LLMs. In Proceedings of the 63rd Annual Meeting of the Association for Computational Linguistics (ACL) , 2025. URL 
+
+https://aclanthology.org/2025.acl-long.1261/ .Robert B. Cialdini. Influence: The Psychology of Persuasion . Harper Collins, re-vised edition, 2007. URL https://www.harpercollins.com/products/ influence-the-psychology-of-persuasion-revised-edition-robert-b-cialdini .Cristian Danescu-Niculescu-Mizil and Lillian Lee. Chameleons in imagined conversations: A new approach to understanding coordination of linguistic style in dialogs. In Workshop on Cognitive Modeling and Computational Linguistics , 2011. URL https://arxiv.org/abs/1106.3077 .Yao Dou, Michel Galley, Baolin Peng, Chris Kedzie, Weixin Cai, Alan Ritter, Chris Quirk, Wei Xu, and Jianfeng Gao. Simulatorarena: Are user simulators reliable proxies for multi-turn evaluation of ai assistants? In 
+
+Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing (EMNLP) , 2025. URL https://arxiv.org/abs/2510.05444 .Bangde Du, Minghao Guo, Songming He, Ziyi Ye, Xi Zhu, Weihang Su, Shuqi Zhu, Yujia Zhou, Yongfeng Zhang, Qingyao Ai, and Yiqun Liu. Twinvoice: A multi-dimensional benchmark towards digital twins via llm persona simulation, 2025. URL https://arxiv.org/abs/2510.25536 .Denis Emelin, Ronan Le Bras, Jena D Hwang, Maxwell Forbes, and Yejin Choi. Moral stories: Situated reasoning about norms, intents, actions, and their consequences. arXiv preprint arXiv:2012.15738 , 2021. URL https: //arxiv.org/abs/2012.15738 .12 Suchin Gururangan, Ana Marasovi ´c, Swabha Swayamdipta, Kyle Lo, Iz Beltagy, Doug Downey, and Noah A. Smith. Don’t stop pretraining: Adapt language models to domains and tasks. In ACL , 2020. URL https: //arxiv.org/abs/2004.10964 .Ashutosh Hathidara, Julien Yu, Vaishali Senthil, Sebastian Schreiber, and Anil Babu Ankisettipalli. Mirrorbench: A benchmark to evaluate conversational user-proxy agents for human-likeness, 2026. URL https://arxiv. org/abs/2601.08118 .Yinghui He, Yufan Wu, Yilin Jia, Rada Mihalcea, Yulong Chen, and Naihao Deng. Hi-tom: A benchmark for evaluating higher-order theory of mind reasoning in large language models. In Findings of EMNLP , 2023. URL 
+
+https://arxiv.org/abs/2310.16755 .Jonas H ¨ubotter, Frederike L ¨ubeck, Lejs Behric, Anton Baumann, Marco Bagatella, Daniel Marta, Ido Hakimi, Idan Shenfeld, Thomas Kleine Buening, Carlos Guestrin, and Andreas Krause. Reinforcement learning via self-distillation. arXiv preprint arXiv:2601.20802 , 2026. URL https://arxiv.org/abs/2601.20802 .Dell Hymes. On communicative competence. In J. B. Pride and J. Holmes (eds.), Sociolinguistics: Selected Readings , pp. 269–293. Penguin, 1972. URL https://wwnorton.com/books/9780393092264 .Bowen Jiang, Taiwei Shi, Ryo Kamoi, Yuan Yuan, Camillo J. Taylor, Longqi Yang, Pei Zhou, and Sihao Chen. One model, all roles: Multi-turn, multi-agent self-play reinforcement learning for conversational social intelligence, 2026. URL https://arxiv.org/abs/2602.03109 .Liwei Jiang, Yuanjun Chai, Margaret Li, Mickel Liu, Raymond Fok, Nouha Dziri, Yulia Tsvetkov, Maarten Sap, Alon Albalak, and Yejin Choi. Artificial hivemind: The open-ended homogeneity of language models (and beyond). arXiv preprint arXiv:2510.22954 , 2025. URL https://arxiv.org/abs/2510.22954 .Hyunwoo Kim, Melanie Sclar, Xuhui Zhou, Ronan Le Bras, Gunhee Kim, Yejin Choi, and Maarten Sap. Fantom: A benchmark for stress-testing machine theory of mind in interactions. In EMNLP , 2023. URL https: //arxiv.org/abs/2310.15421 .Hannah Rose Kirk, Alexander Whitefield, Paul R ¨ottger, Andrew Bean, Katerina Margatina, Juan Ciro, Rafael Mosquera, Max Bartolo, Adina Williams, He He, Bertie Vidgen, and Scott A. Hale. The prism alignment dataset: What participatory, representative and individualised human feedback reveals about the subjective and multicultural alignment of large language models. Advances in Neural Information Processing Systems , 37: 105236–105344, 2024. URL https://arxiv.org/abs/2404.16019 .Akaash Kolluri, Shengguang Wu, Joon Sung Park, and Michael S Bernstein. Finetuning llms for human behavior prediction in social science experiments. In EMNLP , 2025. URL https://arxiv.org/abs/2509. 05830 .Daeun Kyung, Hyunseung Chung, Seongsu Bae, Jiho Kim, Jae Ho Sohn, Taerim Kim, Soo Kyung Kim, and Edward Choi. Patientsim: A persona-driven simulator for realistic doctor-patient interactions, 2025. URL 
+
+https://arxiv.org/abs/2505.17818 .Andreas K ¨opf, Yannic Kilcher, Dimitri von R ¨utte, Sotiris Anagnostidis, Zhi-Rui Tam, Keith Stevens, Abdullah Barhoum, Nguyen Minh Duc, Oliver Stanley, Rich ´ard Nagyfi, Shahul ES, Sameer Suri, David Glushkov, Arnav Dantuluri, Andrew Maguire, Christoph Schuhmann, Huu Nguyen, and Alexander Mattick. Openassistant conversations – democratizing large language model alignment, 2023. URL https://arxiv.org/abs/ 2304.07327 .Matthew Le, Y-Lan Boureau, and Maximilian Nickel. Revisiting the evaluation of theory of mind through question answering. In EMNLP , 2019. URL https://aclanthology.org/D19-1598/ .Yuxuan Lei, Tianfu Wang, Jianxun Lian, Zhengyu Hu, Defu Lian, and Xing Xie. Humanllm: Towards personalized understanding and simulation of human nature, 2026. URL https://arxiv.org/abs/2601.15793 .Jia-Nan Li, Jian Guan, Songhao Wu, Wei Wu, and Rui Yan. From 1,000,000 users to every user: Scaling up personalized preference for user-level alignment, 2025a. URL https://arxiv.org/abs/2503.15463 .Wenkai Li, Jiarui Liu, Andy Liu, Xuhui Zhou, Mona T. Diab, and Maarten Sap. BIG5-CHAT: Shaping LLM personalities through training on human-grounded data. In Wanxiang Che, Joyce Nabende, Ekaterina Shutova, and Mohammad Taher Pilehvar (eds.), Proceedings of the 63rd Annual Meeting of the Association for Com-putational Linguistics (Volume 1: Long Papers) , pp. 20434–20471, Vienna, Austria, July 2025b. Associa-tion for Computational Linguistics. ISBN 979-8-89176-251-0. doi: 10.18653/v1/2025.acl-long.999. URL 
+
+https://aclanthology.org/2025.acl-long.999/ .Yanran Li, Hui Su, Xiaoyu Shen, Wenjie Li, Ziqiang Cao, and Shuzi Niu. Dailydialog: A manually labelled multi-turn dialogue dataset. In IJCNLP , 2017. URL https://arxiv.org/abs/1710.03957 .13 Emmy Liu, Graham Neubig, and Chenyan Xiong. Midtraining bridges pretraining and posttraining distributions, 2026. URL https://arxiv.org/abs/2510.14865 .Siyang Liu, Chujie Zheng, Ori Dember, Sahand Sabour, Yu Li, Dianbo Yu, Yun Jiang, and Minlie Huang. Towards emotional support dialog systems. In ACL , 2021. URL https://arxiv.org/abs/2106.01144 .Kaixiang Mo, Yuxin Shi, Weiwei Weng, Zhiqiang Zhou, Shuman Liu, Haibo Zhang, and Anxiang Zeng. Mid-training of large language models: A survey, 2025. URL https://arxiv.org/abs/2510.06826 .Tarek Naous, Philippe Laban, Wei Xu, and Jennifer Neville. Flipping the dialogue: Training and evaluating user language models, 2026. URL https://arxiv.org/abs/2510.06552 .OpenAI. Introducing GPT-5.5. https://openai.com/index/introducing-gpt-5-5/ , 2025. Ac-cessed 2026-05-06. Long Ouyang, Jeff Wu, Xu Jiang, Diogo Almeida, Carroll L. Wainwright, Pamela Mishkin, Chong Zhang, Sandhini Agarwal, Katarina Slama, Alex Ray, John Schulman, Jacob Hilton, Fraser Kelton, Luke Miller, Maddie Simens, Amanda Askell, Peter Welinder, Paul Christiano, Jan Leike, and Ryan Lowe. Training language models to follow instructions with human feedback. Advances in Neural Information Processing Systems , 2022. URL 
+
+https://arxiv.org/abs/2203.02155 .Joon Sung Park, Joseph C O’Brien, Carrie J Cai, Meredith Ringel Morris, Percy Liang, and Michael S Bernstein. Generative agents: Interactive simulacra of human behavior. In UIST , 2023. URL https://arxiv.org/ abs/2304.03442 .Qwen Team. Qwen3 technical report, 2025. URL https://arxiv.org/abs/2505.09388 .Hannah Rashkin, Eric Michael Smith, Margaret Li, and Y-Lan Boureau. Towards empathetic open-domain conversation models: A new benchmark and dataset. In ACL , 2019. URL https://arxiv.org/abs/ 1811.00207 .Alexis Ross and Jacob Andreas. Learning to make mistakes: Modeling incorrect student thinking and key errors, 2025a. URL https://arxiv.org/abs/2510.11502 .Alexis Ross and Jacob Andreas. Learning to make mistakes: Modeling incorrect student thinking and key errors, 2025b. URL https://arxiv.org/abs/2510.11502 .Baptiste Rozi `ere, Jonas Gehring, Fabian Gloeckle, Sten Sootla, Itai Gat, Xiaoqing Ellen Tan, Yossi Adi, Jingyu Liu, Romain Sauvestre, Tal Remez, J ´er ´emy Rapin, Artyom Kozhevnikov, Ivan Evtimov, Joanna Bitton, Manish Bhatt, Cristian Canton Ferrer, Aaron Grattafiori, Wenhan Xiong, Alexandre D ´efossez, Jade Copet, Faisal Azhar, Hugo Touvron, Louis Martin, Nicolas Usunier, Thomas Scialom, and Gabriel Synnaeve. Code llama: Open foundation models for code, 2024. URL https://arxiv.org/abs/2308.12950 .Maarten Sap, Hannah Rashkin, Derek Chen, Ronan Le Bras, and Yejin Choi. Social iqa: Commonsense reasoning about social interactions. In EMNLP , 2019. URL https://arxiv.org/abs/1904.09728 .Melanie Sclar, Sachin Kumar, Peter West, Alane Suhr, Yejin Choi, and Yulia Tsvetkov. Minding language models’ (lack of) theory of mind: A plug-and-play multi-character belief tracker, 2023. URL https://arxiv.org/ abs/2306.00924 .Taiwei Shi, Sihao Chen, Bowen Jiang, Linxin Song, Longqi Yang, and Jieyu Zhao. Experiential reinforcement learning. arXiv preprint arXiv:2602.13949 , 2026. URL https://arxiv.org/abs/2602.13949 .Damien Sileo. Mindgames: Targeting theory of mind in large language models with dynamic epistemic modal logic. 
+
+arXiv preprint arXiv:2305.05110 , 2023. URL https://arxiv.org/abs/2305.03353 .Yuda Song, Lili Chen, Fahim Tajwar, R ´emi Munos, Deepak Pathak, J. Andrew Bagnell, Aarti Singh, and Andrea Zanette. Expanding the capabilities of reinforcement learning via text feedback. arXiv preprint arXiv:2602.02482 ,2026. URL https://arxiv.org/abs/2602.02482 .StepFun AI. Step-3.5-flash-sft. Hugging Face Datasets, 2025. URL https://huggingface.co/ datasets/stepfun-ai/Step-3.5-Flash-SFT .Weiwei Sun, Xuhui Zhou, Jiarui Liu, Weihua Du, Haojia Sun, Yiqing Xie, Qianou Ma, Sihao Chen, Mengting Wan, Longqi Yang, Pei Zhou, Sherry Wu, Sean Welleck, Graham Neubig, Yiming Yang, and Maarten Sap. Reinforcing human behavior simulation via verbal feedback, 2026. URL https://arxiv.org/abs/2605.20506 .Andrea Tirinzoni, Ahmed Touati, Jesse Farebrother, Mateusz Guzek, Anssi Kanervisto, Yingchen Xu, Alessandro Lazaric, and Matteo Pirotta. Zero-shot whole-body humanoid control via behavioral foundation models. https: //github.com/facebookresearch/metamotivo , 2024. 14 Pat Verga, Sebastian Hofst ¨atter, Sophia Althammer, Yixuan Su, Aleksandra Piktus, Arkady Arkhangorodsky, Minjie Xu, Naomi White, and Patrick Lewis. Replacing judges with juries: Evaluating llm generations with a panel of diverse models. arXiv preprint arXiv:2404.18796 , 2024. URL https://arxiv.org/abs/2404.18796 .Ruiyi Wang, Haofei Yu, Wenxin Zhang, Zhengyang Qi, Maarten Sap, Graham Neubig, Yonatan Bisk, and Hao Zhu. Sotopia-π: Interactive learning of socially intelligent language agents, 2024. URL https://arxiv.org/ abs/2403.08715 .Xintao Wang, Heng Wang, Yifei Zhang, Xinfeng Yuan, Rui Xu, Jen tse Huang, Siyu Yuan, Haoran Guo, Jiangjie Chen, Shuchang Zhou, Wei Wang, and Yanghua Xiao. Coser: A comprehensive literary dataset and framework for training and evaluating llm role-playing and persona simulation, 2026. URL https://arxiv.org/abs/ 2502.09082 .Xuewei Wang, Weiyan Shi, Richard Kim, Yoojung Oh, Sijia Yang, Jingwen Zhang, and Zhou Yu. Persuasion for good: Towards a personalized persuasive dialogue system for social good. In ACL , 2019. URL https: //arxiv.org/abs/1906.06725 .Jincenzi Wu, Yuxuan Lei, Jianxun Lian, Yitian Huang, Lexin Zhou, Haotian Li, Xing Xie, and Helen Meng. Social-r1: Towards human-like social reasoning in llms, 2026a. URL https://arxiv.org/abs/2603.09249 .Shirley Wu, Evelyn Choi, Arpandeep Khatua, Zhanghan Wang, Joy He-Yueya, Tharindu Cyril Weerasooriya, Wei Wei, Diyi Yang, Jure Leskovec, and James Zou. Humanlm: Simulating users with state alignment beats response imitation, 2026b. URL https://arxiv.org/abs/2603.03303 .Yutong Xie, Zhuoheng Li, Xiyuan Wang, Yijun Pan, Qijia Liu, Xingzhi Cui, Kuang-Yu Lo, Ruoyi Gao, Xingjian Zhang, Jin Huang, Walter Yuan, Matthew O. Jackson, and Qiaozhu Mei. Be.fm: Open foundation models for human behavior, 2025. URL https://arxiv.org/abs/2505.23058 .Rui Xu, Xintao Wang, Jiangjie Chen, Siyu Yuan, Xinfeng Yuan, Jiaqing Liang, Zulong Chen, Xiaoqing Dong, and Yanghua Xiao. Character is destiny: Can role-playing language agents make persona-driven decisions? arXiv preprint arXiv:2404.12138 , 2024. URL https://arxiv.org/abs/2404.12138 .Shunyu Yao, Noah Shinn, Pedram Razavi, and Karthik Narasimhan. τ -bench: A benchmark for tool-agent-user interaction in real-world domains, 2024. URL https://arxiv.org/abs/2406.12045 .Haofei Yu, Zhengyang Qi, Yining Zhao, Kolby Nottingham, Keyang Xuan, Bodhisattwa Prasad Majumder, Hao Zhu, Paul Pu Liang, and Jiaxuan You. Sotopia-rl: Reward design for social intelligence, 2025. URL 
+
+https://arxiv.org/abs/2508.03905 .Weishuai Zeng, Shunlin Lu, Kangning Yin, et al. Behavior foundation model for humanoid robots, 2025. URL 
+
+https://arxiv.org/abs/2509.13780 .Wenting Zhao, Xiang Ren, Jack Hessel, Claire Cardie, Yejin Choi, and Yuntian Deng. Wildchat: 1m chatgpt interaction logs in the wild, 2024. URL https://arxiv.org/abs/2405.01470 .Lianmin Zheng, Wei-Lin Chiang, Ying Sheng, Siyuan Zhuang, Zhanghao Wu, Yonghao Zhuang, Zi Lin, Zhuohan Li, Dacheng Li, Eric P. Xing, Hao Zhang, Joseph E. Gonzalez, and Ion Stoica. Judging llm-as-a-judge with mt-bench and chatbot arena. In Advances in Neural Information Processing Systems , volume 36, 2023. URL 
+
+https://arxiv.org/abs/2306.05685 .Lianmin Zheng, Wei-Lin Chiang, Ying Sheng, Tianle Li, Siyuan Zhuang, Zhanghao Wu, Yonghao Zhuang, Zhuohan Li, Zi Lin, Eric P. Xing, Joseph E. Gonzalez, Ion Stoica, and Hao Zhang. Lmsys-chat-1m: A large-scale real-world llm conversation dataset, 2024. URL https://arxiv.org/abs/2309.11998 .Xuhui Zhou, Hyunwoo Kim, Faeze Brahman, Liwei Jiang, Hao Zhu, Ximing Lu, Frank Xu, Bill Yuchen Lin, Yejin Choi, Niloofar Mireshghallah, Ronan Le Bras, and Maarten Sap. Haicosystem: An ecosystem for sandboxing safety risks in human-ai interactions. arXiv preprint arXiv:2409.16427 , 2024a. URL https: //arxiv.org/abs/2409.16427 .Xuhui Zhou, Hao Zhu, Leena Mathur, Ruohong Zhang, Haofei Yu, Zhengyang Qi, Louis-Philippe Morency, Yonatan Bisk, Daniel Fried, Graham Neubig, and Maarten Sap. Sotopia: Interactive evaluation for social intelligence in language agents. In ICLR , 2024b. URL https://arxiv.org/abs/2310.11667 .Xuhui Zhou, Weiwei Sun, Qianou Ma, Yiqing Xie, Jiarui Liu, Weihua Du, Sean Welleck, Yiming Yang, Graham Neubig, Sherry Tongshuang Wu, and Maarten Sap. Mind the sim2real gap in user simulation for agentic tasks, 2026a. URL https://arxiv.org/abs/2603.11245 .15 Xuhui Zhou, Weiwei Sun, Qianou Ma, Yiqing Xie, Jiarui Liu, Weihua Du, Sean Welleck, Yiming Yang, Graham Neubig, Sherry Tongshuang Wu, and Maarten Sap. Mind the sim2real gap in user simulation for agentic tasks, 2026b. URL https://arxiv.org/abs/2603.11245 .Banghua Zhu, Evan Frick, Tianhao Wu, Hanlin Zhu, Karthik Ganesan, Wei-Lin Chiang, Jian Zhang, and Jiantao Jiao. Starling-7b: Improving llm helpfulness and harmlessness with rlaif. arXiv preprint , 2023. URL https: //huggingface.co/datasets/berkeley-nest/Nectar .16 Table 3: Full Results. Per-task scores and the unweighted 23-task average ( Avg ) for all evaluated models. + Mid 
+
+denotes midtraining on the ODYS SIM corpus; + Post denotes task-specific RL followed by expert distillation. The headline OSIM 8B of Table 2 is Qwen3-8B-Base + Mid + Post, and OSIM 8B-Mid is Qwen3-8B-Base + Mid. Ditto-v2 8B is the verbal-feedback RL model of Sun et al. (2026), post-trained directly from Qwen3-8B-Instruct. 
+
+CONV SS COG ROLE EVAL 
+
+Model Avg 
+
+> UserLLM
+> MirrorBench
+> Human-Chat
+> SimArena-Doc
+> Sotopia-Hard
+> Fantom
+> Hitom
+> Paratomi
+> Social-R1
+> Coser
+> Lifechoices
+> Twinvoice
+> BehaviorChain
+> SimArena-Math
+> Mistakes
+> Human-Email
+> Human-News
+> Human-Politics
+> AlignX
+> Humanllm
+> Socsci210
+> Human-Book
+> Human-Opinion
+
+Proprietary Models 
+
+GPT 5.5 65.2 65.3 56.7 28.2 83.4 31.9 93.0 82.0 99.0 69.0 66.2 91.0 74.0 95.0 68.5 72.0 50.1 40.2 42.0 71.2 45.7 77.2 57.6 39.8 GPT 5.4 Nano 53.0 48.9 45.0 24.6 83.7 29.5 80.0 83.0 75.0 48.0 53.5 64.0 34.0 38.0 69.0 58.0 47.1 36.4 38.7 67.4 34.6 74.3 43.7 42.3 GPT 5.4 Mini 58.2 52.5 55.6 26.7 83.3 28.5 84.0 78.0 82.0 58.0 58.8 72.0 44.0 72.0 67.4 57.0 50.3 39.8 41.7 68.6 39.9 75.2 55.6 46.9 Gemini 3.1 Pro 64.8 67.7 48.3 21.0 83.0 27.8 93.0 86.0 97.0 79.0 62.1 84.0 86.0 92.0 71.5 73.0 46.9 42.3 32.5 73.4 46.9 78.0 62.4 36.0 Claude Opus 4.7 65.5 57.6 63.7 22.6 83.5 32.4 80.0 93.0 90.0 67.0 66.5 92.0 83.0 96.0 68.7 74.0 50.4 41.3 43.5 71.6 44.2 77.2 61.4 46.2 Qwen 3.6 Plus 61.1 72.1 48.0 22.2 82.4 28.3 89.0 73.0 94.0 67.0 55.9 79.0 71.0 85.0 70.9 67.0 47.9 41.8 31.6 69.8 42.7 74.5 58.4 34.2 
+
+Open-Source Specialized Models 
+
+UserLM 8B 13.4 37.3 9.7 4.2 77.7 17.8 1.0 0.0 11.0 3.0 3.5 13.0 1.0 5.0 61.5 1.0 8.7 2.5 5.9 26.8 3.8 1.8 3.4 9.1 Coser 8B 19.5 44.4 23.6 2.5 75.6 25.0 1.0 0.0 3.0 0.0 30.0 44.0 4.0 8.0 68.0 0.0 9.2 15.8 8.4 26.6 4.3 21.0 25.4 8.2 HumanLM 8B 48.7 37.2 45.4 21.7 82.9 26.7 70.0 56.0 75.0 47.0 19.8 67.0 40.0 36.0 69.0 56.0 42.1 33.1 33.0 66.8 35.2 75.2 48.7 37.4 SotopiaRL 7B 39.7 44.6 38.3 25.8 83.5 31.7 0.0 31.0 40.0 46.0 30.3 62.0 29.0 21.0 70.5 17.0 42.8 30.2 34.2 58.6 24.3 69.8 50.2 32.3 
+
+Ours 
+
+Qwen3-4B-Base 47.8 40.9 45.0 19.6 82.5 26.5 51.0 66.0 57.0 53.0 34.0 61.0 40.0 37.0 66.8 55.0 43.6 31.5 29.3 65.6 31.3 74.6 53.3 33.8 Qwen3-4B-Base + Mid 39.4 59.6 41.6 11.0 80.6 43.9 65.0 52.0 70.0 36.0 15.5 70.0 28.0 35.0 69.7 23.0 22.6 16.1 13.0 52.6 6.5 36.8 39.7 17.5 Qwen3-4B-Base + Post 60.5 88.9 60.1 23.2 84.3 45.1 81.0 68.0 75.0 56.0 50.6 79.0 60.0 78.0 71.2 61.0 50.1 38.4 36.8 74.4 36.8 74.1 60.3 39.0 Qwen3-4B-Base + Mid + Post 62.6 89.8 68.3 24.5 84.8 48.0 82.0 69.0 81.0 55.0 55.0 89.0 63.0 88.0 71.3 53.0 48.7 42.4 39.1 71.8 37.8 74.3 63.3 40.5 Qwen3-8B-Base 26.9 31.0 13.9 12.0 79.6 21.4 23.0 12.0 19.0 37.0 6.1 32.0 19.0 18.0 66.2 24.0 26.4 12.7 17.8 49.0 12.1 46.6 21.5 18.2 Qwen3-8B-Base + Mid 41.1 49.5 49.1 7.8 80.3 45.6 62.0 54.0 72.0 42.0 24.8 58.0 25.0 42.0 68.1 18.0 22.3 15.1 15.4 53.6 16.5 68.1 38.8 17.0 Qwen3-8B-Base + Post 63.8 90.5 63.0 28.5 85.4 49.7 75.0 74.0 84.0 61.0 59.6 80.0 68.0 89.0 70.7 56.0 53.2 42.9 40.4 73.0 40.5 77.7 63.4 41.1 Qwen3-8B-Base + Mid + Post 64.6 90.1 68.3 28.2 84.1 49.2 80.0 79.0 83.0 60.0 62.6 82.0 68.0 94.0 70.7 59.0 51.4 42.7 41.9 72.6 39.1 75.1 63.2 42.0 Qwen3-8B-Inst 48.3 46.0 54.0 24.7 83.6 27.7 23.0 62.0 67.0 54.0 43.5 70.0 42.0 41.0 68.9 27.0 43.7 32.5 33.2 68.6 34.1 73.6 53.6 37.2 Qwen3-8B-Inst + Mid 43.1 57.1 48.6 12.1 80.5 43.1 66.0 56.0 68.0 44.0 24.0 62.0 25.0 52.0 68.6 40.0 24.1 18.0 13.7 59.2 17.9 55.6 38.3 17.3 Qwen3-8B-Inst + Post † 65.3 92.6 70.6 24.9 84.3 48.7 89.0 78.0 82.0 59.0 63.9 79.0 74.0 93.0 70.6 66.0 49.2 44.3 41.0 72.2 40.9 75.5 63.6 40.1 Qwen3-8B-Inst + Post 66.0 91.6 70.0 26.8 84.4 49.3 90.0 76.0 87.0 64.0 63.9 79.0 75.0 92.0 71.7 62.0 50.1 44.4 42.1 74.2 40.4 77.2 63.6 42.6 Qwen3-8B-Inst + Mid + Post 65.7 93.9 72.8 28.9 85.1 48.4 90.0 79.0 89.0 60.0 64.1 73.0 70.0 91.0 70.8 61.0 51.7 43.3 41.2 73.8 41.5 77.8 64.2 41.1 Ditto-v2 8B (Sun et al., 2026) 66.5 92.7 72.0 27.4 85.1 49.4 95.0 82.0 91.0 61.0 65.3 83.0 64.0 93.0 70.7 65.0 49.4 43.6 41.6 73.6 42.1 75.1 65.2 41.6 
+
+A Full Results 
+
+A.1 Full Out-of-Distribution Evaluation Results 
+
+Tables 4 and 5 report the full per-model results for the two out-of-distribution checks in Section 5.3: interactive user simulation on τ -USI and raw text human-likeness on HumT. 
+
+B Limitations and Future Work 
+
+Our investigation is text-only, but human behavior is fundamentally multimodal (voice, gesture, facial expression). The ODYS SIM corpus, while diverse, still consists largely of performed behavior (conversations typed for an audience) rather than naturalistic decision traces, and our evaluation depends on LLM judges that may carry their own biases. Promising directions include extending to multimodal behavior, scaling to larger base models, and testing whether behavioral midtraining transfers across languages and cultures. 
+
+C Ablation 
+
+Data ablation Table 6 shows that post-training contributes the largest gains . RL alone raises the average score from 47.8 to 60.5 for Base 4B, 26.9 to 63.8 for Base 8B, and 48.3 to 66.0 for Instruct 8B. Midtraining further improves the post-trained base models, reaching 62.6 for Base 4B and 64.6 for Base 8B. Overall, these results suggest that RL is the key step for behavioral alignment , while midtraining provides additional gains when applied before RL on pretrained base models. 
+
+RL ablation Figure 10 shows an ablation study on the learning algorithm. Specifically, we compare our RLVF (RL with verbal feedback) method with the following methods: (1) GRPO; (2) RLVF only (y1, x ), a variant that only trains on (y1, x ) pairs and removes the loss on (y0, x ) and (y0, x + h) pairs; (3) ERL (Shi et al., 2026), which 17 Table 4: Out-of-distribution user simulation on τ -USI (Zhou et al., 2026b). Each simulator drives a fixed GPT-5.2 tool-use agent through 165 τ -bench retail/airline tasks (Yao et al., 2024); we report alignment to human annotators on the four behavioral dimensions ( Conv ersation, Info rmation, Clarif ication, React ion; Sørensen–Dice ×100 ), post-hoc survey agreement ( Eval ), task-success calibration error ( ECE , lower is better), and the composite USI ,averaged over three annotation batches. Bold marks the best non-human entry per column. ODYS SIM variants are evaluated zero-shot; τ -bench’s tool-agent domain is disjoint from the S OUL -Index training corpus.                                                                                                                         
+
+> User Simulator Conv Info Clarif React Eval ECE ↓USI
+> Human (upper bound) 87.4 97.9 88.0 93.5 97.4 0.081 92.7
+> Frontier LLMs
+> DeepSeek-V3.1 45.1 86.6 74.5 87.6 74.3 0.119 76.1
+> GPT-5.1 47.3 77.4 73.3 88.1 72.1 0.172 73.5 Gemini-3.1-Pro 44.1 67.1 48.9 45.3 75.1 0.101 61.7 Claude-Opus-4 32.6 71.9 46.6 44.9 73.4 0.139 59.2
+> Specialized behavioral simulators
+> CoSER-8B (Wang et al., 2026) 37.8 71.5 71.6 69.9 63.3 0.109 67.2 UserLM-8B (Naous et al., 2026) 30.8 50.8 56.8 80.0 67.4 0.140 62.0 Human-Like-7B 35.7 55.0 51.6 65.9 72.8 0.220 59.8 HumanLM-8B (Wu et al., 2026b) 30.1 19.5 38.5 50.7 61.6 0.192 46.9
+> Off-the-shelf instruct model ( ODYS SIM ’s base checkpoint)
+> Qwen3-8B-Instruct 50.5 74.3 80.2 80.3 72.2 0.293 71.4
+> ODYS SIM (ours)
+> OSIM -8B 46.4 88.2 79.7 93.2 70.0 0.255 75.4
+> OSIM -8B-Mid 45.5 83.5 63.7 76.1 69.1 0.356 67.1
+> OSIM -Inst-8B 45.1 85.2 74.1 83.6 74.4 0.339 71.4
+> OSIM -4B 30.0 66.3 76.2 82.2 70.5 0.242 66.8
+> OSIM -4B-Mid 51.1 91.5 65.5 82.6 69.0 0.242 72.6
+> OSIM -Inst-4B 37.8 73.4 62.6 62.1 72.1 0.236 64.1
+
+Table 5: Human-likeness beyond S OUL -Index (HumT (Cheng et al., 2025); ×100 , higher is more human-like). 
+
+Per-text anthropomorphism scalar—the log-prob ratio of animate vs. inanimate prefixes under a fixed GPT-2 backbone—measured on HumT’s held-out prompts, a signal entirely outside the S OUL -Index training objective. 
+
+Others is the best prior human-simulation model. Bold marks the best entry.          
+
+> GPT 5.5 Gemini 3.1 Pro Claude Opus 4.7 Qwen 3.6 Plus Others *Qwen3 8B Inst Base 8B
+> OSIM
+> 8B-Mid
+> OSIM
+> 8B
+> HumT 4.6 7.0 3.7 3.8 2.9 4.2 2.1 13.4 11.9
+
+uses a supervised fine-tuning objective on y1 instead of RL; and several SDPO (H ¨ubotter et al., 2026) variants including (4) SDPO+ token, which combines SDPO with token-level loss and the GRPO objective; (5) SDPO+ logits, which combines SDPO with logits-level loss and the GRPO objective; (6) SDPO token, i.e., SDPO with token-level loss; and (7) SDPO logits, i.e., SDPO with logits-level loss. From the results, we observe that RLVF performs better than GRPO on most sub-metrics, especially on smaller metrics such as secret . Notably, secret measures whether the agent avoids leaking private information—a safety-critical dimension that is not directly optimized in the scalar RL reward but can be explicitly addressed through verbal feedback. GRPO reduces all multi-dimensional scores into a single scalar reward, which loses information and weakens learning signals for improving minor metrics, while RLVF can learn all dimensions effectively through fine-grained feedback. Compared to different algorithms that utilize feedback, we observe that reverse-KL-based methods such as SDPO collapse on most metrics except secret . Combining SDPO with GRPO improves performance but still performs worse than RLVF. ERL also underperforms, likely because the lack of reward normalization makes learning unstable under noisy feedback. 
+
+D Post-training Data Statistics 
+
+Construction. For every S OUL -Index task we maintain three matched data slices: a held-out evaluation slice (capped to 100 instances per task — 500 for HumanLLM — for fast judge-based scoring), a per-task RL training set, and an expert-distillation (SFT) bucket consolidating top-scoring rollouts. The RL slice is constructed by sampling 1,024 instances from each task’s training split (Verl-style on-policy RL, batch 64, group size 8 rollouts/prompt, max input/output 8,192 tokens, LoRA rank 32 / alpha 64 on Qwen3-8B-Instruct); when a task’s full training set is smaller 18 Table 6: Ablation over training stages. Mid-Train denotes mid-stage SFT and Post-Train denotes post-training (RL). Avg is the unweighted mean across the 23 evaluation tasks.                            
+
+> Pretrained Mid-Train Post-Train Avg
+> Base 4B 47.8 Base 4B ✓39.4 Base 4B ✓60.5 Base 4B ✓✓62.6 Base 8B 26.9 Base 8B ✓41.1 Base 8B ✓63.8 Base 8B ✓✓64.6 Instruct 8B 48.3 Instruct 8B ✓43.1 Instruct 8B ✓66.0 Instruct 8B ✓✓65.7
+
+Figure 10: RL-algorithm ablation on Sotopia. Reward over training for our RLVF (RL with verbal feedback) against GRPO, ERL (Shi et al., 2026), and the SDPO (H¨ ubotter et al., 2026) variants defined in the text. than the 1,024 target, we use it in full (e.g., sotopia-hard 405, social r1 687, sim doc 815, sim math 
+
+1,043, lifechoices 1,150). A few tasks deviate from the 1,024 default: HUMANUAL splits use 1,000 prompts each (six domains → 6,000 total), alignx pulls a wider 8,191-prompt slice across its five sub-splits, and 
+
+socsci210 is downsampled to 2,000 from a 2.4M pool. We release the post-training prompts, held-out evaluation slices, and task-organized train/test files as the HuggingFace dataset cmu-lti/osim-post-training .
+
+Reward signal. The RL algorithm is RLVF (RL with verbal feedback) for tasks scored by an LLM judge that returns both a scalar reward and a textual critique, and GRPO with the scalar reward only for tasks with verifiable rewards (full per-task assignment in Table 7). We use gpt-5-nano as the default judge / environment model, except for CoSER, where the literary-character rubric is more delicate and we use gpt-5.4 for improved judge robustness. For multi-agent tasks (CoSER), the episode-level reward returned by the judge is assigned to each agent’s rollout so on-policy advantages remain well-defined. 
+
+Expert distillation. After per-task RL we run rejection-sampled fine-tuning (RFT) on the experts: for each prompt we draw 8 rollouts, keep the top-1 by reward, deduplicate, and aggregate into 13 family-level SFT files (Table 8); these files form the expert distillation corpus used to merge the per-task experts back into a single deployable 
+
+OSIM -8B. Family-level grouping reflects shared-skill task clusters: tom sft consolidates Fantom/Hitom/Paratomi (Theory of Mind), humanual sft aggregates all six HUMANUAL domains, simarena sft covers SimArena-19 Table 7: Per-task evaluation and RL-training data statistics. Eval reports the S OUL -Index held-out slice we score (capped to 100 instances per task; HumanLLM uses 500). RL Source , Original , and Used report the per-task RL split, its full size, and the number of prompts we sample for RL training. Alg indicates RLVF (RL with verbal feedback from an LLM judge) or GRPO (scalar verifiable reward).                                                                                                                                 
+
+> Task Eval RL Source Original Used Alg
+> sotopia-hard 100 sotopia clean rl 405 405 RLVF coser 100 coser rl train 21,175 1,024 RLVF lifechoices 100 lifechoices hard rl 160 1,150 GRPO userllm 100 userllm rl train 28,918 1,024 RLVF mirrorbench 100 mirrorbench rl train 3,400 1,024 RLVF fantom 100 fantom rl train 2,366 1,024 RLVF hitom 100 hitom rl train 6,000 1,024 GRPO paratomi 100 paratomi rl train 1,863 1,024 RLVF mistakes 100 mistakes rl train 3,494 1,024 GRPO twinvoice 100 twinvoice rl train —1,024 RLVF social r1 100 social r1 rl 687 687 GRPO behaviorchain 100 behaviorchain rl train 5,000 1,024 GRPO sim math 100 sim math rl 1,043 1,043 GRPO sim doc 100 sim doc rl 815 815 GRPO humanual-book 100 humanual-book 34,170 1,000 GRPO humanual-chat 100 humanual-chat 23,141 1,000 GRPO humanual-email 100 humanual-email 6,377 1,000 GRPO humanual-news 100 humanual-news 48,618 1,000 GRPO humanual-opinion 100 humanual-opinion 37,791 1,000 GRPO humanual-politics 100 humanual-politics 45,429 1,000 GRPO alignx-demo 100 alignx rl 8k 74,826 8,191 GRPO alignx-pair 100 alignx-ugc 100 alignx-arbitrary 100 alignx-history16 100 socsci210 100 socsci210 rl 2k 2,418,748 2,000 GRPO humanllm 500 humanllm rl train 185,912 1,024 GRPO
+> Total 3,100 ——30,551 —
+
+Math/Doc, and sim sft captures user-simulation tasks with overlapping prompt distributions. 
+
+E Midtraining Dataset Details 
+
+E.1 Dataset Details and Sources 
+
+Table 9 lists every released dataset by its identifier in the midtraining release cmu-lti/osim-mid-training ,its display name, its canonical paper (citation key in our bibliography), and its primary source/download location. Where no formal publication exists, or where the bibtex entry is not yet in this paper, the Paper column is marked “—”. ConvoKit-distributed corpora share a single download interface (Chang et al., 2020); per-corpus URLs are listed for direct retrieval. 
+
+E.2 Source-to-Dataset Map 
+
+Figure 11 maps the data flow at three levels of abstraction. Tier 1 is the broad provenance category (4 nodes): human ↔human conversation/text, human ↔AI conversation, preference & behavioral-response data, and LLM-generated dialogue & role-play. Tier 2 is the underlying origin platform or production method (e.g. Reddit, Wikipedia, WildChat, MTurk dyadic role-play, GPT-4 self-play, NSF/TESS social-science experiments) — 28 distinct origins in total. Tier 3 is the resulting dataset (63 datasets in sft processed large/ ). Flow width is proportional to log 10 of train tokens (in millions) per edge, so small datasets (FANToM, MoralStories, GAP, etc.) stay visible alongside the multi-billion-token outliers (alignx v2, wildchat, socsci210). A few datasets carry weight from more than one origin and are split across Tier-2 nodes accordingly: prism is divided 50/50 between participant-interview text (under human ↔AI) and cross-cultural model-rating preferences (under preference data); tom socialiqa and tom moralstories are divided 50/50 between MTurk-authored social-norm short-form QA (human-authored) and ToM-training use (LLM-generated category); and human llm 
+
+(Cognitive Genome) is split evenly across Reddit, Twitter, Blogger, and Amazon since the source paper does not publish per-platform token counts. 20 Human  ↔ Human conversation / text Human  ↔ Human conversation / text Human  ↔ Human conversation / text Human  ↔ Human conversation / text Human  ↔ Human conversation / text 
+
+> Human  ↔ AI conversation Human  ↔ AI conversation Human  ↔ AI conversation Human  ↔ AI conversation Human  ↔ AI conversation
+> Preference & behavioral-response data Preference & behavioral-response data Preference & behavioral-response data Preference & behavioral-response data Preference & behavioral-response data
+> LLM-generated dialogue & role-play LLM-generated dialogue & role-play LLM-generated dialogue & role-play LLM-generated dialogue & role-play LLM-generated dialogue & role-play
+> Reddit (scraped) Reddit (scraped) Reddit (scraped) Reddit (scraped) Reddit (scraped)
+> Wikipedia (scraped) Wikipedia (scraped) Wikipedia (scraped) Wikipedia (scraped) Wikipedia (scraped)
+> Twitter (scraped) Twitter (scraped) Twitter (scraped) Twitter (scraped) Twitter (scraped)
+> Amazon reviews Amazon reviews Amazon reviews Amazon reviews Amazon reviews
+> Medium blogs Medium blogs Medium blogs Medium blogs Medium blogs
+> YouTube comments (BBC/CNN) YouTube comments (BBC/CNN) YouTube comments (BBC/CNN) YouTube comments (BBC/CNN) YouTube comments (BBC/CNN)
+> Enron email corpus Enron email corpus Enron email corpus Enron email corpus Enron email corpus
+> Blogger Blogger Blogger Blogger Blogger
+> TV/Film scripts TV/Film scripts TV/Film scripts TV/Film scripts TV/Film scripts
+> Books / literary fiction (CoSER) Books / literary fiction (CoSER) Books / literary fiction (CoSER) Books / literary fiction (CoSER) Books / literary fiction (CoSER)
+> News broadcasts (CNN/NPR) News broadcasts (CNN/NPR) News broadcasts (CNN/NPR) News broadcasts (CNN/NPR) News broadcasts (CNN/NPR)
+> Formal transcripts (Parliament/Court/Press) Formal transcripts (Parliament/Court/Press) Formal transcripts (Parliament/Court/Press) Formal transcripts (Parliament/Court/Press) Formal transcripts (Parliament/Court/Press)
+> Code review (Chromium Gerrit) Code review (Chromium Gerrit) Code review (Chromium Gerrit) Code review (Chromium Gerrit) Code review (Chromium Gerrit)
+> Switchboard (LDC telephone) Switchboard (LDC telephone) Switchboard (LDC telephone) Switchboard (LDC telephone) Switchboard (LDC telephone)
+> ConvoKit small-pool merge (8 corpora) ConvoKit small-pool merge (8 corpora) ConvoKit small-pool merge (8 corpora) ConvoKit small-pool merge (8 corpora) ConvoKit small-pool merge (8 corpora)
+> English-learning websites (DailyDialog) English-learning websites (DailyDialog) English-learning websites (DailyDialog) English-learning websites (DailyDialog) English-learning websites (DailyDialog)
+> MTurk dyadic role-play MTurk dyadic role-play MTurk dyadic role-play MTurk dyadic role-play MTurk dyadic role-play
+> MTurk-authored social-norm QA MTurk-authored social-norm QA MTurk-authored social-norm QA MTurk-authored social-norm QA MTurk-authored social-norm QA
+> PRISM participant interviews PRISM participant interviews PRISM participant interviews PRISM participant interviews PRISM participant interviews
+> LMSYS Chatbot Arena (live users) LMSYS Chatbot Arena (live users) LMSYS Chatbot Arena (live users) LMSYS Chatbot Arena (live users) LMSYS Chatbot Arena (live users)
+> WildChat (ChatGPT user logs) WildChat (ChatGPT user logs) WildChat (ChatGPT user logs) WildChat (ChatGPT user logs) WildChat (ChatGPT user logs)
+> OpenAssistant volunteers OpenAssistant volunteers OpenAssistant volunteers OpenAssistant volunteers OpenAssistant volunteers
+> UMass deployed CS-tutor app UMass deployed CS-tutor app UMass deployed CS-tutor app UMass deployed CS-tutor app UMass deployed CS-tutor app
+> Anthropic crowd preference labelers Anthropic crowd preference labelers Anthropic crowd preference labelers Anthropic crowd preference labelers Anthropic crowd preference labelers
+> PRISM model ratings (75 countries) PRISM model ratings (75 countries) PRISM model ratings (75 countries) PRISM model ratings (75 countries) PRISM model ratings (75 countries)
+> Cognitive psychology experiments (160 studies) Cognitive psychology experiments (160 studies) Cognitive psychology experiments (160 studies) Cognitive psychology experiments (160 studies) Cognitive psychology experiments (160 studies)
+> NSF/TESS social-science experiments (210 studies) NSF/TESS social-science experiments (210 studies) NSF/TESS social-science experiments (210 studies) NSF/TESS social-science experiments (210 studies) NSF/TESS social-science experiments (210 studies)
+> LLM rerank distillation (Starling) LLM rerank distillation (Starling) LLM rerank distillation (Starling) LLM rerank distillation (Starling) LLM rerank distillation (Starling)
+> LLM reasoning-trace distillation (RM-R1) LLM reasoning-trace distillation (RM-R1) LLM reasoning-trace distillation (RM-R1) LLM reasoning-trace distillation (RM-R1) LLM reasoning-trace distillation (RM-R1)
+> GPT-generated character role-play GPT-generated character role-play GPT-generated character role-play GPT-generated character role-play GPT-generated character role-play
+> GPT-4 self-play (Sotopia) GPT-4 self-play (Sotopia) GPT-4 self-play (Sotopia) GPT-4 self-play (Sotopia) GPT-4 self-play (Sotopia)
+> GPT-4 multi-party social conversation GPT-4 multi-party social conversation GPT-4 multi-party social conversation GPT-4 multi-party social conversation GPT-4 multi-party social conversation
+> LLM-generated tutor  ↔ student LLM-generated tutor  ↔ student LLM-generated tutor  ↔ student LLM-generated tutor  ↔ student LLM-generated tutor  ↔ student
+> CMU-LTI Sotopia-style (HAICO/persona-conflicts) CMU-LTI Sotopia-style (HAICO/persona-conflicts) CMU-LTI Sotopia-style (HAICO/persona-conflicts) CMU-LTI Sotopia-style (HAICO/persona-conflicts) CMU-LTI Sotopia-style (HAICO/persona-conflicts)
+> Community-curated long-form RP Community-curated long-form RP Community-curated long-form RP Community-curated long-form RP Community-curated long-form RP
+> Programmatic Sally-Anne (ToMi/HiToM/ParaToMi) Programmatic Sally-Anne (ToMi/HiToM/ParaToMi) Programmatic Sally-Anne (ToMi/HiToM/ParaToMi) Programmatic Sally-Anne (ToMi/HiToM/ParaToMi) Programmatic Sally-Anne (ToMi/HiToM/ParaToMi)
+> Programmatic dynamic-epistemic-logic puzzles Programmatic dynamic-epistemic-logic puzzles Programmatic dynamic-epistemic-logic puzzles Programmatic dynamic-epistemic-logic puzzles Programmatic dynamic-epistemic-logic puzzles
+> ToM norm-grounded training (SocIQA/MoralStories) ToM norm-grounded training (SocIQA/MoralStories) ToM norm-grounded training (SocIQA/MoralStories) ToM norm-grounded training (SocIQA/MoralStories) ToM norm-grounded training (SocIQA/MoralStories)
+> alignx_v2 alignx_v2 alignx_v2 alignx_v2 alignx_v2
+> convokit_reddit-coarse-discourse-corpus convokit_reddit-coarse-discourse-corpus convokit_reddit-coarse-discourse-corpus convokit_reddit-coarse-discourse-corpus convokit_reddit-coarse-discourse-corpus
+> convokit_reddit-corpus-small convokit_reddit-corpus-small convokit_reddit-corpus-small convokit_reddit-corpus-small convokit_reddit-corpus-small
+> convokit_conversations-gone-awry-cmv-corpus convokit_conversations-gone-awry-cmv-corpus convokit_conversations-gone-awry-cmv-corpus convokit_conversations-gone-awry-cmv-corpus convokit_conversations-gone-awry-cmv-corpus
+> convokit_conversations-gone-awry-cmv-corpus-large convokit_conversations-gone-awry-cmv-corpus-large convokit_conversations-gone-awry-cmv-corpus-large convokit_conversations-gone-awry-cmv-corpus-large convokit_conversations-gone-awry-cmv-corpus-large
+> convokit_winning-args-corpus convokit_winning-args-corpus convokit_winning-args-corpus convokit_winning-args-corpus convokit_winning-args-corpus
+> humanual_opinion humanual_opinion humanual_opinion humanual_opinion humanual_opinion
+> human_llm human_llm human_llm human_llm human_llm
+> convokit_conversations-gone-awry-corpus convokit_conversations-gone-awry-corpus convokit_conversations-gone-awry-corpus convokit_conversations-gone-awry-corpus convokit_conversations-gone-awry-corpus
+> convokit_wiki-corpus convokit_wiki-corpus convokit_wiki-corpus convokit_wiki-corpus convokit_wiki-corpus
+> convokit_wiki-articles-for-deletion-corpus convokit_wiki-articles-for-deletion-corpus convokit_wiki-articles-for-deletion-corpus convokit_wiki-articles-for-deletion-corpus convokit_wiki-articles-for-deletion-corpus
+> convokit_wikiconv-2018 convokit_wikiconv-2018 convokit_wikiconv-2018 convokit_wikiconv-2018 convokit_wikiconv-2018
+> convokit_IDEA-NTHU-unintended-offense-tweets convokit_IDEA-NTHU-unintended-offense-tweets convokit_IDEA-NTHU-unintended-offense-tweets convokit_IDEA-NTHU-unintended-offense-tweets convokit_IDEA-NTHU-unintended-offense-tweets
+> humanual_book humanual_book humanual_book humanual_book humanual_book
+> humanual_politics humanual_politics humanual_politics humanual_politics humanual_politics
+> humanual_news humanual_news humanual_news humanual_news humanual_news
+> humanual_email humanual_email humanual_email humanual_email humanual_email
+> convokit_friends-corpus convokit_friends-corpus convokit_friends-corpus convokit_friends-corpus convokit_friends-corpus
+> cornell_movie cornell_movie cornell_movie cornell_movie cornell_movie
+> soc_cornell soc_cornell soc_cornell soc_cornell soc_cornell
+> coser coser coser coser coser
+> tom_from_coser tom_from_coser tom_from_coser tom_from_coser tom_from_coser
+> convokit_mediasum-corpus convokit_mediasum-corpus convokit_mediasum-corpus convokit_mediasum-corpus convokit_mediasum-corpus
+> convokit_npr-2p-corpus convokit_npr-2p-corpus convokit_npr-2p-corpus convokit_npr-2p-corpus convokit_npr-2p-corpus
+> convokit_parliament-corpus convokit_parliament-corpus convokit_parliament-corpus convokit_parliament-corpus convokit_parliament-corpus
+> convokit_supreme-corpus convokit_supreme-corpus convokit_supreme-corpus convokit_supreme-corpus convokit_supreme-corpus
+> convokit_tennis-corpus convokit_tennis-corpus convokit_tennis-corpus convokit_tennis-corpus convokit_tennis-corpus
+> convokit_chromium-corpus convokit_chromium-corpus convokit_chromium-corpus convokit_chromium-corpus convokit_chromium-corpus
+> convokit_switchboard-corpus convokit_switchboard-corpus convokit_switchboard-corpus convokit_switchboard-corpus convokit_switchboard-corpus
+> convokit_small-pool convokit_small-pool convokit_small-pool convokit_small-pool convokit_small-pool
+> dailydialog dailydialog dailydialog dailydialog dailydialog
+> convokit_casino-corpus convokit_casino-corpus convokit_casino-corpus convokit_casino-corpus convokit_casino-corpus
+> convokit_persuasionforgood-corpus convokit_persuasionforgood-corpus convokit_persuasionforgood-corpus convokit_persuasionforgood-corpus convokit_persuasionforgood-corpus
+> empathetic empathetic empathetic empathetic empathetic
+> convokit_emotional-support convokit_emotional-support convokit_emotional-support convokit_emotional-support convokit_emotional-support
+> mathdial mathdial mathdial mathdial mathdial
+> tom_socialiqa tom_socialiqa tom_socialiqa tom_socialiqa tom_socialiqa
+> tom_moralstories tom_moralstories tom_moralstories tom_moralstories tom_moralstories
+> prism prism prism prism prism
+> lmsys lmsys lmsys lmsys lmsys
+> wildchat wildchat wildchat wildchat wildchat
+> humanual_chat humanual_chat humanual_chat humanual_chat humanual_chat
+> oasst1 oasst1 oasst1 oasst1 oasst1
+> oasst2 oasst2 oasst2 oasst2 oasst2
+> studychat studychat studychat studychat studychat
+> hh_rlhf hh_rlhf hh_rlhf hh_rlhf hh_rlhf
+> psych101 psych101 psych101 psych101 psych101
+> socsci210 socsci210 socsci210 socsci210 socsci210
+> nectar nectar nectar nectar nectar
+> rm_r1_sft rm_r1_sft rm_r1_sft rm_r1_sft rm_r1_sft
+> tom_characterllm tom_characterllm tom_characterllm tom_characterllm tom_characterllm
+> soc_sotopia_pi_bc soc_sotopia_pi_bc soc_sotopia_pi_bc soc_sotopia_pi_bc soc_sotopia_pi_bc
+> soc_sotopia_tom_silver soc_sotopia_tom_silver soc_sotopia_tom_silver soc_sotopia_tom_silver soc_sotopia_tom_silver
+> tom_sotopia tom_sotopia tom_sotopia tom_sotopia tom_sotopia
+> tom_fantom tom_fantom tom_fantom tom_fantom tom_fantom
+> education_dialogue education_dialogue education_dialogue education_dialogue education_dialogue
+> soc_haico soc_haico soc_haico soc_haico soc_haico
+> soc_persona_conflicts soc_persona_conflicts soc_persona_conflicts soc_persona_conflicts soc_persona_conflicts
+> tom_grimulkan tom_grimulkan tom_grimulkan tom_grimulkan tom_grimulkan
+> tom_hitom tom_hitom tom_hitom tom_hitom tom_hitom
+> tom_paratomi tom_paratomi tom_paratomi tom_paratomi tom_paratomi
+> tom_tominli tom_tominli tom_tominli tom_tominli tom_tominli
+> tom mindgames tom_mindgames tom_mindgames tom mindgames tom mindgames Figure 11: Three-tier provenance map for the  ODYS SIM  training mixture: provenance category (4)  → origin platform (28)  → dataset (63). Color encodes the Tier-1 provenance category; flow width is  log 10  of per-edge train tokens (in M).
+
+21 Table 8: Expert-distillation (SFT) data: family-level files derived from rollout-filtered RFT data (top-1-of-8 reward filtering, then deduplication). Each file aggregates one or more S OUL -Index tasks (e.g., tom sft covers Fantom / Hitom / Paratomi; humanual sft covers all six HUMANUAL domains).                
+
+> SFT File Rows
+> alignx sft 7,720
+> behaviorchain sft 1,994
+> coser sft 4,096
+> humanllm sft 3,181
+> humanual sft 11,969
+> lifechoices sft 3,912
+> mistakes sft 3,077
+> sim sft 9,028
+> simarena sft 3,716
+> social r1 sft 557
+> socsci210 sft 2,000
+> sotopia sft 1,620
+> tom sft 5,832
+> Total 58,702
+
+E.3 Dataset-to-Capability Audit 
+
+Table 10 gives the full 63-dataset assignment used for Figure 3. Identifiers are kept identical to the released split manifest and to Table 12. 
+
+E.4 Persona Profile Coverage 
+
+We probe how widely the ≈19.7M training-row system prompts in sft processed large cover the space of plausible character profiles. The pipeline is intentionally LLM-free; everything below is regex match plus set lookup against curated lexicons. 
+
+Pipeline. 
+
+• Extract. From every parquet shard we pull only the system message + minimal metadata, producing a 3.4 GB “system-prompt” parquet companion to sft processed large .• Strip context. Each prompt is split into sentences; any sentence containing a goal pattern (“Your goal is to . . . ”, “Your aim is to . . . ”, “You’re trying to . . . ”, “You want to . . . ”, etc.) is dropped via regex, leaving the residual character description. • Match. The residual is tokenized (whole-word, case-insensitive) and matched against five hand-curated lexicons: 
+
+– Occupations (414 terms; SOC / O*NET-derived professional and community roles) 
+
+– Traits (490 terms; Goldberg/Saucier/John-Srivastava Big-Five markers, communication-style adjectives, emotion words, cognitive-style terms) 
+
+– Demographics (358 terms; age, education, marital, family role, gender, race/ethnicity, religion, geography, sexual orientation) 
+
+– Register / voice (86 terms; formality, voice, register markers) 
+
+– Settings / contexts (227 terms; physical locations, online platforms, specific events, scene/genre) • Fingerprint. The sorted union of matched (occupation, trait, demographic, register) terms forms a profile fingerprint ;settings are kept separately as context. Two prompts with identical fingerprints are treated as the same intrinsic character regardless of differing topical context. 
+
+Headline counts (full coverage, no sampling). Across 19,669,019 system prompts the pipeline finds: • 1,090,417 unique profile fingerprints (vs. 2.91M unique full-prompt strings; goal/context account for ≈62% of the apparent-uniqueness gap). • 299 distinct occupations matched, 460 distinct traits, 400 distinct demographic markers. • 63,199 distinct (occupation, trait) co-occurrence pairs populated across the top-25 occupations and top-25 traits. 
+
+Three persona-uniqueness regimes. The 62 datasets split cleanly into three regimes by the ratio of unique system prompts to row count: (i) Per-record unique ( ≥99%): all 22 ConvoKit-back-generated corpora, plus 
+
+cornell movie , coser , mathdial , prism , studychat , education dialogue , soc persona conflicts ,and the SOTOPIA-style sets — each conversation has a bespoke persona generated independently. (ii) Per-user / tem-plated (5–65%): humanual book/email/news/opinion/politics use a fixed-persona-per-user (209 22 Table 9: Source bibliography for the 62 released datasets in cmu-lti/osim-mid-training , sorted by capability dimension matching Figure 3. Dataset ids are abbreviated for compactness (e.g. -corpus suffix dropped on ConvoKit entries; conversations-gone-awry → CGA ; wiki-articles-for-deletion 
+
+→ wiki-AfD ); the released identifiers in the manifest retain their full names. Paper : canonical citation; “—” indicates either no formal publication or no bibtex entry in this paper. Source : primary download/code location; ConvoKit corpora are downloadable through the unified ConvoKit interface (Chang et al., 2020). 
+
+# Dataset id Display name Paper Source 
+
+1 wildchat WildChat (Zhao et al., 2024) https://huggingface.co/datasets/allenai/WildChat-4.8M 
+
+2 lmsys LMSYS-Chat-1M (Zheng et al., 2024) https://huggingface.co/datasets/lmsys/lmsys-chat-1m 
+
+3 oasst1 OpenAssistant 1 (K¨ opf et al., 2023) https://huggingface.co/datasets/OpenAssistant/oasst1 
+
+4 oasst2 OpenAssistant 2 (K¨ opf et al., 2023) https://huggingface.co/datasets/OpenAssistant/oasst2 
+
+5 dailydialog DailyDialog (Li et al., 2017) https://huggingface.co/datasets/ConvLab/dailydialog 
+
+6 cornell movie Cornell Movie Dialogs (Danescu-Niculescu-Mizil & Lee, 2011) https://www.cs.cornell.edu/˜cristian/data/cornell_movie_dialogs_corpus.zip 
+
+7 convokit friends Friends (Chang et al., 2020) https://convokit.cornell.edu/datasets/friends-corpus 
+
+8 convokit switchboard Switchboard (Chang et al., 2020) https://convokit.cornell.edu/datasets/switchboard-corpus 
+
+9 convokit small-pool small-pool (8-corpus merge) (Chang et al., 2020) https://convokit.cornell.edu/ 
+
+10 convokit tennis Tennis press (Chang et al., 2020) https://convokit.cornell.edu/datasets/tennis-corpus 
+
+11 convokit npr-2p NPR 2-person (Chang et al., 2020) https://convokit.cornell.edu/datasets/npr-2p-corpus 
+
+12 convokit mediasum MediaSum (Chang et al., 2020) https://convokit.cornell.edu/datasets/mediasum-corpus 
+
+13 convokit parliament UK Parliament (Chang et al., 2020) https://convokit.cornell.edu/datasets/parliament-corpus 
+
+14 convokit supreme SCOTUS oral arguments (Chang et al., 2020) https://convokit.cornell.edu/datasets/supreme-corpus 
+
+15 convokit reddit-corpus-small Reddit (small) (Chang et al., 2020) https://convokit.cornell.edu/datasets/reddit-corpus-small 
+
+16 convokit reddit-coarse Reddit Coarse-Discourse (Chang et al., 2020) https://convokit.cornell.edu/datasets/reddit-coarse-discourse-corpus 
+
+17 convokit wiki Wikipedia talk (Chang et al., 2020) https://convokit.cornell.edu/datasets/wiki-corpus 
+
+18 convokit wikiconv-2018 WikiConv-2018 (Chang et al., 2020) https://convokit.cornell.edu/datasets/wikiconv-corpus 
+
+19 convokit wiki-AfD Wikipedia AfD (Chang et al., 2020) https://convokit.cornell.edu/datasets/wiki-articles-for-deletion-corpus 
+
+20 convokit chromium Chromium code review (Chang et al., 2020) https://convokit.cornell.edu/datasets/chromium-corpus 
+
+21 empathetic Empathetic Dialogues (Rashkin et al., 2019) https://huggingface.co/datasets/facebook/empathetic_dialogues 
+
+22 convokit emotional-support ESConv (emotional support) (Liu et al., 2021) https://convokit.cornell.edu/datasets/emotional-support 
+
+23 convokit casino CaSiNo (camping negotiations) (Chawla et al., 2021) https://convokit.cornell.edu/datasets/casino-corpus 
+
+24 convokit persuasion4good Persuasion-For-Good (Wang et al., 2019) https://convokit.cornell.edu/datasets/persuasionforgood-corpus 
+
+25 convokit winning-args ChangeMyView Winning Args (Chang et al., 2020) https://convokit.cornell.edu/datasets/winning-args-corpus 
+
+26 convokit CGA-wiki CGA: Wikipedia talk (Chang et al., 2020) https://convokit.cornell.edu/datasets/conversations-gone-awry-corpus 
+
+27 convokit CGA-cmv CGA: r/ChangeMyView (Chang et al., 2020) https://convokit.cornell.edu/datasets/conversations-gone-awry-cmv-corpus 
+
+28 convokit CGA-cmv-large CGA: CMV large (Chang et al., 2020) https://convokit.cornell.edu/datasets/conversations-gone-awry-cmv-corpus-large 
+
+29 convokit IDEA-NTHU-tweets IDEA-NTHU unintended-offense tweets — https://github.com/IDEA-NTHU-Taiwan/unintended-offense-tweets 
+
+30 tom fantom FANToM (Kim et al., 2023) https://github.com/skywalker023/fantom 
+
+31 tom hitom HiToM (He et al., 2023) https://github.com/ying-hui-he/Hi-ToM_dataset 
+
+32 tom paratomi ToMi / ParaToMi (Le et al., 2019) https://github.com/msclar/symbolictom 
+
+33 tom mindgames MindGames (Sileo, 2023) https://huggingface.co/datasets/sileod/mindgames 
+
+34 tom socialiqa Social IQA (Sap et al., 2019) https://huggingface.co/datasets/allenai/social_i_qa 
+
+35 tom moralstories Moral Stories (Emelin et al., 2021) https://huggingface.co/datasets/demelin/moral_stories 
+
+36 tom from coser ToM-from-CoSER (derived) (Wang et al., 2026) https://github.com/Neph0s/CoSER 
+
+37 tom tominli Tom-in-Li (ToM-in-the-wild) — internal (CMU-LTI) 
+
+38 tom grimulkan Grimulkan long-form RP — https://huggingface.co/grimulkan 
+
+39 tom characterllm CharacterLLM → ToM — https://github.com/choosewhatulike/trainable-agents 
+
+40 psych101 Psych-101 (Binz et al., 2025) https://huggingface.co/datasets/marcelbinz/Psych-101 
+
+41 coser CoSER (Wang et al., 2026) https://huggingface.co/datasets/Neph0s/CoSER 
+
+42 soc cornell Cornell Movie + social goals (Danescu-Niculescu-Mizil & Lee, 2011) https://www.cs.cornell.edu/˜cristian/Cornell_Movie-Dialogs_Corpus.html 
+
+43 soc haico HAICosystem (Zhou et al., 2024a) internal (CMU-LTI; related: HAICOSYSTEM, COLM 2025) 
+
+44 soc persona conflicts Persona Conflicts — internal (CMU-LTI) 
+
+45 soc sotopia pi bc SOTOPIA-π (BC) — https://huggingface.co/datasets/cmu-lti/sotopia-pi 
+
+46 soc sotopia tom silver SOTOPIA-ToM (Silver) (Zhou et al., 2024b) internal (CMU-LTI; built on Sotopia) 
+
+47 humanual book HUMANUAL: book (Wu et al., 2026b) https://aka.ms/humanllm 
+
+48 humanual chat HUMANUAL: chat (Wu et al., 2026b) https://aka.ms/humanllm 
+
+49 humanual email HUMANUAL: email (Wu et al., 2026b) https://aka.ms/humanllm 
+
+50 humanual news HUMANUAL: news (Wu et al., 2026b) https://aka.ms/humanllm 
+
+51 humanual opinion HUMANUAL: opinion (Wu et al., 2026b) https://aka.ms/humanllm 
+
+52 humanual politics HUMANUAL: politics (Wu et al., 2026b) https://aka.ms/humanllm 
+
+53 human llm Cognitive Genome (HumanLLM) (Lei et al., 2026) internal release; arXiv:2601.15793 
+
+54 alignx v2 AlignX (v2 conversational subset) (Li et al., 2025a) https://huggingface.co/datasets/JinaLeejnl/AlignX 
+
+55 mathdial MathDial — https://github.com/eth-nlped/mathdial 
+
+56 studychat StudyChat — https://huggingface.co/datasets/wmcnicho/StudyChat 
+
+57 education dialogue Education Dialogue — https://github.com/google-research-datasets/Education-Dialogue-Dataset 
+
+58 hh rlhf Anthropic HH-RLHF (Bai et al., 2022) https://huggingface.co/datasets/Anthropic/hh-rlhf 
+
+59 nectar Nectar (Zhu et al., 2023) https://huggingface.co/datasets/berkeley-nest/Nectar 
+
+60 rm r1 sft RM-R1-Distill SFT — https://huggingface.co/datasets/gaotang/RM-R1-Distill-SFT 
+
+61 prism PRISM (Kirk et al., 2024) https://huggingface.co/datasets/HannahRoseKirk/prism-alignment 
+
+62 socsci210 SocSci210 (Kolluri et al., 2025) https://huggingface.co/datasets/socratesft/SocSci210 
+
+distinct customers in humanual book ; 8K Medium / YouTube users in humanual news ); dailydialog 
+
+(58% unique) and empathetic (50% unique) are templated by emotion + situation; wildchat , lmsys ,
+
+oasst1/2 cluster around 58–60% unique. (iii) Boilerplate single persona: rm r1 sft , tom characterllm ,
+
+tom moralstories , tom socialiqa , tom from coser , tom mindgames , tom grimulkan , tom tominli ,and humanual chat each carry a single fixed system prompt across thousands of rows — once any other dataset has matched a similar profile, these contribute zero new fingerprints. 
+
+SOC coverage. We map the matched-occupation set onto the 23 major groups of the BLS Standard Occupational Classification (2018). Each group is represented by 6–18 indicator titles drawn from O*NET; an indicator is “covered” if its term appears at least once in the corpus’s matched occupations. Figure 13 reports per-group coverage. All 23 groups have at least one matched indicator. Coverage is most complete on Legal , Healthcare Practitioners ,
+
+Arts / Design / Entertainment / Sports / Media , Education , and Computer & Math roles (90–100%); it drops on manual-trade and personal-care occupations ( Personal Care and Service 18%, Healthcare Support 29%, Production 
+
+38%, Architecture & Engineering 38%) where sft processed large skews away by construction — the corpus is built around conversational personas, not skilled-trade workers. 
+
+Co-occurrence breadth across personality and demographic axes. Figure 12 reports a two-panel co-occurrence view of the corpus along three persona axes simultaneously: (left) 20 SOC-aligned representative occupations × 22 traits organized by Big-Five dimension (Openness / Conscientiousness / Extraversion / Agreeableness / Neuroticism) plus communication style; (right) the same 20 occupations × 18 demographic markers grouped by gender / age / marital / education / race-ethnicity / family role. Rows are SOC-aligned (one to two representative occupations per major BLS group) rather than raw most-frequent terms, so the row ordering is interpretable as a sweep across the 23 Table 10: Complete dataset-to-capability map for the 62 released datasets in cmu-lti/osim-mid-training ,sorted alphabetically by released dataset identifier. Capability codes match Figure 3: CONV (discourse & interaction), 
+
+SS (social skills), COG (cognitive / mental-state), ROLE (persona, roleplay & pedagogy), EVAL (judgment & preference).                                                                                                             
+
+> Dataset Cap. Dataset Cap. Dataset Cap.
+> alignx v2 ROLE convokit wikiconv-2018 CONV psych101 COG convokit IDEA-NTHU-tweets SS convokit winning-args SS rm r1 sft EVAL convokit casino SS cornell movie CONV soc cornell ROLE convokit chromium CONV coser ROLE soc haico ROLE convokit CGA-cmv SS dailydialog CONV soc persona conflicts ROLE convokit CGA-cmv-large SS education dialogue ROLE soc sotopia pi bc ROLE convokit CGA-wiki SS empathetic SS soc sotopia tom silver ROLE convokit emotional-support SS hh rlhf EVAL socsci210 EVAL convokit friends CONV human llm ROLE studychat ROLE convokit mediasum CONV humanual book ROLE tom characterllm COG convokit npr-2p CONV humanual chat ROLE tom fantom COG convokit parliament CONV humanual email ROLE tom from coser COG convokit persuasion4good SS humanual news ROLE tom grimulkan COG convokit reddit-coarse CONV humanual opinion ROLE tom hitom COG convokit reddit-corpus-small CONV humanual politics ROLE tom mindgames COG convokit small-pool CONV lmsys CONV tom moralstories COG convokit supreme CONV mathdial ROLE tom paratomi COG convokit switchboard CONV nectar EVAL tom socialiqa COG convokit tennis CONV oasst1 CONV tom tominli COG convokit wiki-AfD CONV oasst2 CONV wildchat CONV convokit wiki CONV prism EVAL
+
+labor market. Columns on the left panel cover both poles of each Big-Five factor (e.g., introverted vs outgoing ,
+
+anxious vs calm , traditional vs open-minded ). Cell counts are the number of system prompts whose residual character description matches both the row and the column term; color is log-scaled ( magma r ). The matrix is densely populated — 437/440 trait cells and 333/360 demographic cells carry non-zero co-occurrence. Dominant cells include advocate × passionate (105K), justice × passionate (102K), student × young 
+
+(241K), justice × young (116K), advocate × young (90K), and student × { college , graduate }
+
+(63K each), reflecting the dominant socsci210 / advocacy / student populations. 
+
+Per-dimension coverage. Figure 14 ranks the top-25 most frequent terms within each profile dimension (oc-cupations, traits, demographics, register), color-stacked by Tier-1 origin. The figure highlights both the volume 
+
+contributed by each Tier-1 (almost everything is dominated by human ↔human content, with socsci210 the second-largest contributor in pink) and the breadth of distinct values matched in each dimension (panel titles). 
+
+E.5 Data Processing 
+
+All sources are converted into a unified schema with three fields: (1) user id : anonymized user identifier; (2) conversations : a list of multi-turn dialogues, each containing timestamped messages with role and content; (3) user meta : demographic and contextual information where available. Each dataset is processed through a single pipeline that encodes per-corpus role assignment, turn linearization, and state labels. 
+
+Synthesizing missing social context. Many of the source datasets arrive without an explicit system prompt — open-domain AI chat logs (WildChat, LMSYS-Chat-1M, OASST), preference data (HH-RLHF, Nectar), and most ConvoKit corpora carry only the raw turns. For these we synthesize a per-record system-prompt header using 
+
+gpt-5.4-mini-2026-03-17 . Per conversation we generate two prose system prompts (one per side, so the same record yields two training rows — original and role-swapped, see below), each 2–5 sentences starting with “You are. . . ” and describing the simulated party’s role, goal, background, and conversational style. A deterministic per-side mode selector (sha256 of record id::side , threshold 0.20 ) sends ∼20% of sides to a detailed mode (fuller backstory) and ∼80% to a short mode (style-only); same record always yields the same modes across re-runs so the corpus is exactly reproducible. To prevent leakage, the generator sees only the first 60% of turns ( ≥ 3
+
+turns minimum) and never sees the conversation’s outcome metadata ( state field, escalation flags, downstream labels), so the synthesized persona cannot foreshadow the trajectory. Datasets that natively carry persona or scenario information — CoSER (literary characters), SOTOPIA / HAICosystem / Persona-Conflicts (goal-conditioned scenarios), Cognitive Genome and AlignX (persona-grounded simulation), and the six HUMANUAL domains (per-user backgrounds) — retain their original system prompts without modification. 
+
+Role swap and filtering. For human and AI conversation sources, we apply a role-swap protocol: the user side of each conversation becomes the training target, with the assistant responses serving as context. This trains the model to produce human-like user behavior rather than assistant-like responses. Filtering removes conversations with 24 open-minded 
+
+> curious
+> creative
+> traditional
+> organized
+> diligent
+> thoughtful
+> analytical
+> outgoing
+> assertive
+> introverted
+> reserved
+> empathetic
+> kind
+> blunt
+> sarcastic
+> polite
+> anxious
+> calm
+> formal
+> casual
+> passionate
+
+manager 
+
+analyst 
+
+investor 
+
+engineer 
+
+scientist 
+
+researcher 
+
+advocate 
+
+justice 
+
+teacher 
+
+student 
+
+professor 
+
+editor 
+
+writer 
+
+journalist 
+
+doctor 
+
+counselor 
+
+officer 
+
+assistant 
+
+chef 
+
+pilot                              
+
+> 306 95 419 1k 1k 108 1k 2k 49 2k 69 256 2k 420 400 278 569 63 508 1k 1k 798
+> 2k 962 134 4k 386 100 9k 42k
+
+· 850 · 503 1k 323 1k 403 241 29 1k 1k 1k 5k                                                                                                                                                                                                        
+
+> 407 1k 447 8k 232 264 1k 30k 28 835 6346 394 47 1k 509 78 538 1k 1k 4k 1k
+> 2k 7k 2k 5k 719 554 3k 26k 117 559 483 826 1k 2k 1k 484 569 290 1k 3k 5k 13k
+> 3k 8k 803 2k 175 89 4k 21k 25 321 169 460 751 143 425 385 76 93 498 930 2k 10k
+> 6k 15k 719 2k 727 636 7k 25k 24 319 284 784 1k 388 296 125 127 83 622 1k 3k 11k
+> 22k 1k 3k 29k 2k 150 27k 14k 417 16k 178 864 62k 750 1k 585 564 439 1k 8k 3k 105k
+> 18k 7k 8k 23k 2k 482 27k 32k 177 16k 211 1k 44k 4k 6k 9k 1k 874 3k 15k 18k 102k
+> 2k 3k 2k 4k 712 50 6k 3k 210 1k 367 644 11k 1k 892 678 606 322 1k 2k 3k 6k
+> 14k 46k 12k 13k 6k 10k 18k 35k 3k 6k 4k 2k 13k 4k 4k 2k 1k 6k 2k 10k 28k 38k
+> 1k 2k 708 937 151 57 2k 6k 40 322 73 246 590 348 233 209 151 191 717 793 1k 2k
+> 47 767 531 266 1k 333 1k 3k 21k
+
+· 99 109 64k 55k 3k 22k 506 14k 34k 10k 191                                                                                                                                                                         
+
+> 1k 1k 9k 2k 287 24 4k 3k 214 489 632 432 2k 943 332 796 628 271 658 1k 3k 5k
+> 1k 1k 331 616 122 10 1k 5k 139 392 11 86 848 754 330 981 270 45 1k 531 1k 2k
+> 624 1k 442 1k 178 67 1k 2k 118 400 102 237 2k 679 424 758 201 381 1k 964 1k 2k
+> 3k 268 154 632 90 29 12k 2k 48 954 110 203 55k 147 400 205 34 55 961 216 603 1k
+> 120 445 173 1k 424 141 725 1k 184 695 138 475 974 428 350 377 207 482 1k 1k 681 1k
+> 311 3k 3k 996 694 153 1k 2k 354 284 289 345 576 401 696 369 5k 523 730 18k 38k 769
+> 110 115 904 883 294 797 189 48 91 5232 46 59 79 76 23 13 43 139 479 1k
+> 1k 1k 856 6k 1k 893 1k 5k 530 725 189 425 1k 70 1k 684 45 830 2k 6k 10k 6k
+
+Openness Conscientiousness Extraversion Agreeableness Neuroticism Comm. style 
+
+Top occupations × Personality / style traits 
+
+> male
+> female
+> woman
+> man
+> young
+> adult
+> older
+> married
+> single
+> divorced
+> college
+> graduate
+> white
+> black
+> asian
+> hispanic
+> parent
+
+manager 
+
+analyst 
+
+investor 
+
+engineer 
+
+scientist 
+
+researcher 
+
+advocate 
+
+justice 
+
+teacher 
+
+student 
+
+professor 
+
+editor 
+
+writer 
+
+journalist 
+
+doctor 
+
+counselor 
+
+officer 
+
+assistant 
+
+chef 
+
+pilot                          
+
+> 2k 1k 785 963 2k 835 3k 697 706 70 177 95 169 325 23 7468
+> 9k 163 103 290 8k 237 9k 66 1k
+
+· 253 546 333 161 911 17 178          
+
+> 11k 74 20 119 31k 487 13k 263 1k
+
+· 169 189 77 104 67 15 147                                          
+
+> 14k 1k 433 387 45k 569 6k 439 1k 16 1k 1k 78 62 28 16 174
+> 4k 601 419 758 16k 514 3k 68 490 5261 866 200 216 85 4148
+> 3k 630 615 390 13k 2k 4k 28 513
+
+· 171 6k 246 556 337 23 246                                                                                                                                                               
+
+> 10k 5k 6k 2k 90k 26k 22k 711 2k 163 1k 1k 701 755 418 59 20k
+> 25k 12k 18k 17k 116k 37k 24k 5k 12k 449 5k 3k 12k 11k 1k 321 7k
+> 3k 4k 3k 3k 16k 5k 13k 1k 1k 150 1k 477 1k 1k 241 13 8k
+> 24k 9k 7k 5k 241k 63k 10k 1k 3k 189 63k 63k 2k 2k 282 57 1k
+> 1k 436 999 1k 2k 1k 4k 688 364 14 1k 1k 592 963 101 1119
+> 142 112 691 647 818 1k 2k 159 4k 14 816 163 212 242 87 21k
+> 2k 3k 2k 2k 9k 3k 4k 987 1k 99 734 435 1k 1k 123 19 1k
+> 852 286 735 1k 2k 425 1k 211 804 6247 73 431 224 64 11 61
+> 1k 1k 2k 2k 6k 943 1k 731 686 14 332 106 993 582 48 13 356
+> 990 638 1k 237 4k 1k 6k 127 375 9169 64 146 108
+
+· · 1k                                                
+
+> 2k 675 1k 3k 4k 617 2k 605 554 43 205 149 467 712 77211
+> 1k 1k 1k 1k 3k 828 641 424 1k 13 564 530 508 679 117 1413
+> 1k 275 81 137 1k 292 347 55 162 330 19 51 41 96
+
+· 93                
+
+> 7k 321 450 1k 29k 2k 4k 475 501 7585 408 73 66 48
+
+· 196 
+
+Gender Age Marital Education Race / ethnicity Family 
+
+Top occupations × Demographic markers 
+
+10 0
+
+10 1
+
+10 2
+
+10 3
+
+10 4
+
+10 5
+
+> # system prompts matching both (log scale)
+
+Persona-profile coverage in sft_processed_large occupations × (traits, demographics) Figure 12: Persona-profile coverage along three axes simultaneously across the 19.7M system prompts of 
+
+sft processed large . Rows: 20 representative occupations chosen one to two per BLS SOC 2018 ma-jor group (management → business / sciences → legal → education → arts/media → healthcare → services →
+
+transportation). Left panel: 22 traits organized by Big-Five factor (Openness, Conscientiousness, Extraversion, Agreeableness, Neuroticism) plus communication style, with both poles represented (e.g., introverted vs. outgoing ;
+
+anxious vs. calm ; traditional vs. open-minded ). Right panel: 18 demographic markers grouped by gender / age / marital / education / race-ethnicity / family. Cell value = # system prompts that match both the row term and the column term; color is log-scaled ( magma r ). 437/440 (left) and 333/360 (right) cells carry non-zero co-occurrence. fewer than 2 turns, deduplicates at the conversation level using MinHash, and filters toxic or personally identifiable content. 
+
+E.6 Train / Val / Test Split 
+
+The 21.4M-row corpus is partitioned into three splits with deliberately different distributional properties (Table 12): 
+
+train (21,195,418 rows), val (28,408 rows, in-distribution), and test (128,045 rows, profile-disjoint where feasible). All three splits are released as the HuggingFace dataset cmu-lti/osim-mid-training , with the per-dataset manifest split manifest.json stored alongside the parquet shards. The split is fully deterministic from the rules below: anyone can reproduce it bit-exact by running our published splitting script on the released corpus. 
+
+Profile fingerprint, the unit we hold out. For each system prompt we strip goal sentences via regex (e.g., “Your goal is to . . . ”, “You’re trying to . . . ”) and match the residual against five hand-curated lexicons (occupations, personality / communication-style traits, demographics, register, settings; Section E.4). The sorted union of matched (occupation, trait, demographic, register) terms forms a profile fingerprint ; settings are recorded separately as context. Two prompts with identical fingerprints describe the same intrinsic character regardless of differing topical framing. 
+
+Test split (out-of-distribution, profile-disjoint). For each dataset d, with nd rows and ud unique profile finger-prints: 
+
+target_test = max(100, floor(0.005 * n_rows)) if d in {humanual_book: 15, socsci210: 30, dailydialog: 30}: # deterministic-N-profile override (pre-baked in split_index.json) pick N profiles with lowest sha256(fingerprint); all their rows -> test elif u_d >= 50: # profile_hash mode: 47 datasets bucket_pct = target_test / n_rows for each row r: key = profile_fingerprint(r) score = int(sha256(key)[:8], 16) / 2ˆ32 r -> test iff score < bucket_pct 
+
+25 0.0 0.2 0.4 0.6 0.8 1.0 
+
+> fraction of indicator terms matched in our corpus
+> Personal Care and Service
+> Healthcare Support
+> Protective Service
+> Architecture and Engineering
+> Production
+> Life, Physical, and Social Science
+> Installation, Maintenance, and Repair
+> Management
+> Military Specific
+> Office and Administrative Support
+> Farming, Fishing, and Forestry
+> Transportation and Material Moving
+> Business and Financial Operations
+> Sales and Related
+> Construction and Extraction
+> Food Preparation and Serving
+> Educational Instruction and Library
+> Computer and Mathematical
+> Community and Social Service
+> Legal
+> Arts, Design, Entertainment, Sports, and Media
+> Healthcare Practitioners and Technical
+> Building and Grounds Cleaning and Maintenance
+> 2/11
+> 2/7
+> 4/11
+> 3/8
+> 3/8
+> 6/12
+> 3/6
+> 7/13
+> 6/11
+> 5/8
+> 4/6
+> 6/9
+> 11/16
+> 7/8
+> 8/9
+> 10/11
+> 12/13
+> 14/15
+> 10/10
+> 12/12
+> 18/18
+> 12/12
+> 8/8
+
+SOC 2018 major-group coverage in sft_processed_large 
+
+23/23 major groups have 1 indicator term matched Figure 13: Coverage of the 23 SOC 2018 major occupational groups by sft processed large . For each group we draw 6–18 indicator titles from O*NET; the bar shows the fraction of those titles that appear in the corpus’s matched-occupation set. All 23 groups have ≥1 match. 
+
+else: # record_hash mode: 16 datasets (boilerplate / few-profile / no-system-prompt) bucket_pct = target_test / n_rows for each row r: key = f"{ds_name}::{shard_filename}::{row_idx}" score = int(sha256(key)[:8], 16) / 2ˆ32 r -> test iff score < bucket_pct 
+
+For the 47 profile-hash datasets (117,568 of 128,045 test rows, 91.8%), every profile fingerprint in test shard *.parquet 
+
+is disjoint from every fingerprint in train shard *.parquet , by construction of the per-row hash. Train holds 1,035,409 unique profiles, test holds 6,281 , with only 115 overlapping (all attributable to the 16 record-hash datasets); 99.98% of distinct test profiles are unseen in train. Three datasets received deterministic-N-profile overrides because the default 0.5%-bucket rule gave too few or zero test rows under hash variance ( humanual book : 0 rows; dailydialog : 14 rows; socsci210 : 4,726 rows of a 13K target). The remaining 16 record-hash datasets share profiles between train and test — their profile spaces are too small to support disjoint splitting (single-template ToM datasets, rm r1 sft , psych101 ,
+
+humanual chat ; plus 6 datasets where the system message is empty or absent so no fingerprint can be extracted: 
+
+hh rlhf , human llm , nectar , tom fantom , tom hitom , tom paratomi ). For those, the test holdout is row-level, not profile-level. 
+
+Val split (in-distribution, sampled from train). After test rows are removed, nval,d = max(30 , min(5000 , ⌊0.005 ·
+
+ntrain,d ⌋)) rows per dataset are drawn uniformly at random from the remaining train shards using a deterministic seed sha256(ds name)[:8] . The 5,000-row cap prevents the largest datasets ( alignx v2 at 14.7M rows; 
+
+socsci210 at 2.6M) from dominating the val set. Every val row’s profile fingerprint also appears in train; this is 26 0.0 0.2 0.4 0.6 0.8 1.0 1.2 1.4 
+
+count (mentions across corpus) 1e7 
+
+user 
+
+respondent 
+
+employee 
+
+graduate 
+
+editor 
+
+parent 
+
+advocate 
+
+student 
+
+academic 
+
+justice 
+
+character 
+
+partner 
+
+mother 
+
+child 
+
+assistant 
+
+engineer 
+
+analyst 
+
+investor 
+
+pilot 
+
+activist 
+
+patient 
+
+member 
+
+researcher 
+
+friend 
+
+gamer 
+
+> 15,057,997
+> 2,649,566
+> 815,828
+> 685,810
+> 677,501
+> 588,434
+> 582,164
+> 557,207
+> 542,473
+> 478,318
+> 452,422
+> 388,682
+> 384,194
+> 352,903
+> 324,270
+> 310,300
+> 289,067
+> 287,258
+> 256,062
+> 242,447
+> 241,419
+> 178,522
+> 172,376
+> 141,329
+> 134,131
+
+Top roles / occupations 
+
+(362 distinct values matched in corpus) 
+
+0.0 0.5 1.0 1.5 2.0 2.5 3.0 
+
+count (mentions across corpus) 1e6 
+
+professional 
+
+practical 
+
+direct 
+
+pragmatic 
+
+interested 
+
+detail-oriented 
+
+complex 
+
+critical 
+
+empathetic 
+
+skeptical 
+
+thoughtful 
+
+deep 
+
+conservative 
+
+passionate 
+
+moderate 
+
+analytical 
+
+casual 
+
+concise 
+
+sensitive 
+
+traditional 
+
+supportive 
+
+academic 
+
+active 
+
+open-minded 
+
+technical 
+
+> 3,253,247
+> 2,353,207
+> 2,180,590
+> 1,658,147
+> 1,294,602
+> 1,281,425
+> 1,246,062
+> 1,175,600
+> 878,747
+> 819,388
+> 791,152
+> 762,422
+> 743,320
+> 690,179
+> 680,213
+> 656,853
+> 653,857
+> 635,827
+> 625,355
+> 581,452
+> 570,769
+> 542,473
+> 513,611
+> 467,658
+> 448,558
+
+Top personality / style traits 
+
+(460 distinct values matched in corpus) 
+
+0 1 2 3 4
+
+count (mentions across corpus) 1e6 
+
+young 
+
+professional 
+
+married 
+
+adult 
+
+young adult 
+
+male 
+
+college 
+
+female 
+
+vocational 
+
+older 
+
+engaged 
+
+white 
+
+high school 
+
+graduate 
+
+woman 
+
+parent 
+
+academic 
+
+comfortable 
+
+bachelor's 
+
+mother 
+
+retired 
+
+child 
+
+middle-aged 
+
+divorced 
+
+transgender 
+
+> 4,637,487
+> 3,253,247
+> 2,024,996
+> 1,574,424
+> 1,431,875
+> 1,345,437
+> 1,072,277
+> 983,837
+> 954,489
+> 929,563
+> 893,447
+> 805,356
+> 764,310
+> 685,810
+> 653,145
+> 588,434
+> 542,473
+> 541,163
+> 530,557
+> 384,194
+> 363,280
+> 352,903
+> 313,219
+> 280,426
+> 152,547
+
+Top demographic markers 
+
+(400 distinct values matched in corpus) 
+
+0.0 0.5 1.0 1.5 2.0 2.5 3.0 
+
+count (mentions across corpus) 1e6 
+
+professional 
+
+casual 
+
+concise 
+
+academic 
+
+technical 
+
+common 
+
+scientific 
+
+everyday 
+
+formal 
+
+informal 
+
+terse 
+
+matter-of-fact 
+
+narrative 
+
+conversational 
+
+relaxed 
+
+rigid 
+
+sarcastic 
+
+official 
+
+punchy 
+
+polished 
+
+minimalist 
+
+first-person 
+
+literary 
+
+heartfelt 
+
+scholarly 
+
+> 3,253,247
+> 653,857
+> 635,827
+> 542,473
+> 448,558
+> 310,832
+> 274,367
+> 260,795
+> 260,614
+> 166,539
+> 163,133
+> 146,544
+> 137,459
+> 133,166
+> 104,756
+> 97,754
+> 85,769
+> 68,370
+> 58,809
+> 49,644
+> 45,739
+> 38,355
+> 35,652
+> 29,489
+> 28,189
+
+Top register / voice markers 
+
+(94 distinct values matched in corpus) 
+
+Character-profile coverage across sft_processed_large 
+
+(matches against curated lexicons; goal sentences stripped) 
+
+Human Human Human AI Preference & behavioral LLM-generated Figure 14: Top-25 most frequent terms in each profile dimension (roles / traits / demographics / register) across 
+
+sft processed large . Bars are stacked by Tier-1 origin (blue: human-human; orange: human-AI; pink: preference / behavioral; violet: LLM-generated); panel titles report the total # distinct values matched corpus-wide. intentional — val measures in-distribution loss, not generalization. 
+
+What each split measures. 
+
+• Val (in-distribution, 28K rows): checkpoint selection, learning-rate scheduling, detecting train-distribution overfit. Loss on val tracks closely with train loss. • Test (out-of-distribution, 128K rows): detecting whether the model has acquired a behavioral capability or merely memorized (profile, behavior) mappings seen in training. A growing gap between val and test loss would indicate persona memorization rather than capability acquisition. We report internal loss curves on both at midtraining time but final benchmark claims in the paper come from the external evaluation suite (Section 3), which is held out at the source-dataset level. 
+
+Axis-aligned training data for every S OUL -Index task. For every S OUL -Index task we curate training data targeting the same Axis. The mapping splits into two regimes: (a) Direct — the benchmark itself ships with a training split, and we use it as-is, enforcing example-disjointness against the test rows by the hashing rules above; and (b) Proxy — the benchmark provides only an evaluation split, and we substitute closely related data from the same benchmark family or behavioral domain as a proxy training source. Table 11 gives the per-task mapping with row counts; Table 12 gives the per-dataset split breakdown; the published split index.json fixes every bucket boundary so the assignments are bit-exact reproducible. 
+
+Aggregating per-dataset loss. Because per-dataset test set sizes vary by 3 orders of magnitude (alignx v2 = 80,622 rows; the smallest = 42 rows), a row-pooled average would let a handful of big datasets dominate the per-skill 27 Table 11: Per-S OUL -Index-task training-data mapping. Direct = the benchmark’s own training split (with our hash-based test holdout). Proxy = curated from a closely related source when the benchmark has no native training set. Row counts are train rows in cmu-lti/osim-mid-training .
+
+Axis SOUL -Index task Training source Type Rows 
+
+CONV 
+
+UserLLM WildChat / PRISM user-side splits Direct —MirrorBench Multi-turn AI-dialogue subset Proxy —Humanual-Chat humanual chat Direct 23,385 SimArena-Doc SimulatorArena (Doc) train split Direct —
+
+SS Sotopia-Hard SOTOPIA-π scenarios Proxy 2,363 
+
+COG 
+
+Fantom tom fantom train split Direct 894 Hitom tom hitom train split Direct 899 Paratomi tom paratomi train split Direct —Social-R1 ToM pool ( tom * ) Proxy —
+
+ROLE 
+
+Coser CoSER train split Direct 114,831 Lifechoices LifeChoices train split Direct —Twinvoice Cognitive Genome persona dialogue Proxy —BehaviorChain Online-shopping persona-action traces Proxy —SimArena-Math SimulatorArena (Math) train split Direct —Mistakes EduDialogue / StudyChat / MathDial Proxy 29,995 Humanual-Email humanual email Direct 6,322 Humanual-News humanual news Direct 49,148 Humanual-Politics humanual politics Direct 45,395 
+
+EVAL 
+
+AlignX alignx v2 Direct 14.7M HumanLLM Cognitive Genome persona subset Direct —SocSci210 socsci210 Direct 2,618,745 Humanual-Book humanual book Direct 31,931 Humanual-Opinion humanual opinion Direct 38,613 
+
+Aux. preference / reward data (no Index task) HH-RLHF, Nectar, PRISM, RM-R1-SFT — —
+
+number. We instead use the geometric mean of per-dataset perplexities as our per-skill aggregate, which weights each dataset equally: 
+
+PPL dim = geomean d∈Ddim 
+
+ PPL d
+
+ = exp 
+
+ 1
+
+> |Ddim |
+
+X
+
+> d∈Ddim
+
+NLL d
+
+
+
+,
+
+where NLL d is the per-token mean cross-entropy on dataset d’s held-out test split. This is the convention used in Table 1, Figure 15, and Figure 4. 
+
+Reproducing the split. The full pipeline is published in our code repository. To reproduce bit-exact: 1. Download cmu-lti/osim-mid-training and run scripts/precompute split index.py to compute fingerprints + per-dataset bucket boundaries (output: split index.json , ∼0.65 MB). 2. Apply via scripts/split apply index.py , which streams each parquet shard, looks up bucket assign-ments, and writes train shard NNN.parquet , val shard 000.parquet , test shard NNN.parquet 
+
+per dataset. 3. The deterministic-N-profile overrides for the three flagged datasets are pre-baked into split index.json .Or skip regeneration by loading the released split directly: 
+
+load_dataset("cmu-lti/osim-mid-training", "<config>", split="train") 
+
+with split="train" , "val" , or "test" .
+
+F SOUL -Index Task Details 
+
+Table 13 lists every S OUL -Index task with its parent S OUL Axis, format, and metric. Per-task descriptions follow. 
+
+CONV (4 tasks). Tasks in this Axis test whether models reproduce fine-grained dimensions of everyday human discourse — register, turn-taking, conversational style, and online help-seeking. UserLLM (Naous et al., 2026) evaluates single-turn user message generation against W ILD CHAT and PRISM references. MirrorBench (Hathidara et al., 2026) measures whether simulated user utterances match the lexical diversity and style of real users in 28 Table 12: Per-dataset train / val / test split of cmu-lti/osim-mid-training , sorted by total rows. Ptr and 
+
+Pte are the number of unique profile fingerprints in train and test respectively. For the 46 profile-disjoint datasets these sets are non-overlapping by construction. Shaded rows are the 16 record hash datasets where the test set holds out rows rather than profiles, so Pte ⊆ Ptr (test profiles are a subset of train profiles, not disjoint). “—” indicates no profile signal (e.g., the dataset’s system prompt is empty or absent: hh rlhf , human llm , nectar ,
+
+tom fantom , tom hitom , tom paratomi ).                                                                                                                                                                                                                                                                                                                                                                                                                                   
+
+> #Dataset Train Val Test Ptr Pte #Dataset Train Val Test Ptr Pte
+> 1alignx v2 14,649,170 5,000 80,622 501,808 2,569 33 oasst1 13,447 67 61 3,303 25 2socsci210 2,618,745 5,000 21,053 1,788 30 34 convokit tennis-corpus 12,751 64 61 6,442 45 3human llm 1,316,829 5,000 6,757 ——35 convokit friends-corpus 11,210 56 110 5,479 47 4convokit wiki-AfD 580,752 2,918 1,186 114,996 569 36 tom mindgames 11,033 55 86 115convokit wikiconv-2018 231,829 1,164 2,635 65,107 320 37 convokit parliament-corpus 9,449 47 56 3,686 39 6nectar 180,778 908 932 ——38 rm r1 sft 8,591 43 119 117hh rlhf 166,878 838 860 ——39 convokit reddit-corpus-small 8,375 42 67 4,736 58 8wildchat 165,346 830 1,260 35,118 184 40 prism 7,908 39 61 4,248 48 9cornell movie 163,927 823 1,124 75,003 387 41 convokit reddit-coarse-disc. 6,912 34 66 3,971 59 10 coser 114,831 577 658 65,443 369 42 humanual email 6,322 31 154 387 711 lmsys 79,929 401 170 1,590 10 43 convokit CGA-cmv 5,968 30 72 3,338 52 12 tom from coser 76,747 385 416 1144 tom tominli 5,872 30 92 1113 convokit chromium-corpus 70,365 353 160 20,897 115 45 convokit emotional-support 5,061 30 109 3,371 73 14 convokit wiki-corpus 59,912 301 205 24,599 121 46 convokit CGA-wiki 4,916 30 42 2,276 40 15 psych101 57,653 289 289 9747 convokit small-pool 4,620 30 82 2,881 55 16 humanual news 49,148 246 195 8,081 34 48 convokit switchboard-corpus 4,487 30 103 3,211 66 17 empathetic 45,871 230 42 3,391 17 49 convokit casino-corpus 3,992 30 98 1,907 49 18 humanual politics 45,395 228 295 5,230 24 50 convokit winning-args-corpus 3,995 30 89 2,526 68 19 convokit mediasum-corpus 38,139 191 1,646 20,025 103 51 convokit persuasion4good 3,887 30 151 2,530 70 20 humanual opinion 38,613 194 161 4,485 20 52 soc haico 3,374 30 96 507 15 21 convokit npr-2p-corpus 37,532 188 772 22,199 136 53 soc persona conflicts 3,264 30 102 3,293 102 22 humanual book 31,931 160 2,571 166 15 54 soc cornell 2,876 30 94 2,756 84 23 tom socialiqa 33,067 166 177 1155 mathdial 2,771 30 60 585 18 24 education dialogue 28,026 140 133 15,803 93 56 studychat 1,969 30 215 704 39 25 dailydialog 24,448 122 126 1,415 30 57 soc sotopia tom silver 1,296 30 115 895 83 26 tom moralstories 23,754 119 127 1158 soc sotopia pi bc 1,067 30 97 895 81 27 humanual chat 23,385 117 120 1159 tom fantom 894 30 100 ——28 oasst2 20,224 101 56 4,922 29 60 tom hitom 899 30 95 ——29 convokit CGA-cmv-large 17,304 86 106 8,878 64 61 tom paratomi 903 30 91 ——30 convokit IDEA-NTHU-tweets 15,910 79 75 8,321 42 62 tom grimulkan 404 30 105 1131 convokit supreme-corpus 15,340 77 55 6,198 45 32 tom characterllm 13,838 69 111 11
+> Total rows : train=21,194,129, val=28,378, test=127,944 Total Ptr =1,035,067, Pte =6,253 (overlap=115; corpus-unique=1,041,205)
+
+multi-turn interaction. Humanual-Chat is the chat domain of HUMANUAL (Wu et al., 2026b), evaluating fidelity to real chat-conversation traces. SimArena-Doc (Dou et al., 2025) provides annotated human–LLM conversations in document creation, testing whether simulated users match real user behavior in multi-turn task assistance. 
+
+SS (1 task). Sotopia-Hard (Zhou et al., 2024b) places two agents in scenarios requiring negotiation, collaboration, or conflict (e.g., a landlord and tenant negotiating rent), scored across seven social dimensions (goal completion, relationship, knowledge, secret leakage, social rules, financial benefits, believability). 
+
+COG (4 tasks). This Axis tests reasoning about mental states. Fantom (Kim et al., 2023) requires tracking who said what in multi-party conversations. Hitom (He et al., 2023) requires nested-belief reasoning (e.g., “Alice thinks Bob thinks. . . ”). Paratomi (Sclar et al., 2023) is a paraphrase-robust reformulation of false-belief reasoning that resists surface-form shortcuts. Social-R1 (Wu et al., 2026a) is an adversarial benchmark that exposes shortcut reasoning in social cognition, requiring multi-step inference. 
+
+ROLE (9 tasks). This Axis tests sustaining a stable role across an interaction — whether the role is a literary character, a persona with specific traits, a student, or a real human user — and translating that role into faithful next-turn behavior. Coser (Wang et al., 2026) requires sustaining a literary character’s personality across 20 turns of dialogue. Lifechoices (Xu et al., 2024) tests whether models make decisions as specific characters would. Twinvoice (Du et al., 2025) tests whether a model can identify which response matches a specific individual’s communication style. BehaviorChain tests whether models can predict a specific persona’s next action in a sequenced behavioral chain. SimArena-Math (Dou et al., 2025) is the math-tutoring counterpart of SimArena-Doc, with annotated student–tutor traces. Mistakes (Ross & Andreas, 2025b) tests whether models can faithfully reproduce common student errors in K-12 math rather than defaulting to correct answers. The remaining three tasks are HUMANUAL (Wu et al., 2026b) long-form domains kept on the role-play side — Humanual-Email, Humanual-News, Humanual-Politics — each scoring whether the model’s continuation matches real human-authored text in that genre. 29 Table 13: The S OUL -Index evaluation suite: 23 tasks across the 5 S OUL Axes. Each task targets one Axis. Format :D = discriminative, G = generative.                                                    
+
+> SOUL Axis Task Format Metric
+> CONV
+> UserLLM (Naous et al., 2026) G (Single-turn) Accuracy MirrorBench (Hathidara et al., 2026) G (Multi-turn) Diversity + LLM Humanual-Chat (Wu et al., 2026b) GLLM Judge SimArena-Doc (Dou et al., 2025) G (Multi-turn) Human align.
+> SS Sotopia-Hard (Zhou et al., 2024b) G (Multi-turn) LLM Judge
+> COG
+> Fantom (Kim et al., 2023) D (MCQ + Open) Accuracy Hitom (He et al., 2023) D (MCQ) Accuracy Paratomi (Sclar et al., 2023) D (QA) Accuracy Social-R1 (Wu et al., 2026a) D (MCQ) Accuracy
+> ROLE
+> Coser (Wang et al., 2026) G (Multi-turn) LLM Judge Lifechoices (Xu et al., 2024) D (MCQ) Accuracy Twinvoice (Du et al., 2025) D (Binary) Accuracy BehaviorChain D (MCQ) Accuracy SimArena-Math (Dou et al., 2025) G (Multi-turn) Human align. Mistakes (Ross & Andreas, 2025b) D (MCQ) Accuracy Humanual-Email (Wu et al., 2026b) GLLM Judge Humanual-News (Wu et al., 2026b) GLLM Judge Humanual-Politics (Wu et al., 2026b) GLLM Judge
+> EVAL
+> AlignX (Li et al., 2025a) D (Pref.) Accuracy HumanLLM (Lei et al., 2026) D (Pref.) Accuracy SocSci210 (Kolluri et al., 2025) D (Rating) Correlation Humanual-Book (Wu et al., 2026b) GLLM Judge Humanual-Opinion (Wu et al., 2026b) GLLM Judge
+
+EVAL (5 tasks). This Axis tests whether models can evaluate like humans — a capability central to reward modeling and LLM-as-judge pipelines, and broadened here to include long-form persona-grounded judgment. AlignX (Li et al., 2025a) measures alignment of model preferences with crowd-sourced human preferences across multiple sub-domains. HumanLLM (Lei et al., 2026) tests whether models, given a persona profile, predict the same preferences and judgments as the matching real participant. SocSci210 (Kolluri et al., 2025) provides participant ratings and social-science judgments: given a character profile (e.g., “you are a black woman”) and a survey question (e.g., “On a scale from 1 to 7, how willing would you be to have a partner of the opposite political party?”), the model must produce a rating that correlates with the matching human respondent’s. Humanual-Book and Humanual-Opinion (Wu et al., 2026b) are the long-form HUMANUAL domains where the task is judgment-like rather than character-driven (book reviews and opinion writing call for evaluative reasoning), so we score them under the evaluation-as-humans Axis. 
+
+G Training Details 
+
+This section gives the full hyperparameter, mixture, and hardware detail elided from Section 4. 
+
+G.1 Midtraining hyperparameters Optimizer and schedule. All midtraining runs ( OSIM -4B-Mid, OSIM -4B-I-Mid, the + Step controls, and the mix-ratio screens) use AdamW with β1 = 0 .9, β2 = 0 .999 , weight decay 0.01 , peak learning rate ηpeak = 1 ×10 −5
+
+with linear warm-up over the first 20 optimizer steps and a constant schedule thereafter, gradient-norm clipping at 
+
+1.0, and mixed-precision bfloat16 . The context is 16 ,384 input tokens / 8,192 response tokens. 
+
+Batch and parallelism. The mini-batch is 1,024 conversations per optimizer step. We shard with FSDP-2, applying full parameter / gradient / optimizer-state sharding across 8 H100-80GB GPUs (one node), with dynamic token-batching at ≤ 49 ,152 tokens per GPU. 
+
+Token budget. The default token budget is 10 B training tokens, corresponding to 4,500 optimizer steps at the above batch size. In the current midtraining analysis, compute efficiency is summarized from intermediate checkpoints of the existing runs rather than from a separate token-budget grid. 
+
+Dataset mixture and upsampling. The default mixture is 100% behavioral data drawn from the ODYS SIM 
+
+corpus, with per-dataset upsampling factors that range from 0.03 × for the largest source ( alignx v2 , 14 .7Mrows) to 5.37 × for the smallest single-source shard ( tom grimulkan , 539 rows). The mix-ratio screen varies 30 ODYS SIM :S TEP FUN token ratios of 0:100 , 50:50 , 70:30 , 90:10 , and 100:0 under the same optimizer, token budget, and step count. 
+
+Generic-mix baseline ( + Step ). The + Step baseline reuses the recipe above verbatim, swapping the behavioral mixture for the publicly released Step-3.5-Flash SFT corpus (StepFun AI, 2025)—a general-purpose chat/instruct mix (Q&A, multi-turn dialogue, tool-use) that is generic but not behavior-irrelevant. This isolates the marginal contribution of ODYS SIM ’s persona-, roleplay-, and ToM-conditioned content beyond what broad chat/instruction midtraining already provides. 
+
+Excluded baselines. Two classes of model are deliberately excluded from the per-skill midtraining-stage di-agnostic in Table 1: (a) post-trained alignment baselines (HER-32B, S OTOPIA -RL-7B, GPT-5.5, GPT-5-nano), which conflate midtraining with subsequent RLHF / preference alignment and so are unsuitable for diagnosing the midtraining stage in isolation, and (b) thinking models (HumanLM-Opinion-8B, HER-32B-thinking), whose generation streams contain interleaved thinking-token preambles that contaminate token-level loss and surface-form overlap metrics. Both classes appear instead in the evaluation suite in Section 5.2, where the metric of interest is prompt-conditioned generation under the model’s natural inference setting and these confounds are immaterial. 
+
+G.2 Post-training hyperparameters 
+
+RL experts (GRPO, RLVF) are initialized from Qwen3-8B-VL-Instruct (Section 5), while the distillation SFT is applied on top of the midtrained checkpoint; all stages reuse the same FSDP-2 / bfloat16 setup as midtraining, and the canonical method definitions are in Section 5. DPO uses β = 0 .1 on the held-out preference subsplit of the corpus (Table 12, record hash datasets). GRPO and RLVF sample 8 rollouts per prompt at temperature 1.0,with no KL loss, asymmetric (dual-clip) PPO clip ratios of 0.2 (low) and 0.28 (high), peak learning rate 5×10 −6
+
+with LoRA rank 32 , and a batch of 64 prompts × 8 rollouts per step processed in PPO mini-batches of 16 prompts (matching the released training script). RLVF additionally conditions a second-stage GRPO pass on verbal feedback by prepending the feedback as a leading turn (Section 5). 
+
+G.3 Inference for evaluation 
+
+Per-skill PPL is computed teacher-forced on the held-out evaluation split of role-swapped human turns (Table 12). BLEU is computed on free generation with greedy decoding under the same prompts. Generative evaluation tasks use temperature 0.7 via vLLM. Cross-tokenizer rows in Table 1 report BLEU only; PPL columns are populated only for models in the Qwen3 tokenizer family. 
+
+H Additional Results 
+
+H.1 Midtraining Recipe: Token Scaling and ODYS SIM :Step Mix 
+
+This section gives the full recipe investigation summarized in one sentence in Section 4: token-scaling curves at two model scales, and the ODYS SIM :Step mix-ratio sweep with its (behavioral, generic-instruction) Pareto frontier. 
+
+Token-scaling curves. Figure 15 plots geomean validation PPL against midtraining tokens for the ODYS SIM 
+
+recipe at two scales (4B, 8B) and two backbones (text-only Qwen3-Base, vision-language Qwen3-VL-Instruct), together with three ODYS SIM :Step mix ratios at 4B (90:10, 70:30, 50:50). Aggregation is the geometric mean over all 63 held-out evaluation datasets. 3 We observe three patterns. (i) Token scaling is monotone but slow. Each curve decreases smoothly with tokens; from ∼250M to ∼4B tokens every Axis improves by another 4–6% PPL, roughly uniform across CONV , SS , COG , ROLE , and EVAL . The diminishing-returns shape is consistent with prior reports that response-imitation SFT has a ceiling in human-behavior fit (Wu et al., 2026b). (ii) Size scales the recipe. OSIM -8B-Mid sits below OSIM -4B-Mid at every shared token count by roughly the same gap on every Axis; the VL backbone ( OSIM -8B-VL-Mid) tracks OSIM -8B-Mid closely, indicating the multimodal initialisation does not cost behavioral fit. (iii) Adding generic chat data hurts behavior monotonically. The mix curves are ordered 
+
+50:50 > 70:30 > 90:10 > 100:0 on every panel: any non-zero Step fraction increases behavioral PPL, and the cost grows with the fraction.         
+
+> 3Caveat: 63 vs. 62 datasets. All midtraining numbers in this paper (Table 1, Figure 15, Figure 16) are computed on a v2
+> eval split of 63 datasets, whereas the released corpus cmu-lti/osim-mid-training contains 62 sources. The single dataset that differs is tom sotopia (1,289 train / 101 test rows): it is a relabel of self-rejection-sampled rollouts from an earlier project checkpoint and was intended for post-training only, but was accidentally folded into the v2 midtraining/eval split that produced all numbers in this paper. We removed it from the released corpus for transparency but did not re-run midtraining and evaluation, because the dataset is one of 63 in a geometric-mean aggregation (its inclusion does not change recipe rankings or qualitative conclusions) and the compute budget did not justify it. Reproducing eval against the released split should produce numerical drift well below the cross-recipe gaps reported here.
+
+31 2.04        
+
+> 2.08
+> 2.12
+> 2.16
+> Mean NLL
+> CONV
+> 2.20
+> 2.24
+> 2.28
+> 2.32
+> SS
+> 0.70
+> 0.73
+> 0.75
+> 0.78
+> COG
+> 0.1B 1B 10B
+> Midtraining tokens
+> 1.47
+> 1.50
+> 1.53
+> 1.56
+> 1.59
+> Mean NLL
+> ROLE
+> 0.1B 1B 10B
+> Midtraining tokens
+> 1.41
+> 1.44
+> 1.47
+> 1.50
+> 1.53
+> EVAL
+> 0.1B 1B 10B
+> Midtraining tokens
+> 1.62
+> 1.65
+> 1.68
+> 1.71
+> Overall
+> OdysSim-4B OdysSim-8B
+
+Figure 15: Midtraining-token vs. geomean validation NLL per Axis. Solid lines : OSIM -4B-Mid (100:0), OSIM -8B-Mid (100:0), and OSIM -8B-VL-Mid (100:0). Faint blue lines : 4B mix-ratio sweep at 90:10, 70:30, 50:50 (ODYS SIM :Step). Markers are logged validation checkpoints; lines are PCHIP-smoothed in log-x space between them. Aggregation is the geometric mean over all 63 held-out evaluation datasets. 
+
+Behavior vs general-instruction tradeoff. The natural follow-up is what mixing in Step data buys on the generic-instruction side. At matched checkpoint step 1000, we evaluate every midtraining recipe on Step’s own held-out test split ( Step-3.5-Flash-SFT , a code/math/instruction corpus and the source of our + Step baseline) and plot the resulting (behavioral, Step) NLL pairs in Figure 16. Both axes are in nats, so a line segment between two recipes can be read as the exchange rate : how many nats of behavioral loss are paid per nat of Step loss reduced. 
+
+The first 10% of Step is essentially free; everything after is overpriced. Going from pure ODYS SIM to a 90:10 mix saves 0.13 nats of Step loss for only 0.013 nats of behavioral cost — a roughly ten-to-one bargain. The next step ( 90:10 → 70:30 ) is about even; after that the trade reverses ( 70:30 → 50:50 costs twice the behavior it saves; 
+
+50:50 → pure Step gives up 27 × more behavior than it recovers). Pure-Step training is dominated by 50:50 outright (same Step loss, much lower behavioral loss), so it is never the right choice if any behavioral fidelity matters. Scale beats mixing. OSIM -8B-Mid sits below-and-left of every 4B point in Figure 16: it is simultaneously better on both axes than any 4B mix. We therefore adopt OSIM -8B-Mid at 100:0 as the headline midtraining recipe and recommend OSIM -4B-Mid at 90:10 as the Pareto-frontier option when the smaller scale is required. 
+
+H.2 Full Per-Skill PPL/BLEU Table 
+
+Table 14 reports the full version of Table 1, including every Instruct ( -I ) variant, the Qwen3-32B-I reference, and the + Step generic-midtraining baseline (Qwen3-4B/4B-I trained on Step-3.5-Flash) that the main-text table compresses out for space. 
+
+H.3 What Does Midtraining Change About the Model? 
+
+Section 4 showed that midtraining helps; this section asks what concretely changes in the model’s outputs. We triangulate with two probes (Figure 6): an open-coded inventory of lexical/structural features on the BLEU-eval generations, and the HumT human-likeness scalar of Cheng et al. (Cheng et al., 2025). 
+
+Surface features. Reading paired (instruct-baseline, ODYS SIM ) generations, we open-coded an inventory of STYLE features (response length, Markdown markup, em-dash usage) and A SSISTANT -TRAIT features (chatbot boilerplate, identity confusion), then scored N =1 ,100 BLEU-eval prompts (dropping COG and EVAL where conversational style is not a meaningful reference) for two off-the-shelf instruct baselines—Qwen3-4B-Instruct-2507 (Qwen Team, 2025) and GPT-5.5 (OpenAI, 2025)—against ODYS SIM and the human gold reference. Both instruct baselines emit verbose, Markdown-heavy responses (median 116 /83 words; 22 .8% /23 .9% Markdown markup; 78 .2% /40 .7% em-dash usage; 18 .2% /19 .5% bullet markup); ODYS SIM collapses to the human register 32 1.6 1.7 1.8 1.9 2.0 2.1 2.2   
+
+> Behavioral validation NLL (geomean over 63 OdysSim datasets, lower is better )
+> 0.750
+> 0.775
+> 0.800
+> 0.825
+> 0.850
+> 0.875
+> 0.900
+> 0.925
+> StepFun validation NLL  (lower is better  )
+> +Step 4B
+> OdysSim-4B
+> OdysSim-8B
+> mix-50-50
+> mix-70-30
+> mix-90-10
+> step 500
+> step 1000
+> step 1500
+
+Figure 16: Behavior vs general-instruction tradeoff. Both axes are mean validation NLL (nats; lower is better, axes inverted so up-and-right is better). x: behavioral NLL averaged over the 63-dataset ODYS SIM val split. y: NLL on the first 512 examples of Step Step-3.5-Flash-SFT ; a random-sample spot-check moves the absolute NLL by 
+
+≤ 0.04 nats and preserves the cross-model ranking. Grey line traces the 4B mix-ratio sweep. Segment slopes give the marginal trade rate (nats Step gained per nat behavioral loss). OSIM -8B-Mid sits below-and-left of every 4B point, indicating that model size strictly dominates Step mixing if compute allows. (18 words, 1.6% Markdown, 0.5% em-dash, 0.8% bullets, vs. human gold 23 / 2.9% / 2.1% / 2.0% ). Assistant boilerplate ( “I’d be happy to,” “Of course!” “As an AI” ) drops from 16 .3% (Qwen3-Inst) and 6.5% (GPT-5.5) to 
+
+3.5% for ODYS SIM , against a human-gold rate of 6.4% .
+
+Anthropomorphism scalar. HumT (Cheng et al., 2025) computes per-text human-likeness as the log-prob ratio of animate vs. inanimate prefixes under a fixed GPT-2 backbone (higher = more human). On HumT’s released N =200 
+
+test prompts, ODYS SIM ’s mean is +0 .13 —roughly 4× Qwen3-Inst-2507’s +0 .03 and 3× GPT-5.5’s +0 .05 , and well above HumT’s own REJECTED -anchor distribution at +0 .06 . The SocioT companion confirms the shift is along anthropomorphism-correlated directions: ODYS SIM is humbler (lower status), more socially close, and slightly warmer than either instruct baseline. Both probes converge: midtraining moves the model away from the verbose, Markdown-heavy, helpful-agent register of off-the-shelf instruct LMs toward the shorter, plainer, conversational register of human references. The shift comes entirely from the SFT data mix (no preference tuning) and is large: an order-of-magnitude reduction in response length, ∼10 × less structural markup, and 3–4× higher HumT. 33 Table 14: Full per-skill PPL/BLEU table (companion to Table 1). Geometric-mean PPL (PL ↓) and arithmetic-mean BLEU (BL ↑) on the held-out evaluation split of role-swapped human turns. Rows: (A) no midtraining, (B) 
+
+general midtraining ( + Step ), (C) other behavior-oriented LMs, (D) ours (Section 4). Notation: bare = base, “-I” = Instruct, “+ Step” = trained on Step-3.5-Flash. PPL within the Qwen3 tokenizer family only; BLEU across all rows. Rows at the last logged val checkpoint (step 4250 for 4B / 8B; step 950 for 0.6B). Best per (metric, capability) in 
+
+bold . †BLEU values still computed on the V1 val split (pending re-eval on V2); affects only the I/VL variants here. The 4B-Mid and 8B-Mid base rows are computed on V2 val (matching the training data version). 
+
+Model CONV SS COG ROLE EVAL Overall 
+
+PL ↓ BL ↑ PL ↓ BL ↑ PL ↓ BL ↑ PL ↓ BL ↑ PL ↓ BL ↑ PL ↓ BL ↑
+
+(A) No-midtraining baselines 
+
+Qwen3-0.6B 20.75 0.70 25.25 0.61 11.17 2.37 11.39 6.37 54.98 3.96 17.43 2.80 Qwen3-4B 14.08 1.47 17.52 1.91 8.07 5.60 8.56 10.78 24.14 6.27 12.00 5.18 Qwen3-4B-I 21.39 1.75 29.37 2.50 19.10 10.62 14.26 12.25 24.81 6.74 19.88 6.78 Qwen3-8B 14.23 2.87 17.34 1.45 9.72 3.63 8.11 14.94 34.17 4.17 12.54 6.17 Qwen3-8B-I 18.44 2.07 28.36 0.85 7.00 4.80 11.68 11.39 14.38 6.83 14.13 5.31 Qwen3-32B-I 15.94 2.38 25.45 0.89 6.00 4.67 10.49 10.59 12.62 8.15 12.41 5.28 Llama-3.1-8B-I 14.34 4.11 20.09 1.93 4.16 3.58 7.82 12.41 13.47 7.81 10.04 6.23 
+
+(B) General midtraining baseline 
+
+Qwen3-4B + Step 12.21 3.97 14.35 1.97 5.78 3.33 7.73 13.61 7.36 8.06 9.20 6.49 Qwen3-4B-I + Step 12.22 4.18 13.63 2.18 5.36 3.83 7.49 14.62 6.88 8.55 8.88 6.99 
+
+(C) Other behavior-oriented language models 
+
+UserLM-8B 11.62 5.33 13.29 5.87 4.02 6.97 6.61 4.37 12.90 1.11 8.38 5.12 CoSER-8B 15.70 2.86 14.17 1.97 3.20 7.39 6.96 14.90 8.85 18.12 8.77 8.05 
+
+(D) Ours 
+
+OSIM -0.6B-Mid 11.99 5.51 14.18 2.01 2.65 11.75 6.46 15.26 5.68 43.02 7.35 11.81 
+
+OSIM -4B-Mid 8.23 8.01 9.67 10.06 2.09 44.62 4.65 21.53 4.26 46.17 5.28 26.08 
+
+OSIM -4B-I-Mid † 9.19 8.49 9.97 9.71 2.42 37.48 5.57 19.42 4.41 43.73 5.94 19.93 
+
+OSIM -8B-Mid 7.62 8.48 9.00 12.44 2.01 44.73 4.36 22.49 4.03 45.47 4.95 26.72 
+
+ODYS SIM -8B-I † 7.73 9.11 9.05 2.45 2.00 18.52 4.41 20.22 4.06 46.70 4.99 15.93 
+
+34

@@ -1,0 +1,69 @@
+{
+  "label": "2026-06-15",
+  "date": "2026-06-15",
+  "generated_at": "2026-06-15T21:54:02",
+  "count": 4,
+  "papers": [
+    {
+      "paper_id": "202606/15/2606.13815v1-poker-arena-multi-axis-profiling-of-strategic-reasoning-and-memory-in-llms",
+      "section": "deep",
+      "title_en": "Poker Arena: Multi-Axis Profiling of Strategic Reasoning and Memory in LLMs",
+      "authors": "Pratham Singla, Shivank Garg, Vihan Singh",
+      "date": "2026-06-11",
+      "pdf": "https://arxiv.org/pdf/2606.13815v1",
+      "score": "9.0",
+      "evidence": "AI玩扑克游戏的策略剖析",
+      "tldr": "现有游戏基准将异构推理维度压缩为单一标量，掩盖了前沿LLM的能力结构。本文提出Poker Arena，一种无限注德州扑克锦标赛平台，结合三层记忆架构与九轴认知剖析，分解战略推理为可解释维度。评估7个前沿模型，发现锦标赛筹码与平均轴得分排序不同：Claude Opus 4.6筹码领先但轴得分仅列第五，证明多轴评估揭示标量排行榜系统性误排的能力结构，跨维度一致性比单轴峰值更重要。",
+      "tags": "query:player-ai",
+      "abstract_en": "Strategic reasoning under uncertainty underpins consequential decisions in negotiation, finance, and policy, but prevailing game-play benchmarks collapse heterogeneous reasoning dimensions into a single scalar, leaving the capability structure of frontier LLMs unexamined. We introduce Poker Arena, a no-limit Texas Hold'em tournament platform that couples a three-layer memory architecture (within-hand, session, and cross-session) with a nine-axis cognitive profile decomposing strategic reasoning into interpretable dimensions such as bet-sizing calibration and positional awareness. We evaluate seven frontier models across 50 sessions of 1,000 hands and a controlled memory ablation; tournament chips and aggregate axis score order the field differently: Claude Opus 4.6 wins +$15,730 chips with 14 first-place finishes, yet ranks only fifth of seven on mean axis score, while persistent memory helps some models and hurts others. These findings show that multi-axis evaluation surfaces capability structure that scalar leaderboards systematically misrank, with cross-dimensional consistency outweighing peak performance on any single axis.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/15/2606.12780v1-proplay-procedural-world-models-for-self-evolving-llm-agents",
+      "section": "deep",
+      "title_en": "ProPlay: Procedural World Models for Self-Evolving LLM Agents",
+      "authors": "Yijun Ma, Zehong Wang, Yiyang Li, Ziming Li, Xiaoguang Guo, Weixiang Sun, Chuxu Zhang, Yanfang Ye",
+      "date": "2026-06-11",
+      "pdf": "https://arxiv.org/pdf/2606.12780v1",
+      "score": "8.0",
+      "evidence": "用于部分可观测环境的自进化LLM智能体及程序化世界模型",
+      "tldr": "自进化LLM代理在部分可观察环境中难以主动探索并利用有限反馈。ProPlay提出程序世界模型，将成功轨迹抽象为程序图，每个转换关联可靠性记录，使代理在回合前进行程序级预演作为软指导，执行后利用环境反馈精化图。实验表明该方法持续提升环境理解和自进化能力，显著优于强基线。",
+      "tags": "query:player-ai",
+      "abstract_en": "Self-evolving agents are expected to improve through interaction without external supervision, but this remains difficult in partially observable environments where agents must explore actively, learn from limited feedback, and decide when to trust prior experience. Existing LLM-agent methods often rely on memory or planning modules, yet they rarely close the loop between them to continually refine an internal understanding of environment dynamics. We introduce ProPlay, a procedural world model that supports procedure-level preplay, where agents can rehearse future procedural paths using the learned world knowledge. Rather than representing experience as isolated rules or low-level action constraints, ProPlay abstracts successful trajectories into procedures and organizes them in a procedure graph that captures causal transitions among task stages. Each transition is associated with a reliability record embedding to estimate its task-specific contribution from past outcomes. Before each episode, ProPlay simulates future procedural trajectories over known graph structures as structured soft guidance; after execution, it refines the graph using environment feedback. Experiments on public benchmarks show that ProPlay consistently improves environment understanding and self-evolution capability over strong baselines. Our code has been released in https://github.com/antman9914/proplay.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/15/2606.14199v1-odyssim-building-foundation-models-for-human-behavior-simulation",
+      "section": "quick",
+      "title_en": "OdysSim: Building Foundation Models for Human Behavior Simulation",
+      "authors": "Xuhui Zhou, Weiwei Sun, Weihua Du, Jiarui Liu, Haojia Sun, Qianou Ma, Tongshuang Wu, Yiming Yang, Maarten Sap",
+      "date": "2026-06-12",
+      "pdf": "https://arxiv.org/pdf/2606.14199v1",
+      "score": "6.0",
+      "evidence": "用于模拟人类行为的基础模型，可应用于玩家建模",
+      "tldr": "当前LLM作为人类模拟器时，因后训练导致行为趋于同质化和过度顺从，产生Sim2Real差距。本文提出OdysSim，最大的开放行为基础模型研究，通过SOUL五轴分类法统一62个数据集和23个基准任务，构建大规模语料库，并设计中期训练、任务特定RL和专家蒸馏的端到端流程。所得8B模型在8个任务上排名第一，输出更类人，零样本迁移至用户模拟任务，反应对齐接近真实用户（93.2 vs 93.5）。研究还揭示了LLM-as-judge RL的奖励黑客模式，并开发检测器缓解。开源所有资源，推动行为基础模型范式革新。",
+      "tags": "query:player-ai",
+      "abstract_en": "Large language models are increasingly deployed as human simulators for interactive evaluation and social simulation. Yet helpfulness-driven post-training pulls them toward a homogeneous, overly agreeable assistant register, creating a behavioral Sim2Real gap. We present OdysSim, the largest open systematic investigation of behavioral foundation models, i.e., models trained to simulate human behavior at scale. We propose SOUL, a taxonomy of five capability axes (CONV, SS, COG, ROLE, EVAL) that unifies 62 datasets and 23 benchmark tasks under one framework. Specifically, we curate the OdysSim corpus (21.4M interactions, 10B tokens, retrofitted with back-generated social contexts), construct the SOUL-Index benchmark, and develop an end-to-end training recipe combining midtraining, task-specific RL, and expert distillation. The resulting open 8B OSim model ranks first or tied-first on 8 of 23 tasks, outperforming any individual frontier model by this count, with the strongest gains on conversational and social tasks. Its outputs are also more human-like in length, formatting, and word choice, and it transfers zero-shot to out-of-distribution user simulation on $τ$-bench, nearly matching real users on reaction alignment (93.2 vs. 93.5). We further show that LLM-as-judge RL induces reward-hacking patterns, and that our detectors can mitigate them during post-training. Together, our findings suggest that behavioral foundation models require rethinking the LLM training paradigm. We release all artifacts to support future research.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/15/2606.14693v1-learning-coordinated-preference-for-multi-objective-multi-agent-reinforcement-learning",
+      "section": "quick",
+      "title_en": "Learning Coordinated Preference for Multi-Objective Multi-Agent Reinforcement Learning",
+      "authors": "Pengxin Wang, Lihao Guo, Yi Xie, Bo Liu, Siyang Cao, Jingdi Chen",
+      "date": "2026-06-12",
+      "pdf": "https://arxiv.org/pdf/2606.14693v1",
+      "score": "6.0",
+      "evidence": "多目标多智能体强化学习用于合作游戏",
+      "tldr": "多目标多智能体强化学习面临目标冲突与智能体个体差异的双重挑战。本文提出PCMA框架，学习协调的智能体特定偏好以实现互补性权衡。理论分析表明偏好多样性可通过一阶改进分解带来团队提升。实验在多个场景及交通控制任务中验证了PCMA在性能与权衡协调性上的优势。",
+      "tags": "query:player-ai",
+      "abstract_en": "Cooperative multi-objective multi-agent reinforcement learning (MOMARL) models team decision making under multiple, potentially conflicting objectives. In this setting, conflicts arise not only across objectives but also across agents with different observations, roles, and contributions. We propose Preference Coordinated Multi-agent Policy Optimization (PCMA), which learns coordinated agent-specific preferences to enable complementary trade-offs among agents. Theoretically, we formulate cooperative MOMARL as a team-optimal game and show that, under suitable conditions, preference diversity can induce team improvement through a first-order improvement decomposition. Experiments on multiple cooperative MOMA environments and a practical traffic-control scenario show that PCMA improves both performance and trade-off coordination.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

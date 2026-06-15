@@ -1,0 +1,183 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-15T21:50:14.060070+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 2,
+    "deep_cap": 6,
+    "deep_selected": 2,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [
+    {
+      "id": "2606.13815v1",
+      "source": "arxiv",
+      "title": "Poker Arena: Multi-Axis Profiling of Strategic Reasoning and Memory in LLMs",
+      "abstract": "Strategic reasoning under uncertainty underpins consequential decisions in negotiation, finance, and policy, but prevailing game-play benchmarks collapse heterogeneous reasoning dimensions into a single scalar, leaving the capability structure of frontier LLMs unexamined. We introduce Poker Arena, a no-limit Texas Hold'em tournament platform that couples a three-layer memory architecture (within-hand, session, and cross-session) with a nine-axis cognitive profile decomposing strategic reasoning into interpretable dimensions such as bet-sizing calibration and positional awareness. We evaluate seven frontier models across 50 sessions of 1,000 hands and a controlled memory ablation; tournament chips and aggregate axis score order the field differently: Claude Opus 4.6 wins +$15,730 chips with 14 first-place finishes, yet ranks only fifth of seven on mean axis score, while persistent memory helps some models and hurts others. These findings show that multi-axis evaluation surfaces capability structure that scalar leaderboards systematically misrank, with cross-dimensional consistency outweighing peak performance on any single axis.",
+      "authors": [
+        "Pratham Singla",
+        "Shivank Garg",
+        "Vihan Singh"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-06-11T18:39:25+00:00",
+      "link": "https://arxiv.org/pdf/2606.13815v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "AI playing poker game strategic profiling",
+      "llm_evidence_cn": "AI玩扑克游戏的策略剖析",
+      "llm_evidence": "AI玩扑克游戏的策略剖析",
+      "canonical_evidence": "AI玩扑克游戏的策略剖析",
+      "llm_tldr_en": "Poker Arena benchmarks LLMs in no-limit Texas Hold'em, profiling strategic reasoning and memory across multiple axes.",
+      "llm_tldr_cn": "该论文针对现有游戏基准将不同推理维度压缩为单一分数的问题，提出了Poker Arena平台，在无限制德州扑克中结合三层记忆架构和九轴认知画像，对LLM的博弈推理能力进行多维度剖析。在七个前沿模型上的实验显示，不同模型在筹码和轴分上表现出不同的能力结构。该平台为游戏AI智能体的策略评估提供了细粒度的分析工具。",
+      "llm_tldr": "该论文针对现有游戏基准将不同推理维度压缩为单一分数的问题，提出了Poker Arena平台，在无限制德州扑克中结合三层记忆架构和九轴认知画像，对LLM的博弈推理能力进行多维度剖析。在七个前沿模型上的实验显示，不同模型在筹码和轴分上表现出不同的能力结构。该平台为游戏AI智能体的策略评估提供了细粒度的分析工具。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.12780v1",
+      "source": "arxiv",
+      "title": "ProPlay: Procedural World Models for Self-Evolving LLM Agents",
+      "abstract": "Self-evolving agents are expected to improve through interaction without external supervision, but this remains difficult in partially observable environments where agents must explore actively, learn from limited feedback, and decide when to trust prior experience. Existing LLM-agent methods often rely on memory or planning modules, yet they rarely close the loop between them to continually refine an internal understanding of environment dynamics. We introduce ProPlay, a procedural world model that supports procedure-level preplay, where agents can rehearse future procedural paths using the learned world knowledge. Rather than representing experience as isolated rules or low-level action constraints, ProPlay abstracts successful trajectories into procedures and organizes them in a procedure graph that captures causal transitions among task stages. Each transition is associated with a reliability record embedding to estimate its task-specific contribution from past outcomes. Before each episode, ProPlay simulates future procedural trajectories over known graph structures as structured soft guidance; after execution, it refines the graph using environment feedback. Experiments on public benchmarks show that ProPlay consistently improves environment understanding and self-evolution capability over strong baselines. Our code has been released in https://github.com/antman9914/proplay.",
+      "authors": [
+        "Yijun Ma",
+        "Zehong Wang",
+        "Yiyang Li",
+        "Ziming Li",
+        "Xiaoguang Guo",
+        "Weixiang Sun",
+        "Chuxu Zhang",
+        "Yanfang Ye"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CL"
+      ],
+      "published": "2026-06-11T00:47:37+00:00",
+      "link": "https://arxiv.org/pdf/2606.12780v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Self-evolving LLM agents with procedural world models for partially observable environments",
+      "llm_evidence_cn": "用于部分可观测环境的自进化LLM智能体及程序化世界模型",
+      "llm_evidence": "用于部分可观测环境的自进化LLM智能体及程序化世界模型",
+      "canonical_evidence": "用于部分可观测环境的自进化LLM智能体及程序化世界模型",
+      "llm_tldr_en": "ProPlay introduces procedural world models enabling LLM agents to rehearse future procedural paths, improving self-evolution in partially observable environments.",
+      "llm_tldr_cn": "自进化智能体在部分可观测环境中难以主动探索并从有限反馈中学习。本文提出ProPlay，一种程序化世界模型，支持过程级预演，智能体可利用学到的世界知识排练未来过程路径。相比孤立规则或低层动作约束，ProPlay将成功轨迹抽象为程序，并通过预演闭环持续优化内部世界理解。该方法为游戏环境中AI智能体的持续学习提供了高效范式。",
+      "llm_tldr": "自进化智能体在部分可观测环境中难以主动探索并从有限反馈中学习。本文提出ProPlay，一种程序化世界模型，支持过程级预演，智能体可利用学到的世界知识排练未来过程路径。相比孤立规则或低层动作约束，ProPlay将成功轨迹抽象为程序，并通过预演闭环持续优化内部世界理解。该方法为游戏环境中AI智能体的持续学习提供了高效范式。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.14199v1",
+      "source": "arxiv",
+      "title": "OdysSim: Building Foundation Models for Human Behavior Simulation",
+      "abstract": "Large language models are increasingly deployed as human simulators for interactive evaluation and social simulation. Yet helpfulness-driven post-training pulls them toward a homogeneous, overly agreeable assistant register, creating a behavioral Sim2Real gap. We present OdysSim, the largest open systematic investigation of behavioral foundation models, i.e., models trained to simulate human behavior at scale. We propose SOUL, a taxonomy of five capability axes (CONV, SS, COG, ROLE, EVAL) that unifies 62 datasets and 23 benchmark tasks under one framework. Specifically, we curate the OdysSim corpus (21.4M interactions, 10B tokens, retrofitted with back-generated social contexts), construct the SOUL-Index benchmark, and develop an end-to-end training recipe combining midtraining, task-specific RL, and expert distillation. The resulting open 8B OSim model ranks first or tied-first on 8 of 23 tasks, outperforming any individual frontier model by this count, with the strongest gains on conversational and social tasks. Its outputs are also more human-like in length, formatting, and word choice, and it transfers zero-shot to out-of-distribution user simulation on $τ$-bench, nearly matching real users on reaction alignment (93.2 vs. 93.5). We further show that LLM-as-judge RL induces reward-hacking patterns, and that our detectors can mitigate them during post-training. Together, our findings suggest that behavioral foundation models require rethinking the LLM training paradigm. We release all artifacts to support future research.",
+      "authors": [
+        "Xuhui Zhou",
+        "Weiwei Sun",
+        "Weihua Du",
+        "Jiarui Liu",
+        "Haojia Sun",
+        "Qianou Ma",
+        "Tongshuang Wu",
+        "Yiming Yang",
+        "Maarten Sap"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-06-12T07:31:55+00:00",
+      "link": "https://arxiv.org/pdf/2606.14199v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "foundation models for simulating human behavior, applicable to player modeling",
+      "llm_evidence_cn": "用于模拟人类行为的基础模型，可应用于玩家建模",
+      "llm_evidence": "用于模拟人类行为的基础模型，可应用于玩家建模",
+      "canonical_evidence": "用于模拟人类行为的基础模型，可应用于玩家建模",
+      "llm_tldr_en": "OdysSim builds behavioral foundation models to simulate human behavior at scale, with a taxonomy and benchmark, enabling realistic player behavior simulation.",
+      "llm_tldr_cn": "该工作提出OdysSim，大规模构建行为基础模型以模拟人类行为。提出SOUL分类法统一62个数据集和23个基准任务，并开发了端到端训练方案。其模型可用于生成逼真的玩家行为，弥补虚拟游戏玩家建模中行为真实性的不足。",
+      "llm_tldr": "该工作提出OdysSim，大规模构建行为基础模型以模拟人类行为。提出SOUL分类法统一62个数据集和23个基准任务，并开发了端到端训练方案。其模型可用于生成逼真的玩家行为，弥补虚拟游戏玩家建模中行为真实性的不足。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "player behavior simulation techniques",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.14693v1",
+      "source": "arxiv",
+      "title": "Learning Coordinated Preference for Multi-Objective Multi-Agent Reinforcement Learning",
+      "abstract": "Cooperative multi-objective multi-agent reinforcement learning (MOMARL) models team decision making under multiple, potentially conflicting objectives. In this setting, conflicts arise not only across objectives but also across agents with different observations, roles, and contributions. We propose Preference Coordinated Multi-agent Policy Optimization (PCMA), which learns coordinated agent-specific preferences to enable complementary trade-offs among agents. Theoretically, we formulate cooperative MOMARL as a team-optimal game and show that, under suitable conditions, preference diversity can induce team improvement through a first-order improvement decomposition. Experiments on multiple cooperative MOMA environments and a practical traffic-control scenario show that PCMA improves both performance and trade-off coordination.",
+      "authors": [
+        "Pengxin Wang",
+        "Lihao Guo",
+        "Yi Xie",
+        "Bo Liu",
+        "Siyang Cao",
+        "Jingdi Chen"
+      ],
+      "primary_category": "cs.MA",
+      "categories": [
+        "cs.MA",
+        "cs.AI"
+      ],
+      "published": "2026-06-12T17:55:28+00:00",
+      "link": "https://arxiv.org/pdf/2606.14693v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "multi-objective multi-agent RL for cooperative games",
+      "llm_evidence_cn": "多目标多智能体强化学习用于合作游戏",
+      "llm_evidence": "多目标多智能体强化学习用于合作游戏",
+      "canonical_evidence": "多目标多智能体强化学习用于合作游戏",
+      "llm_tldr_en": "PCMA learns coordinated agent-specific preferences for multi-objective multi-agent RL, improving team performance in cooperative scenarios.",
+      "llm_tldr_cn": "该论文针对多目标多智能体强化学习中智能体间目标冲突的问题，提出PCMA，学习协调的智能体特定偏好以实现互补权衡。理论分析表明偏好多样性可以诱导团队改进。在多智能体合作环境（包括游戏场景）中的实验验证了该方法优于现有方法。该工作可直接应用于游戏中的团队AI训练。",
+      "llm_tldr": "该论文针对多目标多智能体强化学习中智能体间目标冲突的问题，提出PCMA，学习协调的智能体特定偏好以实现互补权衡。理论分析表明偏好多样性可以诱导团队改进。在多智能体合作环境（包括游戏场景）中的实验验证了该方法优于现有方法。该工作可直接应用于游戏中的团队AI训练。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
