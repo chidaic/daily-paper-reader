@@ -1,0 +1,212 @@
+Title: Orchestrated Reality: From Role-Play to Living, Playable Game Worlds – LLM-Driven World Simulation as a Parameterized-Action POMDP
+
+URL Source: https://arxiv.org/pdf/2606.16014v1
+
+Published Time: Tue, 16 Jun 2026 01:27:14 GMT
+
+Number of Pages: 9
+
+Markdown Content:
+# Orchestrated Reality: From Role-Play to Living, Playable Game Worlds 
+
+LLM-Driven World Simulation as a Parameterized-Action POMDP 
+
+## YUHANG HUANG ∗, The University of Tokyo, Japan 
+
+## CHENMIAO LI ∗, The University of Tokyo, Japan 
+
+## CHAOWEI FANG, Individual Researcher, Japan 
+
+Many games rely on storytelling combined with systems that track levelling, NPC behaviour, and consequence simulation; bridging tightly-authored narrative with deeply-simulated worlds—most acute in sandbox and open-world settings—has been prohibitively expensive. LLM-driven worlds open a new path: a single harness can coordinate numerical state, narrative voice, storytelling pacing, and rule logic together. Realising this requires the LLM system to sustain a persistent world (who is where, what has just happened, what is currently true), which today’s deployed systems do not: the narrative voice asserts state in free prose without any validated representation, so a fully autonomous game engine remains infeasible. We treat this as an architectural choice, not a limitation of language models, and report work in progress on a framework— orchestrated reality —that makes the world a canonical object owned by a singleton orchestration agent analogous to the tabletop-RPG Game Master (GM) . We formalise an LLM-driven game world for a human player as a Parameterized-Action POMDP [10 , 13 ]: state is a tree of canonical JSON entities, actions decompose as 
+
+𝑎 = (𝑘, 𝑥 𝑘 ) (a discrete intent kind plus structured JSON parameters), the agent observes only a narrative projection 𝑜 = 𝑂 (𝑠 ) of state, and the transition kernel 𝐹 is an LLM-driven Plan–Diff–Validate–Apply (PDVA) pipeline that commits schema-validated, content-hashed JSON deltas. We give the formal model, a JSON-state example, a worked single-turn example, and a catalogue of 15 illustrative incidents drawn from a real deployment showing the framework in action. Empirical validation through a planned human player study—together with multi-NPC concurrent agency and deployment as an RL environment—is situated as future work. CCS Concepts: • Computing methodologies → Artificial intelligence ; • Human-centered computing → Computer games ;
+
+HCI design and evaluation methods .Additional Key Words and Phrases: world simulation, parameterized-action POMDP, LLM-driven game worlds, JSON state, role-playing agents, interactive narrative, game AI 
+
+1 Introduction 
+
+Many games rely on storytelling, or at minimum on systems that track levelling and status, narrate non-player characters, and resolve player actions into simulated outcomes. In more open-ended settings such as sandbox and open-world games, the storytelling and memory burden needed to make the world feel real becomes considerably more complex. Today’s LLM-based systems frequently fail to maintain a coherent world state and a reasonable narrative system, which is why LLM-based narrative works only for character role-play scenarios and has not yet emerged into real computer games. They lose track of who is where, what has just happened, and what is currently true, which makes it infeasible to build a fully autonomous game engine without a human-in-the-loop update mechanism. The market for LLM-driven games is real; however, most current exploration focuses on the game-coding environment and on generating 3D art and asset environments, rather than on world state and narrative orchestration. If we can move from character-based narrative generation to game-story-orchestration agents—analogous to Game Masters (GMs) in tabletop role-playing games (TRPGs)—such agentic systems could become the foundation of next-generation games. This is the move from a character that speaks to orchestrated reality .
+
+> ∗Yuhang Huang and Chenmiao Li contributed equally to this work. Authors’ Contact Information: Yuhang Huang, The University of Tokyo, Japan; Chenmiao Li, The University of Tokyo, Japan; Chaowei Fang, Individual Researcher, Japan.
+
+1
+
+> arXiv:2606.16014v1 [cs.HC] 14 Jun 2026
+
+2 Huang, Li, and Fang We treat this as an architectural problem, not a language-model limitation. In essentially every deployed or studied system, the narrative voice asserts world state in free prose rather than reading and writing a persistent, validated representation. This produces three recurring failures. (1) Statelessness : when a session ends the world ceases to exist; “memory” is only context-window proximity. (2) Unvalidated writes : the model can assert any world change, so state silently drifts and accumulates contradictions. (3) Monolithic agency : one prompt simultaneously narrates the environment, voices every character, and adjudicates rules, conflating roles that should be separated. We report work in progress on a framework that makes the world the canonical object. The world is a tree of 
+
+JSON entities on disk—this is the state. Each turn the system advances state through a Plan–Diff–Validate–Apply (PDVA) pipeline that proposes, schema- and permission-validates, and atomically commits JSON deltas; this is the transition kernel. The agent (the player today; an RL policy or sub-agent in future work) emits parameterized actions 
+
+𝑎 = (𝑘, 𝑥 𝑘 )—a discrete intent kind 𝑘 plus structured JSON parameters 𝑥 𝑘 , and observes only a narrative projection 
+
+𝑜 = 𝑂 (𝑠 ) of canonical state. We formalise this loop as a Parameterized-Action POMDP , combining the partially observable setting of Kaelbling, Littman, and Cassandra [ 10 ] with the parameterized-action setting of Masson, Ranchod, and Konidaris [13]. 
+
+Contributions (work in progress). 
+
+(1) A formalisation of LLM-driven game worlds as a Parameterized-Action POMDP , with a single world-agent serving as both the transition kernel ( 𝐹 , via PDVA) and the observation kernel ( 𝑂 , via narration). (2) A JSON world-state model that makes the world inspectable, branchable, and replayable by content hash—a concrete answer to “what would it mean to actually model the world.” (3) A catalogue of 15 auditable incident classes drawn from a real deployment that illustrate the framework’s three mechanisms—multi-agent orchestration, JSON-forced memory injection, and JSON-flow state commits—in action, demonstrating that the framework runs in practice on real play history. 
+
+2 Related Work 
+
+Markov decision processes for game environments. Our formalism joins two MDP threads: partial observability (POMDPs [ 10 ]) and parameterized actions (PAMDPs [ 13 ]). Multi-agent extensions go through Markov games [ 12 ], which we reserve for future work in which NPCs become concurrent actors. In ML, learned world models [5] have been used as RL environments; we propose a complementary line where the world model is made of structured JSON and the transition kernel is an LLM-driven validation pipeline, not a learned neural network. 
+
+AI game masters and agentic orchestration. Comparisons of static versus agentic AI game masters [ 9] report immersion and curiosity gains for agentic orchestration but treat the world’s underlying state as implicit. Studies of player trust under LLM-driven NPCs [ 20 ] measure experiential effects of inconsistency, not the underlying architecture of memory and state. We address that layer: not the GM’s prose choices, but the validated world model under them. 
+
+LLM-driven worlds and LLM agents. Generative Agents [ 15 ] build an LLM-driven world without a human player; Voyager [ 17 ] and MineDojo [ 4 ] place LLMs as policies in a fixed Minecraft world; RoleLLM [ 18 ] and Character-LLM [ 16 ]target persona consistency inside an agent. We target the missing intersection: an LLM-driven world for a human player ,formalised so the world responds turn-by-turn to parameterized actions. 
+
+Story generation with agents. Dramatron [ 14 ] co-writes scripts with humans through an agentic prompt structure; Agents’ Room [ 8 ] generates narratives through multi-step collaboration. These pipelines produce text; we provide the runtime world model that any such pipeline can read from and write into through a validated transition kernel. Orchestrated Reality: From Role-Play to Living, Playable Game Worlds 3
+
+Multi-agent LLM frameworks. AutoGen [ 19 ], MetaGPT [ 7], and CAMEL [ 11 ] provide general multi-agent or-chestration but no game-specific agent contracts, no schema-validated mutation pipeline, and no event-sourced state with hash-identified replay. We bring those systems disciplines—deny-first permissions, atomic transactions, content-addressed audit logs—to a game-runtime setting. 
+
+3 Formalism: World as a Parameterized-Action POMDP 3.1 The world is a tree of JSON entities 
+
+Many agent systems use the filesystem incidentally—scratchpads, RAG corpora, run logs. Our position is stronger: we use JSON files as the canonical state of the world , where “world” foregrounds narrative, characters, and cultural fact 
+
+as first-class state rather than only spatial or asset layout. Every entity that matters—a town, an NPC with persona and relationships, a quest’s history, a faction’s standing, the active narrative thread, the player profile, the run state itself—is a JSON document under a typed schema; the world 𝑠 ∈ S is the tree of these documents on disk. State is therefore inspectable, diffable, and addressable by content hash before any model is invoked . As a concrete sketch:                                         
+
+> #game / meta / run_state . json {" location ": {" scope ": " town ", " node_id ": " T001 ", " subnode_id ": " gate_north "} , " time ": {" day ": 1, " clock ": "08:30"} , " turn_count ": 0}#game / towns / T001 / town . json {" id ": " T001 ", " name ": " Stone Ford ", " region ": " Northvale ", " entry_points ": [" gate_north ", " dock "] , " laws ": {" weapon_policy ": " peace_bonded_in_townhall "} , " state ": {" alert ": 0, " recent_events ": []} }#game / player / profile . json {" name ": " Player ", " background ": " wanderer ", " class ": " fighter " }
+
+Each turn reads a small slice of this tree, proposes a delta, and commits a new tree—never replaces “the world” with a text blob. 
+
+3.2 The Parameterized-Action POMDP 
+
+We model an LLM-driven game world as the tuple 
+
+M = (S , A, Ω, 𝑂, 𝐹, 𝜌 0). (1) 
+
+S is the space of JSON state trees introduced in §3.1: each 𝑠 ∈ S is a tree of typed JSON documents on disk under a fixed schema, fully serialisable and addressable by content hash ℎ(𝑠 ). Actions are parameterized in the sense of Masson et al. [13]: 
+
+A = {( 𝑘, 𝑥 𝑘 ) | 𝑘 ∈ A 𝑑 , 𝑥 𝑘 ∈ X 𝑘 }, (2) where A𝑑 is the finite set of intent kinds declared by the world schema (e.g. move , speak , give , inspect ) and, for each 𝑘 ,
+
+X𝑘 is the space of 𝑘 -specific structured JSON parameters. Ω is the space of player-facing observations—natural-language narration plus surfaced status (location, time, inventory). The agent does not observe 𝑠 𝑡 directly; it receives 𝑜 𝑡 ∼ 𝑂 (𝑠 𝑡 ),where 𝑂 : S → Δ(Ω) is the narration kernel emitted by the world-agent—this is the POMDP [ 10 ] side of the formalism. The transition kernel 
+
+𝐹 : S × A → Δ(S) (3) 4 Huang, Li, and Fang is the Plan–Diff–Validate–Apply (PDVA) pipeline. Finally, 𝜌 0 ∈ Δ(S) is the initial-state distribution: a scenario template (e.g. “the player arrives at the north gate, day 1, 08:30”) instantiated into the JSON tree of §3.1 as the starting 
+
+𝑠 0 ∼ 𝜌 0. Given 𝑠 𝑡 and 𝑎 𝑡 = (𝑘 𝑡 , 𝑥 𝑘 𝑡 ):
+
+• Plan. Build a bounded context 𝑝 = Context (𝑠 𝑡 , 𝑎 𝑡 ) from the canonical state slice relevant to 𝑎 𝑡 .
+
+• Diff. A model returns 𝑟 = (narrative , Δ𝑡 ): the prose for the next observation 𝑜 𝑡 +1 plus a structured proposed mutation Δ𝑡 = {( path 𝑗 , op 𝑗 , value 𝑗 )} .
+
+• Validate. Each 𝛿 𝑗 ∈ Δ𝑡 must pass 
+
+Valid (𝛿 𝑗 ) = SchemaOK (𝛿 𝑗 ) ∧ PermOK (𝛿 𝑗 , 𝑐 ) ∧ RuleOK (𝛿 𝑗 , R) , (4) i.e. matches the JSON schema, lies inside the proposing actor’s permission scope 𝑐 , and satisfies game rules R.
+
+• Apply. Valid changes commit atomically and the resulting state is content-hashed: 
+
+𝑠 𝑡 +1 = Apply  𝑠 𝑡 , {𝛿 𝑗 : Valid (𝛿 𝑗 )} , ℎ(𝑠 𝑡 +1) = SHA256 (Serialize (𝑠 𝑡 +1)) . (5) 
+
+Markov property by construction. A raw LLM chat has no Markov structure: the “state” is an ever-growing transcript and the transition is an unconstrained next-token distribution over it. Two design moves convert this into a controlled POMDP. (i) Event sourcing with content hashing folds all relevant history into 𝑠 𝑡 , identified by ℎ(𝑠 𝑡 ), rather than carried in an unbounded prompt. (ii) Validation as a transition guard prevents prose from silently mutating state. Together 𝑠 𝑡 +1
+
+becomes a function of (𝑠 𝑡 , 𝑎 𝑡 ) alone—the kernel 𝐹 is literally Markovian, with the LLM relegated to proposing Δ𝑡 inside it. 
+
+Reservations. Concurrent multi-NPC agency lifts this to a parameterized-action Markov game [ 12 ], and we leave that formal multi-agent analysis to future work. 
+
+Note on instantiation. In our implementation, 𝑎 𝑡 is not chosen ex ante : the world-agent (or a delegated sub-agent) co-emits a narration 𝑜 and a structured JSON delta Δ in a single LLM call, and PDVA reads the realised (𝑘, 𝑥 𝑘 ) from 
+
+Δ’s schema. The PA-POMDP abstraction holds at the interface (S , A, Ω, 𝑂, 𝐹, 𝜌 0); in practice 𝜋 , 𝐹 , and 𝑂 share LLM calls—narrative and action are entangled outputs. 
+
+3.3 Worked Example: A Single Turn 
+
+To make the loop concrete, we walk through one turn in a scenario where a player moves their character into a tavern. The world state 𝑆 𝑡 includes a location file, two active NPCs (the barkeep and a guard), and the player’s current position. 
+
+Plan. The context builder reads the player’s location ( town_square ) and gathers the two NPCs whose perception radius intersects that location. The bounded context 𝑝 is a JSON object containing the relevant state slice and the player’s input:                    
+
+> {" player_input ": "I walk into the Rusty Anchor tavern ." , " context ": {" player ": {" position ": " town_square ", " gold ": 15} , " nearby_npcs ": [" barkeep_milo ", " guard_ivor "] , " location ": " town_square " }}
+
+Diff. The world-agent model returns a response 𝑟 containing a prose narrative for the player and a structured proposed mutation:          
+
+> {" narrative ": " You push open the heavy oak door . The smell
+
+Orchestrated Reality: From Role-Play to Living, Playable Game Worlds 5                    
+
+> of ale and woodsmoke hits you . Milo the barkeep looks up from wiping aglass ." , " delta ": [{" path ": " player . position ", " op ": " set ", " value ": " rusty_anchor_tavern ", " actor ": " player "} ]}
+
+In the form of §3.2, this is the parameterized action 𝑎 𝑡 = (move , {position : rusty_anchor_tavern }) .
+
+Validate. Each 𝛿 𝑗 is checked: the path player.position conforms to the entity schema (SchemaOK), the proposing actor player has write permission on their own position (PermOK), and walking into a public tavern requires no skill check under the game rules (RuleOK). All three conditions pass; the mutation is admitted. 
+
+Apply. The file at player.position is updated from town_square to rusty_anchor_tavern . The world-agent journals event 𝑒 𝑡 = (𝑡, player , move , ℎ (𝑆 𝑡 ), ℎ (𝑆 𝑡 +1), Δapplied  
+
+> 𝑡
+
+) and appends it to the event log. The new state 𝑆 𝑡 +1 is hashed; the commit is canonical. This trace is what a reviewer can audit, a creator can debug, and a player can branch from: every decision the engine made is visible in the event log, and every state is recoverable by replaying the journal from genesis. 
+
+4 The World-Agent 
+
+§3 says how the world advances; this section says who advances it (Figure 1). Exactly one world-agent per game owns the world directory, the turn loop, and the commit transaction. It is the single writer per turn: any proposal—from the player, a specialist sub-agent, or in future work an NPC mind—converges through it into one atomic, content-hashed commit, so there is no race on world state. It also runs the world’s own clock and ambient dynamics (time progression, scheduled and precondition-gated events). 
+
+Memory is injected, not recalled. Each turn the world-agent assembles a context pack —a fixed seed set (player, scene frame, active entities) plus relevance-ranked records under a small cap—and injects those canonical JSON entries directly into the acting model’s prompt. The acting model’s knowledge is thus a deterministic function of committed world state, not of whatever survived in a chat window—persistence is enforced by re-injection, not hoped for from context length. 
+
+The boundary is the contribution. An agent contract 𝑐 = (id , type , 𝑅,𝑊 ) with read/write globs 𝑅,𝑊 and a deny-first default makes “the world owns the world” a checked invariant rather than a prompt request. The end-of-turn collection is hash-first : the world-agent gathers each proposal, composes one world commit, derives its identity by hashing content, and only then writes to disk; if any write fails, nothing lands and no commit id is recorded. Lifting this to multiple concurrent NPC minds —each on its own model instance under a per-soul write subtree—is a parameterized-action Markov-game extension we leave to future work (§6). 
+
+5 Early Observations 
+
+Informal use by a small set of testers (N ∼5, three months) suggests three hypotheses the planned study (§6.3) will formally test: H1, precondition-gated ambient events read as “the world is alive” even when no character speaks; H2, narrated validation rejections increase felt consequence rather than break immersion; H3, inspectable, hash-identified state lowers the barrier to authoring and debugging worlds. To move past impressions, we mined the engine’s own play history—session traces, narrated playthroughs, and the event log—for incidents illustrating the three mechanisms in action, yielding 15 distinct episodes (P1: 9, P2: 5, P3: 1) 6 Huang, Li, and Fang sub-agents                                        
+
+> specialist sub-agents NPC minds (future work)
+> world-agent (singleton) owns world state, turn loop, commit transaction rules referee (JSON deltas only)
+> fan-out
+> combat referee (JSON deltas only)
+> fan-out
+> ambient-event agent (precondition-gated)
+> fan-out
+> npc-mind 1
+> own model buffer
+> fan-out
+> npc-mind 2
+> own model buffer
+> fan-out
+> npc-mind n
+> own model buffer
+> fan-out
+> PDVA validate schema ∧permission ∧rule
+> proposals proposals proposals proposals proposals proposals
+> hash-fi rst atomic commit event-sourced, content-hashed history
+
+Fig. 1. The world-agent harness. A singleton world-agent (top) reads the canonical JSON state and integrates proposals from specialist sub-agents (rules, combat, ambient referees) and—in future work—parallel NPC minds (dashed group) through the PDVA validation stage, then commits one content-hashed update to an event-sourced history. 
+
+that each cite a source file and turn range; the catalogue exemplifies the framework as a real deployment, not as a substitute for the planned player study below. (P1) Multi-agent : the harness fans each turn out to specialist and character sub-agents and reconfigures which are live as the scene moves between locations. (P2) JSON-forced memory injection : a named entity resurfaces sixteen turns after it was introduced, and a character-agent consolidates an early encounter into long-term memory with a declared behavioural impact (“the first companion I could trust”)—recall driven by re-injected state, not chat history. (P3) JSON state flow : each turn is a schema-validated delta applied to JSON files and content-hashed. Because state lives in JSON, the catalogue is auditable rather than anecdotal. 
+
+6 Open Problems and Planned Evaluation 6.1 Open Problems 
+
+Determinism under LLM stochasticity. Hash-first commits make state replayable, but reproducing a run requires recording every model call (request and response) so replay can play them back instead of re-sampling. Designing this record/replay interface without ballooning storage is open. 
+
+Per-actor cost discipline. Once concurrent NPC minds land, one model instance per actor multiplies API spend; per-turn token and wall-clock caps and a concurrent-actor cap are necessary, and their effect on pacing and perceived character “aliveness” is unstudied. 
+
+Narrative drift on under-specified detail. PDVA validates only what is in the schema; fine-grained NPC traits not tracked as canonical state (e.g. which hand carries a scar, the tone of a voice) can drift across turns—we observe an NPC’s missing finger swapping between left and right hand across a 24-turn session. Closing this gap requires either richer entity schemas or a downstream consistency guard on narration 𝑜 𝑡 .
+
+Validity threats. The Markov property we engineer applies to world state 𝑠 𝑡 via PDVA validation; rule coverage R
+
+is necessarily incomplete and the prose observation 𝑜 𝑡 is not itself validated. The framework is tested primarily with one LLM provider; whether the PA-POMDP properties hold across model families is unverified. An artifact bundle (code, scenario assets, study instruments) accompanies the project, WorldLines. The player study below is planned rather than executed, so all player-experience claims remain open. Orchestrated Reality: From Role-Play to Living, Playable Game Worlds 7  
+
+> Fig. 2. The persistent loop as the player sees it. The world-agent narrates (top), but the turn is anchored to durable, inspectable world state—location, time of day, and the player’s HP, gold, and inventory—and the offered choices are a function of that state. The [World Agent] block reports the committed world: the player acts into a world that will remember this turn.
+
+Note on apparatus. A pilot apparatus—a no-engine single-LLM baseline, the same LLM with canonical JSON injected each turn, and the full multi-agent loop, scored by an LLM judge—exists and is released with the artifact, but at the scales we have tried ( 𝑛 =1–3 scenes, a few turns, single runs) judge variance dominates and our recall construct conflates 
+
+non-contradiction with recall , so we report no effect size. Effect-size estimation is deferred to the powered study below. 
+
+6.2 Planned Player Study 
+
+We are designing a within-subjects experiment to compare stateless chat role-playing (Condition A: a single LLM with a persona prompt, no persistent world state) against the persistent loop (Condition B: the world-agent/character-agent architecture described above), both running the same LLM backend and the same scenario. 
+
+Design. Within-subjects, 2 (condition) × 3 (session) counterbalanced. Half the participants start with Condition A across three 20-minute sessions, then after a ≥24-hour washout, complete Condition B across three sessions; the other half receives the reverse order. Each session is followed by a short questionnaire battery. The final session of each condition concludes with a 15–20 minute semi-structured interview. 
+
+Measures. Our primary outcome is player experience measured by the 11-item miniPXI (Player Experience Inventory short form) [ 6], chosen over GEQ for its validated factor structure and lower fatigue in repeated-measures designs. Our 8 Huang, Li, and Fang secondary outcome is character attachment, measured by the Player–Avatar Interaction (PAX) scale [ 1]. We also collect a single-item willingness-to-return rating and a short open-ended reflection per session. 
+
+Research questions. RQ1: Does persistent world state increase player experience (immersion, autonomy, meaning) compared to stateless chat? RQ2: Does persistence increase character attachment? RQ3 (exploratory, qualitative): How does validated persistence change the player’s mental model of the AI world—from “tool I converse with” to “world I inhabit”? 
+
+Analysis. Linear mixed-effects models (condition and session fixed, participant random) for the quantitative outcomes; reflexive thematic analysis [2, 3] of the interviews; H1–H3 from §5 tested as planned contrasts. 
+
+Feedback sought. As an early-stage study, we bring three specific questions to the games and HCI research community: (a) Are the measures (miniPXI and PAX) the right instruments for this comparison, or should we supplement them with behavioral telemetry from the event log? (b) Does the within-subjects design risk carryover effects that counterbalancing cannot fully address? (c) What dimensions of the player’s mental model should the interview protocol prioritize? 
+
+7 Conclusion 
+
+We framed an LLM-driven game world for a human player as a Parameterized-Action POMDP whose state is a tree of canonical JSON entities and whose transition kernel is the LLM-driven PDVA pipeline. The contribution is the world model: an orchestrated reality in which the world is the canonical, audited object, and any acting model—a player, an NPC mind, or an RL policy—acts on it through validated, parameterized actions (𝑘, 𝑥 𝑘 ) and observes only 𝑂 (𝑠 ). We seek discussion on the framing and the path toward multi-NPC Markov games and learnable RL environments for game world models. 
+
+References 
+
+[1] Jaime Banks and Nicholas David Bowman. 2016. Emotion, Anthropomorphism, Realism, Control: Validation of a Merged Metric for Player–Avatar Interaction (PAX). Computers in Human Behavior 54 (2016), 215–223. doi:10.1016/j.chb.2015.07.030 [2] Virginia Braun and Victoria Clarke. 2006. Using Thematic Analysis in Psychology. Qualitative Research in Psychology 3, 2 (2006), 77–101. doi:10.1191/1478088706qp063oa [3] Virginia Braun and Victoria Clarke. 2019. Reflecting on Reflexive Thematic Analysis. Qualitative Research in Sport, Exercise and Health 11, 4 (2019), 589–597. doi:10.1080/2159676X.2019.1628806 [4] Linxi Fan, Guanzhi Wang, Yunfan Jiang, Ajay Mandlekar, Yuncong Yang, Haoyi Zhu, Andrew Tang, De-An Huang, Yuke Zhu, and Anima Anandkumar. 2022. MineDojo: Building Open-Ended Embodied Agents with Internet-Scale Knowledge. In Advances in Neural Information Processing Systems (NeurIPS 2022) Datasets and Benchmarks Track .[5] David Ha and Jürgen Schmidhuber. 2018. World Models. In Advances in Neural Information Processing Systems (NeurIPS 2018) .[6] Aqeel Haider, Casper Harteveld, Daniel Johnson, Max V. Birk, Regan L. Mandryk, Magy Seif El-Nasr, Lennart E. Nacke, Kathrin Gerling, and Vero Vanden Abeele. 2022. miniPXI: Development and Validation of an Eleven-Item Measure of the Player Experience Inventory. Proceedings of the ACM on Human-Computer Interaction 6, CHI PLAY, Article 244 (2022). doi:10.1145/3549507 [7] Sirui Hong, Mingchen Zhuge, Jonathan Chen, Xiawu Zheng, Yuheng Cheng, Ceyao Zhang, Jinlin Wang, Zili Wang, Steven Ka Shing Yau, Zijuan Lin, Liyang Zhou, Chenyu Ran, Lingfeng Xiao, Chenglin Wu, and Jürgen Schmidhuber. 2024. MetaGPT: Meta Programming for a Multi-Agent Collaborative Framework. In Proceedings of the Twelfth International Conference on Learning Representations (ICLR ’24) . https: //openreview.net/forum?id=VtmBAGCN7o [8] Fantine Huot, Reinald Kim Amplayo, Jennimaria Palomaki, Alice Shoshana Jakobovits, Elizabeth Clark, and Mirella Lapata. 2025. Agents’ Room: Narrative Generation through Multi-step Collaboration. In International Conference on Learning Representations (ICLR 2025) .[9] Nicolai Hejlesen Jørgensen, Sarmilan Tharmabalan, Ilhan Aslan, Nicolai Brodersen Hansen, and Timothy Merritt. 2025. Static Vs. Agentic Game Master AI for Facilitating Solo Role-Playing Experiences. arXiv:2502.19519 (Aalborg University). arXiv:2502.19519 doi:10.48550/arXiv.2502.19519 [10] Leslie Pack Kaelbling, Michael L. Littman, and Anthony R. Cassandra. 1998. Planning and Acting in Partially Observable Stochastic Domains. 
+
+Artificial Intelligence 101, 1–2 (1998), 99–134. doi:10.1016/S0004-3702(98)00023-X [11] Guohao Li, Hasan Abed Al Kader Hammoud, Hani Itani, Dmitrii Khizbullin, and Bernard Ghanem. 2023. CAMEL: Communicative Agents for “Mind” Exploration of Large Language Model Society. In Proceedings of the 37th International Conference on Neural Information Processing Systems (NeurIPS ’23) .Curran Associates, Inc. https://proceedings.neurips.cc/paper_files/paper/2023/hash/a3621ee907def47c1b952ade25c67698-Abstract-Conference.html Orchestrated Reality: From Role-Play to Living, Playable Game Worlds 9
+
+[12] Michael L. Littman. 1994. Markov Games as a Framework for Multi-Agent Reinforcement Learning. In Proceedings of the Eleventh International Conference on Machine Learning (ICML 1994) . Morgan Kaufmann, 157–163. [13] Warwick Masson, Pravesh Ranchod, and George Konidaris. 2016. Reinforcement Learning with Parameterized Actions. In Proceedings of the Thirtieth AAAI Conference on Artificial Intelligence (AAAI 2016) . AAAI Press, 1934–1940. [14] Piotr Mirowski, Kory W. Mathewson, Jaylen Pittman, and Richard Evans. 2023. Co-Writing Screenplays and Theatre Scripts with Language Models: Evaluation by Industry Professionals. In Proceedings of the 2023 CHI Conference on Human Factors in Computing Systems (CHI 2023) . ACM. [15] Joon Sung Park, Joseph C. O’Brien, Carrie J. Cai, Meredith Ringel Morris, Percy Liang, and Michael S. Bernstein. 2023. Generative Agents: Interactive Simulacra of Human Behavior. In Proceedings of the 36th Annual ACM Symposium on User Interface Software and Technology (UIST ’23) (UIST ’23) .Association for Computing Machinery, New York, NY, USA, Article 2, 22 pages. doi:10.1145/3586183.3606763 [16] Yunfan Shao, Linyang Li, Junqi Dai, and Xipeng Qiu. 2023. Character-LLM: A Trainable Agent for Role-Playing. In Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing (EMNLP 2023) .[17] Guanzhi Wang, Yuqi Xie, Yunfan Jiang, Ajay Mandlekar, Chaowei Xiao, Yuke Zhu, Linxi Fan, and Anima Anandkumar. 2023. Voyager: An Open-Ended Embodied Agent with Large Language Models. arXiv preprint arXiv:2305.16291 (2023). [18] Zekun Moore Wang, Zhongyuan Peng, Haoran Que, Jiaheng Liu, Wangchunshu Zhou, Yuhan Wu, Hongcheng Guo, Ruitong Gan, Zehao Ni, Jian Yang, Man Zhang, Zhaoxiang Zhang, Wanli Ouyang, Ke Xu, Stephen W. Huang, Jie Fu, and Junran Peng. 2024. RoleLLM: Benchmarking, Eliciting, and Enhancing Role-Playing Abilities of Large Language Models. In Findings of the Association for Computational Linguistics (ACL 2024) .[19] Qingyun Wu, Gagan Bansal, Jieyu Zhang, Yiran Wu, Beibin Li, Erkang Zhu, Li Jiang, Xiaoyun Zhang, Shaokun Zhang, Jiale Liu, Ahmed Hassan Awadallah, Ryen W. White, Doug Burger, and Chi Wang. 2023. AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation. arXiv:2308.08155. arXiv:2308.08155 https://arxiv.org/abs/2308.08155 [20] Michael Yin, Emi Wang, Chuoxi Ng, and Robert Xiao. 2024. Lies, Deceit, and Hallucinations: Player Perception and Expectations Regarding Trust and Deception in Games. In Proceedings of the 2024 CHI Conference on Human Factors in Computing Systems (CHI ’24) (CHI ’24) . Association for Computing Machinery, New York, NY, USA, Article 781, 15 pages. doi:10.1145/3613904.3642253

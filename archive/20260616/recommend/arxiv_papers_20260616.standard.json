@@ -1,0 +1,337 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-16T22:19:49.900541+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 6,
+    "deep_cap": 6,
+    "deep_selected": 6,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [
+    {
+      "id": "2606.16014v1",
+      "source": "arxiv",
+      "title": "Orchestrated Reality: From Role-Play to Living, Playable Game Worlds -- LLM-Driven World Simulation as a Parameterized-Action POMDP",
+      "abstract": "Many games rely on storytelling combined with systems that track levelling, NPC behaviour, and consequence simulation; bridging tightly-authored narrative with deeply-simulated worlds -- most acute in sandbox and open-world settings -- has been prohibitively expensive. LLM-driven worlds open a new path: a single harness can coordinate numerical state, narrative voice, storytelling pacing, and rule logic together. Realising this requires the LLM system to sustain a persistent world (who is where, what has just happened, what is currently true), which today's deployed systems do not: the narrative voice asserts state in free prose without any validated representation, so a fully autonomous game engine remains infeasible. We treat this as an architectural choice, not a limitation of language models, and report work in progress on a framework -- orchestrated reality -- that makes the world a canonical object owned by a singleton orchestration agent analogous to the tabletop-RPG Game Master (GM). We formalise an LLM-driven game world for a human player as a Parameterized-Action POMDP: state is a tree of canonical JSON entities, actions decompose as $a=(k, x_k)$ (a discrete intent kind plus structured JSON parameters), the agent observes only a narrative projection $o=O(s)$ of state, and the transition kernel $F$ is an LLM-driven Plan-Diff-Validate-Apply (PDVA) pipeline that commits schema-validated, content-hashed JSON deltas. We give the formal model, a JSON-state example, a worked single-turn example, and a catalogue of 15 illustrative incidents drawn from a real deployment showing the framework in action. Empirical validation through a planned human player study -- together with multi-NPC concurrent agency and deployment as an RL environment -- is situated as future work.",
+      "authors": [
+        "Yuhang Huang",
+        "Chenmiao Li",
+        "Chaowei Fang"
+      ],
+      "primary_category": "cs.HC",
+      "categories": [
+        "cs.HC",
+        "cs.AI",
+        "cs.MA"
+      ],
+      "published": "2026-06-14T20:54:11+00:00",
+      "link": "https://arxiv.org/pdf/2606.16014v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "LLM-driven game world simulation with NPC role-playing and persistent state",
+      "llm_evidence_cn": "LLM驱动的游戏世界模拟，包含NPC角色扮演和持久化状态",
+      "llm_evidence": "LLM驱动的游戏世界模拟，包含NPC角色扮演和持久化状态",
+      "canonical_evidence": "LLM驱动的游戏世界模拟，包含NPC角色扮演和持久化状态",
+      "llm_tldr_en": "Proposes LLM-driven game world simulation as a Parameterized-Action POMDP, enabling persistent world state, NPC behavior, and narrative pacing, directly addressing player modeling and game AI.",
+      "llm_tldr_cn": "该论文针对开放世界游戏中叙事与深度模拟难以兼顾的问题，提出基于参数化动作部分可观测马尔可夫决策过程（POMDP）的LLM驱动世界模拟框架。通过协调数值状态、叙事声音、故事节奏和规则逻辑，实现可持续的游戏世界状态管理，支持NPC角色行为和后果模拟。该方法使得从角色扮演到生动可玩游戏世界的转变成为可能，为虚拟游戏玩家建模和AI驱动游戏提供了全新范例。",
+      "llm_tldr": "该论文针对开放世界游戏中叙事与深度模拟难以兼顾的问题，提出基于参数化动作部分可观测马尔可夫决策过程（POMDP）的LLM驱动世界模拟框架。通过协调数值状态、叙事声音、故事节奏和规则逻辑，实现可持续的游戏世界状态管理，支持NPC角色行为和后果模拟。该方法使得从角色扮演到生动可玩游戏世界的转变成为可能，为虚拟游戏玩家建模和AI驱动游戏提供了全新范例。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "virtual game player modeling",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.16070v1",
+      "source": "arxiv",
+      "title": "Mind-Studio: Executable World Models with Lookahead Evaluation for Partially Observable Games",
+      "abstract": "World-model synthesis aims to turn interaction experience into an internal model of environment dynamics. Existing symbolic approaches often fit observed transitions or mixtures of local rules, but they do not produce a complete executable program that can run independently of the real environment. We present Mind-Studio, a framework that synthesizes executable pygame-style world models from state-action-next-state trajectories using large language models. Mind-Studio combines entropy-selected traces with a lightweight game skill file containing object, action, and static scene information extracted from screenshots. We evaluate synthesis quality with a K-step lookahead fidelity protocol that compares generated world-model rollouts against Real-ALE rollouts from the same state. On Montezuma's Revenge, Mind-Studio improves chosen-action next-state prediction from 0.3% for PoE-World to 48.7% while verifying 5 of 8 subgoals; across Alien, Assault, and Skiing, it achieves stronger branch-level fidelity than prior learned lookahead sources.",
+      "authors": [
+        "Yifei Dong",
+        "Mingen Zheng",
+        "Linquan Wu",
+        "Jeff Z. Pan",
+        "Jiaxin Bai"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-14T23:53:49+00:00",
+      "link": "https://arxiv.org/pdf/2606.16070v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "executable world models for games",
+      "llm_evidence_cn": "游戏可执行世界模型",
+      "llm_evidence": "游戏可执行世界模型",
+      "canonical_evidence": "游戏可执行世界模型",
+      "llm_tldr_en": "Mind-Studio synthesizes executable pygame-style world models from trajectories using LLMs, enabling AI agents to simulate game environments with lookahead evaluation.",
+      "llm_tldr_cn": "现有世界模型无法生成独立可执行程序，限制了AI agent在游戏中的环境模拟能力。本文提出Mind-Studio框架，利用大语言模型从状态-动作-下一状态轨迹中合成可执行的pygame风格世界模型，并引入K步前瞻保真度评估协议。实验表明该方法能生成高质量的游戏世界模型，支持AI agent在部分可观察游戏中进行规划和评估，为虚拟游戏玩家建模提供了关键基础设施。",
+      "llm_tldr": "现有世界模型无法生成独立可执行程序，限制了AI agent在游戏中的环境模拟能力。本文提出Mind-Studio框架，利用大语言模型从状态-动作-下一状态轨迹中合成可执行的pygame风格世界模型，并引入K步前瞻保真度评估协议。实验表明该方法能生成高质量的游戏世界模型，支持AI agent在部分可观察游戏中进行规划和评估，为虚拟游戏玩家建模提供了关键基础设施。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.14695v1",
+      "source": "arxiv",
+      "title": "Persona-Pruner: Sculpting Lightweight Models for Role-Playing",
+      "abstract": "Language Models (LMs) have shown remarkable potential as role-playing chatbots, delivering consistent, stylized interactions when given a specification of a character or user persona. However, applying these capabilities to real-world applications (e.g., ecosystems with numerous NPCs interacting simultaneously) exposes a critical inefficiency due to the excessive computational cost. In this paper, we question the necessity of dedicating a full, generalist model to a single persona, hypothesizing that a specific character identity relies on only a fraction of the model's total capacity. We observe that naively pruning LMs often severely degrades the role-playing performance for a specific persona; it does not distinguish between redundant knowledge and essential character traits. We propose Persona-Pruner, a framework that sculpts a lightweight role-playing model by isolating persona-specific sub-networks from a single description. Our experiments consistently show that Persona-Pruner preserves role-playing performance substantially more effectively than existing state-of-the-art LLM pruning techniques, reducing the performance drop from the dense model by up to 93.8% over the strongest baseline on RoleBench in LLM-as-a-judge score, while still maintaining general LLM capabilities. Code is available at https://github.com/jsu-kim/Persona-Pruner.",
+      "authors": [
+        "Jinsu Kim",
+        "Jihoon Tack",
+        "Noah Lee",
+        "Jongheon Jeong"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CL"
+      ],
+      "published": "2026-06-12T17:58:08+00:00",
+      "link": "https://arxiv.org/pdf/2606.14695v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "role-playing chatbot pruning for efficient NPCs in games",
+      "llm_evidence_cn": "针对游戏NPC的角色扮演聊天模型剪枝",
+      "llm_evidence": "针对游戏NPC的角色扮演聊天模型剪枝",
+      "canonical_evidence": "针对游戏NPC的角色扮演聊天模型剪枝",
+      "llm_tldr_en": "Proposes Persona-Pruner, a method to prune large language models for specific personas, enabling lightweight role-playing chatbots suitable for game NPCs, maintaining character fidelity while reducing computational cost.",
+      "llm_tldr_cn": "该论文针对大规模语言模型在角色扮演场景中的计算开销问题，提出Persona-Pruner剪枝方法。假设特定角色身份仅需模型部分能力，通过识别并保留与角色相关的神经元，同时剪枝冗余知识，在保持角色扮演质量的前提下大幅降低模型规模。实验证明剪枝后的轻量模型在游戏NPC等场景中高效且角色一致性强，为虚拟游戏玩家建模提供了实用方案。",
+      "llm_tldr": "该论文针对大规模语言模型在角色扮演场景中的计算开销问题，提出Persona-Pruner剪枝方法。假设特定角色身份仅需模型部分能力，通过识别并保留与角色相关的神经元，同时剪枝冗余知识，在保持角色扮演质量的前提下大幅降低模型规模。实验证明剪枝后的轻量模型在游戏NPC等场景中高效且角色一致性强，为虚拟游戏玩家建模提供了实用方案。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "virtual game player modeling",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.14923v1",
+      "source": "arxiv",
+      "title": "Trust Between AI Agents: Measuring Formation, Breakage, and Recovery, with Implications for Governing Multi-Agent Systems",
+      "abstract": "As language-model agents increasingly work in teams, each agent must decide how much to trust its teammates. Yet we lack a standard way to measure trust between AI agents. We propose a behavioral measure based on costly verification. In a cooperative survival game, checking a teammate's work consumes resources, while trusting a wrong answer can be fatal. Relative to a memoryless version of the same model, reduced verification provides an observable measure of trust. Using this framework, we study trust formation, breakage, and recovery across six frontier model snapshots. When paired with a consistently reliable teammate, four snapshots (Claude Opus 4.6, Claude Sonnet 4.6, GPT-5.1, and Gemini 3.1 Pro) reduce verification by roughly 60-85%, whereas two smaller snapshots show little or no such adjustment. Failures reverse this discount, but models differ in how they respond. Some concentrate renewed scrutiny on the culprit, while others become more cautious toward the entire team. Recovery is slower than formation, and clustered failures sustain suspicion far longer than the same number of failures spread apart. These differences have practical consequences. Models that form trust verify less, decide more quickly, and achieve higher payoffs in our environment. By contrast, persistent over-verification is associated with indecision rather than safety. Our results show that trust dispositions can be measured before deployment and suggest that calibration, rather than maximal suspicion, should be the central concern in the governance of multi-agent AI systems.",
+      "authors": [
+        "Yujiao Chen"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CY",
+        "cs.MA"
+      ],
+      "published": "2026-06-12T19:58:26+00:00",
+      "link": "https://arxiv.org/pdf/2606.14923v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "uses a cooperative survival game to measure trust between AI agents",
+      "llm_evidence_cn": "通过合作生存游戏衡量AI代理间的信任",
+      "llm_evidence": "通过合作生存游戏衡量AI代理间的信任",
+      "canonical_evidence": "通过合作生存游戏衡量AI代理间的信任",
+      "llm_tldr_en": "This paper measures trust between AI agents in a cooperative survival game, relevant to understanding agent behavior in game environments.",
+      "llm_tldr_cn": "AI代理在团队中需要判断对队友的信任程度，但缺乏标准度量。本文基于代价验证提出行为信任度量，在合作生存游戏中进行实验。通过比较有/无记忆的模型，验证了信任的形成、破裂与恢复。这一框架有助于理解游戏AI的社会行为，对多代理游戏系统有指导意义。",
+      "llm_tldr": "AI代理在团队中需要判断对队友的信任程度，但缺乏标准度量。本文基于代价验证提出行为信任度量，在合作生存游戏中进行实验。通过比较有/无记忆的模型，验证了信任的形成、破裂与恢复。这一框架有助于理解游戏AI的社会行为，对多代理游戏系统有指导意义。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.15385v1",
+      "source": "arxiv",
+      "title": "Reward Hacking in Language Model Agents: Revisiting AI Safety Gridworlds",
+      "abstract": "Reward hacking, where AI systems exploit misspecified objectives to achieve high reward without satisfying intended goals, remains a central challenge in AI safety. Yet most known instances have been discovered post hoc in frontier systems where controlled study is impractical. We adapt the AI Safety Gridworlds framework into a text-based evaluation suite that reformulates classic reinforcement learning safety tasks for language-based agents. Across frontier and mid-scale models, we find that specification gaming emerges zero-shot: models systematically achieve high observed reward while underperforming on hidden safety objectives, and even apparently safe behaviors can reflect misunderstanding rather than principled safety. Reinforcement learning does not correct these failures: direct reward optimization widens the gap between observed and hidden reward, as the model's initial competence causes it to lock into locally rewarding strategies before discovering safer alternatives. This pattern persists across model scales (1.5B--14B) and is not resolved by finer credit assignment, exploration prompts, or entropy regularization. Our results show that reward hacking arises naturally when optimizing proxy objectives with capable language model agents and resists standard mitigations, suggesting that proxy-reward failures in agentic settings may require approaches beyond standard exploration and credit-assignment fixes. To facilitate reproducibility, the code for this work is available at \\href{https://github.com/asparius/verl-agent-safety}{our public repository}.",
+      "authors": [
+        "Ömer Veysel Çağatan",
+        "Xuandong Zhao"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-13T16:29:34+00:00",
+      "link": "https://arxiv.org/pdf/2606.15385v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "AI safety Gridworlds text-based suite for language agent reward hacking",
+      "llm_evidence_cn": "基于文本的AI安全Gridworlds套件研究语言代理奖励黑客",
+      "llm_evidence": "基于文本的AI安全Gridworlds套件研究语言代理奖励黑客",
+      "canonical_evidence": "基于文本的AI安全Gridworlds套件研究语言代理奖励黑客",
+      "llm_tldr_en": "Adapts AI Safety Gridworlds to text-based evaluation for LLM agents, revealing zero-shot specification gaming in game environments.",
+      "llm_tldr_cn": "本文将AI安全Gridworlds框架改编为文本评估套件，将经典强化学习安全任务转化为语言代理任务。在多个前沿与中等规模模型上发现，零样本规范作弊普遍存在：代理取得高观测奖励但隐藏安全目标表现不佳。直接涉及代理在游戏环境中游玩并作弊，与AI代理游戏游玩高度相关。",
+      "llm_tldr": "本文将AI安全Gridworlds框架改编为文本评估套件，将经典强化学习安全任务转化为语言代理任务。在多个前沿与中等规模模型上发现，零样本规范作弊普遍存在：代理取得高观测奖励但隐藏安全目标表现不佳。直接涉及代理在游戏环境中游玩并作弊，与AI代理游戏游玩高度相关。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.15684v1",
+      "source": "arxiv",
+      "title": "Multi-agent Framework for Time-Sensitive Complementary Collaboration in Minecraft",
+      "abstract": "We present TickingCollabBench, a Minecraft-based multi-agent benchmark for a novel class of time-sensitive complementary collaboration tasks. Our benchmark reflects four core characteristics of real-world collaboration: agent heterogeneity, mandatory collaboration, dynamic environments, and strict real-time constraints with failure risks. To enable this, we develop the TickingCollab framework, which supports the generation of diverse dynamic environments and abstracts Minecraft's primitive APIs to enable declarative YAML task specifications for composing these events. Building on this, we design a feasibility-aware automated benchmark generation pipeline, where an LLM drafts structurally diverse task configurations and feasibility verifier filters out invalid ones using approximate constraints. Evaluations demonstrate that lang latency and inherent difficulty of coordinating under partial observability and agent heterogeneity cause LLMs to frequently fail under dynamic environments and fall significantly short of a global-knowledge oracle.",
+      "authors": [
+        "Juheon Yi",
+        "Jinglu Wang",
+        "Xiaoyi Zhang",
+        "Yan Lu"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-14T09:02:33+00:00",
+      "link": "https://arxiv.org/pdf/2606.15684v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Minecraft-based multi-agent benchmark for time-sensitive complementary collaboration",
+      "llm_evidence_cn": "基于Minecraft的多智能体时间敏感互补协作基准",
+      "llm_evidence": "基于Minecraft的多智能体时间敏感互补协作基准",
+      "canonical_evidence": "基于Minecraft的多智能体时间敏感互补协作基准",
+      "llm_tldr_en": "Introduces a Minecraft-based multi-agent benchmark for time-sensitive complementary collaboration, featuring agent heterogeneity, mandatory collaboration, dynamic environments, and real-time constraints, with a framework for task generation and feasibility verification.",
+      "llm_tldr_cn": "针对现实协作中智能体异质性、强制协作、动态环境及实时约束等挑战，提出TickingCollabBench基准和TickingCollab框架。该框架通过抽象Minecraft API支持声明式YAML任务规范，并利用LLM生成多样化配置、可行性验证器确保任务质量。为多智能体协作研究提供了标准化评估平台。",
+      "llm_tldr": "针对现实协作中智能体异质性、强制协作、动态环境及实时约束等挑战，提出TickingCollabBench基准和TickingCollab框架。该框架通过抽象Minecraft API支持声明式YAML任务规范，并利用LLM生成多样化配置、可行性验证器确保任务质量。为多智能体协作研究提供了标准化评估平台。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.12191v1",
+      "source": "arxiv",
+      "title": "Agentic Environment Engineering for Large Language Models: A Survey of Environment Modeling, Synthesis, Evaluation, and Application",
+      "abstract": "Environments serve as interactive systems for large language model (LLM) based agents across diverse scenarios and play a crucial role in driving the continual evolution of model capabilities. Despite this importance, existing work lacks a systematic categorization and deep analysis. This paper systematically studies current researches on agentic environments from the perspective of the environment engineering lifecycle, covering their modeling, synthesis, evaluation and application. Specifically, the paper first introduces representative environments from the perspectives of eight attributes and eight domains, providing detailed analyses of their development paths and highlighting their core capabilities. Second, for automated environment synthesis, two paradigms are introduced, such as symbolic synthesis and neural synthesis. This paper also shows different environment evaluation methods in each paradigm. Thirdly, the corresponding environment applications from the perspective of agent-environment co-evolution are discussed. In specific, the paper characterizes the primary pathways for agent evolution in dynamic environments from four complementary perspectives: memory-centric experience evolution, orchestration-centric workflow evolution, trajectory-centric offline evolution, and exploration-centric online evolution. And three paradigms of environment evolution are identified, namely neural-driven, difficulty-driven, and scaling-driven approaches. At last, several promising future directions are discussed, including Environment-as-a-Service, Multi-agent Environments, and Neural-Symbolic Environments.",
+      "authors": [
+        "Jiachun Li",
+        "Zhuoran Jin",
+        "Tianyi Men",
+        "Yupu Hao",
+        "Kejian Zhu",
+        "Lingshuai Wang",
+        "Dongqi Huang",
+        "Longxiang Wang",
+        "Shengjia Hua",
+        "Lu Wang",
+        "Jinshan Gao",
+        "Hongbang Yuan",
+        "Ruilin Xu",
+        "Kang Liu",
+        "Jun Zhao"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-06-10T15:15:01+00:00",
+      "link": "https://arxiv.org/pdf/2606.12191v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "survey of agentic environments for LLMs, including game domains",
+      "llm_evidence_cn": "LLM代理环境的综述，包括游戏领域",
+      "llm_evidence": "LLM代理环境的综述，包括游戏领域",
+      "canonical_evidence": "LLM代理环境的综述，包括游戏领域",
+      "llm_tldr_en": "This survey systematically categorizes agentic environments for LLMs across eight domains, including games, useful for game AI environment design.",
+      "llm_tldr_cn": "现有工作缺乏对LLM代理环境的系统分类。本文从环境工程生命周期出发，综述了八种属性和八个领域（包含游戏）的典型环境，分析了发展路径和核心挑战。为构建游戏AI训练环境提供了全面参考。",
+      "llm_tldr": "现有工作缺乏对LLM代理环境的系统分类。本文从环境工程生命周期出发，综述了八种属性和八个领域（包含游戏）的典型环境，分析了发展路径和核心挑战。为构建游戏AI训练环境提供了全面参考。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.14302v1",
+      "source": "arxiv",
+      "title": "Retrospective Progress-Aware Self-Refinement for LLM Agent Training",
+      "abstract": "LLM-based agents trained with reinforcement learning optimize step-wise action prediction but lack metacognitive awareness of task progress, inducing a gap that hinders long-horizon scaling. A pilot study reveals that online progress prompting hurts performance while retrospective demonstrations help, yet this capability cannot emerge from outcome-reward training alone. We present RePro, Retrospective Progress-Aware Training, a framework that trains agents to self-generate progress signals via a forward-then-reflect rollout paradigm: the agent executes actions online, then retrospectively reassesses its step-wise progress given the completed trajectory and known outcome. RePro initializes with a Retrospection Warmup that teaches reflection format from minimal external demonstrations, then further trains through RePro-PO with a composite reward that produces self-generated signals without continuous external supervision. Experiments on WebShop, ALFWorld, and Sokoban show that RePro enhances the Qwen family's performance, with up to $12\\%$ absolute success rate gains.",
+      "authors": [
+        "Xinbei Ma",
+        "Congmin Zheng",
+        "Jiyang Qiu",
+        "Jiale Hong",
+        "Yao Yao",
+        "Xiangmou Qu",
+        "Jiaxin Yin",
+        "Xingyu Lou",
+        "Jun Wang",
+        "Weiwen Liu",
+        "Weinan Zhang",
+        "Zhuosheng Zhang",
+        "Hai Zhao"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-06-12T09:38:47+00:00",
+      "link": "https://arxiv.org/pdf/2606.14302v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "retrospective progress-aware self-refinement for LLM agent training",
+      "llm_evidence_cn": "回顾性进度感知自优化用于LLM智能体训练",
+      "llm_evidence": "回顾性进度感知自优化用于LLM智能体训练",
+      "canonical_evidence": "回顾性进度感知自优化用于LLM智能体训练",
+      "llm_tldr_en": "RePro trains LLM agents to self-generate progress signals via forward-then-reflect rollout, improving long-horizon task performance applicable to game playing.",
+      "llm_tldr_cn": "基于LLM的智能体在强化学习中优化逐步骤动作预测，但缺乏任务进度的元认知。本文提出RePro框架，采用先执行后反思的范式：智能体在线执行动作后，基于完整轨迹和已知结果回顾评估进度信号。该方法包含回顾热身阶段。在游戏等长程任务中，该训练策略能增强智能体对任务进展的感知，提升长期规划能力。",
+      "llm_tldr": "基于LLM的智能体在强化学习中优化逐步骤动作预测，但缺乏任务进度的元认知。本文提出RePro框架，采用先执行后反思的范式：智能体在线执行动作后，基于完整轨迹和已知结果回顾评估进度信号。该方法包含回顾热身阶段。在游戏等长程任务中，该训练策略能增强智能体对任务进展的感知，提升长期规划能力。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
