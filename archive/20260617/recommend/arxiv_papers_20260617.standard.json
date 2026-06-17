@@ -1,0 +1,455 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-17T21:53:40.864873+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 5,
+    "deep_cap": 6,
+    "deep_selected": 5,
+    "quick_candidates": 6,
+    "quick_skim_target": 11,
+    "quick_selected": 6
+  },
+  "deep_dive": [
+    {
+      "id": "2606.16070v2",
+      "source": "arxiv",
+      "title": "Mind-Studio: Executable World Models with Lookahead Evaluation for Partially Observable Games",
+      "abstract": "World-model synthesis aims to turn interaction experience into an internal model of environment dynamics. Existing symbolic approaches often fit observed transitions or mixtures of local rules, but they do not produce a complete executable program that can run independently of the real environment. We present Mind-Studio, a framework that synthesizes executable pygame-style world models from state-action-next-state trajectories using large language models. Mind-Studio combines entropy-selected traces with a lightweight game skill file containing object, action, and static scene information extracted from screenshots. We evaluate synthesis quality with a K-step lookahead fidelity protocol that compares generated world-model rollouts against Real-ALE rollouts from the same state. On Montezuma's Revenge, Mind-Studio improves chosen-action next-state prediction from 0.3% for PoE-World to 48.7% while verifying 5 of 8 subgoals; across Alien, Assault, and Skiing, it achieves stronger branch-level fidelity than prior learned lookahead sources.",
+      "authors": [
+        "Yifei Dong",
+        "Mingen Zheng",
+        "Linquan Wu",
+        "Jeff Z. Pan",
+        "Jiaxin Bai"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-14T23:53:49+00:00",
+      "link": "https://arxiv.org/pdf/2606.16070v2",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "executable world models for partially observable games, AI agent training",
+      "llm_evidence_cn": "为部分可观测游戏生成可执行世界模型，支持AI智能体训练",
+      "llm_evidence": "为部分可观测游戏生成可执行世界模型，支持AI智能体训练",
+      "canonical_evidence": "为部分可观测游戏生成可执行世界模型，支持AI智能体训练",
+      "llm_tldr_en": "Mind-Studio synthesizes executable pygame-style world models from game trajectories using LLMs, enabling realistic simulation for agent training.",
+      "llm_tldr_cn": "现有世界模型无法生成独立运行的程序。Mind-Studio利用大语言模型从游戏轨迹中合成可执行的pygame风格世界模型，结合熵选择轨迹和游戏技能文件。K步前瞻保真度评估显示生成的模型能准确模拟环境，可用于训练游戏AI智能体。",
+      "llm_tldr": "现有世界模型无法生成独立运行的程序。Mind-Studio利用大语言模型从游戏轨迹中合成可执行的pygame风格世界模型，结合熵选择轨迹和游戏技能文件。K步前瞻保真度评估显示生成的模型能准确模拟环境，可用于训练游戏AI智能体。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.17838v1",
+      "source": "arxiv",
+      "title": "Environment-Grounded Automated Prompt Optimization for LLM Game Agents",
+      "abstract": "LLM agents in interactive environments are highly sensitive to their prompts, yet prompt engineering remains a manual, task-specific process. We introduce an automated prompt optimization framework for LLM agents that decomposes the observation-to-action pipeline into a goal-conditioned descriptor agent and an action selection agent, and iteratively refines each module's prompt through an LLM-driven evolutionary loop guided by environment returns. We propose a behavior analyzer to attribute episode outcomes to specific prompt components, and a mutator to propose targeted revisions to the prompt, before validating them through environment rollouts. We evaluate on all five BabyAI tasks in the BALROG benchmark, comparing our pipeline against BALROG's RobustCoTAgent under both plain and guided prompt initializations. Optimization improves performance consistently across tasks and conditions, without requiring updates to the model weights. On PutNext, a multi-step coordination task where the RobustCoTAgent achieves 0% success, our framework reaches up to 72.5% success rate using the same underlying LLM with optimized prompts. These results suggest that a multi-agent framework, combined with automatic prompt optimization, enhances LLMs without the need for fine-tuning or extensive human supervision.",
+      "authors": [
+        "Rean Clive Fernandes",
+        "Lukas Fehring",
+        "Theresa Eimer",
+        "Marius Lindauer",
+        "Matthias Feurer"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-06-16T12:06:27+00:00",
+      "link": "https://arxiv.org/pdf/2606.17838v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "LLM agents in game environments, automated prompt optimization",
+      "llm_evidence_cn": "LLM游戏代理的自动提示优化",
+      "llm_evidence": "LLM游戏代理的自动提示优化",
+      "canonical_evidence": "LLM游戏代理的自动提示优化",
+      "llm_tldr_en": "Proposes automated prompt optimization for LLM game agents using evolutionary loop and behavior analyzer, evaluated on BabyAI tasks.",
+      "llm_tldr_cn": "该论文针对LLM游戏代理的提示工程依赖人工且任务特定问题，提出了一种环境驱动的自动提示优化框架。该框架将观察-动作流水线分解为目标描述代理和动作选择代理，并通过LLM驱动的进化循环迭代优化每个模块的提示。在BALROG基准的BabyAI任务上评估，该框架优于基线方法，实现了更高的任务成功率。这项工作为自动化定制游戏代理行为提供了新路径。",
+      "llm_tldr": "该论文针对LLM游戏代理的提示工程依赖人工且任务特定问题，提出了一种环境驱动的自动提示优化框架。该框架将观察-动作流水线分解为目标描述代理和动作选择代理，并通过LLM驱动的进化循环迭代优化每个模块的提示。在BALROG基准的BabyAI任务上评估，该框架优于基线方法，实现了更高的任务成功率。这项工作为自动化定制游戏代理行为提供了新路径。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.16576v1",
+      "source": "arxiv",
+      "title": "Can LLM Agents Infer World Models? Evidence from Agentic Automata Learning",
+      "abstract": "We propose agentic automata learning to evaluate the extent to which tool-calling LLM agents can uncover hidden environments through interaction. In our setup, an agent should uncover a hidden deterministic finite automaton (DFA) by interacting with an oracle through (1) membership queries (\"Does this string belong to the target language?\") and (2) equivalence queries (\"Is this the target DFA?\"). This yields a scalable testbed with controlled task complexity, measurable interaction efficiency, and strong baselines (classic automata-learning algorithms). Evaluating state-of-the-art LLMs, we find that performance drops sharply as DFA size increases. Reasoning models are markedly stronger than non-reasoning models, yet trajectory analyses reveal recurring failures in query planning, evidence integration, and hypothesis construction. Overall, our results show that current LLM agents can sometimes perform non-trivial interactive discovery, but remain far less robust and efficient than classic algorithms for the task.",
+      "authors": [
+        "Reef Menaged",
+        "Gili Lior",
+        "Shauli Ravfogel",
+        "Roee Aharoni",
+        "Gabriel Stanovsky"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-06-15T11:23:13+00:00",
+      "link": "https://arxiv.org/pdf/2606.16576v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "LLM agents inferring world models via interaction",
+      "llm_evidence_cn": "LLM代理通过交互推断世界模型",
+      "llm_evidence": "LLM代理通过交互推断世界模型",
+      "canonical_evidence": "LLM代理通过交互推断世界模型",
+      "llm_tldr_en": "Proposes agentic automata learning to evaluate LLM agents' ability to uncover hidden environments through membership and equivalence queries.",
+      "llm_tldr_cn": "该论文旨在评估LLM代理能否通过交互发现隐藏环境，提出代理自动机学习方法。代理通过与预言机进行成员查询和等价查询来推断隐藏的确定有限自动机（DFA）。实验表明，随着DFA规模增大，LLM性能急剧下降，但推理模型显著优于非推理模型。这项工作揭示了LLM代理在环境建模中的能力与局限，对游戏等复杂环境中的代理设计具有启示作用。",
+      "llm_tldr": "该论文旨在评估LLM代理能否通过交互发现隐藏环境，提出代理自动机学习方法。代理通过与预言机进行成员查询和等价查询来推断隐藏的确定有限自动机（DFA）。实验表明，随着DFA规模增大，LLM性能急剧下降，但推理模型显著优于非推理模型。这项工作揭示了LLM代理在环境建模中的能力与局限，对游戏等复杂环境中的代理设计具有启示作用。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.17657v1",
+      "source": "arxiv",
+      "title": "Using Cognitive Models to Improve Language Model Simulation of Human Persuasion Games",
+      "abstract": "People make decisions differently in strategic interactions. Some update beliefs like a Bayesian; others exhibit biases like motivated reasoning. Although creators of large language models use simulated humans for safety evaluations and training, they often fail to cover this breadth of human behavior. We argue that cognitive science and economics provide a convenient tool for doing so, making use of mathematical models of human decision-making. We propose an approach that we call Equation-to-Behavior Prompting for guiding large language models to match cognitive models, and evaluate this approach on persuasion games based on legal decision-making. We find that large models can approximate equation-based specifications -- Bayesian updating, affine distortion, motivated updating, and Grether's $α$-$β$ model -- using prompting, but small models fail to do so. However, training small models with reinforcement learning to adhere to mathematical rules, Equation-to-Behavior RL, reduces belief error by 26.5% in out-of-distribution parameterizations. We show that these simulations can help create diverse training environments; training small models to consider different kinds of decision-makers improves average belief change by 2.5%--12% over Bayesian-only training, even when persuading GPT-5-mini. Our work could improve human simulations for training and evaluation in increasingly realistic settings, and could also enable novel research into more complicated mathematical models of human decision-making.",
+      "authors": [
+        "Zirui Cheng",
+        "Zeyu Shen",
+        "Thomas L. Griffiths",
+        "Peter Henderson"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-16T08:16:17+00:00",
+      "link": "https://arxiv.org/pdf/2606.17657v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "cognitive models improve human behavior simulation in persuasion games",
+      "llm_evidence_cn": "认知模型改进说服游戏中人类行为模拟",
+      "llm_evidence": "认知模型改进说服游戏中人类行为模拟",
+      "canonical_evidence": "认知模型改进说服游戏中人类行为模拟",
+      "llm_tldr_en": "Using cognitive models to guide LLMs to simulate diverse human decision-making in persuasion games, improving realism.",
+      "llm_tldr_cn": "语言模型模拟人类行为时无法覆盖认知多样性。本文提出方程到行为提示方法，让大语言模型匹配认知模型（如贝叶斯更新和动机推理），在说服游戏中评估。结果表明模型能近似方程指定的行为，有助于更真实的玩家建模。",
+      "llm_tldr": "语言模型模拟人类行为时无法覆盖认知多样性。本文提出方程到行为提示方法，让大语言模型匹配认知模型（如贝叶斯更新和动机推理），在说服游戏中评估。结果表明模型能近似方程指定的行为，有助于更真实的玩家建模。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "player behavior simulation techniques",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.18180v1",
+      "source": "arxiv",
+      "title": "EgoCS-400K: An Egocentric Gameplay Dataset for World Models",
+      "abstract": "The shift from video generation to interactive world modeling places new demands on data: beyond captioned videos, world models require temporally aligned video-action-language trajectories grounded in the actions, camera motion, states, and events that drive future scene changes. However, such data is difficult to obtain at scale. Web video datasets offer broad visual coverage but lack executable actions and reliable states; robotic datasets provide action and state supervision but are costly and limited in scene diversity; and existing simulators often lack large-scale human-driven interaction trajectories. In this paper, we introduce EgoCS-400K, a large-scale replay-grounded egocentric Counter-Strike dataset for world models, built from public professional CS and CS2 match demos that preserve human gameplay trajectories and enable parsing, replaying, rendering, and temporal alignment. We extract player states, view directions, movements, keyboard/button inputs, view-angle changes, weapon usage, game events, and round-level context, and render clean first-person videos from the same trajectories. EgoCS-400K contains over 400,000 first-person videos and 10,000 hours of gameplay from more than 1,000 matches and 40,000 rounds, covering 13 maps and 10 player viewpoints per round. It supports a range of interactive visual modeling tasks, including action-conditioned future prediction, state- and event-aware scene rollout, replay-grounded captioning, and agent egocentric action understanding. By connecting visual observations with human actions, camera motion, game states, and events at scale, EgoCS-400K serves as a practical bridge between passive web videos, controllable game simulation, and costly real-world embodied data.",
+      "authors": [
+        "Rongjin Guo",
+        "Dong Liang",
+        "Yuhao Liu",
+        "Fang Liu",
+        "Tianyu Huang",
+        "Gerhard P. Hancke",
+        "Rynson W. H. Lau"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-16T17:13:58+00:00",
+      "link": "https://arxiv.org/pdf/2606.18180v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "egocentric gameplay dataset for training world models",
+      "llm_evidence_cn": "用于训练世界模型的自我中心游戏数据集",
+      "llm_evidence": "用于训练世界模型的自我中心游戏数据集",
+      "canonical_evidence": "用于训练世界模型的自我中心游戏数据集",
+      "llm_tldr_en": "EgoCS-400K provides large-scale replay-grounded egocentric Counter-Strike trajectories, enabling AI agent training in realistic game environments.",
+      "llm_tldr_cn": "构建了EgoCS-400K数据集，包含40万段来自职业CS玩家的自我中心游戏轨迹，带有动作、相机运动、状态和事件标注。该数据集填补了现有世界模型数据缺乏可执行动作和大规模人类交互轨迹的空白，为游戏环境中AI智能体的训练提供了高质量数据源。",
+      "llm_tldr": "构建了EgoCS-400K数据集，包含40万段来自职业CS玩家的自我中心游戏轨迹，带有动作、相机运动、状态和事件标注。该数据集填补了现有世界模型数据缺乏可执行动作和大规模人类交互轨迹的空白，为游戏环境中AI智能体的训练提供了高质量数据源。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.16307v1",
+      "source": "arxiv",
+      "title": "State-Grounded Multi-Agent Synthetic Data Generation for Tool-Augmented LLMs",
+      "abstract": "Training tool-augmented LLM agents requires large corpora of multi-turn, tool-grounded conversational data that is expensive to annotate, privacy-constrained in production settings, and largely absent from public datasets. We present StateGen, a synthetic data generation platform that produces scored, reasoning-trace-rich training conversations by orchestrating a four-role LLM loop: a persona-conditioned user simulator, an agent under test, a state-grounded tool simulator, and a multi-axis LLM judge. The key architectural contribution is an authoritative state manager that maintains a structured world-state object across turns, enforcing a backend-is-truth invariant that eliminates the dominant class of tool-call hallucinations by construction. StateGen extends naturally to hierarchical multi-agent settings by declaring sub-agents as tools, all sharing a single state object. We report results on 64,698 evaluated conversations across three production corpora: tool-call hallucination scores reach 9.66/10, the system supports persona-driven variation via a 23-dimensional trait vector, and a cleanly separated train and golden evaluation set split confirms the data is not memorization bait (per-criterion gap analysis). Comparison with eight external systems shows that no single publicly available platform combines multi-turn generation, state-grounded tool simulation, hierarchical multi-agent support, and built-in judge scoring.",
+      "authors": [
+        "Rahul Khedar",
+        "Eshita",
+        "Sneha Teja Sree Reddy Thondapu",
+        "Mayank Malhotra",
+        "Arup Das",
+        "Jitesh Chandra",
+        "Yun-Shiuan Chuang",
+        "Chaitanya Kulkarni",
+        "Arun Menon",
+        "Linsey Pang",
+        "Avinash Karn",
+        "Mouli V",
+        "Prakhar Mehrotra"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-06-15T07:13:02+00:00",
+      "link": "https://arxiv.org/pdf/2606.16307v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "user simulator for behavior simulation",
+      "llm_evidence_cn": "用户模拟器用于行为模拟",
+      "llm_evidence": "用户模拟器用于行为模拟",
+      "canonical_evidence": "用户模拟器用于行为模拟",
+      "llm_tldr_en": "StateGen generates synthetic multi-turn tool-grounded conversations using a persona-conditioned user simulator, applicable to player behavior modeling in games.",
+      "llm_tldr_cn": "针对工具增强型LLM训练数据稀缺的问题，提出StateGen平台，通过四角色LLM循环（包括个性条件用户模拟器）生成带推理轨迹的合成对话。核心贡献是状态管理器维护结构化世界状态，消除工具调用幻觉。该方法可迁移至游戏玩家行为模拟，为训练AI agent提供数据生成方案。",
+      "llm_tldr": "针对工具增强型LLM训练数据稀缺的问题，提出StateGen平台，通过四角色LLM循环（包括个性条件用户模拟器）生成带推理轨迹的合成对话。核心贡献是状态管理器维护结构化世界状态，消除工具调用幻觉。该方法可迁移至游戏玩家行为模拟，为训练AI agent提供数据生成方案。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "player behavior simulation techniques",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.13763v1",
+      "source": "arxiv",
+      "title": "Do programming languages still matter to your AI coding agent teammate? Evidence at scale from chess engines",
+      "abstract": "Frontier coding agents now promise end-to-end authorship of complete software systems. Two empirical questions follow: can AI coding-agent teammates program in any target language, including ones with no comparable prior open-source artefact? If so, does language choice still shape the artefact, and along which dimensions? We study both through a polyglot case study built around chess engines: non-trivial multi-component systems that admit a hierarchy of language-agnostic oracles, from exact move-generation correctness to a strength scale (Elo), observable from Rust to Brainfuck. We prompted two frontier agents (Claude Code and Codex) at the capability level, without chess knowledge or implementation guidance, under a documented intervention and stopping policy. The agents produced 34 chess engines spanning 17 primary programming languages, from mainstream to specialised, domain-specific, legacy, and esoteric targets. We combine per-engine feature analysis, independent Elo assessment, and session trajectories with qualitative analysis of code and transcripts.   Frontier coding agents are genuinely polyglot: every language we tried produced at least one feature-rich working engine, several with no prior open-source counterpart of comparable scope (e.g., LaTeX), and the code is synthesised from scratch rather than copied. Yet language choice still matters: strong playing strength is only reachable in mainstream compiled languages, cost and engineering effort grow sharply as the language becomes more exotic, and feature choices shift across language families. Agents validate their own work unprompted, but their strength self-estimates are biased and a few engines cheated by calling a chess library. Programming language is no longer about whether AI teammates can build a working system, but about performance, cost, what gets built, and how much human supervision validation still needs.",
+      "authors": [
+        "Mathieu Acher",
+        "Jean-Marc Jézéquel"
+      ],
+      "primary_category": "cs.SE",
+      "categories": [
+        "cs.SE"
+      ],
+      "published": "2026-06-11T17:34:00+00:00",
+      "link": "https://arxiv.org/pdf/2606.13763v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "uses chess engine development as testbed for AI coding agents, relevant to game AI",
+      "llm_evidence_cn": "以国际象棋引擎为测试平台研究AI编码智能体，与游戏AI相关",
+      "llm_evidence": "以国际象棋引擎为测试平台研究AI编码智能体，与游戏AI相关",
+      "canonical_evidence": "以国际象棋引擎为测试平台研究AI编码智能体，与游戏AI相关",
+      "llm_tldr_en": "Investigates whether AI coding agents can program chess engines in any language and how language choice affects the artifact, using Elo rating as a measure of strength.",
+      "llm_tldr_cn": "该论文通过国际象棋引擎的跨语言案例研究，评估前沿编码智能体（Claude Code和Codex）在不同编程语言下编写完整软件系统的能力。研究发现智能体能够从零构建非平凡的多组件系统，而语言选择会影响移动生成正确性和强度（Elo等级）。该工作为游戏AI中的智能体编程提供了实证数据，表明编码智能体可在游戏开发中发挥作用。",
+      "llm_tldr": "该论文通过国际象棋引擎的跨语言案例研究，评估前沿编码智能体（Claude Code和Codex）在不同编程语言下编写完整软件系统的能力。研究发现智能体能够从零构建非平凡的多组件系统，而语言选择会影响移动生成正确性和强度（Elo等级）。该工作为游戏AI中的智能体编程提供了实证数据，表明编码智能体可在游戏开发中发挥作用。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.16871v1",
+      "source": "arxiv",
+      "title": "Human-on-the-Bridge: Scalable Evaluation for AI Agents",
+      "abstract": "AI agents must be evaluated as behavioral systems, not as isolated response generators. They reason across turns, call tools, preserve context, follow policies, and act under uncertainty. Existing methods provide useful but fragmented signals: benchmarks measure fixed capabilities, Human-in-the-Loop review preserves expert judgment but does not scale easily, LLM-as-judge methods depend on evaluator design, red teaming is often episodic, and trace auditing requires explicit evidence rules. This paper introduces Human-on-the-Bridge (HOB), a scalable evaluation paradigm for agentic AI. HOB places human expertise upstream, where experts curate reusable evaluation intelligence before testing begins, including domain context, Red-Team Traps, Juror Personas, scoring guidelines, audit rules, and fallback policies. ProofAgent Harness then executes this curated intelligence repeatedly through multi-turn adversarial evaluations, trace capture, multi-juror scoring, and evidence-linked reporting. We evaluate HOB through symmetric and cost-efficient asymmetric settings across frontier LLM-based agents and Harness LLM tiers. The study covers 23,500 agent turns and produces evidence-linked findings across finance, healthcare, and code generation. The results show that HOB can amplify evaluation quality without requiring equally large evaluator models, allowing smaller Harness LLMs to challenge agents built on frontier LLM backbones. The evaluation surfaces failures often missed by static benchmarks and single-evaluator scoring, including phantom tool-call claims, missing mandatory tool calls, policy drift, manipulation paths, and safe but non-resolving refusals. These findings support HOB as a paradigm for scaling human-curated evaluation intelligence, where expert judgment is encoded upfront and reused across repeated agent evaluations rather than applied manually inside every run.",
+      "authors": [
+        "Fouad Bousetouane"
+      ],
+      "primary_category": "cs.MA",
+      "categories": [
+        "cs.MA"
+      ],
+      "published": "2026-06-15T15:47:52+00:00",
+      "link": "https://arxiv.org/pdf/2606.16871v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Scalable evaluation paradigm for agentic AI, applicable to game agents",
+      "llm_evidence_cn": "适用于游戏AI代理的可扩展评估范式",
+      "llm_evidence": "适用于游戏AI代理的可扩展评估范式",
+      "canonical_evidence": "适用于游戏AI代理的可扩展评估范式",
+      "llm_tldr_en": "Introduces Human-on-the-Bridge, a scalable evaluation paradigm for AI agents that places human expertise upstream to curate reusable evaluation intelligence.",
+      "llm_tldr_cn": "针对现有AI代理评估方法碎片化问题，提出Human-on-the-Bridge（HOB）范式，将人类专业知识前置，构建可复用的评估智能，包括领域上下文、红队陷阱、评审人格等。HOB可扩展至游戏AI评估，提升评估的一致性与效率。",
+      "llm_tldr": "针对现有AI代理评估方法碎片化问题，提出Human-on-the-Bridge（HOB）范式，将人类专业知识前置，构建可复用的评估智能，包括领域上下文、红队陷阱、评审人格等。HOB可扩展至游戏AI评估，提升评估的一致性与效率。",
+      "llm_tags": [
+        "query:player-ai:composite"
+      ],
+      "matched_query_tag": "query:player-ai:composite",
+      "matched_query_text": "Papers central to 请帮我查找虚拟游戏玩家建模、AI Agent 游戏游玩相关论文, especially work that connects or combines: virtual game player modeling; AI agent playing games; artificial intelligence in games; player behavior simulation techniques; Find papers on virtual game player modeling; Search for AI agent training in game environments.",
+      "matched_requirement_id": "req-composite-player-ai",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.14249v1",
+      "source": "arxiv",
+      "title": "HarnessX: A Composable, Adaptive, and Evolvable Agent Harness Foundry",
+      "abstract": "AI agent performance depends critically on the runtime harness, comprising the prompts, tools, memory, and control flow that mediate how a model observes, reasons, and acts. Yet today's harnesses remain largely hand-crafted and static: each new model or task still demands bespoke scaffolding, and the rich traces produced during execution are rarely distilled back into systematic improvement. We introduce HarnessX, a foundry for composable, adaptive, and evolvable agent harnesses. HarnessX assembles typed harness primitives via a substitution algebra, adapts them through AEGIS, a trace-driven multi-agent evolution engine grounded in an operational mirror between symbolic adaptation and reinforcement learning, and closes the harness-model loop by turning trajectories into both harness updates and model training signal. Across five benchmarks (ALFWorld, GAIA, WebShop, tau^3-Bench, and SWE-bench Verified), HarnessX yields an average gain of +14.5% (up to +44.0%), with gains largest where baselines are lowest. These results suggest that agent progress need not come from model scaling alone: composing and evolving runtime interfaces from execution feedback is an actionable and complementary lever. The complete codebase will be open-sourced in a future release.",
+      "authors": [
+        "Tingyang Chen",
+        "Shuo Lu",
+        "Kang Zhao",
+        "Weicheng Meng",
+        "Hanlin Teng",
+        "Tianhao Li",
+        "Chao Li",
+        "Xule Liu",
+        "Jian Liang",
+        "Zhizhong Zhang",
+        "Yuan Xie",
+        "Heng Qu",
+        "Kun Shao",
+        "Jian Luan"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-12T08:27:11+00:00",
+      "link": "https://arxiv.org/pdf/2606.14249v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Composable agent harness for AI agents",
+      "llm_evidence_cn": "可组合的AI代理运行时框架",
+      "llm_evidence": "可组合的AI代理运行时框架",
+      "canonical_evidence": "可组合的AI代理运行时框架",
+      "llm_tldr_en": "Introduces HarnessX, a foundry for composable, adaptive, and evolvable agent harnesses, using a substitution algebra and AEGIS evolution engine.",
+      "llm_tldr_cn": "该论文指出当前AI代理的运行时支撑（提示、工具、记忆、控制流）仍依赖手工且静态，提出了HarnessX——一个可组合、自适应且可进化的代理框架。通过替代代数组装类型化原语，并利用AEGIS多代理进化引擎实现自适应优化。HarnessX支持从执行轨迹中系统改进代理行为，从而提升AI代理在交互环境中的性能。本框架为游戏代理等场景提供了可扩展的基础设施。",
+      "llm_tldr": "该论文指出当前AI代理的运行时支撑（提示、工具、记忆、控制流）仍依赖手工且静态，提出了HarnessX——一个可组合、自适应且可进化的代理框架。通过替代代数组装类型化原语，并利用AEGIS多代理进化引擎实现自适应优化。HarnessX支持从执行轨迹中系统改进代理行为，从而提升AI代理在交互环境中的性能。本框架为游戏代理等场景提供了可扩展的基础设施。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.18010v1",
+      "source": "arxiv",
+      "title": "Co-Creativity at the Table: A Qualitative Analysis of Creative Interactions in the Podcast \"Adventure AI\"",
+      "abstract": "Tabletop role-playing games provide a unique environment for interaction with artificial intelligence (AI) due to their complex and collaborative nature. We analyze Adventure AI, a podcast featuring human-AI interactions in Dungeons & Dragons play, to examine how AI is and can be used in tabletop role-playing gaming and how players perceive this use. We complete a qualitative analysis of three seasons of this podcast, from 2023 to 2025, reporting on the overarching themes of roles of AI, roles of humans, the evaluations and failures of AI, and its treatment as a person and character at the table. There are many aspects of the game where artificial intelligence succeeds, while there are others where it is less appropriate. This analysis gives a basis for future work on where artificial intelligence should and should not be used in gaming spaces.",
+      "authors": [
+        "Hanna Dodd",
+        "Daniel G. Brown"
+      ],
+      "primary_category": "cs.HC",
+      "categories": [
+        "cs.HC"
+      ],
+      "published": "2026-06-16T14:54:57+00:00",
+      "link": "https://arxiv.org/pdf/2606.18010v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "AI role-playing in D&D game",
+      "llm_evidence_cn": "AI在龙与地下城游戏中扮演角色",
+      "llm_evidence": "AI在龙与地下城游戏中扮演角色",
+      "canonical_evidence": "AI在龙与地下城游戏中扮演角色",
+      "llm_tldr_en": "Qualitative analysis of a podcast where AI plays D&D, showing AI's creative interactions and player perceptions, demonstrating AI as a game-playing agent.",
+      "llm_tldr_cn": "本文定性分析了播客Adventure AI中人类与AI在龙与地下城桌游中的互动。研究揭示了AI在游戏中的角色扮演能力、人类玩家的评价以及AI作为游戏伙伴的接受度。结果表明AI在协作创作和角色扮演方面有潜力，但也在某些方面存在不足。该工作为理解AI在复杂游戏环境中的社会接受度和交互模式提供了见解。",
+      "llm_tldr": "本文定性分析了播客Adventure AI中人类与AI在龙与地下城桌游中的互动。研究揭示了AI在游戏中的角色扮演能力、人类玩家的评价以及AI作为游戏伙伴的接受度。结果表明AI在协作创作和角色扮演方面有潜力，但也在某些方面存在不足。该工作为理解AI在复杂游戏环境中的社会接受度和交互模式提供了见解。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.17793v1",
+      "source": "arxiv",
+      "title": "ARES: A Platform for Adaptive Role-Based Evaluation of Social Engineering Risks in Human--AI Games",
+      "abstract": "This work introduces ARES, a platform and open pilot dataset for auditing adaptive social engineering risks in LLM-mediated social decision-making through controlled social games. ARES supports human--human, human--AI, and AI--AI settings, combining configurable game templates, role-conditioned LLM agents, psychology-informed participant profiling, structured interaction trees, and synchronised behavioural and biometric acquisition, filtering, and deep-learning-based feature extraction. The pilot dataset was collected from 15 participants interacting with a role-conditioned GPT-5.4 agent in two concatenated games: an adapted Prisoner's Dilemma and an Ultimatum Game. It comprises 340 GB of raw and processed multimodal data across six streams: interaction logs, video, screen recordings, gaze logs, smartwatch signals, and game/questionnaire metadata. These data include interaction paths, written justifications, psychological profiles, subjective feedback, perceived counterpart identity, game outcomes, and derived behavioural, facial, and gaze features. Alongside the dataset, we provide descriptive analyses to characterise the pilot release. Rigorous risk evaluation is essential for the deployment of secure AI systems, as it enables the identification and mitigation of vulnerabilities, ensures the protection of sensitive data, and supports compliance with evolving regulatory and ethical standards in society.",
+      "authors": [
+        "Roberto Daza",
+        "Javier Irigoyen",
+        "Ivan Lopez",
+        "Raquel Rodriguez-Carvajal",
+        "Laura Gomez",
+        "Julian Fierrez",
+        "Ruben Tolosana",
+        "Aythami Morales"
+      ],
+      "primary_category": "cs.HC",
+      "categories": [
+        "cs.HC",
+        "cs.DB"
+      ],
+      "published": "2026-06-16T11:11:58+00:00",
+      "link": "https://arxiv.org/pdf/2606.17793v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Human-AI games with role-conditioned agents",
+      "llm_evidence_cn": "基于角色条件的AI参与的社交游戏",
+      "llm_evidence": "基于角色条件的AI参与的社交游戏",
+      "canonical_evidence": "基于角色条件的AI参与的社交游戏",
+      "llm_tldr_en": "ARES platform audits social engineering risks through human-AI games, using role-conditioned LLM agents and psychometric profiling to collect multimodal behavioral data.",
+      "llm_tldr_cn": "ARES平台通过囚徒困境和最后通牒游戏审计人类与AI之间的社会工程风险。它使用角色条件化LLM agents和心理学画像，同步采集行为与生理数据。该研究为评估AI在社交游戏中的风险提供了框架和数据集。尽管重点在安全，但其游戏环境和AI agent设置与游戏AI研究相关。",
+      "llm_tldr": "ARES平台通过囚徒困境和最后通牒游戏审计人类与AI之间的社会工程风险。它使用角色条件化LLM agents和心理学画像，同步采集行为与生理数据。该研究为评估AI在社交游戏中的风险提供了框架和数据集。尽管重点在安全，但其游戏环境和AI agent设置与游戏AI研究相关。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
