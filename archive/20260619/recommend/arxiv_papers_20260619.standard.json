@@ -1,0 +1,390 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-19T21:18:45.432145+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 5,
+    "deep_cap": 6,
+    "deep_selected": 5,
+    "quick_candidates": 4,
+    "quick_skim_target": 11,
+    "quick_selected": 4
+  },
+  "deep_dive": [
+    {
+      "id": "2606.18950v2",
+      "source": "arxiv",
+      "title": "RTSGameBench: An RTS Benchmark for Strategic Reasoning by Vision-Language Models",
+      "abstract": "Modern Vision-Language Models (VLMs) often struggle with strategic reasoning, i.e., anticipating and influencing other agents' actions, under uncertainty in competitive and cooperative settings. Real-time strategy (RTS) games can be a natural testbed for diagnosing this limitation, as they demand coordination with allies, adaptation to opponents' strategy, and long-horizon planning under partial observability. However, existing RTS benchmarks offer limited evaluation scope, lack systematic competency diagnosis, and remain fixed in the pre-designed scenario coverage. To address these limitations, we present RTSGameBench, which is built on Beyond All Reason, a large-scale RTS game with an expanded battlefield that demands broader strategy diversity than the existing testbeds. The proposed benchmark provides evaluations through diverse gameplay across various matchup structures, diagnostic assessment via mini-games, each targeting an individual strategic competency, and extensible coverage via a self-evolving generation framework that converts free-form queries into new mini-games, improving over successive cycles. Additionally, for VLMs to operate in large-scale RTS games, we provide RTSGameAgent that manages units by an FSM with agentic memory. We empirically validate that multiple state-of-the-art VLMs do not perform well when matchups demand tighter coordination, multiagent coordination and when task scale increases.",
+      "authors": [
+        "San Kim",
+        "Daechul Ahn",
+        "Reokyoung Kim",
+        "Hyeonbeom Choi",
+        "Seungyeon Jwa",
+        "Jonghyun Choi"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-17T11:32:51+00:00",
+      "link": "https://arxiv.org/pdf/2606.18950v2",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "RTS benchmark for strategic reasoning of VLMs playing games",
+      "llm_evidence_cn": "用于视觉语言模型战略推理的RTS游戏基准",
+      "llm_evidence": "用于视觉语言模型战略推理的RTS游戏基准",
+      "canonical_evidence": "用于视觉语言模型战略推理的RTS游戏基准",
+      "llm_tldr_en": "RTSGameBench is a benchmark built on the RTS game Beyond All Reason for evaluating strategic reasoning of VLMs, requiring coordination and adaptation in competitive settings.",
+      "llm_tldr_cn": "该论文提出RTSGameBench，基于大型RTS游戏Beyond All Reason构建，用于评估视觉语言模型在竞争与合作环境中的战略推理能力。该基准涵盖协调、适应和长时规划等挑战，为AI智能体游戏能力提供系统诊断。",
+      "llm_tldr": "该论文提出RTSGameBench，基于大型RTS游戏Beyond All Reason构建，用于评估视觉语言模型在竞争与合作环境中的战略推理能力。该基准涵盖协调、适应和长时规划等挑战，为AI智能体游戏能力提供系统诊断。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.20014v1",
+      "source": "arxiv",
+      "title": "Hierarchical Control in Multi-Agent Games: LLM-based Planning and RL Execution",
+      "abstract": "Reinforcement learning (RL) has achieved strong performance in sequential decision-making, yet scaling to complex multi-agent environments remains challenging due to sparse rewards, large state-action spaces, and the difficulty of learning coordinated strategies. We propose a hierarchical architecture where a pretrained large language model (LLM) acts as a centralized strategic controller that selects among specialized RL skill policies for a team of agents, while RL policies handle reactive low-level execution. We evaluate this hybrid system in a competitive 2v2 King of the Hill environment against behavior tree (BT) and \\emph{``Flat''} RL (end-to-end training without skill decomposition) baselines. The LLM+RL system achieves task performance statistically equivalent to hand-crafted BT (46.4\\% vs 51.5\\% win rate, $p=0.103$) while both significantly outperform Flat RL trained without skill decomposition. A user study ($n=15$) reveals that 60\\% of participants perceive LLM+RL agents as the most human-like ($p=0.027$), citing behavioral adaptability and tactical variability. These results demonstrate that pretrained LLM reasoning can effectively orchestrate pretrained RL skills, achieving competitive multi-agent coordination and superior perceived believability without manual rule engineering.",
+      "authors": [
+        "Jannik Hösch",
+        "Alessandro Sestini",
+        "Florian Fuchs",
+        "Amir Baghi",
+        "Joakim Bergdahl",
+        "Konrad Tollmar",
+        "Jean-Philippe Barrette-LaPierre",
+        "Linus Gisslén"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-06-18T09:47:06+00:00",
+      "link": "https://arxiv.org/pdf/2606.20014v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Hierarchical LLM+RL control for multi-agent game, evaluated in King of the Hill environment",
+      "llm_evidence_cn": "基于LLM与RL的分层控制框架，在多智能体游戏环境中评估",
+      "llm_evidence": "基于LLM与RL的分层控制框架，在多智能体游戏环境中评估",
+      "canonical_evidence": "基于LLM与RL的分层控制框架，在多智能体游戏环境中评估",
+      "llm_tldr_en": "Proposes a hierarchical architecture combining LLM strategic planning with RL skill execution for multi-agent games, achieving superior performance in a 2v2 King of the Hill task compared to baselines.",
+      "llm_tldr_cn": "该论文针对多智能体游戏中策略协调困难的问题，提出了一种分层架构：上层由大语言模型（LLM）作为中央策略控制器选择专用RL技能策略，下层由RL策略执行底层反应式控制。在2v2 King of the Hill竞争环境中，该系统相比行为树和端到端RL基线取得了更优的任务表现，证明了LLM与RL结合在复杂游戏场景中的有效性。",
+      "llm_tldr": "该论文针对多智能体游戏中策略协调困难的问题，提出了一种分层架构：上层由大语言模型（LLM）作为中央策略控制器选择专用RL技能策略，下层由RL策略执行底层反应式控制。在2v2 King of the Hill竞争环境中，该系统相比行为树和端到端RL基线取得了更优的任务表现，证明了LLM与RL结合在复杂游戏场景中的有效性。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.20210v1",
+      "source": "arxiv",
+      "title": "Augmenting Game AI with Deep Reinforcement Learning",
+      "abstract": "Immersion in video games depends not only on graphics, audio, and game mechanics, but also on the quality of in-game characters. Producing believable characters, or game AI, remains a significant challenge as behavioral complexity is hard to capture with hand-coded systems. Game AI is a source of immersion and engagement; however, the limitations stemming from the challenges of creating game AI often lead to frustration and the breaking of the illusion of realism within the game. The introduction of machine learning models opens the door to creating more believable, authentic, and relatable characters in games. The promise is that they either learn from interacting with the game, or from player data, to develop true human-like behavior. In this paper, we envision more applications of reinforcement learning for game AI in the future. For this to materialize, current research limitations are prohibitive to broad deployment across game genres. Therefore, we propose a framework for training reinforcement learning models with a set of requirements in mind that are suited towards game AI and game development. We present examples of games with reinforcement learning-augmented game AI and describe the practicalities of deploying player-facing machine learning agents in modern games. Furthermore, we identify bottlenecks and hard problems in these areas, which we believe offer promising research directions to accelerate the adoption of machine learning in game AI for the video game industry.",
+      "authors": [
+        "Alessandro Sestini",
+        "Joakim Bergdahl",
+        "Amir Baghi",
+        "Jean-Philippe Barrette-LaPierre",
+        "Florian Fuchs",
+        "Linus Gisslén"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-18T13:23:19+00:00",
+      "link": "https://arxiv.org/pdf/2606.20210v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "deep reinforcement learning for game AI",
+      "llm_evidence_cn": "深度强化学习用于游戏AI",
+      "llm_evidence": "深度强化学习用于游戏AI",
+      "canonical_evidence": "深度强化学习用于游戏AI",
+      "llm_tldr_en": "Envisions using deep reinforcement learning to create believable game characters that learn from interaction or player data, directly addressing game AI improvement.",
+      "llm_tldr_cn": "该论文着眼于将深度强化学习应用于游戏AI，以创建更真实可信的游戏角色。传统手工编码的AI行为复杂度有限，而机器学习模型可以通过与游戏交互或从玩家数据中学习，发展出类人行为。论文设想了两种途径：直接从交互中学习，或利用玩家数据驱动行为，从而提升游戏沉浸感和玩家体验。",
+      "llm_tldr": "该论文着眼于将深度强化学习应用于游戏AI，以创建更真实可信的游戏角色。传统手工编码的AI行为复杂度有限，而机器学习模型可以通过与游戏交互或从玩家数据中学习，发展出类人行为。论文设想了两种途径：直接从交互中学习，或利用玩家数据驱动行为，从而提升游戏沉浸感和玩家体验。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "artificial intelligence in games",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.18544v2",
+      "source": "arxiv",
+      "title": "Chess Signatures of Play",
+      "abstract": "A game of chess is a stream: a time-ordered sequence of moves, each carrying an engine evaluation, a measure of accuracy, a measure of position complexity, and a clock reading. We model a game as a multivariate path and apply the signature transform of rough-path theory to obtain a reparametrization-invariant, graded feature set that records the order and interaction of in-game events without a parametric likelihood. We show that a player's law of play is identifiable from the expected signature up to tree-like equivalence, construct a signature-kernel two-sample test on path space, and recast cheating detection as an anytime-valid sequential test: a signature conformance score becomes an e-process whose error is controlled for every sample size at once by Ville's inequality, with fluctuations calibrated on the moderate-deviation scale. The discriminating information lives in the signature's Levy areas, which measure whether accuracy rises precisely when positions become hard--the fingerprint of engine assistance that aggregate match-rate statistics discard. In a controlled study the test holds exact type-I control and detection power rises from negligible for subtle assistance to 0.98 for blatant assistance, with a median detection time matching the growth-rate prediction. Calibrated to Magnus Carlsen's documented elite accuracy, the monitor does not flag world-champion-level play; and we exhibit cheating strategies that leave every aggregate statistic, including the best-move-frequency z-score of the Regan system, unchanged yet are caught cleanly by the signature--making precise how an order-aware, anytime-valid test strengthens the prevailing approach to chess anti-cheating.",
+      "authors": [
+        "Christian Turk",
+        "Nicholas Polson"
+      ],
+      "primary_category": "stat.AP",
+      "categories": [
+        "stat.AP"
+      ],
+      "published": "2026-06-16T23:51:45+00:00",
+      "link": "https://arxiv.org/pdf/2606.18544v2",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "player behavior modeling via chess game signatures",
+      "llm_evidence_cn": "通过棋类游戏签名进行玩家行为建模",
+      "llm_evidence": "通过棋类游戏签名进行玩家行为建模",
+      "canonical_evidence": "通过棋类游戏签名进行玩家行为建模",
+      "llm_tldr_en": "Chess Signatures of Play models chess games as multivariate paths, using signature transform to capture player behavior for identification and cheating detection.",
+      "llm_tldr_cn": "该论文将棋类游戏建模为多变量路径，应用粗糙路径理论的签名变换提取重参数化不变特征，用于描述玩家下棋规律。通过签名核双样本检验，将作弊检测转化为任意有效的序贯测试。实验表明该方法能够有效区分不同玩家并检测作弊行为，为玩家行为建模提供了新视角。",
+      "llm_tldr": "该论文将棋类游戏建模为多变量路径，应用粗糙路径理论的签名变换提取重参数化不变特征，用于描述玩家下棋规律。通过签名核双样本检验，将作弊检测转化为任意有效的序贯测试。实验表明该方法能够有效区分不同玩家并检测作弊行为，为玩家行为建模提供了新视角。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "player behavior simulation techniques",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.19308v1",
+      "source": "arxiv",
+      "title": "Enhancing Decision-Making with Large Language Models through Multi-Agent Fictitious Play",
+      "abstract": "Large language model (LLM)-based multi-agent systems (MAS) have demonstrated great potential in solving tasks with execution complexity, by distributing subtasks across cooperative agents. However, this divide-and-conquer paradigm falls short on decision-making tasks that are also prevalent in the real world. These tasks require simultaneous reasoning from the stances of all involved stakeholders whose decisions are mutually dependent and thus cannot be solved in isolation. We characterize this challenge as stance entanglement, a form of decision complexity distinct from execution complexity. To address it, we propose Multi-Agent Fictitious Play (MAFP), a novel MAS paradigm that represents stakeholder stances as agents and formulates decision-making as an equilibrium-seeking process. Built on the game-theoretic principle of fictitious play, MAFP iteratively updates each agent's decision by best responding to the empirical mixture of other agents' past decisions. This enables agents to expose and address one another's weaknesses, progressively improving decision quality and robustness. We evaluate MAFP on challenging decision-making tasks that test the capability of deciding strategies for competitive scenarios prior to acting. MAFP outperforms both single-round and multi-round baselines on two complementary metrics, tournament strength and robustness, demonstrating its effectiveness in addressing stance entanglement.",
+      "authors": [
+        "Leyang Shen",
+        "Yang Zhang",
+        "Xiaoyan Zhao",
+        "Chun Kai Ling",
+        "Tat-Seng Chua"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.MA"
+      ],
+      "published": "2026-06-17T17:31:06+00:00",
+      "link": "https://arxiv.org/pdf/2606.19308v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "multi-agent fictitious play for LLM decision-making in game-like settings",
+      "llm_evidence_cn": "面向类游戏环境中LLM决策的多智能体虚构博弈方法",
+      "llm_evidence": "面向类游戏环境中LLM决策的多智能体虚构博弈方法",
+      "canonical_evidence": "面向类游戏环境中LLM决策的多智能体虚构博弈方法",
+      "llm_tldr_en": "This paper proposes Multi-Agent Fictitious Play (MAFP) to address stance entanglement in LLM-based multi-agent systems, enabling superior decision-making in interdependent settings such as games.",
+      "llm_tldr_cn": "针对LLM多智能体系统在处理决策复杂性时无法同时推理所有利益相关者立场的问题，本文提出多智能体虚构博弈（MAFP）范式。该方法将利益相关者立场表示为智能体，通过迭代优化达到均衡。实验表明，MAFP在涉及相互依赖决策的任务上优于传统分治方法，为游戏等场景中的多智能体决策提供了有效框架。",
+      "llm_tldr": "针对LLM多智能体系统在处理决策复杂性时无法同时推理所有利益相关者立场的问题，本文提出多智能体虚构博弈（MAFP）范式。该方法将利益相关者立场表示为智能体，通过迭代优化达到均衡。实验表明，MAFP在涉及相互依赖决策的任务上优于传统分治方法，为游戏等场景中的多智能体决策提供了有效框架。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.16774v1",
+      "source": "arxiv",
+      "title": "OpenClaw-Skill: Collective Skill Tree Search for Agentic Large Language Models",
+      "abstract": "Equipping Large Language Model (LLM) agents with effective skills is crucial for solving complex tasks in real-world systems like OpenClaw. In this work, we aim to develop a framework that automatically constructs such reusable skills to enhance LLMs in tool use, multi-step reasoning, and dynamic environment interaction. To this end, we propose Collective Skill Tree Search (CSTS), a novel tree-search-based skill construction framework that constructs structured, diverse and generalizable tree of skills. The core idea of CSTS is to leverage collective intelligence to jointly search, identify and compose effective skills via two iterative phases: Collective Skill Node Generation (CSN-Gen) and Collective Skill Node Assessment (CSN-Assess). CSN-Gen exploits collective knowledge from multiple models to explore diverse candidate skills for each subtask, enabling comprehensive skill exploration. CSN-Assess employs multiple models as judges to evaluate and select skill nodes with two scoring mechanisms: (1) collective quality scoring that aggregates independent evaluations to produce a robust estimate of skill effectiveness, and (2) collective transferability scoring that explicitly verifies whether a skill generalizes well across different models. With CSTS, we construct a set of comprehensive tree of skills along with skill-augmented training data, enabling models to effectively learn and utilize skills. Besides, we introduce Collective Skill Reinforcement Learning, which actively selects multiple relevant skills from the tree to broaden solution-space exploration, avoid being trapped by a single skill and its resulting homogeneous or suboptimal solutions. As a result, our trained model, OpenClaw-Skill, exhibits outstanding agentic capabilities in long-horizon planning, tool use and generalization over challenging benchmarks.",
+      "authors": [
+        "Tianyi Lin",
+        "Chuanyu Sun",
+        "Jingyi Zhang",
+        "Changxu Wei",
+        "Huanjin Yao",
+        "Shunyu Liu",
+        "Xikun Zhang",
+        "Liu Liu",
+        "Jiaxing Huang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-06-15T14:20:50+00:00",
+      "link": "https://arxiv.org/pdf/2606.16774v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "collective skill tree search for training LLM agents in dynamic environments",
+      "llm_evidence_cn": "动态环境中训练LLM智能体的集体技能树搜索方法",
+      "llm_evidence": "动态环境中训练LLM智能体的集体技能树搜索方法",
+      "canonical_evidence": "动态环境中训练LLM智能体的集体技能树搜索方法",
+      "llm_tldr_en": "OpenClaw-Skill proposes Collective Skill Tree Search (CSTS) to automatically construct reusable skills for LLM agents, enhancing their tool use and multi-step reasoning in dynamic environments.",
+      "llm_tldr_cn": "针对LLM智能体在复杂系统中缺乏有效技能的问题，本文提出集体技能树搜索（CSTS）框架。该框架通过集体智能的两阶段迭代（技能节点生成与评估）自动构建结构化、多样化的技能树。实验表明，该方法显著提升了LLM在工具使用和多步推理等任务上的能力，有助于开发更强大的游戏智能体。",
+      "llm_tldr": "针对LLM智能体在复杂系统中缺乏有效技能的问题，本文提出集体技能树搜索（CSTS）框架。该框架通过集体智能的两阶段迭代（技能节点生成与评估）自动构建结构化、多样化的技能树。实验表明，该方法显著提升了LLM在工具使用和多步推理等任务上的能力，有助于开发更强大的游戏智能体。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.16993v1",
+      "source": "arxiv",
+      "title": "DreamX-World 1.0: A General-Purpose Interactive World Model",
+      "abstract": "DreamX-World 1.0 is a general-purpose interactive text/image-to-video world model for controllable long-horizon generation. It supports camera navigation, revisits to previously observed regions, and promptable events across photorealistic, game-style, and stylized domains. Our data engine combines camera-accurate Unreal Engine rendering, action-rich gameplay recordings, and real-world videos with recovered camera geometry. For camera control, we introduce E-PRoPE, a lightweight variant of projective positional encoding that retains PRoPE's projective camera geometry while applying camera-aware attention to spatially reduced tokens. We convert a bidirectional video generator into a few-step autoregressive world model using causal forcing, DMD-style distillation, and long-rollout training. Training on self-generated long-horizon contexts exposes the model to its own generated history and reduces the style and color drift that accumulates across autoregressive chunks. Memory-Conditioned Scene Persistence retrieves earlier views through camera-geometry-based retrieval, while residual recycling makes the conditioning path less sensitive to imperfect memory latents. Event Instruction Tuning adds composable event control, and reinforcement learning alignment recovers camera control and visual quality after distillation. With mixed-precision DiT execution, residual reuse, 75\\%-pruned VAE decoding, and asynchronous pipeline parallelism, DreamX-World 1.0 reaches up to 16\\,FPS on eight RTX\\,5090 GPUs. On our 5-second basic evaluation, DreamX-World 1.0 achieves a camera-control score of 73.75 and an overall score of 84.76, outperforming HY-WorldPlay 1.5 and LingBot-World in overall score, which achieve 80.79 and 80.45, respectively.",
+      "authors": [
+        "DreamX Team",
+        "Yancheng Bai",
+        "Rui Chen",
+        "Xiangxiang Chu",
+        "Rujing Dang",
+        "Hao Dou",
+        "Bingjie Gao",
+        "Qiwen Gu",
+        "Siyu Hong",
+        "Jiachen Lei",
+        "Geng Li",
+        "Jifan Li",
+        "Ruimin Lin",
+        "Qingfeng Shi",
+        "Bingze Song",
+        "Lei Sun",
+        "Jing Tang",
+        "Ruitian Tian",
+        "Jun Wang",
+        "Jiahong Wu",
+        "Pengfei Zhang",
+        "Shen Zhang",
+        "Jiashu Zhu"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-15T17:30:33+00:00",
+      "link": "https://arxiv.org/pdf/2606.16993v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "world model for game-style domains, uses gameplay recordings",
+      "llm_evidence_cn": "游戏风格领域的通用世界模型，利用游戏玩法记录",
+      "llm_evidence": "游戏风格领域的通用世界模型，利用游戏玩法记录",
+      "canonical_evidence": "游戏风格领域的通用世界模型，利用游戏玩法记录",
+      "llm_tldr_en": "A general-purpose interactive world model that supports game-style domains and uses action-rich gameplay recordings for training, enabling controllable generation and camera navigation.",
+      "llm_tldr_cn": "DreamX-World 1.0是一个通用的交互式世界模型，支持照片级、游戏风格和风格化领域的可控长时程生成。它利用虚幻引擎渲染、动作丰富的游戏玩法记录等数据，引入E-PRoPE编码实现相机控制，并通过因果强制和DMD蒸馏将双向视频生成器转换为自回归世界模型。该模型为游戏环境中的智能体训练和玩家行为模拟提供了基础平台。",
+      "llm_tldr": "DreamX-World 1.0是一个通用的交互式世界模型，支持照片级、游戏风格和风格化领域的可控长时程生成。它利用虚幻引擎渲染、动作丰富的游戏玩法记录等数据，引入E-PRoPE编码实现相机控制，并通过因果强制和DMD蒸馏将双向视频生成器转换为自回归世界模型。该模型为游戏环境中的智能体训练和玩家行为模拟提供了基础平台。",
+      "llm_tags": [
+        "query:player-ai:composite"
+      ],
+      "matched_query_tag": "query:player-ai:composite",
+      "matched_query_text": "Papers central to 请帮我查找虚拟游戏玩家建模、AI Agent 游戏游玩相关论文, especially work that connects or combines: virtual game player modeling; AI agent playing games; artificial intelligence in games; player behavior simulation techniques; Find papers on virtual game player modeling; Search for AI agent training in game environments.",
+      "matched_requirement_id": "req-composite-player-ai",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.20324v1",
+      "source": "arxiv",
+      "title": "A Model-Driven Approach for Developing Families of Reinforcement Learning Environments",
+      "abstract": "Virtual training environments are software-intensive systems in which reinforcement learning (RL) agents learn, adapt, and demonstrate meaningful behavior. Virtual training environments offer a safe and cost-efficient alternative to training agents in real-world settings. However, to converge, most realistic RL problems require training in multiple, mostly similar but slightly different environments - i.e., families of environment variants. The typical development process of environment families is a labor-intensive and error-prone manual endeavor that does not scale well. To alleviate these issues, in this paper, we propose a model-driven approach for developing families of RL training environments. To obtain the family of environments, we develop an approach and prototype tool. In our approach, a hybrid genetic algorithm - a combination of population-based global search and heuristic local search - generates environment families. Mutations and constraints are expressed as model transformations and are operationalized into a search process by a state-of-the-art model transformation engine. We demonstrate the soundness of our approach in a wildfire mitigation scenario and curriculum learning - a particular learning paradigm that relies on environment families.",
+      "authors": [
+        "Xiaoran Liu",
+        "Istvan David"
+      ],
+      "primary_category": "cs.SE",
+      "categories": [
+        "cs.SE",
+        "cs.LG"
+      ],
+      "published": "2026-06-18T15:02:38+00:00",
+      "link": "https://arxiv.org/pdf/2606.20324v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Model-driven development of RL environments, which can be applied to game environment families for AI agent training",
+      "llm_evidence_cn": "模型驱动的强化学习环境开发方法，可用于游戏环境系列，支持AI agent训练",
+      "llm_evidence": "模型驱动的强化学习环境开发方法，可用于游戏环境系列，支持AI agent训练",
+      "canonical_evidence": "模型驱动的强化学习环境开发方法，可用于游戏环境系列，支持AI agent训练",
+      "llm_tldr_en": "Proposes a model-driven approach to systematically develop families of RL training environments, reducing manual effort, applicable to creating game environment variants for training AI agents.",
+      "llm_tldr_cn": "当前强化学习需要训练多个相似环境家族，但手动开发耗时且易错。本文提出一种模型驱动方法，通过抽象和自动生成环境变体，简化了RL训练环境家族的创建过程。该方法可应用于游戏环境，为AI agent提供多样化的训练场景，提升泛化能力。",
+      "llm_tldr": "当前强化学习需要训练多个相似环境家族，但手动开发耗时且易错。本文提出一种模型驱动方法，通过抽象和自动生成环境变体，简化了RL训练环境家族的创建过程。该方法可应用于游戏环境，为AI agent提供多样化的训练场景，提升泛化能力。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.17906v1",
+      "source": "arxiv",
+      "title": "WAM-RL: World-Action Model Reinforcement Learning with Reconstruction Rewards and Online Video SFT",
+      "abstract": "Recent World-Action (WA) models demonstrate strong generalization ability and data efficiency, but they typically rely on expert trajectories for training. This reliance limits their ability to acquire fine-grained manipulation skills beyond the demonstration distribution and prevents them from continuously improving through real-world interaction. To address these limitations, we propose WAM-RL, a reinforcement learning framework that enables joint optimization of the world model and the action model through online interaction with the environment. By allowing the two components to co-evolve, our approach enhances fine-grained control and adaptability. Specifically, a WA model consists of a world model and an actor. We design a tailored reinforcement learning method with hierarchical optimization to coordinate their improvement. On the methodological side, we systematically investigate the effects of applying reinforcement learning to the action model, as well as online training of the world model within an RL setting. Our experiments reveal a key insight: optimizing only the actor yields improvements on short-horizon tasks, but fails to provide significant gains on long-horizon tasks. In contrast, jointly optimizing both the world model and the actor is critical for achieving strong performance in long-horizon settings. Our work is the first to introduce reinforcement learning into the World-Action paradigm, and provides insights into how online optimization of both the action head and the world model impacts overall performance.",
+      "authors": [
+        "Zezhong Qian",
+        "Xiaowei Chi",
+        "Yu Qi",
+        "Haozhan Li",
+        "Zhi Yang Chen",
+        "Shanghang Zhang"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-06-16T13:29:12+00:00",
+      "link": "https://arxiv.org/pdf/2606.17906v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "RL framework for world-action model in interactive environments",
+      "llm_evidence_cn": "在交互环境中用于世界-动作模型的强化学习框架",
+      "llm_evidence": "在交互环境中用于世界-动作模型的强化学习框架",
+      "canonical_evidence": "在交互环境中用于世界-动作模型的强化学习框架",
+      "llm_tldr_en": "WAM-RL jointly optimizes world and action models via online RL, enabling fine-grained control without expert demonstrations.",
+      "llm_tldr_cn": "该论文提出WAM-RL框架，通过在线强化学习联合优化世界模型和动作模型，解决了世界-动作模型依赖专家轨迹的问题。在机器人操作任务中，WAM-RL通过自生成数据实现细粒度控制，持续改进性能，展现了在线交互学习的潜力。",
+      "llm_tldr": "该论文提出WAM-RL框架，通过在线强化学习联合优化世界模型和动作模型，解决了世界-动作模型依赖专家轨迹的问题。在机器人操作任务中，WAM-RL通过自生成数据实现细粒度控制，持续改进性能，展现了在线交互学习的潜力。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
