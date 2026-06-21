@@ -1,0 +1,69 @@
+{
+  "label": "2026-06-21",
+  "date": "2026-06-21",
+  "generated_at": "2026-06-21T21:00:31",
+  "count": 4,
+  "papers": [
+    {
+      "paper_id": "202606/21/2606.17730v1-actworld-from-explorable-to-interactive-world-model-via-action-aware-memory",
+      "section": "deep",
+      "title_en": "ActWorld: From Explorable to Interactive World Model via Action-Aware Memory",
+      "authors": "Zhexiao Xiong, Yizhi Song, Hao Kang, Qing Yan, Liming Jiang, Jenson Yang, Zhoujie Fu, Stathi Fotiadis, Angtian Wang, Zichuan Liu, Bo Liu, Yiding Yang, Xin Lu, Nathan Jacobs",
+      "date": "2026-06-16",
+      "pdf": "https://arxiv.org/pdf/2606.17730v1",
+      "score": "8.0",
+      "evidence": "支持物体交互的交互式游戏世界模型",
+      "tldr": "现有交互世界模型仅支持导航动作，缺乏物体交互能力，原因是缺少带精确标注的人-物交互数据，且现有模型的记忆机制存在近期偏差，丢弃了决定性的事件过渡帧。本文提出ActWorld，通过构建10万段交互视频数据集，每段用思维链标注逐块描述；并设计分层动作感知记忆，按交互重要性压缩历史，配合持久记忆库维护事件更新和对象身份token。实验表明，ActWorld在单个模型中同时支持灵活导航与丰富物体交互，显著提升交互保真度而不牺牲视角控制，将世界模型从可探索拓展到可交互。",
+      "tags": "query:player-ai",
+      "abstract_en": "Interactive world models aim to simulate environment dynamics under real-time user actions. However, their action vocabulary is largely confined to navigation: most actions correspond to motion (e.g., walk, turn, look around), while interaction with objects in the scene (e.g., pick up plates, open doors, or trigger physical responses) is either absent, restricted to game domains, or relegated to prompt-to-full-video scenarios. The resulting worlds are visually explorable but not truly actionable. In this work, we present ActWorld, an interactive world model that extends prior navigation-centric generators to support mid-rollout object interaction within a chunk-autoregressive framework. We argue that the navigation-interaction gap stems from two bottlenecks. First, a data bottleneck: the lack of human-object interaction data with accurate, dense labels. Second, a memory bottleneck: recency-biased history compression in existing world models discards the event-transition frames that causally determine subsequent object states, leading to an action-forgetting pathology. On the data side, we construct a 100K interaction video dataset, each annotated with per-chunk captions via chain-of-thought reasoning. On the model side, we introduce a hierarchical action-aware memory design that routes history compression by interaction importance, complemented by a persistent memory bank that maintains event-update and object-identity tokens across long rollouts. Experiments show that ActWorld supports both flexible navigation and rich object interaction within a single model, substantially improving interaction fidelity over navigation-only baselines without sacrificing viewpoint control. Project page is available at https://interactwm.github.io/ActWorld.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/21/2606.16856v1-video-based-optimal-transport-for-feedback-efficient-offline-preference-based-reinforcement-learning",
+      "section": "quick",
+      "title_en": "Video-Based Optimal Transport for Feedback-Efficient Offline Preference-Based Reinforcement Learning",
+      "authors": "Tung M. Luu, Hwanhee Kim, Younghwan Lee, Chang D. Yoo",
+      "date": "2026-06-15",
+      "pdf": "https://arxiv.org/pdf/2606.16856v1",
+      "score": "7.0",
+      "evidence": "基于视频偏好的强化学习方法用于游戏智能体训练",
+      "tldr": "偏好强化学习因人类反馈标注成本高而难以扩展。本文提出VOTP，利用视频基础模型的表示空间，通过最优传播对齐视觉轨迹，为大量未标注数据生成高质量伪标签。实验表明，在运动控制等基准任务上，VOTP仅需极少量标注即可超越现有离线PbRL方法。该方法显著降低了人类反馈需求，并在真实机器人任务中验证了其有效性。",
+      "tags": "query:player-ai",
+      "abstract_en": "Conveying complex objectives to reinforcement learning (RL) agents often requires meticulous reward engineering. Preference-based RL (PbRL) offers a promising alternative by learning reward functions from human feedback, but its scalability is hindered by high labeling costs. Inspired by advances in Video Foundation Models (ViFMs), we present Video-based Optimal Transport Preference (VOTP), a semi-supervised framework that learns effective reward functions from only a handful of labels. By leveraging optimal transport to align visual trajectories within the rich representation space of ViFMs, VOTP effectively generates high-fidelity pseudo-labels for large amounts of unlabeled data, substantially reducing human supervision. Extensive experiments across locomotion and manipulation benchmarks demonstrate the superiority of VOTP, which outperforms state-of-the-art offline PbRL methods under limited feedback budgets. We also showcase the robustness of VOTP in the presence of visual distractors and validate its utility on real robotic tasks, where it learns meaningful rewards with minimal human input.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/21/2606.17377v1-performance-driven-environment-abstraction-with-multi-timescale-learning",
+      "section": "quick",
+      "title_en": "Performance-Driven Environment Abstraction with Multi-Timescale Learning",
+      "authors": "Yue Guan, Dipankar Maity, Panagiotis Tsiotras",
+      "date": "2026-06-16",
+      "pdf": "https://arxiv.org/pdf/2606.17377v1",
+      "score": "6.0",
+      "evidence": "多时间尺度强化学习进行环境抽象，可用于游戏AI代理训练",
+      "tldr": "针对大型马尔可夫决策过程，提出性能驱动的环境抽象方法，通过聚合状态空间并强制共享动作分布来优化决策质量。建立分离值函数误差与动作共享损失的理论保证，并开发多时间尺度强化学习框架，联合调整策略与树结构抽象。算法基于Q值差异动态细化或粗化状态区域，平衡性能与复杂度。实验表明，该方法实现显著状态压缩、提升样本效率并加速重规划。",
+      "tags": "query:player-ai",
+      "abstract_en": "We study performance-driven environment abstraction for decision-making in large Markov decision processes. Rather than preserving geometric or topological structure, we seek abstractions that directly optimize decision quality. We model abstraction as a controlled approximation obtained by aggregating the state space and enforcing a shared action distribution within each aggregated state. For a fixed partition, we establish a performance guarantee that separates value-function approximation error from the loss introduced by action sharing. Guided by this analysis, we develop a multi-timescale reinforcement learning framework that jointly adapts the policy and a tree-structured environment abstraction. The resulting algorithm refines and coarsens regions of the state space based on Q-value discrepancies, balancing performance against abstraction size and complexity. Empirical results demonstrate substantial state compression, improved sample efficiency, and faster replanning compared to actor-critic baselines.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202606/21/2606.18831v1-beyond-reward-engineering-a-data-recipe-for-long-context-reinforcement-learning",
+      "section": "quick",
+      "title_en": "Beyond Reward Engineering: A Data Recipe for Long-Context Reinforcement Learning",
+      "authors": "Xiaoyue Xu, Sikui Zhang, Xiaorong Wang, Xu Han, Chaojun Xiao",
+      "date": "2026-06-17",
+      "pdf": "https://arxiv.org/pdf/2606.18831v1",
+      "score": "6.0",
+      "evidence": "数据驱动的长上下文强化学习配方，改进游戏类轨迹中的代理训练",
+      "tldr": "现有长上下文强化学习研究多聚焦奖励工程，忽略了训练数据多样性的重要性。本文提出一种数据中心的简单配方，针对检索、多证据合成和推理三个任务族构建8个数据集共约1.4万样本，配合最小化结果型GRPO即可显著提升模型长上下文推理能力。在Qwen3系列模型上，该配方在七个基准上平均提升+3.2至+7.2个点，超越先前RL训练集，并有效泛化至智能体任务（GAIA+4.8，BrowseComp+7.0）。",
+      "tags": "query:player-ai",
+      "abstract_en": "Long-context reasoning is an essential capability for large language models, particularly when they are deployed as autonomous agents that must reason over lengthy trajectories. Reinforcement learning (RL) has recently emerged as a dominant paradigm for improving this ability, yet existing work largely focuses on reward engineering while diverse training data remains scarce. We revisit this problem from a data-centric perspective and show that a simple yet effective data recipe alone, paired with a minimal outcome-based GRPO setup, suffices to substantially improve long-context reasoning. Our recipe targets three complementary task families -- retrieval, multi-evidence synthesis, and reasoning -- for which we construct and curate eight datasets totaling ~14K examples. Experiments on three models (Qwen3-4B/8B/30B-A3B) yield average gains of +7.2/+3.2/+6.4 points across seven long-context benchmarks, surpassing prior RL training sets. We further demonstrate that these gains transfer to agentic tasks, where continuing RL training on an agent-tuned model with our data recipe improves GAIA by +4.8 and BrowseComp by +7.0 points. We will release our datasets to facilitate future research.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

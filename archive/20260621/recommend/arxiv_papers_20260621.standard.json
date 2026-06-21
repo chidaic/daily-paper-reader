@@ -1,0 +1,181 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-21T20:56:26.715276+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 1,
+    "deep_cap": 6,
+    "deep_selected": 1,
+    "quick_candidates": 3,
+    "quick_skim_target": 11,
+    "quick_selected": 3
+  },
+  "deep_dive": [
+    {
+      "id": "2606.17730v1",
+      "source": "arxiv",
+      "title": "ActWorld: From Explorable to Interactive World Model via Action-Aware Memory",
+      "abstract": "Interactive world models aim to simulate environment dynamics under real-time user actions. However, their action vocabulary is largely confined to navigation: most actions correspond to motion (e.g., walk, turn, look around), while interaction with objects in the scene (e.g., pick up plates, open doors, or trigger physical responses) is either absent, restricted to game domains, or relegated to prompt-to-full-video scenarios. The resulting worlds are visually explorable but not truly actionable. In this work, we present ActWorld, an interactive world model that extends prior navigation-centric generators to support mid-rollout object interaction within a chunk-autoregressive framework. We argue that the navigation-interaction gap stems from two bottlenecks. First, a data bottleneck: the lack of human-object interaction data with accurate, dense labels. Second, a memory bottleneck: recency-biased history compression in existing world models discards the event-transition frames that causally determine subsequent object states, leading to an action-forgetting pathology. On the data side, we construct a 100K interaction video dataset, each annotated with per-chunk captions via chain-of-thought reasoning. On the model side, we introduce a hierarchical action-aware memory design that routes history compression by interaction importance, complemented by a persistent memory bank that maintains event-update and object-identity tokens across long rollouts. Experiments show that ActWorld supports both flexible navigation and rich object interaction within a single model, substantially improving interaction fidelity over navigation-only baselines without sacrificing viewpoint control. Project page is available at https://interactwm.github.io/ActWorld.",
+      "authors": [
+        "Zhexiao Xiong",
+        "Yizhi Song",
+        "Hao Kang",
+        "Qing Yan",
+        "Liming Jiang",
+        "Jenson Yang",
+        "Zhoujie Fu",
+        "Stathi Fotiadis",
+        "Angtian Wang",
+        "Zichuan Liu",
+        "Bo Liu",
+        "Yiding Yang",
+        "Xin Lu",
+        "Nathan Jacobs"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-16T09:47:32+00:00",
+      "link": "https://arxiv.org/pdf/2606.17730v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "interactive world model with object interaction for games",
+      "llm_evidence_cn": "支持物体交互的交互式游戏世界模型",
+      "llm_evidence": "支持物体交互的交互式游戏世界模型",
+      "canonical_evidence": "支持物体交互的交互式游戏世界模型",
+      "llm_tldr_en": "Extends navigation-centric world models to support object interaction within games using action-aware memory and chunk-autoregressive generation.",
+      "llm_tldr_cn": "该论文提出ActWorld，一个交互式世界模型，在分块自回归框架中支持中卷出的物体交互。解决了现有导航生成器无法处理拾取盘子、开门等游戏内对象操作的问题。通过动作感知记忆模块，模型能根据用户动作实时更新场景并生成下一帧。",
+      "llm_tldr": "该论文提出ActWorld，一个交互式世界模型，在分块自回归框架中支持中卷出的物体交互。解决了现有导航生成器无法处理拾取盘子、开门等游戏内对象操作的问题。通过动作感知记忆模块，模型能根据用户动作实时更新场景并生成下一帧。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.16856v1",
+      "source": "arxiv",
+      "title": "Video-Based Optimal Transport for Feedback-Efficient Offline Preference-Based Reinforcement Learning",
+      "abstract": "Conveying complex objectives to reinforcement learning (RL) agents often requires meticulous reward engineering. Preference-based RL (PbRL) offers a promising alternative by learning reward functions from human feedback, but its scalability is hindered by high labeling costs. Inspired by advances in Video Foundation Models (ViFMs), we present Video-based Optimal Transport Preference (VOTP), a semi-supervised framework that learns effective reward functions from only a handful of labels. By leveraging optimal transport to align visual trajectories within the rich representation space of ViFMs, VOTP effectively generates high-fidelity pseudo-labels for large amounts of unlabeled data, substantially reducing human supervision. Extensive experiments across locomotion and manipulation benchmarks demonstrate the superiority of VOTP, which outperforms state-of-the-art offline PbRL methods under limited feedback budgets. We also showcase the robustness of VOTP in the presence of visual distractors and validate its utility on real robotic tasks, where it learns meaningful rewards with minimal human input.",
+      "authors": [
+        "Tung M. Luu",
+        "Hwanhee Kim",
+        "Younghwan Lee",
+        "Chang D. Yoo"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-06-15T15:31:40+00:00",
+      "link": "https://arxiv.org/pdf/2606.16856v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "RL from video preferences for agent training in games",
+      "llm_evidence_cn": "基于视频偏好的强化学习方法用于游戏智能体训练",
+      "llm_evidence": "基于视频偏好的强化学习方法用于游戏智能体训练",
+      "canonical_evidence": "基于视频偏好的强化学习方法用于游戏智能体训练",
+      "llm_tldr_en": "Proposes VOTP, a semi-supervised framework using video foundation models and optimal transport to learn reward functions from a few labels, reducing human feedback costs for RL agent training.",
+      "llm_tldr_cn": "偏好强化学习通过人类反馈学习奖励函数，但标注成本高。本文提出VOTP框架，利用视频基础模型的最优传输对齐视觉轨迹，从少量标注生成高置信伪标签，大幅降低监督需求。在游戏等环境中可高效训练RL智能体。",
+      "llm_tldr": "偏好强化学习通过人类反馈学习奖励函数，但标注成本高。本文提出VOTP框架，利用视频基础模型的最优传输对齐视觉轨迹，从少量标注生成高置信伪标签，大幅降低监督需求。在游戏等环境中可高效训练RL智能体。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.17377v1",
+      "source": "arxiv",
+      "title": "Performance-Driven Environment Abstraction with Multi-Timescale Learning",
+      "abstract": "We study performance-driven environment abstraction for decision-making in large Markov decision processes. Rather than preserving geometric or topological structure, we seek abstractions that directly optimize decision quality. We model abstraction as a controlled approximation obtained by aggregating the state space and enforcing a shared action distribution within each aggregated state. For a fixed partition, we establish a performance guarantee that separates value-function approximation error from the loss introduced by action sharing. Guided by this analysis, we develop a multi-timescale reinforcement learning framework that jointly adapts the policy and a tree-structured environment abstraction. The resulting algorithm refines and coarsens regions of the state space based on Q-value discrepancies, balancing performance against abstraction size and complexity. Empirical results demonstrate substantial state compression, improved sample efficiency, and faster replanning compared to actor-critic baselines.",
+      "authors": [
+        "Yue Guan",
+        "Dipankar Maity",
+        "Panagiotis Tsiotras"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "eess.SY"
+      ],
+      "published": "2026-06-16T00:19:23+00:00",
+      "link": "https://arxiv.org/pdf/2606.17377v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "multi-timescale RL for decision-making abstraction, applicable to game agent training",
+      "llm_evidence_cn": "多时间尺度强化学习进行环境抽象，可用于游戏AI代理训练",
+      "llm_evidence": "多时间尺度强化学习进行环境抽象，可用于游戏AI代理训练",
+      "canonical_evidence": "多时间尺度强化学习进行环境抽象，可用于游戏AI代理训练",
+      "llm_tldr_en": "A multi-timescale RL framework jointly adapts policy and environment abstraction, optimizing decision quality in large MDPs, transferable to game environments.",
+      "llm_tldr_cn": "该论文针对大规模马尔可夫决策过程中的决策制定，提出性能驱动的环境抽象方法。通过状态聚合和共享动作分布，建立分离值函数近似误差与动作共享损失的性能保证。开发多时间尺度强化学习框架联合自适应策略和树结构环境抽象，能够细化或粗化区域。该方法可直接应用于游戏环境中的AI代理训练，通过抽象简化状态空间提升学习效率。实验证明了抽象策略对决策质量的优化效果。",
+      "llm_tldr": "该论文针对大规模马尔可夫决策过程中的决策制定，提出性能驱动的环境抽象方法。通过状态聚合和共享动作分布，建立分离值函数近似误差与动作共享损失的性能保证。开发多时间尺度强化学习框架联合自适应策略和树结构环境抽象，能够细化或粗化区域。该方法可直接应用于游戏环境中的AI代理训练，通过抽象简化状态空间提升学习效率。实验证明了抽象策略对决策质量的优化效果。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.18831v1",
+      "source": "arxiv",
+      "title": "Beyond Reward Engineering: A Data Recipe for Long-Context Reinforcement Learning",
+      "abstract": "Long-context reasoning is an essential capability for large language models, particularly when they are deployed as autonomous agents that must reason over lengthy trajectories. Reinforcement learning (RL) has recently emerged as a dominant paradigm for improving this ability, yet existing work largely focuses on reward engineering while diverse training data remains scarce. We revisit this problem from a data-centric perspective and show that a simple yet effective data recipe alone, paired with a minimal outcome-based GRPO setup, suffices to substantially improve long-context reasoning. Our recipe targets three complementary task families -- retrieval, multi-evidence synthesis, and reasoning -- for which we construct and curate eight datasets totaling ~14K examples. Experiments on three models (Qwen3-4B/8B/30B-A3B) yield average gains of +7.2/+3.2/+6.4 points across seven long-context benchmarks, surpassing prior RL training sets. We further demonstrate that these gains transfer to agentic tasks, where continuing RL training on an agent-tuned model with our data recipe improves GAIA by +4.8 and BrowseComp by +7.0 points. We will release our datasets to facilitate future research.",
+      "authors": [
+        "Xiaoyue Xu",
+        "Sikui Zhang",
+        "Xiaorong Wang",
+        "Xu Han",
+        "Chaojun Xiao"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-06-17T09:07:42+00:00",
+      "link": "https://arxiv.org/pdf/2606.18831v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "data-centric RL recipe for long-context reasoning, improves agent training in game-like trajectories",
+      "llm_evidence_cn": "数据驱动的长上下文强化学习配方，改进游戏类轨迹中的代理训练",
+      "llm_evidence": "数据驱动的长上下文强化学习配方，改进游戏类轨迹中的代理训练",
+      "canonical_evidence": "数据驱动的长上下文强化学习配方，改进游戏类轨迹中的代理训练",
+      "llm_tldr_en": "Presents a data recipe with three task families to improve long-context reasoning via minimal outcome-based GRPO, applicable to training AI agents in long-horizon game environments.",
+      "llm_tldr_cn": "长上下文推理是自主代理的关键能力，尤其是处理游戏中的长序列轨迹时。本文跳出奖励工程，从数据角度提出简单有效的数据配方，包含检索、多证据合成和推理三个互补任务族，并构建了八个数据集。配合最小化基于结果的GRPO设置，显著提升了长上下文推理能力。该方法可迁移至游戏AI训练，帮助代理在复杂多步任务中更好地利用历史信息进行决策。实验证明了数据多样性比奖励设计更重要。",
+      "llm_tldr": "长上下文推理是自主代理的关键能力，尤其是处理游戏中的长序列轨迹时。本文跳出奖励工程，从数据角度提出简单有效的数据配方，包含检索、多证据合成和推理三个互补任务族，并构建了八个数据集。配合最小化基于结果的GRPO设置，显著提升了长上下文推理能力。该方法可迁移至游戏AI训练，帮助代理在复杂多步任务中更好地利用历史信息进行决策。实验证明了数据多样性比奖励设计更重要。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
