@@ -6,32 +6,32 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-21
-- 运行时间：2026-06-21 21:00:23 UTC
+- 最新运行日期：2026-06-22
+- 运行时间：2026-06-22 21:35:36 UTC
 - 运行状态：成功
-- 本次总论文数：4
-- 精读区：1
+- 本次总论文数：3
+- 精读区：0
 - 速读区：3
 
 ### 今日简报（AI）
-今天推荐4篇论文，精读1篇关于动作感知记忆的交互式世界模型，速读3篇涵盖离线偏好强化学习、多时间尺度环境抽象和长上下文强化学习数据方法。最值得关注的是《ActWorld》中基于动作记忆的交互式世界模型构建和《Video-Based Optimal Transport》中利用视频最优传输提升离线偏好学习效率。建议优先精读《ActWorld》理解交互式世界模型的设计思路，再按需速读其余论文中的反馈高效或长上下文强化学习技巧。
-- 详情：[/202606/21/README](/202606/21/README)
+1) 今日速读3篇论文，涉及智能体轨迹行为剖析、偏好强化学习与游戏引擎代码框架。  
+2) 最值得关注两篇7分论文：通过轨迹解构模型行为，以及不确定性平衡的偏好规划方法。  
+3) 建议优先精读这两篇，探讨如何将轨迹分析与高效偏好学习应用于实际决策场景。
+- 详情：[/202606/22/README](/202606/22/README)
 
 ### 精读区论文标签
-1. [ActWorld: From Explorable to Interactive World Model via Action-Aware Memory](/202606/21/2606.17730v1-actworld-from-explorable-to-interactive-world-model-via-action-aware-memory)  
-   标签：评分：8.0/10、query:player-ai
-   evidence：支持物体交互的交互式游戏世界模型
+- 本次无精读推荐。
 
 ### 速读区论文标签
-1. [Video-Based Optimal Transport for Feedback-Efficient Offline Preference-Based Reinforcement Learning](/202606/21/2606.16856v1-video-based-optimal-transport-for-feedback-efficient-offline-preference-based-reinforcement-learning)  
+1. [Dissecting model behavior through agent trajectories](/202606/22/2606.17454v1-dissecting-model-behavior-through-agent-trajectories)  
    标签：评分：7.0/10、query:player-ai
-   evidence：基于视频偏好的强化学习方法用于游戏智能体训练
-2. [Performance-Driven Environment Abstraction with Multi-Timescale Learning](/202606/21/2606.17377v1-performance-driven-environment-abstraction-with-multi-timescale-learning)  
+   evidence：通过agent轨迹分析模型与执行系统的对齐问题
+2. [UBP2: Uncertainty-Balanced Preference Planning for Efficient Preference-based Reinforcement Learning](/202606/22/2606.19328v1-ubp2-uncertainty-balanced-preference-planning-for-efficient-preference-based-reinforcement-learning)  
+   标签：评分：7.0/10、query:player-ai
+   evidence：基于偏好的强化学习可用于训练游戏AI智能体
+3. [JAMER: Project-Level Code Framework Dataset and Benchmark on Professional Game Engines](/202606/22/2606.19830v1-jamer-project-level-code-framework-dataset-and-benchmark-on-professional-game-engines)  
    标签：评分：6.0/10、query:player-ai
-   evidence：多时间尺度强化学习进行环境抽象，可用于游戏AI代理训练
-3. [Beyond Reward Engineering: A Data Recipe for Long-Context Reinforcement Learning](/202606/21/2606.18831v1-beyond-reward-engineering-a-data-recipe-for-long-context-reinforcement-learning)  
-   标签：评分：6.0/10、query:player-ai
-   evidence：数据驱动的长上下文强化学习配方，改进游戏类轨迹中的代理训练
+   evidence：专业游戏引擎上AI驱动游戏开发的数据集和基准
 
 
 <div class="dpr-home-promo-card">
