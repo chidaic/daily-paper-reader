@@ -1,0 +1,338 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-23T22:05:07.578391+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 2,
+    "deep_cap": 6,
+    "deep_selected": 2,
+    "quick_candidates": 6,
+    "quick_skim_target": 11,
+    "quick_selected": 6
+  },
+  "deep_dive": [
+    {
+      "id": "2606.23348v1",
+      "source": "arxiv",
+      "title": "Superhuman AI for Generals.io Using Self-Play Reinforcement Learning",
+      "abstract": "We present a superhuman AI agent for Generals.io, a real-time strategy game that requires both long-horizon planning and short-term tactics under strong imperfect information. Trained for four days on 4x NVIDIA H200 GPUs, our agent reaches #1 on the public 1v1 leaderboard of over 5,000 human players, leading the second-ranked player by the same margin that separates second place from 25th, and beats the two top-ranked humans head-to-head with a combined 199-70 record across 269 ladder matches. A key enabler is a JAX-native simulator that reaches tens of millions of frames per second on a single GPU, roughly a 10,000x speedup over the prior simulator. On top of this, we train a vision transformer policy end-to-end by self-play with a policy-gradient loop and sparse win/loss reward, using top-advantage sample filtering and an exponential moving average of the policy parameters. Taken together, our findings highlight what matters, and what does not, once a fast simulator removes the data bottleneck.",
+      "authors": [
+        "Matej Straka",
+        "Viliam Lisý",
+        "Martin Schmid"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-06-22T13:52:22+00:00",
+      "link": "https://arxiv.org/pdf/2606.23348v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "superhuman AI agent for Generals.io game using self-play RL",
+      "llm_evidence_cn": "使用自监督强化学习在Generals.io游戏中训练超人类的AI代理",
+      "llm_evidence": "使用自监督强化学习在Generals.io游戏中训练超人类的AI代理",
+      "canonical_evidence": "使用自监督强化学习在Generals.io游戏中训练超人类的AI代理",
+      "llm_tldr_en": "Presents a superhuman AI agent for Generals.io trained via self-play RL with a massively accelerated JAX simulator, achieving #1 on leaderboard and dominating top human players.",
+      "llm_tldr_cn": "在实时战略游戏Generals.io上，本文利用自监督强化学习训练出一个超人类AI代理。关键创新是JAX原生模拟器将帧率提升约10000倍，配合视觉Transformer策略，代理经过四天训练即在1v1排行榜上登顶，并以199-70碾压顶级人类玩家。该工作展示了深度RL在游戏AI中的强大潜力。",
+      "llm_tldr": "在实时战略游戏Generals.io上，本文利用自监督强化学习训练出一个超人类AI代理。关键创新是JAX原生模拟器将帧率提升约10000倍，配合视觉Transformer策略，代理经过四天训练即在1v1排行榜上登顶，并以199-70碾压顶级人类玩家。该工作展示了深度RL在游戏AI中的强大潜力。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.21975v1",
+      "source": "arxiv",
+      "title": "IRumAI: Reinforcement Learning for Indian Rummy",
+      "abstract": "Despite its massive player base and complex hidden-information dynamics, Indian Rummy has received no reinforcement learning attention. Existing agents rely on combinatorial search, which is tactically strong but slow at inference. We present IRumAI, the first RL agent for the domain. IRumAI integrates Proximal Policy Optimization (PPO), meld-aware observation encoding, deadwood-driven reward shaping, and a dual-branch convolutional architecture. IRumAI is RL-trained solely against weak heuristics, after a one-time behaviour-cloning warm-start on stronger demonstration data. It generalises to defeat the entire baseline hierarchy, including a 53.9% win rate against the strongest search-based opponent unseen during RL training. Bypassing explicit search, IRumAI requires just 0.33 ms per action, which is over 7,000x faster than the state-of-the-art heuristic. Ablations validate our architectural choices, and linear probing reveals that the network implicitly models the opponent's hidden hand from public interactions.",
+      "authors": [
+        "Vignesh Mohan"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-06-20T10:06:57+00:00",
+      "link": "https://arxiv.org/pdf/2606.21975v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "RL agent for Indian Rummy game",
+      "llm_evidence_cn": "印度拉米纸牌游戏的强化学习代理",
+      "llm_evidence": "印度拉米纸牌游戏的强化学习代理",
+      "canonical_evidence": "印度拉米纸牌游戏的强化学习代理",
+      "llm_tldr_en": "IRumAI is the first RL agent for Indian Rummy, using PPO, meld-aware encoding, and deadwood-driven reward shaping to defeat search-based opponents with 53.9% win rate.",
+      "llm_tldr_cn": "针对印度拉米纸牌游戏，现有搜索代理推理慢且未采用强化学习。本文提出IRumAI，首个RL代理，集成PPO、听牌感知编码与死木驱动奖励塑造，仅凭行为克隆预热和对抗弱启发式训练，就能以53.9%胜率击败最强搜索对手，实现快速推理与强泛化。",
+      "llm_tldr": "针对印度拉米纸牌游戏，现有搜索代理推理慢且未采用强化学习。本文提出IRumAI，首个RL代理，集成PPO、听牌感知编码与死木驱动奖励塑造，仅凭行为克隆预热和对抗弱启发式训练，就能以53.9%胜率击败最强搜索对手，实现快速推理与强泛化。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.22579v1",
+      "source": "arxiv",
+      "title": "Stationary Robust Mean-Field Games under Model Mismatches",
+      "abstract": "Deploying multi-agent reinforcement learning (MARL) in the real world is often limited by model mismatches between the training simulators and the true environment, which could be further amplified through strategic interactions and result in severe performance degradation upon deployment. Distributional robustness offers a principled response by optimizing policies against worst-case transition models drawn from an uncertainty set, but standard robust MARL frameworks become increasingly intractable as the number of agents grows. This paper develops an infinite-horizon, stationary mean-field game framework that incorporates distributional model uncertainty directly into the population-coupled dynamics. We establish a robust dynamic programming principle with a contractive Bellman operator and prove the existence of a stationary robust mean-field equilibrium via a fixed-point argument. We further develop the first concrete algorithm with convergence guarantees. We then connect the mean-field solution to a finite-population robust game whose ambiguity sets depend on the empirical distribution, showing that the mean-field equilibrium policy induces approximate equilibrium behavior as the population size increases. Under a contractive robust-dynamics regime, we further obtain explicit non-asymptotic error bounds. Numerical experiments further illustrate the qualitative and quantitative impact of robustness under multiple uncertainty models, validating our theoretical findings.",
+      "authors": [
+        "Yue Wang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.GT"
+      ],
+      "published": "2026-06-21T16:29:25+00:00",
+      "link": "https://arxiv.org/pdf/2606.22579v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Robust mean-field games for multi-agent RL in game environments",
+      "llm_evidence_cn": "针对游戏环境中多智能体强化学习的鲁棒平均场博弈方法",
+      "llm_evidence": "针对游戏环境中多智能体强化学习的鲁棒平均场博弈方法",
+      "canonical_evidence": "针对游戏环境中多智能体强化学习的鲁棒平均场博弈方法",
+      "llm_tldr_en": "Develops a stationary robust mean-field game framework for MARL under model mismatches, establishing a robust dynamic programming principle.",
+      "llm_tldr_cn": "针对多智能体强化学习中训练模拟器与真实环境模型失配导致性能下降的问题，提出了无限时域平稳鲁棒平均场博弈框架，将分布鲁棒性直接融入种群耦合动力学，并建立了鲁棒动态规划原理，为大规模多智能体系统在非理想环境下的部署提供了理论保障。",
+      "llm_tldr": "针对多智能体强化学习中训练模拟器与真实环境模型失配导致性能下降的问题，提出了无限时域平稳鲁棒平均场博弈框架，将分布鲁棒性直接融入种群耦合动力学，并建立了鲁棒动态规划原理，为大规模多智能体系统在非理想环境下的部署提供了理论保障。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.20698v1",
+      "source": "arxiv",
+      "title": "SafeDojo: Safe Reinforcement Learning for VLA via Interactive World Model",
+      "abstract": "Safe control is a prerequisite for real-world embodied intelligence, for which safe reinforcement learning has emerged as a promising paradigm. However, existing safe reinforcement learning methods either require costly real-world exploration or depend on hand-crafted safety functions. Neither scales to vision-language-action models deployed in open-world physical environments. We propose SafeDojo, the first model-based safe reinforcement learning framework for vision-language-action policies designed to learn safe actions through world model-based imagination. Specifically, SafeDojo performs online reinforcement learning on top of an interactive video world model. The world model generates action-conditioned future predictions, from which a tailored ResNet success classifier estimates per-step task progress from imagined frames and a lightweight safety head predicts per-step safety costs from latent context together with the proposed action chunk, enabling simultaneous assessment of task execution and trajectory safety. The decoupled task-reward and safety-cost signals are balanced through a Lagrangian-based constrained GRPO objective, enabling coordinated improvement of task success and safety under explicit constraints. On SafeLIBERO, SafeDojo achieves the best aggregate task success, safe success, and execution efficiency among inference-time safety, model-free RL, and model-based RL baselines, with the best average safe-success rate on both levels and an 8.25 percentage-point improvement over the strongest baseline on Level I. Real-world Franka deployment further shows the best average task and safe-success rates across five tasks. Our results position world model-based safe reinforcement learning as a scalable and generalizable path toward safe embodied intelligence.",
+      "authors": [
+        "Kai Tang",
+        "Peidong Jia",
+        "Zhong Chu",
+        "Jixian Wu",
+        "Rui Ma",
+        "Jiajun Cao",
+        "Fangyuan Zhao",
+        "Sixiang Chen",
+        "Yichen Guo",
+        "Xiaowei Chi",
+        "Chun-Kai Fan",
+        "Kevin Zhang",
+        "Jinchang Xu",
+        "Fubing Yang",
+        "Weishi Mi",
+        "Xiaozhu Ju",
+        "Jian Tang",
+        "Shanghang Zhang"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-06-15T08:58:37+00:00",
+      "link": "https://arxiv.org/pdf/2606.20698v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "safe reinforcement learning for vision-language-action agents using world models",
+      "llm_evidence_cn": "使用世界模型进行视觉-语言-动作代理的安全强化学习",
+      "llm_evidence": "使用世界模型进行视觉-语言-动作代理的安全强化学习",
+      "canonical_evidence": "使用世界模型进行视觉-语言-动作代理的安全强化学习",
+      "llm_tldr_en": "Proposes SafeDojo, a model-based safe RL framework for VLA policies that learns safe actions via interactive video world model without real-world exploration, enabling safe agent training in open-world environments.",
+      "llm_tldr_cn": "安全强化学习依赖真实环境探索或手工安全函数，难以扩展到开放世界。本文提出SafeDojo，首个基于模型的安全RL框架，在交互式视频世界模型上进行在线学习，从想象中学习安全动作。通过世界模型生成未来预测并设计安全奖励，该方法避免了真实交互风险，为游戏等虚拟环境中的安全AI训练提供了可行方案。",
+      "llm_tldr": "安全强化学习依赖真实环境探索或手工安全函数，难以扩展到开放世界。本文提出SafeDojo，首个基于模型的安全RL框架，在交互式视频世界模型上进行在线学习，从想象中学习安全动作。通过世界模型生成未来预测并设计安全奖励，该方法避免了真实交互风险，为游戏等虚拟环境中的安全AI训练提供了可行方案。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.22688v1",
+      "source": "arxiv",
+      "title": "GARIP: A Running-Average Moving Reference for Last-Iterate Self-Play in Two-Player Zero-Sum Games",
+      "abstract": "Self-play with naive gradient ascent cycles in two-player zero-sum games: the last iterate orbits the equilibrium. Modern methods restore last-iterate convergence by regularizing toward a reference policy -- MMD a fixed one (reaching only the regularized equilibrium), R-NaD a periodic snapshot (the engine of DeepNash). We study GARIP, which anchors to the running average, and isolate what the choice of reference controls. Our central result is a mechanism: collapse tracks the peak lag of the reference, and among causal convex averages of a fixed mean lag the running average (flat profile, peak $=$ mean) uniquely minimizes that peak, while a snapshot's sawtooth has peak $= 2\\times$ mean (a one-line theorem). Two consequences follow. Convergence: we prove local last-iterate convergence at constant anchor strength -- the anchor scales the base map's rotation by $1-β$, crossing the stability boundary and turning a recurrent base into a contraction (global convergence is conjectured at small $β$; we characterize a large-$β$ consensus failure). Robustness: GARIP matches R-NaD's peak performance -- on matrix games, the Coin Game, and the board games Connect Four/Othello, both moving references are far more robust than fixed-magnet and magnet-free baselines -- but is the better hyperparameter default; we report it both ways: over the full grid collapse rates are statistically indistinguishable, yet at conventional parameterizations a matched-mean-lag setting collapses in 0/40 vs 10/40 seeds (a snapshot matches it only by knowing to shorten $K$). The boundaries: an anticipatory (negative-weight) reference does better still on the stale side, and the advantage appears only where naive self-play cycles (five deep self-play loops). All experiments are pure JAX and reproducible.",
+      "authors": [
+        "Can Savcı"
+      ],
+      "primary_category": "cs.MA",
+      "categories": [
+        "cs.MA",
+        "cs.GT",
+        "cs.LG"
+      ],
+      "published": "2026-06-21T22:08:00+00:00",
+      "link": "https://arxiv.org/pdf/2606.22688v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Self-play algorithm for two-player zero-sum games",
+      "llm_evidence_cn": "两人零和博弈的自我对弈算法",
+      "llm_evidence": "两人零和博弈的自我对弈算法",
+      "canonical_evidence": "两人零和博弈的自我对弈算法",
+      "llm_tldr_en": "GARIP anchors to running average reference for last-iterate convergence in zero-sum games, analytically minimizing peak lag compared to snapshot methods.",
+      "llm_tldr_cn": "在两人零和博弈自我对弈中，现有方法（如固定参考或快照）存在收敛滞后。本文提出GARIP，以运行平均为参考锚定，理论证明其峰值滞后最小，能更稳定收敛至均衡。该机制为游戏AI中的自我对弈训练提供了理论指导。",
+      "llm_tldr": "在两人零和博弈自我对弈中，现有方法（如固定参考或快照）存在收敛滞后。本文提出GARIP，以运行平均为参考锚定，理论证明其峰值滞后最小，能更稳定收敛至均衡。该机制为游戏AI中的自我对弈训练提供了理论指导。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.21171v1",
+      "source": "arxiv",
+      "title": "An Exploratory Case Study of LLM-Assisted Refactoring and Gameplay Feature Generation in an Endless Runner Game",
+      "abstract": "Large language models (LLMs) are increasingly used to support software development, but their practical usefulness in applied game-development settings remains underexplored, especially when generated code must be integrated into an existing game software system. This paper presents an exploratory empirical case study of GPT-4o in a custom Python/Pygame endless runner. The study examines six selected development tasks: three localized refactoring tasks and three tasks involving gameplay feature generation. The resulting implementations were evaluated using software metrics, unit tests, and manual gameplay assessments. In this case study, all three selected refactoring tasks were completed successfully in functional terms, whereas only one of the three selected gameplay feature generation tasks resulted in a correctly integrated feature. The findings suggest that, in this setting, GPT-4o handled localized transformations more reliably than tasks requiring new gameplay interactions across multiple existing systems. Given the exploratory single-case design, these results are best interpreted as indicative observations rather than as generalizable evidence of category-level model performance. Overall, the paper contributes a transparent case-based account of the opportunities and limitations of LLM-assisted refactoring and gameplay feature generation in an existing game software system.",
+      "authors": [
+        "Jan Wunderlich",
+        "Markus Kleffmann",
+        "Sebastian Lempert"
+      ],
+      "primary_category": "cs.SE",
+      "categories": [
+        "cs.SE",
+        "cs.AI"
+      ],
+      "published": "2026-06-19T07:19:08+00:00",
+      "link": "https://arxiv.org/pdf/2606.21171v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "LLM-assisted gameplay feature generation in an endless runner game",
+      "llm_evidence_cn": "LLM辅助的无尽跑酷游戏玩法特性生成",
+      "llm_evidence": "LLM辅助的无尽跑酷游戏玩法特性生成",
+      "canonical_evidence": "LLM辅助的无尽跑酷游戏玩法特性生成",
+      "llm_tldr_en": "Exploratory case study of GPT-4o for refactoring and gameplay feature generation in a Pygame endless runner, evaluating with metrics and gameplay assessment.",
+      "llm_tldr_cn": "通过一个Python/Pygame无尽跑酷游戏的案例研究，探索了GPT-4o在代码重构和游戏玩法特性生成任务上的实际效果。结果显示所有重构任务成功完成，但游戏玩法特性生成存在部分局限，为LLM在游戏开发中的实用价值提供了实证。",
+      "llm_tldr": "通过一个Python/Pygame无尽跑酷游戏的案例研究，探索了GPT-4o在代码重构和游戏玩法特性生成任务上的实际效果。结果显示所有重构任务成功完成，但游戏玩法特性生成存在部分局限，为LLM在游戏开发中的实用价值提供了实证。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "artificial intelligence in games",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.22995v1",
+      "source": "arxiv",
+      "title": "Group-Graph Policy Optimization for Long-Horizon Agentic Reinforcement Learning",
+      "abstract": "Group-based Reinforcement Learning (RL) has significantly enhanced Large Language Models (LLMs) in agentic scenarios. To achieve finer-grained policy updates, recent agentic RL frameworks have shifted from trajectory-level to step-level training. However, long-horizon agentic RL suffers from severe reward sparsity and delay, as feedback is often deferred for dozens of interaction steps. While existing step-level frameworks refine training granularity, their credit assignment remains coarse-grained and still treats agent exploration as isolated, linear trajectories. This oversimplified perspective ignores the inherent graph structure of state transitions, leading to high-variance state-value estimation and myopic, localized credit assignment. To overcome these critical bottlenecks, we propose Group-Graph Policy Optimization (G2PO), a novel group-based RL algorithm tailored for multi-turn agentic tasks. G2PO explicitly transforms linear interaction trajectories into a global state-transition graph. By aggregating identical observations across different trajectories, we introduce group-aggregation state-value estimation that reduces sampling variance and trajectory-dependent bias. Furthermore, we redefine agent actions as transitions between state nodes and propose an edge-centric advantage estimation strategy. By globally standardizing Temporal Difference (TD) errors across the entire graph, G2PO explicitly identifies and prioritizes critical transitions that drive absolute task progress. Extensive experiments on representative long-horizon benchmarks-WebShop, ALFWorld, and AppWorld-demonstrate that G2PO substantially outperforms state-of-the-art prompt-based and RL baselines, achieving remarkable success rate improvements of up to 22.2% over GRPO.",
+      "authors": [
+        "Yunan Wang",
+        "Minghui Song",
+        "Zihan Zhang",
+        "Shaohan Huang",
+        "Haizhen Huang",
+        "Furu Wei",
+        "Weiwei Deng",
+        "Feng Sun",
+        "Qi Zhang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-06-22T08:12:47+00:00",
+      "link": "https://arxiv.org/pdf/2606.22995v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Group-based RL for long-horizon agentic tasks, relevant to training game agents",
+      "llm_evidence_cn": "基于组的强化学习方法适用于长周期游戏智能体训练",
+      "llm_evidence": "基于组的强化学习方法适用于长周期游戏智能体训练",
+      "canonical_evidence": "基于组的强化学习方法适用于长周期游戏智能体训练",
+      "llm_tldr_en": "Group-Graph Policy Optimization introduces graph-structured credit assignment for long-horizon agentic RL, addressing reward sparsity and delay in training game-playing agents.",
+      "llm_tldr_cn": "长周期智能体强化学习面临奖励稀疏和延迟问题，现有的步骤级训练框架信用分配粗糙，将探索视为孤立线性轨迹。本文提出组图策略优化（G2PO），利用状态转移的图结构进行信用分配，降低方差并实现长程信用传播。该方法适用于游戏环境中智能体的长期决策训练，能有效处理反馈延迟和稀疏奖励场景，提升游戏AI的学习效率和性能。",
+      "llm_tldr": "长周期智能体强化学习面临奖励稀疏和延迟问题，现有的步骤级训练框架信用分配粗糙，将探索视为孤立线性轨迹。本文提出组图策略优化（G2PO），利用状态转移的图结构进行信用分配，降低方差并实现长程信用传播。该方法适用于游戏环境中智能体的长期决策训练，能有效处理反馈延迟和稀疏奖励场景，提升游戏AI的学习效率和性能。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.23155v1",
+      "source": "arxiv",
+      "title": "Neural Parameter Calibration for Finite-State Mean Field Games",
+      "abstract": "Mean field games efficiently approximate a very large population of strategic agents. While these games can aid the understanding of complex systems, their deployment in real-world settings is challenged by the specification of their parameters: mean field games (MFGs) often involve hidden preferences, constraints, and interactions that can rarely be theoretically derived or directly observed. To address this gap, we present a neural network-based framework for learning parametric, finite-state MFGs from observed population dynamics. To do so, we formulate the parameter calibration as an inverse problem and use implicit differentiation to backpropagate through the games' equilibrium. The resulting approach is fully differentiable and enables us to estimate flexible trajectory-wise parameter paths, including state- and time-dependent specifications without requiring observations of the individual agents' actions or rewards. We provide a proof for the exactness of the gradient computation in a discrete-time formulation. We validate our framework through numerical experiments across four systems of increasing complexity, ranging from synthetic linear-quadratic benchmarks to real-world urban mobility datasets.",
+      "authors": [
+        "Anna C. M. Thöni",
+        "Grégoire Lambrecht",
+        "Gökçe Dayanıklı",
+        "Yonathan Efroni",
+        "Tal Kachman",
+        "Mathieu Laurière"
+      ],
+      "primary_category": "cs.GT",
+      "categories": [
+        "cs.GT",
+        "cs.LG"
+      ],
+      "published": "2026-06-22T11:00:43+00:00",
+      "link": "https://arxiv.org/pdf/2606.23155v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Mean field games for strategic agents, applicable to game AI",
+      "llm_evidence_cn": "平均场游戏用于策略代理，可应用于游戏人工智能",
+      "llm_evidence": "平均场游戏用于策略代理，可应用于游戏人工智能",
+      "canonical_evidence": "平均场游戏用于策略代理，可应用于游戏人工智能",
+      "llm_tldr_en": "Neural network framework calibrating finite-state mean field games from observed population dynamics using implicit differentiation through equilibrium.",
+      "llm_tldr_cn": "平均场游戏参数校准困难。本文提出神经网络框架，将校准视为逆问题，通过均衡隐式微分从观测人口动力学学习参数。该方法完全可微，能灵活估计隐藏偏好和约束，为游戏中的大规模群体行为建模提供工具。",
+      "llm_tldr": "平均场游戏参数校准困难。本文提出神经网络框架，将校准视为逆问题，通过均衡隐式微分从观测人口动力学学习参数。该方法完全可微，能灵活估计隐藏偏好和约束，为游戏中的大规模群体行为建模提供工具。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "artificial intelligence in games",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
