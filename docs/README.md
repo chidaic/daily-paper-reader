@@ -6,44 +6,38 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-23
-- 运行时间：2026-06-23 22:10:47 UTC
+- 最新运行日期：2026-06-24
+- 运行时间：2026-06-24 21:38:45 UTC
 - 运行状态：成功
-- 本次总论文数：8
+- 本次总论文数：6
 - 精读区：2
-- 速读区：6
+- 速读区：4
 
 ### 今日简报（AI）
-今日精选8篇AI论文，聚焦强化学习自我对弈在策略游戏中的突破应用。最值得关注的是《Superhuman AI for Generals.io》和《IRumAI》，分别获得10分和9分，展示了自我对弈在多人即时战略与印度拉米牌中的超人类表现。普通读者可进一步了解GAIRP提出的运行平均参考点方法，它有望提升零和博弈训练的稳定性。
-- 详情：[/202606/23/README](/202606/23/README)
+今日6篇论文推荐，2篇精读聚焦大游戏策略与实时智能体，4篇速读涵盖人机交互与强化学习。最值得关注《EMAgnet》的参数空间EMA正则化自博弈方法（9.0分），及《Latent Bridge》的慢速通道游戏智能体设计（8.0分）。建议从精读入手，优先了解正则化与自博弈结合的创新点。
+- 详情：[/202606/24/README](/202606/24/README)
 
 ### 精读区论文标签
-1. [Superhuman AI for Generals.io Using Self-Play Reinforcement Learning](/202606/23/2606.23348v1-superhuman-ai-for-generalsio-using-self-play-reinforcement-learning)  
-   标签：评分：10.0/10、query:player-ai
-   evidence：使用自监督强化学习在Generals.io游戏中训练超人类的AI代理
-2. [IRumAI: Reinforcement Learning for Indian Rummy](/202606/23/2606.21975v1-irumai-reinforcement-learning-for-indian-rummy)  
+1. [EMAgnet: Parameter-Space EMA Regularization for Policy Gradient Self-Play in Large Games](/202606/24/2606.23995v1-emagnet-parameter-space-ema-regularization-for-policy-gradient-self-play-in-large-games)  
    标签：评分：9.0/10、query:player-ai
-   evidence：印度拉米纸牌游戏的强化学习代理
+   evidence：大型博弈中的自博弈策略梯度方法
+2. [The Latent Bridge: A Continuous Slow-Fast Channel for Real-Time Game Agents](/202606/24/2606.24470v1-the-latent-bridge-a-continuous-slow-fast-channel-for-real-time-game-agents)  
+   标签：评分：8.0/10、query:player-ai
+   evidence：实时游戏代理通过慢-快通道平衡延迟和质量
 
 ### 速读区论文标签
-1. [Stationary Robust Mean-Field Games under Model Mismatches](/202606/23/2606.22579v1-stationary-robust-mean-field-games-under-model-mismatches)  
-   标签：评分：7.0/10、query:player-ai
-   evidence：针对游戏环境中多智能体强化学习的鲁棒平均场博弈方法
-2. [GARIP: A Running-Average Moving Reference for Last-Iterate Self-Play in Two-Player Zero-Sum Games](/202606/23/2606.22688v1-garip-a-running-average-moving-reference-for-last-iterate-self-play-in-two-player-zero-sum-games)  
-   标签：评分：7.0/10、query:player-ai
-   evidence：两人零和博弈的自我对弈算法
-3. [SafeDojo: Safe Reinforcement Learning for VLA via Interactive World Model](/202606/23/2606.20698v1-safedojo-safe-reinforcement-learning-for-vla-via-interactive-world-model)  
+1. [Parasitic Masquerade: Societal Scale Human-Machine Interaction](/202606/24/2606.17925v1-parasitic-masquerade-societal-scale-human-machine-interaction)  
    标签：评分：6.0/10、query:player-ai
-   evidence：使用世界模型进行视觉-语言-动作代理的安全强化学习
-4. [An Exploratory Case Study of LLM-Assisted Refactoring and Gameplay Feature Generation in an Endless Runner Game](/202606/23/2606.21171v1-an-exploratory-case-study-of-llm-assisted-refactoring-and-gameplay-feature-generation-in-an-endless-runner-game)  
+   evidence：使用均场博弈建模共享环境中多组Agent交互，与玩家行为模拟相关
+2. [Reinforcement Learning for Computer-Use Agents with Autonomous Evaluation](/202606/24/2606.24515v1-reinforcement-learning-for-computer-use-agents-with-autonomous-evaluation)  
    标签：评分：6.0/10、query:player-ai
-   evidence：LLM辅助的无尽跑酷游戏玩法特性生成
-5. [Group-Graph Policy Optimization for Long-Horizon Agentic Reinforcement Learning](/202606/23/2606.22995v1-group-graph-policy-optimization-for-long-horizon-agentic-reinforcement-learning)  
+   evidence：RL微调用于GUI代理，方法可应用于游戏代理训练
+3. [Qwen-AgentWorld: Language World Models for General Agents](/202606/24/2606.24597v1-qwen-agentworld-language-world-models-for-general-agents)  
    标签：评分：6.0/10、query:player-ai
-   evidence：基于组的强化学习方法适用于长周期游戏智能体训练
-6. [Neural Parameter Calibration for Finite-State Mean Field Games](/202606/23/2606.23155v1-neural-parameter-calibration-for-finite-state-mean-field-games)  
+   evidence：跨领域智能体环境模拟的世界模型
+4. [Themis: An explainable AI-enabled framework for Reinforcement Learning with Human Feedback](/202606/24/2606.24622v1-themis-an-explainable-ai-enabled-framework-for-reinforcement-learning-with-human-feedback)  
    标签：评分：6.0/10、query:player-ai
-   evidence：平均场游戏用于策略代理，可应用于游戏人工智能
+   evidence：支持游戏环境的RLHF框架
 
 
 <div class="dpr-home-promo-card">
