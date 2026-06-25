@@ -1,0 +1,207 @@
+Title: Elo-Disentangled Player-Style Embeddings for Human Chess via Rating-Conditioned Residual Move Model
+
+URL Source: https://arxiv.org/pdf/2606.25176v1
+
+Published Time: Thu, 25 Jun 2026 00:14:35 GMT
+
+Number of Pages: 12
+
+Markdown Content:
+# Elo-Disentangled Player-Style Embeddings for Human Chess via a Rating-Conditioned Residual Move Model 
+
+## Jason Carlson 
+
+## jtcarlso@asu.edu 
+
+## June 25, 2026 
+
+Abstract 
+
+We study representation learning for individual human chess style. We learn a per-player embedding from a player’s move history such that inner products between embeddings measure stylistic similarity, while being approx-imately disentangled from playing strength (Elo) . Our key design is a residual formulation: a rating-conditioned base move model (Maia-3 policy logits plus Stockfish-derived features, scored over Maia-2-proposed candidates) captures what a typical player of a given strength would play, and a frozen copy of it anchors a learned move encoder 
+
+ϕ(position , move ) and a per-player vector z, so that z explains only deviations from rating-typical play. The base model improves move prediction over the strong Maia-3 policy by 27 –37% relative NLL ( +0 .09 –0.16 top-1) across the rating spectrum, with the largest gains at the very top ( 2800+ ); Stockfish’s marginal value grows monotonically with Elo ( +0 .0004 nats at 900 –1200 vs. +0 .085 at 2800+ ). On held-out query decisions the player embedding generalizes without overfitting, and a linear probe recovers a player’s rating from z with only R2=0 .06 (and a non-linear probe does no better), evidence that z captures style largely decoupled from strength. On a shared Elo-stratified benchmark of 22 ,620 held-out decisions, top-1 move-matching rises monotonically from Maia-2 to Maia-3 to the Stockfish-augmented base ( 0.51 → 0.57 → 0.68 ): the base is +33% relative top-1 over Maia-2 and +19% over Maia-3 ( 30% lower NLL than Maia-3), with the engine-feature lift largest at the top of the rating range. The player embedding adds little to raw move-matching on top of this strong base – its marginal top-1 gain falls within the 95% 
+
+confidence interval – and its value is instead representational : z generalizes to held-out decisions without overfitting, re-identifies players from disjoint games above chance, and places players on an Elo-orthogonal style axis. We argue that a strong rating-conditioned base model plus a compact, Elo-disentangled player embedding – separating what a player of a given strength would do from how a particular player deviates – is an economical and interpretable model of individual style, an alternative to per-player preference fine-tuning. 
+
+# 1 Introduction 
+
+Chess has long served as a model system for studying decision-making, and modern neural engines capture human play with increasing fidelity. Yet most models target one of two extremes: engine-optimal play (AlphaZero [Silver et al., 2017], Stockfish [Stockfish Developers]), which is superhuman but unlike any person, or aggregate-human 
+
+play conditioned on a skill level (Maia [McIlroy-Young et al., 2020], Maia-2 [Tang et al., 2024], Maia-3 [Monroe et al., 2026]), which models the typical player of a given rating but not the idiosyncrasies that make an individual 
+
+recognizable. The space between – a player’s personal style – is what makes Tal feel different from Karpov even at equal strength. We study representation learning for this individual style. Concretely we want a per-player vector z with two properties: (1) inner-product style similarity – ˆzu · ˆzu′ should rank players by intuitive stylistic affinity; and (2) Elo-disentanglement – z should encode how a player chooses among reasonable moves, not how strong they are, so that two players of very different ratings can share a style direction. The central difficulty is that strength and style are heavily confounded in raw play: stronger players simply make better moves, and a naive embedding recovers mostly rating. Our key idea is a residual formulation that builds disentanglement into the architecture. A rating-conditioned base move model first explains what a typical player of a given strength would do; we then freeze it and learn the player vector z only against the residual – the systematic deviations from rating-typical play. Because rating-typical move quality is already accounted for, z has gradient signal only for style. We instantiate the base as a strong move predictor 1
+
+> arXiv:2606.25176v1 [cs.AI] 23 Jun 2026
+
+(Maia-3 policy logits plus Stockfish features over Maia-2-proposed candidates) and the style head as a learned move encoder ϕ(position , move ) with a per-player vector. The same ϕ doubles as a learned style-similarity kernel that we plug into style-weighted preference optimization, replacing the hand-engineered weights of Carlson et al. [2026] – the explicit future-work direction named there. Contributions: • A rating-conditioned residual move model anchored on Maia-3 [Monroe et al., 2026] with Stockfish [Stockfish Developers] features (candidates proposed by Maia-2 [Tang et al., 2024]), improving on the Maia-3 policy across the rating spectrum, with the largest gains at the top. • Evidence that engine (Stockfish) features add value chiefly for strong players: their marginal contribution over the Maia-3 policy is negligible at low Elo and grows monotonically to the super-GM band. • A learned latent style space ϕ(position , move ) and per-player embeddings z trained as a residual on the frozen base, for Elo-disentangled inner-product style similarity. Empirically z is hard to predict strength from (linear probe R2=0 .06 ), generalizes to held-out decisions without overfitting, and re-identifies players from disjoint games above chance. • Using ϕ as a learned style-similarity kernel inside style-weighted preference optimization, replacing the hand-engineered weights of Carlson et al. [2026] (the explicit future-work direction named there). • A single Elo-stratified move-prediction benchmark placing Maia-2, Maia-3, the Stockfish-augmented rating-conditioned base, and the base-plus-embedding on identical candidates: top-1 rises monotonically through the base (the predictive workhorse), while the per-player embedding’s marginal gain is within the confidence interval – so the embedding earns its place as a disentangled style representation , not as a move-accuracy boost. 
+
+# 2 Related Work 
+
+Human-like and skill-conditioned chess. Maia [McIlroy-Young et al., 2020] trains separate networks per rating band to predict human moves; Maia-2 [Tang et al., 2024] unifies skill levels with a skill-aware attention mechanism, and Maia-3 [Monroe et al., 2026] (the Chessformer architecture) is the current most accurate human move predictor and our base policy. Strong-but-human play via KL-regularized or shallow search is explored by Monroe and Chalmers [2024] and related transformer chess work. These model the population at a skill level; we model the individual as a residual on top of such a population model. 
+
+Individual behavior and stylometry. Closest to us, McIlroy-Young et al. [2022] fine-tune Maia per player, and behavioral stylometry [McIlroy-Young et al., 2021] learns transformer embeddings that re-identify a player from their games with high accuracy. Skill-group n-gram models [Zhong et al., 2025] predict moves by rating band. These works recover identity or skill but do not explicitly target a style representation disentangled from strength ; our residual-on-a-rating-conditioned-base design makes Elo-disentanglement an architectural property and measures it directly. 
+
+Preference optimization. DPO [Rafailov et al., 2023] and KTO [Ethayarajh et al., 2024] optimize policies from preference pairs. The SWPO/H-SWPO work we build on [Carlson et al., 2026] fine-tunes Maia toward grandmasters with a style-weighted preference loss using hand-engineered style features and names “a learned latent style embed-ding” as future work; we supply exactly that learned kernel. 
+
+Engines. AlphaZero [Silver et al., 2017], Deep Blue [Campbell et al., 2002], and Stockfish [Stockfish Developers] define strong play; we use Stockfish only as a source of per-candidate evaluation features. 
+
+Novelty. To our knowledge, the residual-on-a-rating-conditioned-base style embedding (disentangling style from Elo 
+
+by construction , measured at R2=0 .06 ) and the use of a learned move-style kernel inside preference optimization are both new. 2Input: position (FEN) + 8-ply history + player Elo                      
+
+> Candidate proposal: Maia-2 rapid (frozen)
+> top-klegal candidates +played move
+> Per-candidate features (28-d)
+> Maia-3 & Maia-2 logits/ranks, Stock-fish depth-18 eval, ply/phase context
+> Rating-conditioned base move model
+> score( c)=ℓM3 (c) + MLP( xc)
+> frozen after training
+> Style head
+> score( c)+= s√d ˆϕ(fen , c )·ˆzu
+> 
+> Output: player-specific move distribu-tion P(c|u, p )=softmax cscore( c)
+> per-player style vector ˆzu
+
+Figure 1: Model architecture. For one position, Maia-2 rapid proposes the candidate moves; each candidate is fea-turized with Maia-3 and Maia-2 policy signals, Stockfish evaluations, and rating/ply/phase context (28 dims). Arating-conditioned residual base model scores candidates as score( c) = ℓM3 (c) + MLP( xc); a frozen copy of it an-chors a learned move encoder ϕ and per-player vector z, so z explains only deviations from rating-typical play. Green blocks are frozen pretrained engines (Maia-2/Maia-3/Stockfish); blue blocks are learned in this work. 
+
+# 3 Method 
+
+## 3.1 Data 
+
+All data is drawn from the public Lichess monthly game dumps ( lichess db standard rated 2024-* ), fil-tered to rated , Standard -variant, rapid games. From these games we sample per-player decisions – positions where that player is to move – and featurize each: the Maia-2-rapid top-k candidate set (with the played move appended for training), Maia-2 and Maia-3 policy signals, Stockfish depth-18 evaluations of each candidate, and rating/ply/phase context. A “decision” is one moved position; ∼500 decisions corresponds to a few dozen games of a player’s own moves. 
+
+Base move model. Trained on 2.0M decisions ( ∼10M candidate rows), sampled balanced across rating buckets 
+
+(∼283k decisions per bucket; the open-ended 2800+ band contributes all 16 .3k available). This balancing prevents the abundant mid-rating data from dominating the rating-conditioning. 
+
+Style embedding. Trained on 1.0M decisions over 2,026 players, each contributing ∼500 decisions on average: players are filtered to those with ≥1,000 available decisions, capped at 2,000 each, then globally subsampled to 1Mwith sampling balanced across game phase (opening/middlegame/endgame) so opening repertoire does not dominate 
+
+z. Evaluation uses a player-query split – held-out query decisions for players that have training support – so reported embedding metrics are on unseen positions. (A fully held-out-player split is left to a paper-grade run.) 
+
+## 3.2 Rating-conditioned residual base move model 
+
+For one decision (position p), the candidate move set is proposed by Maia-2 rapid (its top-k moves, with the played move appended for training), while the human-policy logit used as the residual anchor and as a per-candidate feature is taken from the stronger Maia-3 [Monroe et al., 2026]: candidate proposal and candidate scoring therefore come from different models, which we state explicitly. Each candidate is mapped to a feature vector (rating context; ply/phase; Maia-3 and Maia-2 logits/ranks; Stockfish cp / expected score / rank / cp-loss / win-prob-loss). The scorer is residual: 
+
+score( c) = maia3logit( c) + MLP(feat( c)) , P (·) = softmax c score( c), (1) 3with the final MLP layer zero-initialized so the untrained model equals the Maia-3 anchor exactly (reported deltas are thus value added on top of Maia-3). Trained with cross-entropy against the played move. 
+
+## 3.3 Player-style embedding 
+
+A move encoder ϕ(fen , move ) ∈ Rd (a small CNN over a side-to-move-canonicalized board tensor) and a per-player vector zu ∈ Rd define a style residual on the frozen base: 
+
+score( u, p, c ) = base( p, c )
+
+| {z }
+
+> frozen, rating-conditioned
+
++s √d   \ϕ(fen , c ) · bzu
+
+, (2) where b· is L2-normalization and s a learned scalar. Because the base already explains rating-typical move quality, zu
+
+captures only style deviations; player similarity is bzu · czu′ .
+
+## 3.4 Elo-disentanglement 
+
+The base model is conditioned on rating ( mover rating , opponent rating , rating diff are inputs) and trained to predict the rating-typical move. Freezing it makes the style score s√d ( ˆϕ · ˆzu) the only term with free parameters tied to player identity, so its gradient reflects only systematic deviations from the rating-matched expectation . Strength is thus absorbed by the base, and z is left to encode style. This is a design bias, not a guarantee: residual style can still correlate with rating if stronger players deviate from their rating-matched base in correlated ways. We therefore 
+
+measure disentanglement directly (E5): we fit a cross-validated probe predicting a player’s rating from ˆzu and report its R2 against a shuffled-z control, and we inspect whether rating aligns with the principal axes of z. Should leakage prove material, the same diagnostic supports mitigation – an adversarial rating head with gradient reversal during training, or projecting z onto the orthogonal complement of the fitted rating direction post-hoc – but our measured 
+
+R2=0 .06 indicates this is unnecessary here. 
+
+## 3.5 Learned style kernel for H-SWPO 
+
+We replace the hand-engineered style weight of Carlson et al. [2026] with a learned one. Per preference pair (p, a +, a −)
+
+(position p, chosen a+, rejected a−), 
+
+w = exp   − cos( ϕ(fen , a +), ϕ (fen , a −)) /τ , L = wnll LNLL + wdpo Lstyle -DPO . (3) Both weights are tunable; wnll = 0 recovers pure style-DPO. 
+
+# 4 Experiments 
+
+## 4.1 E1: Base move model vs. Maia-2 and Maia-3 
+
+Maia-3 is the stronger human-policy base. On a held-out, history- and Elo-matched set of 16 ,000 rapid decisions (2,000 per rating bucket), Maia-3 [Monroe et al., 2026] predicts the played move far better than Maia-2 at every bucket, and the margin grows with Elo (Table 1). We therefore anchor the residual base on Maia-3 (using Maia-2 only to propose the candidate set, since its top-k recall is sufficient and cheap). 
+
+The residual base improves on Maia-3. Adding the Maia-2 policy features, Stockfish features, and a rating-conditioned correction on top of the Maia-3 anchor improves move prediction across the spectrum, largest at the very top (Table 2). At low Elo this gain comes almost entirely from the Maia-2 policy features and the rating-conditioned MLP, not from Stockfish: the Stockfish-free maia maia3 variant already captures essentially all of it (§4.2), and Stockfish’s marginal contribution only becomes substantial at high Elo. All deltas are relative to Maia-3 scored over the same candidate set; the untrained (zero-init) model equals Maia-3 by construction. 4Table 1: Top-1 move-matching accuracy by rating: Maia-2 rapid vs. Maia-3 (23M/79M), same held-out decisions with reconstructed 8-ply history. Our Maia-3 numbers bracket the 57 .1% reported by Monroe et al. [2026], validating the harness. rating bucket Maia-2 Maia3-23M Maia3-79M 900–1200 0.487 0.519 0.521 1500–1800 0.513 0.546 0.551 2100–2300 0.518 0.568 0.588 2500–2800 0.520 0.588 0.612 2800+ 0.485 0.568 0.580 
+
+Table 2: Residual base model vs. Maia-3 by rating bucket (1M decisions, Maia-3-anchored full maia3 features). rating bucket rel. NLL improvement top-1 improvement 900–1200 +32.3% +0.130 1500–1800 +28.7% +0.104 2100–2300 +26.7% +0.096 2500–2800 +30.2% +0.106 2800+ +37.2% +0.159 
+
+## 4.2 E2: Stockfish ablation by Elo 
+
+We isolate the marginal value of the Stockfish features by training the base scorer with two feature sets on the same 
+
+1M decisions (identical seed and cap), differing only in whether the Stockfish group is present: • full maia3 : context (rating/ply/phase) + Maia-2 policy signals + Maia-3 policy logit + Stockfish features (cp, expected score, cp-loss, win-prob-loss, rank), anchored on the Maia-3 logit; • maia maia3 : identical except the Stockfish feature group is removed (context + Maia-2 + Maia-3, same Maia-3 anchor). The Stockfish marginal value per rating bucket is then ∆NLL = NLL( maia maia3 )−NLL( full maia3 ) (positive 
+
+⇒ adding Stockfish lowers NLL, i.e. helps) and ∆top-1 = top-1 (full maia3 ) − top-1 (maia maia3 ). Even on top of the much stronger Maia-3 policy , this gain is essentially zero at low Elo and grows monotonically with strength: from +0 .0004 nats at 900–1200 to +0 .085 at 2800+ in NLL (top-1 from ≈ 0 to +0 .039 ). The effect is sharper and cleaner than on a Maia-2 base (where it is ∼ 10 × and U-shaped), supporting the hypothesis that engine-derived features help chiefly for strong, more engine-aligned players. (A control, context only , recovers the Maia-3 baseline, confirming the gains come from the policy and engine features, not from rating context alone.) 
+
+## 4.3 E3: Embedding generalization and capacity 
+
+Support fixes overfitting. An earlier pilot with ∼89 usable decisions per player overfit immediately: held-out (query) NLL was best at epoch 1 and degraded thereafter. Retraining on the combined ∼5M Stockfish-scored decisions, restricted to players with at least 1000 decisions (2,026 players, 1M training decisions, player-query split), removes the collapse: on the Maia-3-anchored base, query NLL improves monotonically across all six epochs ( 0.8172 → 0.8097 ,top-1 0.6778 → 0.6803 ) while the learned style scale rises ( 0.17 → 0.81 ) — the optimizer relies more on the style term as generalization improves, the signature of a real, generalizable signal rather than memorization. 
+
+A compact embedding suffices on a strong base. Holding all else fixed and sweeping the embedding dimension, validation NLL and top-1 improve from dim 16 to 32 and then saturate (dim-32 ≈ dim-128; Table 4), and the learned style scale shrinks as capacity grows. On the stronger Maia-3 base the style residual is effectively low-dimensional — a small per-player vector captures it — in contrast to the Maia-2 base, where validation kept improving up to dim 128. We therefore use a compact ( d=32 ) embedding for the headline model. (Absolute NLLs here use a smaller fixed data budget than the run above and are comparable only across dimensions.) 5Table 3: Stockfish marginal value by rating bucket, on identical decisions. full maia3 and maia maia3 are the same model with and without the Stockfish feature group, respectively. The SF NLL gain is NLL( maia maia3 ) −
+
+NLL( full maia3 ) and the SF top-1 gain is top-1 (full maia3 ) − top-1 (maia maia3 ) – both positive when Stockfish features help. rating bucket n full maia3 NLL maia maia3 NLL SF NLL gain SF top-1 gain 900–1200 14,242 0.846 0.847 +0.000 -0.001 1200–1500 14,185 0.863 0.864 +0.001 +0.001 1500–1800 14,128 0.861 0.864 +0.003 +0.003 1800–2100 14,194 0.856 0.861 +0.005 +0.002 2100–2300 14,052 0.788 0.803 +0.015 +0.007 2300–2500 14,015 0.770 0.802 +0.032 +0.012 2500–2800 13,918 0.740 0.787 +0.047 +0.021 2800 + 788 0.721 0.806 +0.085 +0.039 
+
+Figure 2: Marginal value of Stockfish features over the Maia-3 base grows monotonically with Elo (bars: NLL gain; line: top-1 gain). 
+
+## 4.4 E4: Player re-identification 
+
+As a complementary check to E5 (“ z is not strength”), we ask whether z carries player identity . For 500 Lichess players we split each one’s decisions into two disjoint halves, infer a base-inclusive z for each half, and rank every query-half vector against all support-half vectors by cosine similarity (the behavioral-stylometry protocol of McIlroy-Young et al., 2021). The embedding re-identifies players well above chance – accuracy@1 0.014 , @5 0.040 , @10 
+
+0.068 , MRR 0.036 against a 1/500=0 .002 chance rate (7–34 ×) – but far below purpose-built stylometry networks (∼98%). This is expected and consistent with our design: z is a compact ( d=32 ), Elo-disentangled style residual optimized for move prediction, so it encodes player-specific style above chance while deliberately discarding the strength and position-specific cues that identity-optimized, higher-dimensional stylometry embeddings exploit. 
+
+## 4.5 E5: Elo disentanglement 
+
+We test directly whether the player vectors encode strength. Fitting a cross-validated linear probe to predict a player’s median rating from z (2,026 players) recovers only R2=0 .06 ; a shuffled-z control gives R2= − 0.01 , confirming the probe is well-calibrated and that the small residual signal is real but weak. The top principal components of z are nearly uncorrelated with rating ( r=0 .10 and 0.06 for PC1/PC2), i.e. the dominant axes of stylistic variation are not 6Table 4: Style-embedding dim sweep (all other hyperparameters fixed). Lift is epoch-1 (base-only) minus best valida-tion NLL. dim best val NLL best epoch top-1 style lift 16 0.7824 6 0.6912 +0.0105 32 0.7814 6 0.6923 +0.0111 64 0.7811 6 0.6921 +0.0114 128 0.7811 6 0.6914 +0.0110 
+
+Figure 3: Style-embedding validation vs. embedding dimension (solid: best validation NLL, lower is better; dashed: top-1). strength (Figure 4). Together with the inner-product similarity structure (E6), this is direct evidence that z captures style largely decoupled from Elo, as the residual-on-a-rating-conditioned-base design intends. 
+
+## 4.6 E6: Style face-validity 
+
+We infer z for 18 famous grandmasters from their career games through the fixed, base-inclusive path (Maia-2 can-didates + Maia-3 + Stockfish features, history reconstructed from the PGN, frozen base; §3.4), assigning a single top-bucket Lichess-rapid-equivalent rating. Projecting z with PCA and coloring by a small curated archetype prior (Figure 5), nearest-neighbor structure is intuitive: the Romantic attackers pair up (Polgar–Morphy 0.69 ; Nezhmetdinov and Sindarov nearby), and a “universal” cluster forms (Fischer–Anand 0.62 , Spassky–Fischer 0.56 , with Lasker and Carlsen). Quantized against the 3-way labels, kNN label purity is 0.56 at k=1 (0.52 at k=3 ) versus a 0.39 chance rate – a real but modest signal, with a low global silhouette ( 0.06 ): the coarse labels (especially “positional”) overlap, and some assignments are debatable (e.g. Kasparov’s nearest neighbor is Kramnik, arguing his play is closer to “universal” than the “attacking” prior). We therefore present the geometry and neighbor structure as the qualitative result and treat purity as a conservative lower bound; finer archetype labels are a natural extension. 
+
+Cross-Elo overlay (style is shared, strength is not). Projecting the famous GMs onto the same PCA axes as the 
+
+2,026 Lichess players, colored by rating bucket (Figure 6), each famous GM’s nearest Lichess neighbors span 6.6 of 8
+
+rating buckets on average: stylistic neighborhoods cut across the rating range rather than tracking it. This is the visual counterpart of E5’s near-zero rating-from-z probe – a given style is shared by players of widely different strength. 
+
+## 4.7 E7: Learned-embedding-reweighted H-SWPO 
+
+We fine-tune Maia-2 toward each of 10 grandmasters with the style-weighted DPO objective, using the frozen ϕ en-coder as the learned move-style kernel ( w = exp( − cos( ϕ(a+), ϕ (a−)) /τ )), sweeping the DPO weight wdpo and 7Figure 4: Player-style embeddings ( z, d=32 ) projected by PCA and colored by rating bucket: no rating gradient along the principal axes. Linear probe R2=0 .06 for predicting rating from z.Table 5: Learned-ϕ-kernel H-SWPO sweep, mean over 10 GMs. ∆P (chosen ) is the gain in probability of the GM’s played move over the Maia-2 base; “gap” is the chosen −rejected log-prob margin the DPO term optimizes. The NLL term drives move-matching (top-1) and keeps KL-from-base low; raising wdpo widens the preference gap at the cost of higher KL. 
+
+wdpo wnll ∆P (chosen ) top-1 KL-from-base chosen −rej. gap 0.1 0 +0.022 0.464 0.154 0.61 0.1 1 +0.024 0.486 0.131 0.37 0.5 0 +0.024 0.463 0.180 0.81 0.5 1 +0.027 0.485 0.143 0.49 1.0 0 +0.024 0.461 0.182 0.85 1.0 1 +0.029 0.486 0.142 0.56 the supervised weight wnll (Table 5, mean over the 10 GMs). The learned kernel makes the objective behave coher-ently: every configuration raises P (chosen ) on the GM’s held-out moves over the Maia-2 base; the NLL term drives move-matching (top-1 0.486 with wnll =1 vs. 0.46 without) while keeping KL-from-base lowest (less collapse); and increasing wdpo sharpens the chosen −rejected preference margin ( 0.61 → 0.85 ) at the cost of higher KL. The sweet spot is a small wdpo with the NLL anchor. A direct head-to-head against the hand-engineered H-SWPO v1/v2 weights and plain DPO [Rafailov et al., 2023, Carlson et al., 2026] – on these same metrics – is left to future work. 
+
+## 4.8 E8: Central Elo-stratified comparison 
+
+Finally we put the predictors on one held-out benchmark, scored over the same candidate set (Maia-2 top-k + played) on the same held-out decisions, stratified by Elo (Figure 7): Maia-2 → Maia-3 → the Stockfish-augmented rating-conditioned base → that base + the per-player embedding. Top-1 rises monotonically at every bucket – decision-weighted overall 0.512 → 0.573 → 0.678 → 0.682 across 22 ,620 held-out decisions, so the full model is +0 .17 
+
+top-1 over Maia-2 ( +33% relative) and +0 .11 over Maia-3 ( +19% ; 30% lower NLL) – and the Stockfish base’s lift over Maia-3 is large ( +0 .10 to +0 .13 ) and largest at the top ( 0.709 vs. 0.583 at 2800+). The per-player embedding adds a small but consistent further gain ( +0 .005 on average), confirming the thesis: a strong rating-conditioned base plus a compact learned player vector is the best move predictor, and gives every player from one shared model plus a 8Figure 5: Famous-GM style embeddings ( z, d=32 ) by PCA, colored by curated archetype. Romantic attackers (Pol-gar/Morphy/Nezhmetdinov) and universal players (Fischer/Anand/Spassky/Lasker/Carlsen) form intuitive neighbor-hoods; the “positional” label is the least separable. kNN@1 purity 0.56 vs. 0.39 chance. 
+
+32 -d vector rather than a full per-player fine-tune. We flag the inference-time information asymmetry: Maia-2/Maia-3 are pure policies, whereas the base and base +embedding consult Stockfish features at inference – this is the “best achievable with engine access,” not a same-budget policy baseline. Placing the per-GM preference-optimized policies (NLL, DPO, H-SWPO) on this same axis is left to future work. 
+
+# 5 Discussion / Conclusion 
+
+Our results support a simple thesis with a clear division of labor. The predictive work is done by a strong, rating-conditioned base move model, which substantially outperforms the Maia-3 policy across the rating spectrum. On top of that base, a compact learned player embedding contributes an economical and disentangled representation of individual style: every player is one shared model plus a small vector ( d=32 suffices on the Maia-3 base), in contrast to a full per-player fine-tune. The residual construction makes this embedding approximately Elo-disentangled by design and, empirically, a linear probe recovers almost no rating from it ( R2=0 .06 ); its gain over the base on raw move-matching is small (within the confidence interval), which is exactly what we expect of a component meant to capture style rather than strength. Two findings sharpen the picture: engine (Stockfish) features matter chiefly for 
+
+strong players – their value over the Maia-3 policy is negligible below master level and rises monotonically to the super-GM band – and the style residual is low-dimensional on a strong base, so capacity saturates early. Preference optimization (H-SWPO) remains a useful tool for shaping style, and the learned ϕ kernel lets it use a data-driven notion of move similarity rather than hand-engineered features; but the representation-learning payoff is that style and strength can be cleanly separated, and that a tiny per-player vector, read off a shared rating-conditioned base, captures a real, Elo-orthogonal component of what distinguishes one player from another. 9Figure 6: Famous-GM style vectors (stars) over the Lichess player cloud (small points, colored by rating bucket) on shared PCA axes. A famous GM’s nearest Lichess neighbors span many rating buckets (mean 6.6/8), so style is a shared axis and strength is largely orthogonal to it. 
+
+# Future Work 
+
+The current base consumes a fixed, hand-specified feature extraction: Maia-2 top-k candidates, each scored by Stock-fish at a fixed depth. A natural next step is to make engine consultation adaptive and learned – a controller, trained with reinforcement learning under a compute budget, that decides which moves are worth searching and how deeply, with reward tied to downstream move-prediction and style fidelity per unit of engine compute. This should widen the base model’s lead precisely where it matters most – at high Elo, where the decisive lines are narrow and reward deeper, targeted search. Several directions target the embedding itself. (i) Richer per-player representation : replace the from-scratch CNN 
+
+ϕ with a small head over the frozen pre-logit features of Maia-2/Maia-3 , transferring their human-trained board rep-resentation rather than re-learning it, and increase embedding capacity – our scaling analysis shows the current 32 -d, frozen-base z saturates after ∼100 decisions, so a higher-capacity per-player model may be needed to exploit the abundant per-player data available in the style-report setting. (ii) Faithful Maia-3-anchored preference optimization :the grandmaster preference pairs we use store no move history, which Maia-3 conditions on; regenerating them with history would enable a fair Maia-3-base H-SWPO comparison. (iii) Held-out-player evaluation : our embedding met-rics use a player-query split; a fully held-out-player support/query protocol would further strengthen the generalization and re-identification claims. 
+
+# A Per-player data efficiency and the trained-vs-inferred gap 
+
+Two observations bound how much per-player data the embedding can use, and how well it transfers to new players – relevant to the “style report” setting, where one has a single player’s games at inference time. 10 Figure 7: Move-prediction top-1 by rating bucket on a shared held-out candidate set, weakest to strongest: Maia-2, Maia-3, the Stockfish-augmented rating-conditioned base, and the base + per-player embedding. Shaded bands are 95% Wilson intervals on top-1 ( n = 1 ,620 –3,000 decisions per bucket); the Maia-2, Maia-3, and engine-feature tiers are cleanly separated, while the embedding’s marginal gain over the Stockfish base is within the interval. The ordering holds at every bucket and the engine-feature lift grows with Elo. 
+
+Inferred z saturates by ∼100 decisions. Inferring z for a held-out player from their first K decisions (base-inclusive fit), the resulting direction stabilizes quickly: cos( z20 , z 1000 )=0 .69 but cos( z100 , z 1000 )=1 .00 . So ∼100 of a player’s decisions ( ≈ a handful of games) already determine the style vector for this 32 -d, frozen-base design, and more data does not change it – data-efficient, but also capacity-limited (cf. the dim-sweep saturation in E3). Practically, useful style reports do not require thousands of games. 
+
+The inference path is the weak link. The jointly trained z materially improves move prediction (E3, E8). But 
+
+z inferred post-hoc for a new player (the path used in E4 and E6) is much weaker: per-player, held-out NLL gains over the frozen base are small and high-variance (near zero on average, and negative for some rating bands), and re-identification (E4) and famous-GM archetype separation (E6) are above chance but modest. We attribute this gap to a single low-dimensional z fit against an already-strong base leaving little inference-time signal. Closing it is the most concrete improvement direction (Future Work): a higher-capacity per-player head over frozen Maia pre-logit features, and a fully held-out-player training/eval protocol so the inference path is optimized, not just probed. 
+
+# References 
+
+Murray Campbell, A. Joseph Hoane, and Feng-hsiung Hsu. Deep blue. Artificial Intelligence , 134(1-2):57–83, 2002. Jason Carlson, Lincoln Bernard, and Brian Carlson. Preference-optimized policies for realistic grandmaster chess, 2026. Introduces SWPO / H-SWPO. Code: https://github.com/jcarlson212/garry-chess-dpo .Kawin Ethayarajh, Winnie Xu, Niklas Muennighoff, Dan Jurafsky, and Douwe Kiela. KTO: Model align-ment as prospect theoretic optimization. In International Conference on Machine Learning (ICML) , 2024. arXiv:2402.01306. Reid McIlroy-Young, Siddhartha Sen, Jon Kleinberg, and Ashton Anderson. Aligning superhuman AI with human behavior: Chess as a model system. In Proceedings of the 26th ACM SIGKDD Conference on Knowledge Discovery and Data Mining , 2020. arXiv:2006.01855. 11 Reid McIlroy-Young, Russell Wang, Siddhartha Sen, Jon Kleinberg, and Ashton Anderson. Detecting individual decision-making style: Exploring behavioral stylometry in chess. Advances in Neural Information Processing Systems (NeurIPS) , 2021. arXiv:2208.01366. Reid McIlroy-Young, Russell Wang, Siddhartha Sen, Jon Kleinberg, and Ashton Anderson. Learning models of individual behavior in chess. In Proceedings of the 28th ACM SIGKDD Conference on Knowledge Discovery and Data Mining , pages 1253–1263, 2022. Daniel Monroe and Philip A. Chalmers. Mastering chess with a transformer model. arXiv preprint arXiv:2409.12272 ,2024. Daniel Monroe, George Eilender, Philip A. Chalmers, Zhenwei Tang, and Ashton Anderson. Chessformer: A unified architecture for chess modeling. In International Conference on Learning Representations (ICLR) , 2026. Introduces the Maia-3 human move-prediction models. arXiv:2605.19091. Rafael Rafailov, Archit Sharma, Eric Mitchell, Stefano Ermon, Christopher D. Manning, and Chelsea Finn. Direct preference optimization: Your language model is secretly a reward model. Advances in Neural Information Pro-cessing Systems (NeurIPS) , 2023. arXiv:2305.18290. David Silver, Thomas Hubert, Julian Schrittwieser, et al. Mastering chess and shogi by self-play with a general reinforcement learning algorithm. arXiv preprint arXiv:1712.01815 , 2017. Stockfish Developers. Stockfish documentation. https://official-stockfish.github.io/docs/ .Zhenwei Tang, Difan Jiao, Reid McIlroy-Young, Jon Kleinberg, Siddhartha Sen, and Ashton Anderson. Maia-2: A unified model for human-AI alignment in chess. Advances in Neural Information Processing Systems (NeurIPS) ,2024. arXiv:2409.20553. D. Zhong, D. Huang, and C. Greenberg. Predicting human chess moves: An AI-assisted analysis of chess games using skill-group specific n-gram language models. arXiv preprint arXiv:2512.01880 , 2025. 12

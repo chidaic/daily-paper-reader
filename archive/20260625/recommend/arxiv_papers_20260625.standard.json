@@ -1,0 +1,404 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-25T21:03:08.001142+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 5,
+    "deep_cap": 6,
+    "deep_selected": 5,
+    "quick_candidates": 5,
+    "quick_skim_target": 11,
+    "quick_selected": 5
+  },
+  "deep_dive": [
+    {
+      "id": "2606.25176v1",
+      "source": "arxiv",
+      "title": "Elo-Disentangled Player-Style Embeddings for Human Chess via Rating-Conditioned Residual Move Model",
+      "abstract": "We study representation learning for individual human chess style: a per-player embedding learned from a player's move history such that inner products measure stylistic similarity, while being approximately disentangled from playing strength (Elo). Our key design is a residual formulation: a rating-conditioned base move model (Maia-3 policy logits plus Stockfish-derived features, scored over Maia-2-proposed candidates) captures what a typical player of a given strength would play, and a frozen copy of it anchors a learned move encoder and a per-player vector z, so that z explains only deviations from rating-typical play. The base model improves move prediction over the strong Maia-3 policy by 27-37% relative NLL across the rating spectrum, with the largest gains at the top (2800+); Stockfish's marginal value grows monotonically with Elo (negligible at 900-1200, +0.085 nats at 2800+). On a shared Elo-stratified benchmark of 22,620 held-out decisions, top-1 move-matching rises monotonically from Maia-2 to Maia-3 to the Stockfish-augmented base (0.51 -> 0.57 -> 0.68): the base is +33% relative top-1 over Maia-2 and +19% over Maia-3 (30% lower NLL), with the engine-feature lift largest at high Elo. The player embedding adds little to raw move-matching on top of this base -- its marginal top-1 gain falls within the 95% confidence interval -- and its value is instead representational: z generalizes to held-out decisions without overfitting, re-identifies players from disjoint games above chance, and a linear probe recovers rating from z with only R^2 = 0.06 (no better nonlinearly), evidence it captures style on an Elo-orthogonal axis. We argue that a strong rating-conditioned base plus a compact, Elo-disentangled embedding -- separating typical play from individual deviation -- is an economical, interpretable model of individual style, an alternative to per-player preference fine-tuning.",
+      "authors": [
+        "Jason Carlson"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-23T21:06:24+00:00",
+      "link": "https://arxiv.org/pdf/2606.25176v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Elo-disentangled player-style embeddings for human chess",
+      "llm_evidence_cn": "与等级分解耦的人类象棋玩家风格嵌入",
+      "llm_evidence": "与等级分解耦的人类象棋玩家风格嵌入",
+      "canonical_evidence": "与等级分解耦的人类象棋玩家风格嵌入",
+      "llm_tldr_en": "Learns per-player style embeddings from move history that measure stylistic similarity while being disentangled from playing strength, using a rating-conditioned residual move model.",
+      "llm_tldr_cn": "本文针对人类棋手风格建模，提出残差公式：通过评级条件基模型（Maia-3加Stockfish特征）捕获典型走法，再用冻结的基模型锚定学习每个玩家的偏差向量，使得内积度量风格相似度且与等级分解耦。基模型走法预测相对Maia-3提升27-37%相对负对数似然。该方法首次实现强度无关的风格表示，可用于玩家匹配、风格分析等。",
+      "llm_tldr": "本文针对人类棋手风格建模，提出残差公式：通过评级条件基模型（Maia-3加Stockfish特征）捕获典型走法，再用冻结的基模型锚定学习每个玩家的偏差向量，使得内积度量风格相似度且与等级分解耦。基模型走法预测相对Maia-3提升27-37%相对负对数似然。该方法首次实现强度无关的风格表示，可用于玩家匹配、风格分析等。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "virtual game player modeling",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.25358v1",
+      "source": "arxiv",
+      "title": "Agentic Knowledge Tracing: A Multi-Agent LLM Architecture for Stealth Assessment of Financial Literacy in Serious Games",
+      "abstract": "Assessing financial literacy during gameplay without disrupting the learning experience remains a key challenge in serious games for education. We present the Agentic BKT pipeline, a multi-agent large language model architecture for stealth assessment of financial competencies from open-ended gameplay events. The pipeline processes events from a 2D platformer serious game aligned with the OECD/INFE financial literacy framework through four phases: (1) the game captures every player decision as a structured event log; (2) an LLM event classifier labels each action on a four-point rubric validated against three domain experts (Fleiss kappa = 0.624, substantial agreement); (3) four domain-specific agents specializing in risk mitigation, investing, spending, and credit management perform session-level reasoning over behavioral trajectories, feeding per-competency Bayesian Knowledge Tracing that estimates mastery within each domain; and (4) an expert judge agent synthesizes the domain-level estimates into an overall mastery score. Evaluated with 193 K-12 participants across 264 game sessions, the Agentic BKT pipeline yields mastery estimates significantly correlated with learning gain (r = 0.276, p = 0.0001) and post-test scores (r = 0.333, p < 0.0001) while showing no correlation with pre-test scores, providing both convergent and discriminant validity. The multi-agent approach approximately triples the predictive validity of a single-LLM baseline (r = 0.095, not significant) in this study, demonstrating that domain decomposition and session-level reasoning play a central role in capturing the multidimensional nature of financial literacy from gameplay",
+      "authors": [
+        "Gabriel Santos",
+        "Rita Julia",
+        "Marcelo Nascimento"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.MA"
+      ],
+      "published": "2026-06-24T03:43:59+00:00",
+      "link": "https://arxiv.org/pdf/2606.25358v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "Player modeling in serious games via multi-agent LLM stealth assessment",
+      "llm_evidence_cn": "基于多智能体LLM的严肃游戏潜行评估进行玩家建模",
+      "llm_evidence": "基于多智能体LLM的严肃游戏潜行评估进行玩家建模",
+      "canonical_evidence": "基于多智能体LLM的严肃游戏潜行评估进行玩家建模",
+      "llm_tldr_en": "Presents Agentic BKT pipeline, a multi-agent LLM architecture for stealth assessment of financial literacy from player actions in a 2D platformer game, directly addressing virtual game player modeling.",
+      "llm_tldr_cn": "在严肃游戏中评估玩家金融素养而不干扰体验是挑战。本文提出Agentic BKT管道，利用多智能体LLM架构对2D平台游戏中的玩家决策进行潜行评估。管道包含事件分类、多智能体分析等阶段，专家验证达到较高一致性。该方法直接实现了虚拟游戏玩家的行为建模与知识追踪。",
+      "llm_tldr": "在严肃游戏中评估玩家金融素养而不干扰体验是挑战。本文提出Agentic BKT管道，利用多智能体LLM架构对2D平台游戏中的玩家决策进行潜行评估。管道包含事件分类、多智能体分析等阶段，专家验证达到较高一致性。该方法直接实现了虚拟游戏玩家的行为建模与知识追踪。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "virtual game player modeling",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.25997v1",
+      "source": "arxiv",
+      "title": "Variable Bound Tightening for Nash Equilibrium Computation in Multiplayer Imperfect-Information Games",
+      "abstract": "There has been significant recent progress in algorithms for approximation of Nash equilibrium in large two-player zero-sum imperfect-information games and exact computation of Nash equilibrium in multiplayer strategic-form games. While counterfactual regret minimization and fictitious play are scalable to large games and have convergence guarantees in two-player zero-sum games, they do not guarantee convergence to Nash equilibrium in multiplayer games. Recently, an approach has been presented for exact computation of Nash equilibrium in multiplayer imperfect-information games that solves a quadratically constrained program based on a nonlinear complementarity problem formulation derived from the sequence-form game representation. This formulation was solved using Gurobi's nonconvex quadratic solver, which employs spatial branch-and-bound to iteratively refine variable bounds by solving convex relaxations of bilinear terms via McCormick envelopes. During presolve, Gurobi introduces auxiliary variables and, in some cases, binary variables, leading to an internal MIQCP reformulation. This approach was demonstrated to outperform prior algorithms from the Gambit software suite and quickly solve three-player Kuhn poker after removal of dominated actions; however, the algorithm was not able to solve the full version of the game within 24 hours. In this paper, we derive finite bounds on slack and multiplier variables in the nonlinear complementarity formulation. These bounds strengthen the convex relaxations used within spatial branch-and-bound and lead to substantial computational improvements. We demonstrate the impact of the proposed bounds on exact Nash equilibrium computation in three-player Kuhn poker.",
+      "authors": [
+        "Sam Ganzfried"
+      ],
+      "primary_category": "cs.GT",
+      "categories": [
+        "cs.GT",
+        "cs.AI",
+        "cs.MA",
+        "econ.TH",
+        "math.OC"
+      ],
+      "published": "2026-06-24T16:08:33+00:00",
+      "link": "https://arxiv.org/pdf/2606.25997v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "computes Nash equilibrium in multiplayer imperfect-information games, directly relevant to AI agents playing games",
+      "llm_evidence_cn": "计算多人不完备信息博弈中的纳什均衡，直接与AI智能体游戏游玩相关",
+      "llm_evidence": "计算多人不完备信息博弈中的纳什均衡，直接与AI智能体游戏游玩相关",
+      "canonical_evidence": "计算多人不完备信息博弈中的纳什均衡，直接与AI智能体游戏游玩相关",
+      "llm_tldr_en": "Presents a method for exact Nash equilibrium computation in multiplayer imperfect-information games via nonlinear complementarity programming and variable bound tightening.",
+      "llm_tldr_cn": "该论文提出一种通过变量边界收紧求解多人不完备信息博弈纳什均衡的方法。基于序列式博弈表示的非线性互补问题公式，结合二次约束规划，实现了精确的纳什均衡计算，弥补了现有方法在多人博弈中不收敛的问题，为AI在复杂博弈中的决策提供了理论基础。",
+      "llm_tldr": "该论文提出一种通过变量边界收紧求解多人不完备信息博弈纳什均衡的方法。基于序列式博弈表示的非线性互补问题公式，结合二次约束规划，实现了精确的纳什均衡计算，弥补了现有方法在多人博弈中不收敛的问题，为AI在复杂博弈中的决策提供了理论基础。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.26094v1",
+      "source": "arxiv",
+      "title": "RevengeBench: Reverse Engineering Code-Space Policies from Behavioral Experiments",
+      "abstract": "For most of scientific history, researchers studying behavior could only infer hidden mechanisms from outward actions: an inverse problem that becomes more tractable when observation is augmented by targeted intervention. We pose a computational analogue: given only behavioral traces of an agent in a game environment, can a learner reconstruct the underlying decision program as executable code, and how much does this reconstruction improve with the ability to design controlled experiments? We introduce RevengeBench, a benchmark of 75 LLM generated, Elo-calibrated policies across five game environments, drawn from CodeClash tournament trajectories. The learner observes the hidden target policy play against sampled opponents and designs behavioral probes in the form of custom opponent policies that elicit informative behavior. It then submits an executable hypothesis, which is evaluated using continuous action-distance metrics. We further validate that recovered code carries informative signal in downstream player-versus-player tournaments. Across twelve frontier LLMs, recovery quality varies substantially (34 to 72% of initial distance closed), with reconstructed policies yielding measurable competitive advantage, particularly for weaker models that otherwise struggle to design effective counter-strategies. Our benchmark positions behavioral recovery of programmatic policies as a tractable inverse problem in code-space, opening a path to opponent modeling, policy interpretability, and the broader question of inferring latent mechanisms from observations.",
+      "authors": [
+        "Babak Rahmani",
+        "Sebastian Dziadzio",
+        "Joschka Strüber",
+        "Sergio Hernández-Gutiérrez",
+        "Matthias Bethge"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-06-24T17:59:46+00:00",
+      "link": "https://arxiv.org/pdf/2606.26094v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "player behavior simulation via reverse engineering policies from game traces",
+      "llm_evidence_cn": "通过游戏轨迹逆向工程策略来仿真玩家行为",
+      "llm_evidence": "通过游戏轨迹逆向工程策略来仿真玩家行为",
+      "canonical_evidence": "通过游戏轨迹逆向工程策略来仿真玩家行为",
+      "llm_tldr_en": "RevengeBench reconstructs agent decision programs from behavioral traces in game environments, enabling controlled experiments for player behavior simulation.",
+      "llm_tldr_cn": "现有研究缺乏从行为轨迹重建智能体决策程序的方法。本文提出RevengeBench基准，包含75个在五种游戏环境中由LLM生成并经过Elo校准的策略。学习者通过观察隐藏目标策略与对手对弈的行为轨迹，设计受控实验来逆向工程其决策代码。实验表明，该方法能有效重建策略，并量化受控实验带来的性能提升，为玩家行为模拟提供了新的分析工具。",
+      "llm_tldr": "现有研究缺乏从行为轨迹重建智能体决策程序的方法。本文提出RevengeBench基准，包含75个在五种游戏环境中由LLM生成并经过Elo校准的策略。学习者通过观察隐藏目标策略与对手对弈的行为轨迹，设计受控实验来逆向工程其决策代码。实验表明，该方法能有效重建策略，并量化受控实验带来的性能提升，为玩家行为模拟提供了新的分析工具。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "player behavior simulation techniques",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.24962v1",
+      "source": "arxiv",
+      "title": "Towards Scalable Multi-Task Reinforcement Learning with Large Decision Models",
+      "abstract": "Recent progress in large-scale sequence modeling has shown that a single model can learn useful representations across highly diverse data distributions. Inspired by these advances, we investigate whether a unified transformer policy can be trained across large collections of heterogeneous reinforcement learning environments.   We introduce LDM-v0, a Large Decision Model trained offline on trajectories collected from thousands of environments spanning multiple domains and modalities. LDM-v0 is a multi-task, multi-modal transformer policy conditioned on histories of observations, actions, rewards, and termination signals, and trained through supervised next-action prediction over offline trajectories. We describe the environment infrastructure, automated data generation pipeline, model architecture, and training methodology used to build LDM-v0, and evaluate its performance across diverse environments. We show that a single pretrained model matches the performance of independently trained task-specific reference policies on approximately 1,000 environments including robotics, autonomous driving, inventory management, cybersecurity, trading, and video games. These results demonstrate the feasibility of large-scale offline pretraining across heterogeneous reinforcement learning environments using a single transformer policy.",
+      "authors": [
+        "Thibaut Kulak"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-06-23T09:13:08+00:00",
+      "link": "https://arxiv.org/pdf/2606.24962v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "multi-task RL training across thousands of environments, relevant to AI agent training in games",
+      "llm_evidence_cn": "在数千个环境上进行多任务强化学习训练，与游戏环境中AI智能体训练相关",
+      "llm_evidence": "在数千个环境上进行多任务强化学习训练，与游戏环境中AI智能体训练相关",
+      "canonical_evidence": "在数千个环境上进行多任务强化学习训练，与游戏环境中AI智能体训练相关",
+      "llm_tldr_en": "Introduces LDM-v0, a large decision model trained offline on trajectories from thousands of environments using supervised next-action prediction, enabling scalable multi-task RL.",
+      "llm_tldr_cn": "该论文提出LDM-v0，一个基于Transformer的大决策模型，通过离线轨迹上的监督下一动作预测，从数千个跨领域环境中训练。该模型能够泛化到多种强化学习任务，为构建通用游戏智能体提供了可扩展的多任务学习方案。",
+      "llm_tldr": "该论文提出LDM-v0，一个基于Transformer的大决策模型，通过离线轨迹上的监督下一动作预测，从数千个跨领域环境中训练。该模型能够泛化到多种强化学习任务，为构建通用游戏智能体提供了可扩展的多任务学习方案。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.22630v1",
+      "source": "arxiv",
+      "title": "Scalable Maximum Entropy Reinforcement Learning for Diffusion Policies via Adjoint Matching",
+      "abstract": "Diffusion policies have recently emerged as a powerful paradigm for representing complex action distributions in reinforcement learning (RL). However, their application to online RL remains limited by the challenge of scalable training in the absence of ground-truth data, where standard optimization techniques such as score matching are not directly applicable. In this work, we introduce a highly efficient algorithm for optimizing diffusion policies by leveraging recent advances in stochastic optimal control. Our approach is based on adjoint matching, which enables simulation-free training and circumvents the need for explicit likelihood estimation or costly backpropagation through the diffusion process. Furthermore, we propose several extensions that improve the robustness and stability of the method in practical settings. Empirical results demonstrate that our approach achieves competitive performance while significantly reducing computational overhead, making diffusion policies more viable for online RL scenarios.",
+      "authors": [
+        "Serge Thilges",
+        "Onur Celik",
+        "Denis Blessing",
+        "Emiliyan Gospodinov",
+        "Gerhard Neumann"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-06-21T18:32:25+00:00",
+      "link": "https://arxiv.org/pdf/2606.22630v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "scalable maximum entropy RL for diffusion policies",
+      "llm_evidence_cn": "面向扩散策略的可扩展最大熵强化学习",
+      "llm_evidence": "面向扩散策略的可扩展最大熵强化学习",
+      "canonical_evidence": "面向扩散策略的可扩展最大熵强化学习",
+      "llm_tldr_en": "Introduces a highly efficient algorithm for optimizing diffusion policies in online RL via adjoint matching, enabling simulation-free training and avoiding costly backpropagation through diffusion processes.",
+      "llm_tldr_cn": "现有扩散策略在在线强化学习中面临训练困难，本文提出基于伴随匹配的高效算法，实现无需模拟的训练，避免了对扩散过程的反向传播。该方法在多个连续控制任务上达到或超过了最新水平，为将扩散策略应用于在线RL提供了可扩展方案。",
+      "llm_tldr": "现有扩散策略在在线强化学习中面临训练困难，本文提出基于伴随匹配的高效算法，实现无需模拟的训练，避免了对扩散过程的反向传播。该方法在多个连续控制任务上达到或超过了最新水平，为将扩散策略应用于在线RL提供了可扩展方案。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.19830v2",
+      "source": "arxiv",
+      "title": "JAMER: Project-Level Code Framework Dataset and Benchmark on Professional Game Engines",
+      "abstract": "Current AI-driven game development has made substantial progress in asset generation, gameplay design, and web-based game coding, yet project-level code engineering on professional game engines remains largely unexplored due to the absence of large-scale datasets and deterministic evaluation methods. We present JamSet and JamBench, the first project-level game code framework dataset and benchmark built on a professional game engine. Our key insight is that Game Jam competitions, community events where developers build complete games under tight time constraints, yield thousands of open-source projects suitable for this purpose. Building on the Godot engine's text-based format and headless execution mode, we design a deterministic verification pipeline from file integrity to runtime behavior collection, distilling 8,133 verified projects from over 240,000 repositories. Of these, 300 manually verified projects form JamBench; the rest constitute JamSet. JamBench defines theme-driven generation and code completion tasks, evaluated through a pipeline combining compilation pass rates, Structural Completeness Score (SCS), and Behavioral Alignment Score (BAS). Evaluation of 9 frontier models reveals a capability cliff as project scale increases, with runtime pass rates dropping from 80.4% on small projects to 5.7% on large ones (Task2a). Code Agents improve compilation rates yet yield no gains in runtime behavioral quality, indicating that the bottleneck lies in architectural design rather than syntactic correctness. Experiments validate JamSet as effective training data. All data and code are publicly available.",
+      "authors": [
+        "Jianwen Sun",
+        "Chuanhao Li",
+        "Zizhen Li",
+        "Yukang Feng",
+        "Fanrui Zhang",
+        "Yifei Huang",
+        "Yu Dai",
+        "Kaipeng Zhang"
+      ],
+      "primary_category": "cs.SE",
+      "categories": [
+        "cs.SE",
+        "cs.CL"
+      ],
+      "published": "2026-06-18T06:17:46+00:00",
+      "link": "https://arxiv.org/pdf/2606.19830v2",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "game engine dataset and benchmark for AI agent training",
+      "llm_evidence_cn": "游戏引擎数据集与基准，可用于AI智能体训练",
+      "llm_evidence": "游戏引擎数据集与基准，可用于AI智能体训练",
+      "canonical_evidence": "游戏引擎数据集与基准，可用于AI智能体训练",
+      "llm_tldr_en": "Presents JamSet and JamBench, the first project-level game code framework dataset and benchmark on a professional game engine (Godot), enabling AI agent research.",
+      "llm_tldr_cn": "针对专业游戏引擎上项目级代码工程的空白，基于Game Jam竞赛构建了首个Godot引擎数据集和基准JamSet/JamBench，支持确定性评估，为AI游戏智能体训练提供了标准化的测试平台。",
+      "llm_tldr": "针对专业游戏引擎上项目级代码工程的空白，基于Game Jam竞赛构建了首个Godot引擎数据集和基准JamSet/JamBench，支持确定性评估，为AI游戏智能体训练提供了标准化的测试平台。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.19893v1",
+      "source": "arxiv",
+      "title": "MetaResearcher: Scaling Deep Research via Self-Reflective Reinforcement Learning in Adversarial Virtual Environments",
+      "abstract": "Deep research agents have demonstrated remarkable capabilities in autonomous information gathering and synthesis, yet their training remains constrained by the static nature of simulated environments, the limits of fact-retrieval-only task designs, and the inefficiency of outcome-based reinforcement learning. In this work, we propose MetaResearcher, a novel framework that scales deep research agent training across four synergistic dimensions. First, we introduce an Evolving Virtual World that injects temporal dynamics and adversarial misinformation into the training environment, forcing agents to develop source credibility assessment and temporal conflict resolution skills. Second, we design Discovery-Oriented Tasks -- including hypothesis generation and contradiction resolution -- that transcend simple fact retrieval and push agents toward genuine research behaviors. Third, we propose a Self-Reflective Meta-Reward mechanism within the GRPO framework that jointly optimizes for answer correctness, search path efficiency, reflection depth, and tool call diversity, directly addressing the repetitive action loop problem observed in prior work. Fourth, we introduce a Heterogeneous Multi-Agent Swarm architecture comprising specialized Scout, Filter, and Synthesizer models that learn collaborative research strategies through coordinated reinforcement learning. Built upon the LiteResearcher infrastructure, MetaResearcher requires zero marginal API cost for training while targeting substantial improvements in both benchmark performance (GAIA, Xbench-DS) and epistemic robustness under adversarial conditions. We present the complete framework design, training methodology, and planned experimental validation.",
+      "authors": [
+        "Wei Yu",
+        "Suxing Liu",
+        "Minjie Yu",
+        "Jiahao Wang",
+        "Zhijian Zheng",
+        "Haocheng Deng",
+        "Bing Li"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-18T07:50:40+00:00",
+      "link": "https://arxiv.org/pdf/2606.19893v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "RL in adversarial virtual environments for agent training, transferable to game AI",
+      "llm_evidence_cn": "在对抗性虚拟环境中进行强化学习训练智能体，可迁移至游戏AI",
+      "llm_evidence": "在对抗性虚拟环境中进行强化学习训练智能体，可迁移至游戏AI",
+      "canonical_evidence": "在对抗性虚拟环境中进行强化学习训练智能体，可迁移至游戏AI",
+      "llm_tldr_en": "Proposes MetaResearcher, a framework scaling deep research agent training with evolving virtual worlds, adversarial misinformation, and discovery-oriented tasks using self-reflective RL.",
+      "llm_tldr_cn": "该论文提出MetaResearcher框架，通过演化虚拟世界、对抗性虚假信息和发现导向任务，扩展深度研究智能体的训练。采用自我反思的强化学习，迫使智能体发展源可信度评估和时间冲突解决技能，为复杂虚拟环境中的智能体训练提供了新范式。",
+      "llm_tldr": "该论文提出MetaResearcher框架，通过演化虚拟世界、对抗性虚假信息和发现导向任务，扩展深度研究智能体的训练。采用自我反思的强化学习，迫使智能体发展源可信度评估和时间冲突解决技能，为复杂虚拟环境中的智能体训练提供了新范式。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.24428v1",
+      "source": "arxiv",
+      "title": "Escaping the Self-Confirmation Trap: An Execute-Distill-Verify Paradigm for Agentic Experience Learning",
+      "abstract": "Experience-driven self-evolution is critical for large language model (LLM) agents to improve through open-world interaction. However, existing experience learning methods mostly rely on single-agent loops, where the same agent executes tasks, summarizes outcomes, and determines memory content. This setup makes agents vulnerable to the Self-Confirmation Trap: wrong-but-self-consistent trajectories are misidentified as successful experience, leading to cumulative errors during retrieval and reuse. To address this issue, we propose EDV, an Execute-Distill-Verify framework for reliable experience learning. In the Execute stage, multiple heterogeneous agents explore the same task space in parallel to generate diverse candidate trajectories. In the Distill stage, a dedicated third-party agent comparatively analyzes these trajectories to produce candidate experiences, reducing executor-centric summarization bias. In the Verify stage, the execution group validates candidates via a consensus mechanism, and only approved experiences are written into shared or private memory. By decoupling the three stages, EDV transforms experience learning from isolated self-reflection into collaborative construction, filtering erroneous and noisy content before memory insertion. We evaluate EDV on three challenging long-horizon benchmarks: tau2-bench, Mind2Web and MMTB. Results show EDV consistently outperforms strong baselines, validating that reliable experience construction is essential for robust agent self-evolution. Our code is available at https://github.com/shidingz/EDV.",
+      "authors": [
+        "Shiding Zhu",
+        "Yudi Qi",
+        "Yajie Wang",
+        "Jiaze Li",
+        "Chao Song",
+        "Yaorui Shi",
+        "Yibo Miao",
+        "Hanqi Gao",
+        "Kai Zhang"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-06-23T11:05:05+00:00",
+      "link": "https://arxiv.org/pdf/2606.24428v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "LLM agent experience learning for task execution",
+      "llm_evidence_cn": "LLM智能体经验学习用于任务执行",
+      "llm_evidence": "LLM智能体经验学习用于任务执行",
+      "canonical_evidence": "LLM智能体经验学习用于任务执行",
+      "llm_tldr_en": "Proposes EDV framework to overcome self-confirmation bias in LLM agent experience learning, enabling more reliable memory accumulation via multi-agent execution and verification.",
+      "llm_tldr_cn": "大语言模型智能体在自我进化中容易陷入自我确认陷阱，将错误的轨迹误认为成功经验。本文提出执行-蒸馏-验证（EDV）框架，通过多个异构智能体并行探索和验证，生成可靠经验记忆。该方法提升了经验学习的准确性，可应用于游戏智能体等开放世界自主推理场景。",
+      "llm_tldr": "大语言模型智能体在自我进化中容易陷入自我确认陷阱，将错误的轨迹误认为成功经验。本文提出执行-蒸馏-验证（EDV）框架，通过多个异构智能体并行探索和验证，生成可靠经验记忆。该方法提升了经验学习的准确性，可应用于游戏智能体等开放世界自主推理场景。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.25073v1",
+      "source": "arxiv",
+      "title": "GCT-MARL: Graph-Based Contrastive Transfer for Sample-Efficient Cooperative Multi-Agent Reinforcement Learning",
+      "abstract": "In cooperative multi-agent reinforcement learning (MARL), from a deployment perspective, it is challenging and expensive to train agents from scratch for each new environment or task. In this work, we propose GCT-MARL, a transfer learning framework that builds on the multi-view graph contrastive backbone of MAIL and augments it with a per-view, adaptively weighted alignment loss and a two-phase training protocol specifically designed for transfer across populations of varying sizes and compositions. We empirically demonstrate that the proposed framework markedly accelerates convergence on the target task relative to from-scratch training, in both homogeneous (within-faction, varying N) and heterogeneous (cross-faction and mixed unit-type) transfer scenarios. Furthermore, we show that the framework naturally supports continual learning by sequentially chaining the two-phase transfer protocol across a series of related tasks. Overall, this work provides a unified approach to mitigating key limitations in current MARL transfer methods with new insights at both methodological and empirical levels.",
+      "authors": [
+        "Animesh Animesh",
+        "Satheesh K Perepu",
+        "Kaushik Dey"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.MA"
+      ],
+      "published": "2026-06-23T18:31:27+00:00",
+      "link": "https://arxiv.org/pdf/2606.25073v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Multi-agent reinforcement learning for cooperative agent training",
+      "llm_evidence_cn": "多智能体强化学习用于合作智能体训练",
+      "llm_evidence": "多智能体强化学习用于合作智能体训练",
+      "canonical_evidence": "多智能体强化学习用于合作智能体训练",
+      "llm_tldr_en": "Proposes GCT-MARL, a transfer learning framework for cooperative MARL that accelerates convergence across varying team sizes, relevant for training AI agents in games.",
+      "llm_tldr_cn": "合作多智能体强化学习中，从头训练智能体成本高昂。本文提出GCT-MARL，一种基于图对比学习的迁移框架，通过自适应加权对齐损失和两阶段训练协议，支持不同规模智能体群体的高效迁移。实验表明，该方法在同类和异类迁移场景下均显著加速收敛，为游戏环境中多智能体AI训练提供了有效工具。",
+      "llm_tldr": "合作多智能体强化学习中，从头训练智能体成本高昂。本文提出GCT-MARL，一种基于图对比学习的迁移框架，通过自适应加权对齐损失和两阶段训练协议，支持不同规模智能体群体的高效迁移。实验表明，该方法在同类和异类迁移场景下均显著加速收敛，为游戏环境中多智能体AI训练提供了有效工具。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

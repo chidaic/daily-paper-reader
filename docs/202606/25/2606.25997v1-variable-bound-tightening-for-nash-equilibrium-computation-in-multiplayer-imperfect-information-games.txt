@@ -1,0 +1,758 @@
+Title: Variable Bound Tightening for Nash Equilibrium Computation in Multiplayer Imperfect-Information Games
+
+URL Source: https://arxiv.org/pdf/2606.25997v1
+
+Published Time: Thu, 25 Jun 2026 01:12:59 GMT
+
+Number of Pages: 11
+
+Markdown Content:
+# Variable Bound Tightening for Nash Equilibrium Computation in Multiplayer Imperfect-Information Games 
+
+Sam Ganzfried Ganzfried Research, Cornell University 
+
+sam.ganzfried@gmail.com 
+
+Abstract 
+
+There has been significant recent progress in algorithms for approximation of Nash equilibrium in large two-player zero-sum imperfect-information games and exact computation of Nash equilibrium in multiplayer strategic-form games. While counterfactual regret minimization and fictitious play are scal-able to large games and have convergence guarantees in two-player zero-sum games, they do not guar-antee convergence to Nash equilibrium in multiplayer games. Recently, an approach has been presented for exact computation of Nash equilibrium in multiplayer imperfect-information games that solves a quadratically constrained program based on a nonlinear complementarity problem formulation derived from the sequence-form game representation. This formulation was solved using Gurobi’s nonconvex quadratic solver, which employs spatial branch-and-bound to iteratively refine variable bounds by solv-ing convex relaxations of bilinear terms via McCormick envelopes. During presolve, Gurobi introduces auxiliary variables and, in some cases, binary variables, leading to an internal MIQCP reformulation. This approach was demonstrated to outperform prior algorithms from the Gambit software suite and quickly solve three-player Kuhn poker after removal of dominated actions; however, the algorithm was not able to solve the full version of the game within 24 hours. In this paper, we derive finite bounds on slack and multiplier variables in the nonlinear complementarity formulation. These bounds strengthen the convex relaxations used within spatial branch-and-bound and lead to substantial computational im-provements. We demonstrate the impact of the proposed bounds on exact Nash equilibrium computation in three-player Kuhn poker. 
+
+# 1 Nonlinear complementarity program formulation 
+
+In this section we review the derivation of a nonlinear complementarity program formulation (NLCP) for multiplayer Nash equilibrium in imperfect-information games [2]. Imperfect-information games are mod-eled using extensive-form game trees, where play proceeds from the root node to a terminal leaf node at which point all players receive payoffs. Each non-terminal node has an associated player (possibly chance )that makes the decision at that node. These nodes are partitioned into information sets , where the player whose turn it is to move cannot distinguish among the states in the same information set. Therefore, in any given information set, a player must choose actions with the same distribution at each state contained in the information set. If no player forgets information that they previously knew, we say that the game has perfect recall . A (mixed) strategy for player i, σ i ∈ Σi, is a function that assigns a probability distribution over all actions at each information set belonging to i.Rather than operate on the full pure strategy space, which has size exponential in the size of the game tree, the sequence-form representation works with sequences of actions along trajectories from the root node to leaf nodes [4]. For player 1, the matrix E is defined where each row corresponds to an information set (including an initial row for the “empty” information set), and each column corresponds to an action sequence (including an initial row for the “empty” action sequence). In the first row of E the first element is 1 and all other elements are 0; subsequent rows have -1 for the entries corresponding to the action sequence 1
+
+> arXiv:2606.25997v1 [cs.GT] 24 Jun 2026
+
+leading to the root of the information set, and 1 for all actions that can be taken at the information set (and 0 otherwise). Thus E has dimension c1 × d1, where ci is the number of information sets for player i and di
+
+is the number of action sequences for player i. Matrix F is defined analogously for player 2. The vector e
+
+is defined to be a column vector of length c1 with 1 in the first position and 0 in other entries, and vector 
+
+f is defined with length c2 analogously. The matrix A is defined with dimension d1 × d2 where entry Aij 
+
+gives the payoff for player 1 when player 1 plays action sequence i and player 2 plays action sequence j
+
+multiplied by the probabilities of chance moves along the path of play. The matrix B of player 2’s payoffs is defined analogously. In zero-sum games B = −A.
+
+Given these matrices we can solve one of two linear programming problems to compute a Nash equi-librium in zero-sum extensive-form games [4]. In the first formulation the primal variables x correspond to player 1’s mixed strategy while the dual variables correspond to player 2’s strategy. In the second formula-tion, which is the dual problem of the first formulation, the primal decision variables y correspond to player 2’s strategy while the dual variables correspond to player 1’s strategy. 
+
+max x,q −qT f
+
+s.t. xT (−A) − qT F ≤ 0xT ET = eT
+
+x ≥ 0
+
+min y,p eT p
+
+s.t. −Ay + ET p ≥ 0
+
+−Fy = −fy ≥ 0
+
+For two-player non-zero-sum games, the problem of finding a Nash equilibrium is the feasibility problem of finding x, y, p, q, such that [4]: 
+
+−Ay + ET p ≥ 0
+
+−BT x + FT q ≥ 0
+
+−Ex = −e
+
+−Fy = −fx ≥ 0y ≥ 0xT (−Ay + ET p) = 0
+
+yT (−Bx + FT q) = 0
+
+The final two constraints are called complementarity slackness conditions (CSC), and the full system is known as a linear complementarity problem (LCP). It is no longer a linear program since the CSCs involve products of variables. This LCP can be solved using Lemke’s algorithm [5] or the related Lemke-Howson algorithm [6]. We would like to extend this result to develop a feasibility problem for games with n > 2
+
+players. We will start with the case n = 3 . The sequence-form representation extends straightforwardly to 3 players. We define matrix G for player 3 analogously to E and F, and define vector g analogously to e, f .
+
+The utility functions can no longer be represented as 2-dimensional matrices. We write u1(i, j, k ) as player 1’s utility when player 1 plays action sequence i, player 2 plays action sequence j, and player 3 plays action sequence k. We represent player 2 and 3’s utilities analogously as u2(i, j, k ), u 3(i, j, k ).
+
+Consider the problem of player 1 playing a best response when player 2 plays y and player 3 plays z:
+
+max x
+
+P
+
+> i
+
+P
+
+> j
+
+P 
+
+> k
+
+xiyj zku1(i, j, k )
+
+s.t. Ex = ex ≥ 0
+
+2Let us rewrite this as a convex minimization problem by negating the objective: 
+
+min x − P
+
+> i
+
+P
+
+> j
+
+P 
+
+> k
+
+xiyj zku1(i, j, k )
+
+s.t. Ex = ex ≥ 0
+
+The Lagrangian is 
+
+L(x, τ 1, r1) = − X
+
+> i
+
+X
+
+> j
+
+X
+
+> k
+
+xiyj zku1(i, j, k ) − (Ex − e)T τ 1 − (r1)T x
+
+Defining λ1 = −τ 1:
+
+L(x, λ1, r1) = − X
+
+> i
+
+X
+
+> j
+
+X
+
+> k
+
+xiyj zku1(i, j, k ) − (Ex − e)T (−λ1) − (r1)T x
+
+= − X
+
+> i
+
+X
+
+> j
+
+X
+
+> k
+
+xiyj zku1(i, j, k ) + ( Ex − e)T λ1 − (r1)T x
+
+∂L ∂x i
+
+= − X
+
+> j
+
+X
+
+> k
+
+yj zku1(i, j, k ) + X
+
+> j
+
+λ1 
+
+> j
+
+Eji − r1
+
+> i
+
+So the first-order necessary optimality conditions for player 1’s best response problem are: 
+
+Ex = ex ≥ 0r1 ≥ 0
+
+− P
+
+> j
+
+P 
+
+> k
+
+yj zku1(i, j, k ) + P 
+
+> j
+
+λ1 
+
+> j
+
+Eji − r1 
+
+> i
+
+= 0 for all ixir1 
+
+> i
+
+= 0 for all i
+
+Since the problem is a convex minimization problem these conditions are sufficient for optimality as well. Adding in analogous constraints for players 2 and 3, the problem is to find x, y, z, λ1, λ2, λ3, r1, r2, r3
+
+such that: 
+
+− X
+
+> j
+
+X
+
+> k
+
+yj zku1(i, j, k ) + X
+
+> j
+
+λ1 
+
+> j
+
+Eji − r1 
+
+> i
+
+= 0 for all i
+
+− X
+
+> i
+
+X
+
+> k
+
+xizku2(i, j, k ) + X
+
+> i
+
+λ2 
+
+> i
+
+Fij − r2 
+
+> j
+
+= 0 for all j
+
+− X
+
+> i
+
+X
+
+> j
+
+xiyj u3(i, j, k ) + X
+
+> j
+
+λ3 
+
+> j
+
+Gjk − r3 
+
+> k
+
+= 0 for all k
+
+Ex = eFy = fGz = gx ≥ 0y ≥ 0 (1) 
+
+z ≥ 0r1 ≥ 0r2 ≥ 0
+
+3r3 ≥ 0
+
+xir1 
+
+> i
+
+= 0 for all iyir2 
+
+> i
+
+= 0 for all izir3 
+
+> i
+
+= 0 for all i
+
+This feasibility program is not a linear program due to several products of variables: yj zk, x izk, xiyj ,
+
+xir1 
+
+> i
+
+, y ir2 
+
+> i
+
+, z ir3 
+
+> i
+
+. This formulation can be straightforwardly generalized to n > 3 players by adding in the original decision constraints, multiplier sign conditions, Lagrange derivative conditions, and complementary slackness conditions for each player. The Lagrange derivative conditions will involve products of n − 1
+
+variables, while the complementary slackness conditions still involve products of 2 variables. However, we can still model the Lagrange derivative conditions with quadratic constraints by incrementally defining new product variables. E.g., define wij = xiyj , then vijk = wij zk, etc. So for arbitrary n > 2, we can define the problem of finding a Nash equilibrium as a nonlinear complementarity problem, which can be modeled as a quadratically-constrained feasibility program. For efficiency we prefer to introduce as few new auxiliary bilinear variables as possible. For example, for four players with variables x1, x2, x3, x4, we can create a new bilinear program with only the introduction of new variables yij = x1 
+
+> i
+
+x2 
+
+> j
+
+and zij = x3 
+
+> i
+
+x4 
+
+> j
+
+. We have 
+
+x1 
+
+> i
+
+x2 
+
+> j
+
+x3 
+
+> k
+
+= yij x3
+
+> k
+
+, x 1 
+
+> i
+
+x2 
+
+> j
+
+x4 
+
+> m
+
+= yij x4
+
+> m
+
+, x 1 
+
+> i
+
+x3
+
+> k
+
+x4 
+
+> m
+
+= x1 
+
+> i
+
+zkm , x 2 
+
+> j
+
+x3
+
+> k
+
+x4 
+
+> m
+
+= x2 
+
+> j
+
+zkm .
+
+# 2 Tightening variable bounds 
+
+We can directly solve the NLCP formulation (1) in Gurobi using the nonconvex quadratic solver [3]. Gurobi allows us to input the nonconvex bilinear terms that occur in the first three set of constraints as well as the final complementarity constraints. The prior formulation [2] used the following variable domains. For the action sequence variables x, y, z, the obvious domain is [0,1]. The lower bounds are directly implied by the constraints in the original problem. The upper bounds of 1 follow from the sequence-form constraints (e.g., 
+
+Ex = e), which are essentially flow conservation constraints. For the slackness variables all we know is 
+
+ri ≥ 0. So the “natural” domain to use is [0 , ∞). For the unconstrained multiplier variables λij the natural domain is (−∞ , ∞). These were the variable domains used in the prior implementation. An obvious question to consider is whether these variable domain bounds can be tightened without affecting the solutions, since this could have a dramatic improvement on the performance of spatial branch and bound. Let us start by looking at r1 
+
+> i
+
+(the other slack variables will be analogous). Purely based on the formulation (1) without any information, we cannot reduce the upper bound on r1 
+
+> i
+
+, since it depends on the unbounded variables λ1 
+
+> j
+
+. However, we can bound r1 
+
+> i
+
+by exploiting its interpretation as a dual slack variable in player 1’s best-response linear program. Fix opponent strategies y, z , and define 
+
+ci := X
+
+> j,k
+
+yj zku1(i, j, k ).
+
+Consider the player 1 best-response linear program 
+
+max  
+
+> x
+
+c⊤x s.t. Ex = e, x ≥ 0.
+
+Let 
+
+V max 1 = max {c⊤x : Ex = e, x ≥ 0},
+
+and for each sequence i, define 
+
+Ui = max {c⊤x : Ex = e, x ≥ 0, x i = 1 }.
+
+4Let (x∗, λ1, r1) satisfy the corresponding KKT conditions 
+
+E⊤λ1 − r1 = c, r1 ≥ 0, Ex ∗ = e, x∗ ≥ 0.
+
+Proposition 1. For every sequence i,
+
+0 ≤ r1 
+
+> i
+
+≤ V max 1 − Ui.
+
+Proof. By strong duality, the value of the best-response linear program is 
+
+V max 1 = e⊤λ1.
+
+For any feasible realization plan x, we have 
+
+c⊤x = x⊤(E⊤λ1 − r1) = ( Ex )⊤λ1 − (r1)⊤x = e⊤λ1 − (r1)⊤x = V max 1 − (r1)⊤x.
+
+Fix a sequence i. Since sequence i is realizable, there exists at least one feasible realization plan satisfy-ing xi = 1 . Therefore Ui is well-defined. Now let x be any feasible realization plan with xi = 1 . Since r1 ≥ 0 and x ≥ 0,
+
+(r1)⊤x ≥ r1 
+
+> i
+
+xi = r1 
+
+> i
+
+.
+
+Hence 
+
+c⊤x = V max 1 − (r1)⊤x ≤ V max 1 − r1 
+
+> i
+
+.
+
+Rearranging gives 
+
+r1 
+
+> i
+
+≤ V max 1 − c⊤x.
+
+Taking the maximum over all feasible x satisfying xi = 1 yields 
+
+r1 
+
+> i
+
+≤ V max 1 − Ui.
+
+The lower bound 
+
+r1 
+
+> i
+
+≥ 0
+
+follows directly from the KKT conditions. The quantity V max 1 − Ui represents the loss in best-response value incurred by forcing sequence i. Thus, Proposition 1 provides a sequence-specific bound that is tighter for nearly optimal sequences and looser for highly suboptimal sequences. 
+
+Corollary 1. Let 
+
+umax 1 := max  
+
+> i,j,k
+
+u1(i, j, k ), umin 1 := min  
+
+> i,j,k
+
+u1(i, j, k ).
+
+Then 
+
+0 ≤ r1 
+
+> i
+
+≤ umax 1 − umin 1 .
+
+Proof. Since every expected utility c⊤x is a convex combination of terminal payoffs, 
+
+umin 1 ≤ c⊤x ≤ umax 1
+
+for every feasible realization plan x. Therefore, 
+
+V max 1 ≤ umax 1 , Ui ≥ umin 1 .
+
+Applying Proposition 1 yields 
+
+0 ≤ r1 
+
+> i
+
+≤ V max 1 − Ui ≤ umax 1 − umin 1 .
+
+5Although weaker than the sequence-specific bound of Proposition 1, the bound in Corollary 1 is trivial to compute and remains significantly tighter than the original domain 0 ≤ r1 
+
+> i
+
+< ∞. This tightening leads to stronger convex relaxations of the bilinear constraints, which can significantly improve the efficiency of spatial branch-and-bound. We can obtain similar bounds for the other slack variables analogously. While the multiplier vector λ1 need not be unique, valid finite bounds can still be obtained. Unlike Proposition 1, which yields sequence-specific bounds that depend on the opponent realization plans, we seek bounds that are valid globally and therefore independent of the unknown equilibrium strategies. Define 
+
+M1 := max  
+
+> i,j,k
+
+|u1(i, j, k )|,
+
+and 
+
+R1 := umax 1 − umin 1 .
+
+Since 
+
+cσ = X
+
+> j,k
+
+yj zku1(σ, j, k ),
+
+and y, z are realization plans, cσ is a convex combination of terminal payoffs. Therefore, 
+
+|cσ| ≤ M1.
+
+Proposition 2. Let dI denote the number of player 1 information sets in the subtree rooted at information set I (including I itself). Then, for every player 1 information set I,
+
+|λ1 
+
+> I
+
+| ≤ dI (M1 + R1).
+
+Moreover, 
+
+umin 1 ≤ λ1 
+
+> ∅
+
+≤ umax 1 .
+
+Proof. Consider a sequence σ ∈ A(I). By the structure of the sequence-form constraint matrix E, the stationarity condition 
+
+E⊤λ1 − r1 = c
+
+implies 
+
+λ1 
+
+> I
+
+− X
+
+> J∈child( σ)
+
+λ1 
+
+> J
+
+= cσ + r1
+
+> σ
+
+.
+
+Equivalently, 
+
+λ1 
+
+> I
+
+= cσ + r1 
+
+> σ
+
++ X
+
+> J∈child( σ)
+
+λ1 
+
+> J
+
+.
+
+By Corollary 1, 
+
+0 ≤ r1 
+
+> σ
+
+≤ R1.
+
+Since 
+
+|cσ| ≤ M1,
+
+it follows that 
+
+|cσ + r1
+
+> σ
+
+| ≤ M1 + R1.
+
+We now proceed by backward induction on the information-set tree. For an information set with no descendants, 
+
+|λ1 
+
+> I
+
+| = |cσ + r1
+
+> σ
+
+| ≤ M1 + R1.
+
+6Suppose that for every descendant information set J,
+
+|λ1 
+
+> J
+
+| ≤ dJ (M1 + R1),
+
+where dJ is the number of information sets in the subtree rooted at J. Then 
+
+|λ1 
+
+> I
+
+| ≤ (M1 + R1) + X
+
+> J∈child( σ)
+
+dJ (M1 + R1).
+
+Since the child subtrees are disjoint, the quantity 
+
+1 + X
+
+> J∈child( σ)
+
+dJ
+
+is exactly the number of information sets in the subtree rooted at I, which is dI . Hence 
+
+|λ1 
+
+> I
+
+| ≤ dI (M1 + R1).
+
+Finally, by strong duality, 
+
+e⊤λ1 = V max 1 .
+
+Since e has a 1 in the initial row and 0 elsewhere, 
+
+λ1 
+
+> ∅
+
+= V max 1 .
+
+Since V max 1 is an expected utility, 
+
+umin 1 ≤ V max 1 ≤ umax 1 .
+
+Therefore, 
+
+umin 1 ≤ λ1 
+
+> ∅
+
+≤ umax 1 .
+
+Corollary 2. Let m1 denote the total number of player 1 information sets (including the empty information set). Then, for every player 1 information set I,
+
+|λ1 
+
+> I
+
+| ≤ m1(M1 + R1).
+
+Proof. Since dI ≤ m1 for every information set I, the result follows immediately from Proposition 2. 
+
+# 3 Three-player Kuhn poker 
+
+Three-player Kuhn poker is a simplified form of limit poker that has been used as a testbed game in the AAAI Annual Computer Poker Competition for several years. There is a single round of betting. Each player first antes a single chip and is dealt a card from a four-card deck that contains a Jack, Queen, King, and Ace. The first player has the option to bet a fixed amount of one additional chip (by contrast in no-limit 
+
+games players can bet arbitrary amounts of chips) or to check (remain in the hand but not bet an additional chip). When facing a bet, a player can call (i.e., match the bet) or fold (forfeit the hand). No additional bets or raises beyond the original bet are allowed (while they are allowed in other common poker variants such as Texas hold ’em). If all players but one have folded, then the player who has not folded wins the pot , which consists of all chips in the middle. If more than one player has not folded by the end there is a showdown ,at which point the players reveal their private card and the player with the highest card wins the entire pot (which consists of the initial antes plus all additional bets and calls). The Ace is the highest card, followed 7by King, Queen, and Jack. As one example of a play of the game, suppose the players are dealt Queen, King, Ace respectively, and player 1 checks, player 2 checks, player 3 bets, player 1 folds, and player 2 calls; then player 3 would win a pot of 5, for a profit of 3 (while player 1 loses 1 and player 2 loses 2). Note that despite the fact that 3-player Kuhn poker is only a synthetic simplified form of poker and is not actually played competitively, it is still far from trivial to analyze, and contains many of the interesting complexities of popular forms of poker such as Texas hold ’em. First, it is a game of imperfect information, as players are dealt a private card that the other agents do not have access to, which makes the game more complex than a game with perfect information that has the same number of nodes. Despite the size, it is not trivial to compute Nash equilibrium analytically, though recently an infinite family of Nash equilibria has been computed [8]. The equilibrium strategies exhibit the phenomena of bluffing (i.e., betting with weak hands such as a Jack or Queen), and slow-playing (aka trapping ) (i.e., checking with strong hands such as a King or Ace in order to induce a bet from a weaker hand). The family of equilibria is based on several parameter values, which once selected determine the probabilities for the other portions of the strategies. One can see that randomization and including some probability on trapping and bluffing are essential in order to have a strong and unpredictable strategy. Thus, while this game may appear quite simple at first glance, analysis is still very far from simple, and the game exhibits many of the complexities of far larger games that are played competitively by humans for large amounts of money. Prior work notes that several of the Nash equilibrium strategy probabilities must take on “necessary parameter values” of 0 or 1 (i.e., certain actions are dominated ) [8]. These actions include calling bet with Jack, folding to a bet with Ace, calling a bet with Queen after a bet and a call, and checking with Ace after two players check. We can remove these dominated actions from the game, constructing a reduced game that is guaranteed to contain a Nash equilibrium of the full game as well. The full game has 48 total information sets (16 per player) and 601 total nodes, which includes 288 player decision nodes, 312 terminal nodes, and one chance node. The reduced game after removal of dominated actions has 48 total information sets and 415 total nodes (252 player decision nodes, 162 terminal nodes, and one chance node). So the total number of information sets remains the same while the number of player decision nodes is decreased by 12.5%. 
+
+# 4 Experiments 
+
+For all experiments we used the nonconvex quadratic solver from Gurobi version 13.0.2, which guarantees global optimality (up to numerical tolerance) [3]. We used an Intel Core i7-1065G7 processor with base clock speed of 1.30 GHz with 16 GB of RAM under 64-bit Windows 11 (4 cores/8 threads). For all exper-iments we use the same random seed for Gurobi’s solver, and otherwise used Gurobi’s default parameters. The previous experiments used Gurobi version 12.0.3 without using a fixed random seed. Previous results showed that Gurobi was able to solve the reduced version of the game (after the removal of dominated ac-tions) in 2.47 seconds, and was unable to solve the full version in 24 hours [2]. These experiments used all default values for Gurobi’s parameters (though did not use the fixed random seed). 
+
+4.1 Simplified 3-player Kuhn poker 
+
+For the prior experiments on the reduced game, we verified that no player can gain more than 1.4×10 −17 by deviating from the computed solution, indicating that it is essentially an exact Nash equilibrium. We ran the same prior solver for the reduced version of the game again using the fixed random seed and it was able to solve the game in 0.086 seconds, producing strategies in which no player can gain more than 1.8 × 10 −13 by deviating. Note that we did not make any modifications to the variable bounds or solver parameters; the only change made was the version of Gurobi used (13.0.2 vs. 12.0.3). It appears that the default solver of version 13.0.2 has a more effective search strategy than version 12.0.3. In any event, it is clear that the algorithm 8can solve the reduced game quite quickly without need for any further improvements. To give an idea of the size and operation of the algorithm on the reduced game, we report values from the new run. The model input to Gurobi contained 72 rows and 249 columns with 168 nonzeros and 198 quadratic constraints. Gurobi’s initial presolve method removed 45 rows and 57 columns. Gurobi then rec-ognizes the model is nonconvex and reformulates it as a MIP. A second presolve procedure removes 36 rows and 88 columns. This new model has 1102 rows and 348 columns with 2360 nonzeros, 252 bilinear con-straints, 348 continuous variables, and 0 integer variables. Gurobi then solved the model in 0.086 seconds, exploring 0 nodes in 0 simplex iterations. Interestingly no branching was needed, while in the prior run with version 12.03 32 cutting planes were used. 
+
+4.2 Full 3-player Kuhn poker 
+
+We are mainly interested in improving performance for solving the full version of 3-player Kuhn poker, since it was previously intractable. Using the prior approach [2], the model input to Gurobi contained 51 rows and 249 columns with 147 nonzeros and 198 quadratic constraints. Note that we constructed the reduced game by simply constructing the full game and then adding equality constraints in the Gurobi model setting certain action sequence probabilities to 0. This explains why the reduced game model initially contains more rows than the full model. The initial presolve phase removed only 3 rows and 6 columns. After recognizing that the model is nonconvex and deciding to solve it as a MIP, the presolve phase then adds in 12 rows and 0 columns, followed by removing 0 rows and 9 columns. The final presolved model has 2112 rows and 637 columns with 4645 nonzeros, 492 bilinear constraints, 637 continuous variables, and 0 integer variables. The main algorithm run started after 132 iterations were performed for root relaxation. Next we imposed the bounds on the slack variables from Corollary 1, while keeping all Gurobi pa-rameters the same. This implementation was able to solve the problem to optimality in 1.160 seconds. The original model was the same (51 rows and 249 columns with 147 nonzeros and 198 quadratic constraints). Presolve initially removed 3 rows and 6 columns, as before. After recognizing that the model is nonconvex and deciding to solve it as a MIP, presolve then adds 204 rows and 87 columns. The final presolved model has 1920 rows and 733 columns with 4741 nonzeros, 396 bilinear constraints, 637 continuous variables, and 96 integer (binary) variables. After 345 iterations of root relaxation, Gurobi solved the problem in 1.160 seconds, exploring 178 nodes in 21,104 simplex iterations. 228 cutting planes were used: 20 implied bound, 3 MIR, 3 flow cover, 2 flow path, 156 RLT, 2 relax-and-lift, 40 BQP, and 2 PSD. Note that the slack bound used from Corollary 1 was 0.25, while the largest slack variable value in the optimal solution was 0.167. We next imposed both the slack variable bounds from Corollary 1 as well as the multiplier variable bounds from Corollary 2, keeping the random seed and all other Gurobi parameters the same. Gurobi was able to compute an optimal solution in 3.299 seconds, which surprisingly was slower than only imposing bounds on the slack variables. Note that the multiplier bound used from Corollary 2 was 7.083, while the largest absolute value of a multiplier variable in the optimal solution was 0.542. Interestingly, when we imposed a tighter bound requiring all multiplier variables to lie between −1 and 1, the computation took 22.093 seconds. So imposing no bound on multiplier variables performed best, followed by the bound from Corollary 2, followed by a stricter bound. Finally, we imposed only the multiplier variable bounds from Corollary 2 without imposing the slack variable bounds. This approach found an optimal solution in 9.257 seconds. Imposing the tighter multiplier bounds of 1 vs. 7.083 found an optimal solution in 14.936 seconds. Our results are summarized in Table 1. While imposing bounds on both the slack and multiplier vari-ables separately led to significantly improved performance, the best performance was achieved by imposing bounds only on the slack variables and keeping the multiplier variables unconstrained. It is not surprising that bounding the slack variables proved to be more useful than bounding the multiplier variables, since the slack variables appear in quadratic constraints while the multiplier variables do not; however, it is surpris-9ing that imposing bounds on both sets of variables performed worse than just bounding the slack variables. Overall, our improvements enabled us to solve a problem that was previously intractable (could not be solved in 24 hours) in just 1.160 seconds. We note that only one of the algorithms from version 16.4 of the Gambit software suite [7] was able to solve the full version of 3-player Kuhn poker. The command-line version of the ‘logit’ approach, which computes the principal branch of the (logit) quantal response correspondence [9, 10], was able to solve the problem in 2 minutes and 34 seconds. Thus, our improved implementation of the NLCP solver significantly outperformed all applicable approaches from the Gambit suite for this problem. Table 1: Impact of variable bound tightening on solve time in full 3-player Kuhn poker. Slack Bounds Multiplier Bounds Solve Time No No > 24 hours Yes No 1.160 seconds No Yes 9.257 seconds Yes Yes 3.299 seconds 
+
+# 5 Conclusion 
+
+Computing Nash equilibrium is a fundamental problem in computational game theory, and many important problems are naturally formulated as multiplayer imperfect-information games. Three-player Kuhn poker has been studied as a well-motivated game in this class. Out of the available algorithms from the Gambit software suite [7], only the logit quantal response approach [9, 10] was able to successfully compute a Nash equilibrium in three-player Kuhn poker, requiring 2.5 minutes to do so. Recently an approach has been proposed that solves a quadratically constrained program based on a nonlinear complementarity problem (NLCP) formulation derived from the sequence-form game representation [2]. This approach was not able to solve three-player Kuhn poker in 24 hours, though it is able to solve the reduced game after removal of dominated actions in 0.086 seconds. These results illustrate both the potential power of removal of domi-nated actions in imperfect-information games [1], as well as limitations of the NLCP approach. As many games may not have a large number of dominated actions, we would still like to develop an improved exact Nash-equilibrium finding approach that can solve larger games without relying on removal of a large number of dominated actions. A clear limitation of the NLCP formulation is that the slack variables are unbounded above and the multiplier variables are unbounded in both directions. Tighter variable bounds can have a dramatic effect on the spatial branch-and-bound method used by solvers such as Gurobi. While no finite bounds are implied directly from the original problem formulation, we are able to derive nontrivial finite bounds for both the slack and multiplier variables by applying strong duality to the best response computation problems from which the NLCP formulation is derived. We showed that applying our bounds to each class of variables led to a significant improvement in computation of Nash equilibrium in the full version of three-player Kuhn poker. The bounds for the slack variables are particularly valuable since they appear in quadratic constraints. We obtained best performance when we applied our bounds to the slack variables (while keeping the multiplier variables unconstrained). This approach solved the game in 1.160 seconds, dramatically outperforming the original NLCP approach as well as all approaches from the Gambit suite. 10 References 
+
+[1] Sam Ganzfried. Dominated actions in imperfect-information games, 2025. arXiv:2504.09716 [cs.GT]. [2] Sam Ganzfried. Quadratic programming approach for Nash equilibrium computation in multiplayer imperfect-information games. Games , 17(1):9, 2026. [3] Gurobi Optimization, LLC. Gurobi Optimizer Reference Manual, 2026. [4] Daphne Koller, Nimrod Megiddo, and Bernhard von Stengel. Fast algorithms for finding randomized strategies in game trees. In Proceedings of the 26th ACM Symposium on Theory of Computing (STOC) ,pages 750–760, 1994. [5] C. E. Lemke. Bimatrix equilibrium points and mathematical programming. Management Science ,11(7):681–689, May 1965. [6] C. E. Lemke and J. T. Howson. Equilibrium points of bimatrix games. Journal of the Society of Industrial and Applied Mathematics , 12:413–423, 1964. [7] Rahul Savani and Theodore L. Turocy. Gambit: The Package for Computation in Game Theory, Ver-sion 16.4.0, 2025. [8] Duane Szafron, Richard Gibson, and Nathan Sturtevant. A parameterized family of equilibrium profiles for three-player Kuhn poker. In Proceedings of the International Conference on Autonomous Agents and Multi-Agent Systems (AAMAS) , 2013. [9] Theodore L. Turocy. A dynamic homotopy interpretation of the logistic quantal response equilibrium correspondence. Games and Economic Behavior , 51:243–263, 05 2005. [10] Theodore L. Turocy. Computing Sequential Equilibria Using Agent Quantal Response Equilibria. 
+
+Economic Theory , 42(1):255–269, January 2010. 11

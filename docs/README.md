@@ -6,38 +6,50 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-24
-- 运行时间：2026-06-24 21:38:45 UTC
+- 最新运行日期：2026-06-25
+- 运行时间：2026-06-25 21:10:44 UTC
 - 运行状态：成功
-- 本次总论文数：6
-- 精读区：2
-- 速读区：4
+- 本次总论文数：10
+- 精读区：5
+- 速读区：5
 
 ### 今日简报（AI）
-今日6篇论文推荐，2篇精读聚焦大游戏策略与实时智能体，4篇速读涵盖人机交互与强化学习。最值得关注《EMAgnet》的参数空间EMA正则化自博弈方法（9.0分），及《Latent Bridge》的慢速通道游戏智能体设计（8.0分）。建议从精读入手，优先了解正则化与自博弈结合的创新点。
-- 详情：[/202606/24/README](/202606/24/README)
+今日精读两篇满分论文，聚焦棋类风格解耦与金融素养智能体追踪。最值得关注Elo解耦残差移动模型和基于多智能体LLM的隐形评估框架。建议重点关注解释性AI在博弈分析与教育测评中的融合方法。
+- 详情：[/202606/25/README](/202606/25/README)
 
 ### 精读区论文标签
-1. [EMAgnet: Parameter-Space EMA Regularization for Policy Gradient Self-Play in Large Games](/202606/24/2606.23995v1-emagnet-parameter-space-ema-regularization-for-policy-gradient-self-play-in-large-games)  
+1. [Elo-Disentangled Player-Style Embeddings for Human Chess via Rating-Conditioned Residual Move Model](/202606/25/2606.25176v1-elo-disentangled-player-style-embeddings-for-human-chess-via-rating-conditioned-residual-move-model)  
+   标签：评分：10.0/10、query:player-ai
+   evidence：与等级分解耦的人类象棋玩家风格嵌入
+2. [Agentic Knowledge Tracing: A Multi-Agent LLM Architecture for Stealth Assessment of Financial Literacy in Serious Games](/202606/25/2606.25358v1-agentic-knowledge-tracing-a-multi-agent-llm-architecture-for-stealth-assessment-of-financial-literacy-in-serious-games)  
+   标签：评分：10.0/10、query:player-ai
+   evidence：基于多智能体LLM的严肃游戏潜行评估进行玩家建模
+3. [Variable Bound Tightening for Nash Equilibrium Computation in Multiplayer Imperfect-Information Games](/202606/25/2606.25997v1-variable-bound-tightening-for-nash-equilibrium-computation-in-multiplayer-imperfect-information-games)  
    标签：评分：9.0/10、query:player-ai
-   evidence：大型博弈中的自博弈策略梯度方法
-2. [The Latent Bridge: A Continuous Slow-Fast Channel for Real-Time Game Agents](/202606/24/2606.24470v1-the-latent-bridge-a-continuous-slow-fast-channel-for-real-time-game-agents)  
+   evidence：计算多人不完备信息博弈中的纳什均衡，直接与AI智能体游戏游玩相关
+4. [RevengeBench: Reverse Engineering Code-Space Policies from Behavioral Experiments](/202606/25/2606.26094v1-revengebench-reverse-engineering-code-space-policies-from-behavioral-experiments)  
+   标签：评分：9.0/10、query:player-ai
+   evidence：通过游戏轨迹逆向工程策略来仿真玩家行为
+5. [Towards Scalable Multi-Task Reinforcement Learning with Large Decision Models](/202606/25/2606.24962v1-towards-scalable-multi-task-reinforcement-learning-with-large-decision-models)  
    标签：评分：8.0/10、query:player-ai
-   evidence：实时游戏代理通过慢-快通道平衡延迟和质量
+   evidence：在数千个环境上进行多任务强化学习训练，与游戏环境中AI智能体训练相关
 
 ### 速读区论文标签
-1. [Parasitic Masquerade: Societal Scale Human-Machine Interaction](/202606/24/2606.17925v1-parasitic-masquerade-societal-scale-human-machine-interaction)  
+1. [Scalable Maximum Entropy Reinforcement Learning for Diffusion Policies via Adjoint Matching](/202606/25/2606.22630v1-scalable-maximum-entropy-reinforcement-learning-for-diffusion-policies-via-adjoint-matching)  
+   标签：评分：7.0/10、query:player-ai
+   evidence：面向扩散策略的可扩展最大熵强化学习
+2. [JAMER: Project-Level Code Framework Dataset and Benchmark on Professional Game Engines](/202606/25/2606.19830v2-jamer-project-level-code-framework-dataset-and-benchmark-on-professional-game-engines)  
    标签：评分：6.0/10、query:player-ai
-   evidence：使用均场博弈建模共享环境中多组Agent交互，与玩家行为模拟相关
-2. [Reinforcement Learning for Computer-Use Agents with Autonomous Evaluation](/202606/24/2606.24515v1-reinforcement-learning-for-computer-use-agents-with-autonomous-evaluation)  
+   evidence：游戏引擎数据集与基准，可用于AI智能体训练
+3. [MetaResearcher: Scaling Deep Research via Self-Reflective Reinforcement Learning in Adversarial Virtual Environments](/202606/25/2606.19893v1-metaresearcher-scaling-deep-research-via-self-reflective-reinforcement-learning-in-adversarial-virtual-environments)  
    标签：评分：6.0/10、query:player-ai
-   evidence：RL微调用于GUI代理，方法可应用于游戏代理训练
-3. [Qwen-AgentWorld: Language World Models for General Agents](/202606/24/2606.24597v1-qwen-agentworld-language-world-models-for-general-agents)  
+   evidence：在对抗性虚拟环境中进行强化学习训练智能体，可迁移至游戏AI
+4. [Escaping the Self-Confirmation Trap: An Execute-Distill-Verify Paradigm for Agentic Experience Learning](/202606/25/2606.24428v1-escaping-the-self-confirmation-trap-an-execute-distill-verify-paradigm-for-agentic-experience-learning)  
    标签：评分：6.0/10、query:player-ai
-   evidence：跨领域智能体环境模拟的世界模型
-4. [Themis: An explainable AI-enabled framework for Reinforcement Learning with Human Feedback](/202606/24/2606.24622v1-themis-an-explainable-ai-enabled-framework-for-reinforcement-learning-with-human-feedback)  
+   evidence：LLM智能体经验学习用于任务执行
+5. [GCT-MARL: Graph-Based Contrastive Transfer for Sample-Efficient Cooperative Multi-Agent Reinforcement Learning](/202606/25/2606.25073v1-gct-marl-graph-based-contrastive-transfer-for-sample-efficient-cooperative-multi-agent-reinforcement-learning)  
    标签：评分：6.0/10、query:player-ai
-   evidence：支持游戏环境的RLHF框架
+   evidence：多智能体强化学习用于合作智能体训练
 
 
 <div class="dpr-home-promo-card">
