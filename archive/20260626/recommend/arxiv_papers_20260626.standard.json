@@ -1,0 +1,248 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-26T21:45:39.511507+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 2,
+    "deep_cap": 6,
+    "deep_selected": 2,
+    "quick_candidates": 3,
+    "quick_skim_target": 11,
+    "quick_selected": 3
+  },
+  "deep_dive": [
+    {
+      "id": "2606.27025v1",
+      "source": "arxiv",
+      "title": "Improving General Role-Playing Agents via Psychology-Grounded Reasoning and Role-Aware Policy Optimization",
+      "abstract": "Building general-purpose role-playing agents that faithfully portray any character from a natural-language profile remains challenging. The dominant paradigm -- supervised fine-tuning -- encourages behavioral mimicry without deep, human-like internal thought processes, resulting in poor out-of-distribution generalization. Therefore, we propose \\textbf{Psy-CoT}, a psychology-grounded chain-of-thought framework that decomposes pre-response reasoning into three role-specific steps -- \\emph{Interaction Perception}, \\emph{Psychological Empathy}, and \\emph{Logical Construction} -- so that the model \\emph{thinks dynamically} from the profile rather than merely mimicking surface patterns. While structured reasoning provides a foundation, it alone is insufficient; reinforcement learning is essential to further align the model with character fidelity. However, we observe that under LLM-based reward models, both generic phrases that hack the reward model and genuinely role-specific phrases receive identical gradient signals -- this hacking accumulates over training, misleading the model into treating both as equally optimal choices. To address this, we propose \\textbf{Role-Aware Policy Optimization (RAPO)}, which uses profile--token mutual information to weight gradients asymmetrically -- amplifying role-specific tokens under positive advantage while attenuating them under negative advantage. Experiments on CoSER, CharacterBench, and CharacterEval demonstrate that Psy-CoT outperforms existing role-playing CoT methods, and RAPO consistently surpasses GRPO across multiple model scales.",
+      "authors": [
+        "Zhenhua Xu",
+        "Dongsheng Chen",
+        "Jian Li",
+        "Yitong Lin",
+        "Zhebo Wang",
+        "Jiafu Wu",
+        "Yizhang Jin",
+        "Chengjie Wang",
+        "Meng Han",
+        "Yabiao Wang"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-06-25T13:34:47+00:00",
+      "link": "https://arxiv.org/pdf/2606.27025v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "role-playing agents with psychological reasoning for game characters",
+      "llm_evidence_cn": "具有心理推理的角色扮演智能体用于游戏角色建模",
+      "llm_evidence": "具有心理推理的角色扮演智能体用于游戏角色建模",
+      "canonical_evidence": "具有心理推理的角色扮演智能体用于游戏角色建模",
+      "llm_tldr_en": "Proposes Psy-CoT, a psychology-grounded chain-of-thought for role-playing agents, enabling dynamic thinking from profiles. Directly relevant to virtual game player modeling.",
+      "llm_tldr_cn": "通用角色扮演智能体在忠实扮演自然语言描述的角色时面临挑战，现有监督微调仅模仿表面行为。该论文提出基于心理学的思维链框架Psy-CoT，将回应前推理分解为互动感知、心理共情和逻辑构建三个角色特定步骤，使模型从角色描述动态思考而非简单模仿。这一方法可直接用于虚拟游戏玩家建模，使非玩家角色（NPC）具有深层心理动机和个性化行为。",
+      "llm_tldr": "通用角色扮演智能体在忠实扮演自然语言描述的角色时面临挑战，现有监督微调仅模仿表面行为。该论文提出基于心理学的思维链框架Psy-CoT，将回应前推理分解为互动感知、心理共情和逻辑构建三个角色特定步骤，使模型从角色描述动态思考而非简单模仿。这一方法可直接用于虚拟游戏玩家建模，使非玩家角色（NPC）具有深层心理动机和个性化行为。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "virtual game player modeling",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.26970v1",
+      "source": "arxiv",
+      "title": "Computer Vision for MOBA Analytics: A Dataset and Baseline for Visibility Analysis in Dota 2",
+      "abstract": "Introduction: Most Multiplayer Online Battle Arena (MOBA) analytics studies rely on structured data, which does not directly capture what each team could actually see during a match. Objective: This work introduces Dota2-Vis, a video-based dataset, and a baseline pipeline for visibility analysis in professional Dota 2 matches. Methodology: The dataset comprises all 144 matches from The International 2025, recorded from both team perspectives, totaling 288 Full HD videos, together with 2,477 manually annotated minimap images. We evaluate multiple variants of a modern object detector for player-icon detection and use the best-performing model to estimate opponent-visible player presence over time. Results: YOLO11l (large) achieved the best overall performance, reliably identifying player icons even in dense and visually cluttered minimap scenes. The resulting visibility curves reveal player, hero, role, and team-level patterns that complement conventional MOBA analytics, highlighting behavioral differences that are difficult to obtain from structured data alone. The dataset and code are publicly available at https://github.com/RicardoRCarvalho/dota2-vis/.",
+      "authors": [
+        "Ricardo da Rocha Carvalho",
+        "Eloísa Oliveira",
+        "Luiz Bernardo Martins Kummer",
+        "Emerson Cabrera Paraiso",
+        "Rayson Laroca"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-06-25T12:43:05+00:00",
+      "link": "https://arxiv.org/pdf/2606.26970v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "player visibility analysis in Dota 2 using computer vision",
+      "llm_evidence_cn": "用计算机视觉分析Dota2玩家可见性",
+      "llm_evidence": "用计算机视觉分析Dota2玩家可见性",
+      "canonical_evidence": "用计算机视觉分析Dota2玩家可见性",
+      "llm_tldr_en": "Dota2-Vis dataset and baseline pipeline for visibility analysis from video, using object detection to estimate opponent-visible player presence.",
+      "llm_tldr_cn": "现有MOBA游戏分析多基于结构化数据，无法真实反映玩家可见信息。本文构建了Dota2-Vis视频数据集和可见性分析流水线，通过目标检测识别玩家图标，估计对手可见的玩家存在。在144场职业比赛中验证，YOLO11l模型取得最佳性能，为玩家行为建模和战术分析提供新工具。",
+      "llm_tldr": "现有MOBA游戏分析多基于结构化数据，无法真实反映玩家可见信息。本文构建了Dota2-Vis视频数据集和可见性分析流水线，通过目标检测识别玩家图标，估计对手可见的玩家存在。在144场职业比赛中验证，YOLO11l模型取得最佳性能，为玩家行为建模和战术分析提供新工具。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "player behavior simulation techniques",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.24597v1",
+      "source": "arxiv",
+      "title": "Qwen-AgentWorld: Language World Models for General Agents",
+      "abstract": "A world model predicts environment dynamics based on current observations and actions, serving as a core cognitive mechanism for reasoning and planning. In this work, we investigate how world modeling based on language models can further push the boundaries of general agents. (i) We first focus on building foundation models for agentic environment simulation. We introduce Qwen-AgentWorld-35B-A3B and Qwen-AgentWorld-397B-A17B, the first language world models capable of simulating agentic environments covering 7 domains via long chain-of-thought reasoning. Leveraging more than 10M environment interaction trajectories of 7 domains in real-world environments, we develop Qwen-AgentWorld through a three-stage training pipeline: CPT injects general-purpose world modeling capabilities from the state transition dynamics and augmented professional corpora, SFT activates next-state-prediction reasoning, and RL sharpens simulation fidelity through a tailored framework with hybrid rubric-and-rule rewards. To evaluate language world models, we present AgentWorldBench, a comprehensive benchmark constructed from real-world interactions of 5 frontier models on 9 established benchmarks. Empirical results demonstrate that Qwen-AgentWorld significantly outperforms existing frontier models. (ii) Beyond foundation models, we further investigate two complementary paradigms through which world modeling enhances general agents. First, as a decoupled environment simulator, Qwen-AgentWorld supports scalable and controllable simulation of thousands of real-world environments for agentic RL, yielding gains that surpass real-environment training alone. Second, as a unified agent foundation model, world-model training acts as a highly effective warm-up that improves downstream performance across 7 agentic benchmarks. Code: https://github.com/QwenLM/Qwen-AgentWorld",
+      "authors": [
+        "Yuxin Zuo",
+        "Zikai Xiao",
+        "Li Sheng",
+        "Fei Huang",
+        "Jianhong Tu",
+        "Yuxuan Liu",
+        "Tianyi Tang",
+        "Xiaomeng Hu",
+        "Yang Su",
+        "Qingfeng Lan",
+        "Yantao Liu",
+        "Qin Zhu",
+        "Yinger Zhang",
+        "Bowen Yu",
+        "Haiquan Zhao",
+        "Haiyang Xu",
+        "Jianxin Yang",
+        "Jiayang Cheng",
+        "Junyang Wang",
+        "Lianghao Deng",
+        "Mingfeng Xue",
+        "Tianyi Bai",
+        "Yang Fan",
+        "Yubo Ma",
+        "Yucheng Li",
+        "Zeyu Cui",
+        "Zhihai Wang",
+        "Zhihui Xie",
+        "Zhuorui Ye",
+        "An Yang",
+        "Dayiheng Liu",
+        "Jingren Zhou",
+        "Ning Ding"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-06-23T13:53:55+00:00",
+      "link": "https://arxiv.org/pdf/2606.24597v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "language world models for simulating agentic environments across 7 domains",
+      "llm_evidence_cn": "覆盖7领域智能体环境的语言世界模型",
+      "llm_evidence": "覆盖7领域智能体环境的语言世界模型",
+      "canonical_evidence": "覆盖7领域智能体环境的语言世界模型",
+      "llm_tldr_en": "Qwen-AgentWorld introduces language world models capable of simulating 7 domains via long chain-of-thought, trained on 10M trajectories, enabling general agent planning.",
+      "llm_tldr_cn": "世界模型是智能体推理规划的核心。本文构建Qwen-AgentWorld系列，首次用语言模型模拟覆盖7个领域的智能体环境，通过10余万条交互轨迹和阶段式训练得到。这些模型能通过长链式推理预测环境动态，支持游戏等领域的智能体规划与决策，为通用智能体模拟提供新范式。",
+      "llm_tldr": "世界模型是智能体推理规划的核心。本文构建Qwen-AgentWorld系列，首次用语言模型模拟覆盖7个领域的智能体环境，通过10余万条交互轨迹和阶段式训练得到。这些模型能通过长链式推理预测环境动态，支持游戏等领域的智能体规划与决策，为通用智能体模拟提供新范式。",
+      "llm_tags": [
+        "query:player-ai:composite"
+      ],
+      "matched_query_tag": "query:player-ai:composite",
+      "matched_query_text": "Papers central to 请帮我查找虚拟游戏玩家建模、AI Agent 游戏游玩相关论文, especially work that connects or combines: virtual game player modeling; AI agent playing games; artificial intelligence in games; player behavior simulation techniques; Find papers on virtual game player modeling; Search for AI agent training in game environments.",
+      "matched_requirement_id": "req-composite-player-ai",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.27330v1",
+      "source": "arxiv",
+      "title": "Empowering GUI Agents via Autonomous Experience Exploration and Hindsight Experience Utilization for Task Planning",
+      "abstract": "Multimodal web agents can assist humans in operating repetitive GUI tasks, where effective task planning is essential for decomposing complex tasks into executable actions. While small open source MLLMs are cost efficient and privacy preserving compared with commercial large models, they suffer from weak planning and limited cross website generalization. To address these limitations, we introduce the planning experience exploration and utilization (PEEU) method, which autonomously explores environments to discover experiences and utilizes hindsight experience to synthesize strictly aligned, high level training data. To quantitatively analyze the generalization behaviors driving this performance, we propose the task decomposition hierarchical analysis framework (TDHAF) to systematically study compositional generalization across three task granularities: low, middle and high levels. Our analysis reveals that mastering low level atomic skills does not guarantee high level planning competence, while high level task training yields stronger OOD generalization. Experiments on real world benchmarks demonstrate PEEU's superior effectiveness: our 7B model achieves 30.6% accuracy, outperforming the much larger Qwen2.5-VL-32B model. These demonstrate constructing hindsight high level tasks and leveraging experiences is crucial for OOD planning abilities of small MLLMs.",
+      "authors": [
+        "Tianyi Men",
+        "Zhuoran Jin",
+        "Pengfei Cao",
+        "Yubo Chen",
+        "Kang Liu",
+        "Jun Zhao"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI",
+        "cs.CV",
+        "cs.LG"
+      ],
+      "published": "2026-06-25T17:44:48+00:00",
+      "link": "https://arxiv.org/pdf/2606.27330v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "autonomous experience exploration for task planning in GUI agents",
+      "llm_evidence_cn": "GUI智能体的自主经验探索与任务规划",
+      "llm_evidence": "GUI智能体的自主经验探索与任务规划",
+      "canonical_evidence": "GUI智能体的自主经验探索与任务规划",
+      "llm_tldr_en": "PEEU method enables small MLLMs to autonomously explore GUI environments and use hindsight experience to improve task planning and cross-site generalization.",
+      "llm_tldr_cn": "小模型MLLMs在GUI任务规划中泛化弱。本文提出规划经验探索与利用（PEEU）方法，让智能体自主探索环境发现经验，利用后见经验合成高质量训练数据。实验表明该方法显著提升了跨网站任务规划能力，其探索式学习范式可迁移至游戏智能体训练。",
+      "llm_tldr": "小模型MLLMs在GUI任务规划中泛化弱。本文提出规划经验探索与利用（PEEU）方法，让智能体自主探索环境发现经验，利用后见经验合成高质量训练数据。实验表明该方法显著提升了跨网站任务规划能力，其探索式学习范式可迁移至游戏智能体训练。",
+      "llm_tags": [
+        "query:player-ai:composite"
+      ],
+      "matched_query_tag": "query:player-ai:composite",
+      "matched_query_text": "Papers central to 请帮我查找虚拟游戏玩家建模、AI Agent 游戏游玩相关论文, especially work that connects or combines: virtual game player modeling; AI agent playing games; artificial intelligence in games; player behavior simulation techniques; Find papers on virtual game player modeling; Search for AI agent training in game environments.",
+      "matched_requirement_id": "req-composite-player-ai",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.26925v1",
+      "source": "arxiv",
+      "title": "Game Changers: Designing and Measuring Dynamic Feedback To Help Users Self-Regulate in a VR Pointing Game",
+      "abstract": "The way games dynamically convey information through feedback is critical to players' ability to perform, learn, and improve. However, it is poorly understood how performance metrics impact player performance and perception in core game tasks like pointing or steering. With a virtual reality pointing task we systematically explored how three performance metrics driving the feedback affected players when rewarding short completion times, straight movements, or high peak speed. across different points in time - continuously, at end-of-action, or at end-of-task. On average the dynamic feedback helped people point more straight and faster, while for others it had small or opposite effect. The study quantitatively compared dynamic feedback across three forms with the metrics driving the form as the intended locus of quantitative comparison. Our work improves game designers basis for crafting dynamic feedback by helping them know when to employ feedback schemes that align with desirable game performance objectives.",
+      "authors": [
+        "Bastian Ilsø Hougaard",
+        "Scott Bateman",
+        "Iris Brunner",
+        "Lars Evald",
+        "Hendrik Knoche"
+      ],
+      "primary_category": "cs.HC",
+      "categories": [
+        "cs.HC"
+      ],
+      "published": "2026-06-25T12:02:25+00:00",
+      "link": "https://arxiv.org/pdf/2606.26925v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "studies player behavior in VR pointing game with dynamic feedback",
+      "llm_evidence_cn": "研究VR指向游戏中动态反馈对玩家行为的影响",
+      "llm_evidence": "研究VR指向游戏中动态反馈对玩家行为的影响",
+      "canonical_evidence": "研究VR指向游戏中动态反馈对玩家行为的影响",
+      "llm_tldr_en": "Explores how performance metrics in VR pointing game feedback affect player behavior and performance, relevant for understanding player behavior modeling.",
+      "llm_tldr_cn": "该论文通过VR指向游戏实验，系统探究了不同性能指标反馈（如完成时间、直线度、峰值速度）在不同时间点（连续、动作结束后、任务结束后）对玩家表现和感知的影响。研究发现动态反馈平均上帮助玩家更直更快地指向，但对部分玩家效果相反。此工作为玩家行为建模提供了量化依据，对游戏AI理解人类玩家行为有参考价值。",
+      "llm_tldr": "该论文通过VR指向游戏实验，系统探究了不同性能指标反馈（如完成时间、直线度、峰值速度）在不同时间点（连续、动作结束后、任务结束后）对玩家表现和感知的影响。研究发现动态反馈平均上帮助玩家更直更快地指向，但对部分玩家效果相反。此工作为玩家行为建模提供了量化依据，对游戏AI理解人类玩家行为有参考价值。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "player behavior simulation techniques",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}
