@@ -1,0 +1,518 @@
+Title: Accelerating Skill Assessment in Chess: A Drift-Diffusion-Enhanced Elo Rating System
+
+URL Source: https://arxiv.org/pdf/2606.26267v1
+
+Published Time: Fri, 26 Jun 2026 00:09:26 GMT
+
+Number of Pages: 9
+
+Markdown Content:
+# Accelerating Skill Assessment in Chess: A Drift-Diffusion-Enhanced Elo Rating System 
+
+Tianyuan Zhou *
+
+School of Intelligent Software and Engineering Nanjing University 
+
+Suzhou, China tyzhou@smail.nju.edu.cn 
+
+Zhizheng Fu *
+
+School of Intelligence Science and Technology Nanjing University 
+
+Suzhou, China zhizheng.fu@smail.nju.edu.cn 
+
+Tianming Yang 
+
+Center for Excellence in Brain Science and Intelligence Technology Institute of Neuroscience Chinese Academy of Sciences 
+
+Shanghai, China tyang@ion.ac.cn 
+
+Abstract —Rating systems such as Elo serve as the gold standard for matchmaking in competitive chess. However, they inherently suffer from response lag due to their exclusive reliance on match outcomes, neglecting the granular quality of game-play. Nevertheless, incorporating move-by-move information into rating adjustments presents a significant challenge given the substantial noise and the vastness of the game-state space. To address this, we propose the Drift-Diffusion-Enhanced Elo Rating System (DD-Elo), a novel skill assessment framework inspired by the drift diffusion model (DDM) from cognitive neuroscience. By modeling skill expression as a decision-making process, our model integrates move-level data to capture rapid skill fluctuations. We provide a rigorous mathematical derivation proving that DD-Elo maintains a bounded deviation from the traditional Elo system, ensuring theoretical alignment. Extensive experiments demonstrate that DD-Elo adapts to skill changes faster than Elo. Our findings suggest that DD-Elo offers an explainable, highly responsive, and backward-compatible solution for chess rating ecosystems. The implementation code is publicly available at https://github.com/Aquila-zhou1/DD-Elo. 
+
+Index Terms —chess rating, elo, drift-diffusion model, move-level analysis, predictive rating. 
+
+I. I NTRODUCTION 
+
+Accurate skill assessment is a cornerstone of competitive chess, underpinning matchmaking quality, ranking fairness, and long-term player engagement. For decades, the Elo rating system has served as the de facto standard for estimating player strength in chess and other competitive games [1], [2]. Despite its widespread adoption and conceptual elegance, Elo mostly relies on match outcomes, updating player ratings based solely on win–loss–draw results. While this outcome-centric design ensures robustness and interpretability, it intro-duces a well-known limitation: slow responsiveness to changes in player skill, particularly in non-stationary settings [3], 
+
+© 2026 IEEE. Personal use of this material is permitted. Permission from IEEE must be obtained for all other uses, in any current or future media, including reprinting/republishing this material for advertising or promotional purposes, creating new collective works, for resale or redistribution to servers or lists, or reuse of any copyrighted component of this work in other works. 
+
+> *
+
+These authors contributed equally to this work. 
+
+Fig. 1. (1) Each move is converted into drift rates and fed into the drift diffusion model. (2) The DDM accumulates evidence for each player to determine whether their moves overperform or underperform relative to their current Elo rating. (3) The decision is then propagated through the inter-game memory mechanism to form a correction. (4) The final result is a combination of the correction term and the traditional win/loss Elo adjustment. 
+
+[4]. This limitation becomes especially salient in practical scenarios such as new player calibration, returning veterans regaining form, or players undergoing intensive training. Existing rating system extensions partly address this prob-lem. For example, Glicko [5] introduces uncertainty estimates to accelerate convergence, while TrueSkill [6], [7] employs Bayesian inference to handle sparse and evolving data. De-spite these methodological advances, such systems remain fundamentally outcome-centric: rating updates are triggered only at the granularity of completed matches. Consequently, when the underlying skill of a player changes, the response speed of these models is inherently limited by the frequency of observed games, leading to an unavoidable match-level adaptation lag. However, chess is a sequential decision-making process composed of a large number of moves, each reflecting a player’s judgment under uncertainty. Prior research has demonstrated that move-level performance metrics, particu-larly engine-based evaluations, are strongly correlated with player skill [8], [9]. Analyses of world-class games show that stronger players consistently produce moves closer to engine-979-8-3315-9476-3/26/$31.00 ©2026 IEEE 
+
+> arXiv:2606.26267v1 [cs.AI] 24 Jun 2026
+
+optimal choices, and centipawn loss has been established as a quantitative indicator of decision quality across skill levels [8]. Engine-based evaluation frameworks, exemplified by Deep Blue [10] and its successors, further reinforce the validity of such fine-grained performance measures. Despite their undeniable precision in quantifying decision quality, integrating these move-level indicators into a co-herent rating system is far from straightforward. Individual moves are highly state-dependent, embedded in an enormous combinatorial game tree, and contaminated by significant stochasticity. Theoretical and empirical studies in sequential decision-making highlight the difficulty of extracting stable signals from such high-dimensional processes [11]. As a result, directly aggregating move-level metrics risks amplifying noise and destabilizing long-term ratings. In this work, we bridge this gap by introducing the Drift-Diffusion-Enhanced Elo Rating System (DD-Elo), a rating framework inspired by the drift diffusion model (DDM) from cognitive neuroscience [12], [13]. An overview of the frame-work is shown in Fig. 1. DD-Elo reinterprets a chess game as a sequence of micro-decisions in which each move provides incremental evidence about a player’s latent skill. Move-level performance signals induce a within-game diffusion process whose accumulated state modulates the magnitude and direc-tion of rating updates. This design allows ratings to adapt rapidly when consistent high- or low-quality play is observed, while ensuring long-term stability as shown in Fig. 2. Beyond empirical performance, theoretical alignment with Elo is also a central design objective. Elo and its variants can be viewed as special cases of paired comparison models rooted in the Bradley–Terry framework [14]. Building on dynamic extensions of these models that allow time-varying skills and uncertainty estimates [15], [16], we provide arigorous theoretical analysis showing that DD-Elo maintains a bounded deviation from classical Elo under mild assumptions. Additionally, recent work analyzing Elo as an online estimator under Bradley–Terry and related models further supports the theoretical soundness of such approaches [17]. This guarantee ensures that DD-Elo remains compatible with existing chess rating ecosystems and preserves the interpretability of Elo scores. In summary, DD-Elo is a chess skill rating system that integrates drift diffusion modeling and move-level decision evidence. We establish a theoretical bounded-deviation guaran-tee that formally aligns DD-Elo with Elo. Through large-scale experiments on online chess data, we demonstrate that DD-Elo adapts faster to skill changes than traditional outcome-based rating systems while maintaining stable long-term rankings. II. R ELATED WORK 
+
+A. Elo-Based Rating Systems in Chess 
+
+The Elo rating system remains the most influential and widely adopted framework for estimating player skill in chess [1], [2]. Its success stems from conceptual simplicity, inter-pretability, and long-term stability. Numerous extensions have been proposed to address practical limitations of the original  
+
+> Fig. 2. Elo and DD-Elo rating trajectories for a representative player. During a period of rapid skill improvement, DD-Elo (the pink dotted line) responds earlier and yields higher ratings than Elo (the black polyline). When the player’s skill stabilizes, the two trajectories converge, indicating improved responsiveness without sacrificing long-term consistency.
+
+formulation. Chessmetrics incorporates temporal weighting to better reflect historical dominance and peak performance, while the German Evaluation Number (DWZ) [18] introduces age-dependent adjustments and performance-based modifiers to improve rating fairness for junior and senior players. Glickman [5], [19] further extends Elo by explicitly modeling rating uncertainty and volatility, enabling faster convergence when limited data are available. 
+
+B. Drift Diffusion Models in Decision-Making 
+
+The drift diffusion model (DDM) originated in cognitive neuroscience as a normative model of human decision-making under uncertainty [12], [13], [20]. In its classical form, DDM describes how noisy evidence accumulates over time toward decision boundaries, capturing accuracy–speed trade-offs and trial-to-trial variability. Under standard assumptions, DDM represents a mathematically optimal decision policy. Bogacz et al. [12] proved that when the drift equals the expected log-likelihood ratio (LLR), DDM is equivalent to the Sequential Probability Ratio Test (SPRT). By Wald’s theorem, SPRT min-imizes the expected sample size for given error probabilities, theoretically justifying our use of a discrete DDM to achieve optimal convergence speed. Due to its interpretability and strong empirical grounding, DDM has become a standard tool for modeling perceptual choice, economic decisions, learning, memory, and many other cognitive processes in both humans and animals, and its neural correlates have been revealed in the brain [21], [22]. 
+
+C. Move-Level Evaluation in Chess 
+
+Move-level information has long been recognized as a rich source for estimating player skill. Early statistical approaches modeled move quality probabilistically in order to infer in-trinsic strength from individual decisions rather than outcomes alone. For example, intrinsic chess rating models [23] estimate player skill by measuring deviations from optimal play, while supervised learning methods, such as random forest models, have been used to predict Elo ratings from features extracted from move sequences within single games. The rapid advancement of chess engines has further im-proved the reliability of move-level evaluation. Modern en-gines, from Deep Blue [10] and Rybka [24] to contemporary systems such as Stockfish [25], provide increasingly accu-rate assessments of move quality, commonly expressed as centipawn loss. These signals are widely used for post-game analysis and training. However, existing applications primarily support retrospective analysis or static skill prediction and are not integrated into dynamic rating update mechanisms. In contrast, our approach incorporates centipawn-based move-level signals into a drift diffusion process, allowing such information to directly influence rating updates III. P RELIMINARIES 
+
+A. Elo Rating System 
+
+The Elo rating system models player skill as a scalar quantity updated after each match based on the difference between observed and expected outcomes. Let Rt denote a player’s rating before a game, and let St ∈ {0, 0.5, 1}
+
+represent the game outcome (loss, draw, win). The expected score Et against an opponent with rating Ropp  
+
+> t
+
+is given by 
+
+Et = 11 + 10 (Ropp   
+
+> t−Rt)/400
+
+(1) The standard Elo update rule is 
+
+Rt+1 = Rt + K · (St − Et) (2) where K > 0 is a fixed update coefficient. 
+
+B. Move-Level Performance Measure: Centipawn Loss 
+
+To quantify move-level performance in chess, we adopt centipawn loss (CPL), a widely used metric derived from chess engine evaluations. Let Eval (s) denote the engine evaluation of a board position s measured in centipawns. For a given move m, the centipawn loss is defined as CPL m = Eval (s∗) − Eval (sm) (3) where s∗ is the position resulting from the engine-recommended best move, and sm is the position after exe-cuting move m.
+
+C. Drift Diffusion Model 
+
+The drift diffusion model (DDM) models decision formation as the accumulation of noisy evidence over time, driven by an underlying drift signal and random fluctuations. In discrete time, the evolution of the latent evidence state 
+
+Xm is described by 
+
+Xm = Xm−1 + vm + ϵm (4) where X0 = 0 , vm denotes the instantaneous evidence at time 
+
+m, and ϵm ∼ N (0 , σ 2
+
+> m
+
+) is the noise term capturing stochastic variability in evidence accumulation. The latent evidence Xm evolves until it reaches one of the absorbing decision boundaries ±β, at which point the process terminates at τ = inf {m ≥ 1 : |Xm| ≥ β}.
+
+D. Theoretical Optimality of DDM 
+
+DDM provides a principled mechanism for aggregating noisy, sequential evidence into a single decision variable. Specifically, when the discrete drift vm equals the log-likelihood ratio of an observation zm under two hypotheses (H1, H 2) given independent and identically distributed obser-vations, the boundary accumulation mathematically reduces to the Sequential Probability Ratio Test (SPRT). Unlike fixed-sample tests, SPRT evaluates the joint likelihood ratio after each observation against preset thresholds to accept H1, accept 
+
+H2, or continue sampling [12]: 
+
+XT =
+
+> T
+
+X
+
+> m=1
+
+vm =
+
+> T
+
+X
+
+> m=1
+
+log P (zm | H1)
+
+P (zm | H2) ≡ SPRT (5) SPRT has been proved to possesses strict optimality, mini-mizing the expected sample size required for a decision under any given error probabilities [12]. This exact mathematical equivalence guarantees that DDM minimizes the expected number of decision steps for any given error boundaries, rendering it a theoretically optimal decision policy. IV. A LGORITHMIC DESIGN 
+
+Our goal is to incorporate move-level performance signals into the rating update process while preserving stability and compatibility with classical Elo. We achieve this through four components: move-level drift construction, in-game diffusion, inter-game memory decay, and the final rating update rule. 
+
+A. Move-Level Drift Construction 
+
+We begin by defining how evidence for a player’s latent skill is computed from each individual move. Consider a game t consisting of a sequence of moves indexed by m. For each move m, we define a move-level drift value vm, which serves as the instantaneous evidence increment in the diffusion process. We define 
+
+vm = f (CPL m − G (Rt)) · sm · πm (6) where f (·) is a monotonically decreasing function defined as 
+
+f (t) = 10 − 10 log  1 + 0 .1t, t ≥ 0 (7) which smoothly downweights large move errors while preserv-ing sensitivity to small deviations. The term G(·) represents the expected centipawn loss of a player with rating Rt;
+
+sm ∈ { +1 , −1} indicates whether the player is the active decision-maker at move m; πm = min  Et, E opp 
+
+> t
+
+ represents the confidence of the move, defined as the minimum of the expected scores of the player and the opponent. 
+
+B. In-Game Drift Diffusion Process with Decision Boundaries 
+
+We model a player’s performance within a single game 
+
+t as a discrete-time drift diffusion process with absorbing boundaries. Let Xtm denote the latent evidence state after move m. The process evolves according to 
+
+Xtm = Xtm−1 + vtm (8) where vtm represents the move-level drift, which contains stochastic variability in the player’s decision-making. A decision occurs whenever the latent evidence reaches the predefined boundaries ±β. Upon reaching a boundary, a reward A is recorded. Let Dt denote the cumulative evidence extracted from all in-game decisions up to the end of the game: 
+
+Dt =
+
+> Nt
+
+X
+
+> k=1
+
+sign( Xτk ) · A (9) Here, Nt denotes the number of boundary crossings up to time t, τk is the time of the k-th boundary crossing, and Xτk
+
+is the latent evidence at that moment. The function sign( ·)
+
+indicates the direction of the boundary crossing. 
+
+C. Inter-Game Memory Decay 
+
+To prevent unbounded accumulation of evidence across games and to preserve long-term stability, we introduce an inter-game memory mechanism. Let ∆t denote the long-term diffusion memory after game t. The memory is updated as 
+
+∆t+1 = λ∆t + Dt (10) 
+
+X[t+1] 0 = λX tm (11) where λ ∈ (0 , 1) is a decay factor controlling how quickly past evidence fades. 
+
+D. DD-Elo Rating Update Rule 
+
+Finally, DD-Elo modifies the standard Elo dynamics by introducing an additive correction term. Let Rt+1 denote the post-game rating obtained from the classical Elo update (2); the corrected rating is given by 
+
+˜Rt+1 = Rt+1 + ∆ t+1 (12) Here, the first term corresponds to the standard Elo adjustment, while the additional diffusion term acts as aperformance-sensitive correction derived from move-level ev-idence. V. T HEORETICAL ANALYSIS 
+
+In this section, we establish the mathematical foundations of the DD-Elo model by analyzing its core theoretical properties. First, we prove that DD-Elo maintains a strictly bounded nu-merical deviation from the classical Elo system (Section V-A). Building upon this boundedness property, we then demonstrate the theoretical alignment between the two systems, ensuring the global stability of the ranking structure (Section V-B). Finally, we formally prove that the DDM architecture in DD-Elo represents the mathematically optimal decision policy for sequential rating updates (Section V-C). 
+
+A. Bounded Numerical Deviation 
+
+Let ∆t = ˜Rt − Rt denote the difference between DD-Elo and classical Elo. According to (9), since each game contains a finite number of decisions, we have |Dt| ≤ Nt|A| ≤ c, where 
+
+c := Nmax |A|.
+
+Theorem 1 (Bounded Deviation from Elo) . If |Dt| ≤ c, then according to (10), the deviation remains uniformly bounded: 
+
+|∆t| ≤ C0, C0 := c
+
+1 − λ
+
+Consequently, | ˜Rt − Rt| ≤ C0 for all t. Proof. From the update rule (10) we have ∆t+1 = λ∆t +
+
+Dt. Using |Dt| ≤ c gives |∆t+1 | ≤ λ|∆t| + c. Iterating this recursion yields 
+
+|∆t| ≤ λt|∆0| + c
+
+> t−1
+
+X
+
+> k=0
+
+λk = λt|∆0| + c(1 − λt)1 − λ
+
+Taking t → ∞ implies |∆t| ≤ c 
+
+> 1−λ
+
+.
+
+B. Spearman Rank Robustness under Bounded Perturbations 
+
+We analyze how a bounded perturbation of player ratings affects the global ranking structure measured by Spearman’s rank correlation. 
+
+Theorem 2 (Spearman Robustness) . Let R1, . . . , R n denote the Elo ratings of n players and suppose the DD-Elo ratings satisfy 
+
+˜Ri = Ri + δi, |δi| ≤ C0
+
+for all i = 1, . . . , n . Let ρS denote the Spearman rank correlation coefficient between {Ri} and { ˜Ri}. Assume that the rating distribution admits a density function fR satisfying 
+
+fR(x) ≤ M . Then 
+
+1 − ρS = O
+
+ C30
+
+σ3
+
+> R
+
+
+
+where σR denotes the standard deviation of the rating distri-bution. Proof. From Theorem 1, we have 
+
+| ˜Ri − Ri| ≤ C0
+
+Consequently, 
+
+˜Ri ≥ Ri − C0, ˜Rj ≤ Rj + C0
+
+Therefore, if |Ri − Rj | > 2C0, the relative ordering of players 
+
+i and j cannot change after the perturbation. Hence, rank in-versions may occur only for pairs satisfying |Ri − Rj | ≤ 2C0.Since the rating distribution has bounded density fR(x) ≤
+
+M , for any fixed player i,
+
+P  |Ri − Rj | ≤ 2C0
+
+ ≤ 4M C 0
+
+Thus only an O(M C 0) fraction of player pairs are capable of producing rank inversions. The Spearman rank correlation coefficient is given by 
+
+ρS = 1 − 6
+
+n(n2 − 1) 
+
+> n
+
+X
+
+> i=1
+
+d2
+
+> i
+
+where di denotes the difference between the ranks of player i
+
+under the two rating systems. For a given player, the expected number of nearby op-ponents whose order may change is O(nM C 0). Since these potentially inverted opponents are contained within an interval of width O(C0), the corresponding rank displacement satisfies 
+
+di = O(nM C 0). Combining this with the fraction O(M C 0)
+
+of players involved in possible inversions yields 
+
+> n
+
+X
+
+> i=1
+
+d2 
+
+> i
+
+= 4 M C 0 n · O n2M 2C20
+
+ = O M 3C30 n3
+
+Substituting this estimate into the definition of ρS gives 
+
+1 − ρS = O M 3C30
+
+
+
+Finally, the density scale is constrained by the spread of the rating distribution. In particular, M = O
+
+ 1
+
+> σR
+
+
+
+. Substituting this relation yields 
+
+1 − ρS = O
+
+ C30
+
+σ3
+
+> R
+
+
+
+which completes the proof. 
+
+C. Theoretical Optimality of the DD-Elo Model 
+
+This section proves that, under specific rating error con-straints, the drift-diffusion updating mechanism in DD-Elo minimizes the objective loss function with the fewest expected moves. 
+
+1) Problem Formulation and Hypotheses: Since the Elo rating system is symmetric and zero-sum, rating adjustments can be modeled as a two-alternative forced-choice (2AFC) problem between two hypotheses. Under H1 (rating increase), the player is assumed to be underrated and the opponent overrated, leading to a lower expected player error ( μp1) and a higher one for the opponent ( μo1). Under H2 (rating decrease), the player is overrated and the opponent underrated, yielding a higher player error μp2 (μp2 > μ p1) and a lower opponent error μo2 (μo2 < μ o1). Let Rtrue be the true rating, R be the estimated rating, and N be the decision steps. DD-Elo aims to minimize the expected risk cost functional J :
+
+min J = E[|R − Rtrue |] + δ · E[N ] (13) where δ > 0 is the penalty coefficient for convergence delay. 
+
+2) Joint Log-Likelihood Ratio under Exponential Distribu-tion: Given the non-negative and heavily right-skewed nature of CPL, we assume the single-move error follows an expo-nential distribution CP L ∼ Exp (λ), where the rate parameter 
+
+λ = 1 /μ and μ = E(R).Under H1 and H2, the optimal joint log-likelihood ratio (LLR) encompassing both players’ performances is a linear combination of their respective CPLs. 
+
+Proof. The joint LLR is the log-sum of both players’ inde-pendent observation probability ratios: 
+
+LLR = log P (CP L p | H2)
+
+P (CP L p | H1) + log P (CP L o | H2)
+
+P (CP L o | H1) (14) Substituting the exponential probability density function 
+
+P (x) = λe −λx yields 
+
+LLR = C + ( λp1 − λp2)CP L p − (λo1 − λo2)CP L o (15) Since μp2 > μ p1 implies λp1 > λ p2 and μo2 < μ o1 implies 
+
+λo2 > λ o1, the coefficient of CP L p is positive while that of 
+
+CP L o is negative. Motivated by this structure, the DD-Elo move-level feature is constructed as vm = ωpΦ( CP L p) − ωoΦ( CP L o) where 
+
+Φ( CP L ) = f (max( CP L −E(R), 0)) extracts right-tail errors and ω denotes confidence weights. This formulation mirrors the positive and negative terms of the optimal LLR while using truncation to focus estimation on statistically informative blunders. Crucially, as established in the Preliminaries, a DDM achieves theoretical optimality (via equivalence to SPRT) when its drift represents the LLR and its objective is to minimize a cost function balancing accuracy and decision time [12]. DD-Elo explicitly satisfies all these prerequisites: its accumulated evidence vm maps directly to the optimal joint LLR, and its threshold mechanism structurally minimizes the expected cost functional J defined in (13). Therefore, the accumulation mechanism of DD-Elo is not merely a heuristic, but the mathematically optimal decision policy for dynamic rating updates. VI. E XPERIMENTAL SETUP 
+
+A. Dataset 
+
+We conduct experiments on a large-scale real-world chess dataset from Lichess [26], consisting of approximately 10 million rated games played in January 2019, involving 429,000 active players. To ensure sufficient signal quality for skill es-timation, we exclude Bullet and Blitz games and analyze only players who completed at least 100 rated games. In addition, we calculate the centipawn loss (CPL) using Stockfish [25] as the move-level performance measurement. 
+
+B. Identification of Non-Stationary Phases 
+
+A central challenge in evaluating rating systems is distin-guishing genuine skill changes from stochastic fluctuations. Rather than analyzing entire rating histories indiscriminately, we explicitly identify non-stationary phases—periods during which a player’s underlying skill exhibits a sustained upward or downward trend. 
+
+1) Signal Smoothing: For each player’s Elo rating trajec-tory, we first apply a moving average filter with a window size of Ws games, a hyperparameter controlling the smoothness of the trajectory: 
+
+˜Elo t = 1
+
+Ws
+
+> ⌊Ws/2⌋
+
+X
+
+> i=−⌊ Ws/2⌋
+
+Elo t+i (16) Fig. 3. Distribution of Area Improvement Percentage (AIP), Directional Ac-curacy (DA), and Information Coefficient (IC), with sample counts normalized to have a peak value of 1. 
+
+This step suppresses high-frequency noise while preserving medium-term trends relevant to skill evolution. 
+
+2) Trend Signal Extraction: To detect structural changes, we apply a first-order derivative filter with a window size of 
+
+Wb:Trend t =
+
+> ⌊Wb/2⌋
+
+X
+
+> i=−⌊ Wb/2⌋
+
+i · ˜Elo t+i (17) A non-stationary phase is identified when |Trend t| > θ . The rising or declining skill phases are classified by the sign of Trend t.
+
+C. Evaluation Metrics 
+
+To comprehensively assess fast adaptation performance, we adopt four complementary metrics, each capturing a distinct aspect of responsiveness and reliability. 
+
+1) Area Improvement Percentage (AIP): Area Improvement Percentage (AIP) measures the fraction of rating modification area that is aligned with the underlying skill trend during a monotonic transition phase. Let Elo (t) and DD-Elo (t) denote the rating trajectories over time. The modification introduced by DD-Elo relative to Elo is represented by the absolute area between the two curves over the phase. Given that the underlying skill exhibits a consistent trend, this total area can be decomposed into a trend-aligned (correct) area and a trend-opposed (incorrect) area according to the direction of the skill change. Formally, let Area correct denote the absolute area where the DD-Elo modification is directionally consistent with the skill trend, and let Area total denote the total absolute modification area. AIP is defined as AIP = Area correct 
+
+Area total 
+
+× 100% (18) By construction, an AIP of 50% corresponds to a non-informative baseline in which modifications are equally dis-tributed between trend-aligned and trend-opposed directions. Values above 50% indicate that a larger fraction of the modi-fication area is concentrated in the correct direction, reflecting more effective adaptation, while values below 50% indicate predominantly misaligned adjustments. 
+
+2) Directional Accuracy (DA): In contrast to the area-based nature of AIP, Directional Accuracy (DA) evaluates directional correctness at a qualitative level, independent of modification magnitude. Directional Accuracy evaluates whether the direction of DD-Elo corrections aligns with the detected trend signal at each time step: 
+
+DA = 1
+
+N
+
+> N
+
+X
+
+> t=1
+
+I
+
+
+
+Sign (∆ t) = Sign (T rend t)
+
+
+
+(19) where I(·) is the indicator function. DA can be interpreted as the empirical probability that DD-Elo applies corrections in the correct direction. A value of 50% corresponds to random directional agreement, while values above 50% indicate that DD-Elo reliably identifies the direction of change, avoiding systematic counter-corrections during neutral or noisy periods. 
+
+3) Average Lead Time (ALT): Beyond directional quality, Average Lead Time (ALT) explicitly measures how many games earlier DD-Elo reaches the same rating levels as Elo. Consider a transition phase with rating range [Emin , E max ],partitioned into K uniformly spaced thresholds 
+
+θk = Emin + kK (Emax − Emin ), k = 1 , . . . , K 
+
+For each threshold θk, let tθk 
+
+> Elo
+
+and tθk 
+
+> DD-Elo
+
+denote the first game index at which the respective rating reaches θk. ALT is defined as ALT = 1
+
+K
+
+> K
+
+X
+
+> k=1
+
+
+
+tθk 
+
+> Elo
+
+− tθk
+
+> DD-Elo
+
+
+
+(20) A positive ALT indicates that DD-Elo reaches the same rating levels earlier than Elo, directly quantifying the temporal lead in terms of the number of games. An ALT of zero corresponds to no temporal advantage. 
+
+4) Information Coefficient (IC): All the metrics discussed previously evaluate the DD-Elo correction term ( ∆) with respect to a player’s current skill level. A natural question then arises: can we further investigate the predictive capability of 
+
+∆?To evaluate this relationship, we adopt the Information Co-efficient (IC). Originally introduced in portfolio management [27], IC measures the correlation between predicted values and realized outcomes. It is defined as the sample Pearson correlation between a factor X and the corresponding outcome 
+
+Y :
+
+IC =
+
+Pni=1 (Xi − ¯X)( Yi − ¯Y )
+
+qPni=1 (Xi − ¯X)2 Pni=1 (Yi − ¯Y )2
+
+(21) where ¯X and ¯Y are the sample means of X and Y .In quantitative finance, an IC is considered statistically meaningful if its absolute value exceeds a certain threshold. Following the standards suggested in [28], we adopt |IC | >Fig. 4. The result of Standard IC 
+
+0.02 as the threshold for significance. An IC value surpassing 0.02 implies that the factor contains significant predictive information regarding the outcome. 
+
+Standard IC: Direct Prediction 
+
+Our first application, denoted as Standard IC, applies the IC formula directly to rating changes. The DD-Elo correction term ∆t is treated as the predictive factor ( X), while the realized outcome ( Y ) is the player’s Elo change over the next k games, i.e., Y = Elo t+k − Elo t. A positive Standard IC indicates that ∆ has predictive power for future rating movements. 
+
+Variant IC: Trend Prediction 
+
+Short-term Elo changes are highly stochastic, which can suppress the Standard IC. To better reflect underlying skill dynamics, we introduce a Variant IC that compares ∆t with a denoised skill trend ( Signal ) obtained during data processing. In this case the factor remains X = ∆ t, while the outcome is the Signal value representing the direction of the player’s skill evolution. VII. R ESULTS 
+
+A. Performance on Trend Alignment and Signal Correlation 
+
+We first evaluate the effectiveness of the DD-Elo correction mechanism ( ∆) in capturing the true skill evolution trend using Area Improvement Percentage (AIP), Directional Accuracy (DA), and Variant IC. The distributions of these metrics across the test segments are presented in Fig. 3. 
+
+1) Area Improvement Percentage (AIP): As shown in Fig. 3, the AIP metric (blue) demonstrates robust performance with a distribution heavily skewed toward 100%, with a mean value of 74 .04% and a median of 88 .94% . The 50% baseline represents random modification. This indicates that the vast majority of the modification magnitude (in terms of area) is applied in the direction consistent with the player’s underlying skill trend. Effectively, DD-Elo maximizes the constructive adjustments while minimizing counterproductive corrections.  
+
+> Fig. 5. The result of Average Lead Time (ALT)
+
+2) Directional Accuracy (DA): The distribution of Direc-tional Accuracy (green) shown in Fig. 3 has a mean of 0.534 
+
+and a median of 0.571 , both exceeding the random baseline of 
+
+0.5. This indicates that the directional adjustments produced by DD-Elo are better than random guessing, although the margin is relatively modest due to the substantial noise inherent in individual games. Importantly, the DA results should be inter-preted together with the AIP metric. Although some updates are assigned an incorrect direction, the strong AIP performance suggests that these errors are generally small in magnitude and are outweighed by the accumulated effect of correctly directed adjustments. Furthermore, the memory-decay mechanism pre-vents erroneous directional decisions from exerting a persistent influence, allowing subsequent correct evidence to gradually dominate the overall assessment. 
+
+3) Variant IC: Finally, we compute the Variant IC (yellow) to assess the correlation between our correction term and the denoised skill trend in Fig. 3 . With a mean Variant IC of 0.36 
+
+and median of 0.42 , the results are an order of magnitude higher than the standard industry significance threshold of 
+
+0.02 . This correlation confirms that ∆ is driven by structural changes in a player’s performance level. 
+
+B. Predictive Power: Standard IC Analysis 
+
+While Variant IC measures alignment with the latent signal, Standard IC evaluates practical predictive power of ∆ against realized future rating changes. Fig. 4 displays the distribution of Standard IC values across different prediction horizons ( K). When the horizon extends to K ≥ 2, the mean Standard IC values rise to approximately 0.030 and stabilize, with the medians consistently surpassing the significance threshold of 
+
+0.02 (marked by the green dashed line). At K = 1 , the mean Standard IC is near zero ( 0.002 ), as the outcome of a single game is binary and highly stochastic, dominated by noise that obscures the skill trend. The results imply that the accumulated correction term ∆ is a significant predictor of future rating variations over a multi-game horizon, validating its forward-looking capability. C. Temporal Advantage: Average Lead Time 
+
+Finally, we quantify the speed of adaptation using the Average Lead Time (ALT), which measures how much earlier DD-Elo reaches new rating milestones than standard Elo. Fig. 5 presents the distribution of ALT values calculated across varying resolution thresholds ( K). Across all thresholds, the distribution of ALT is positively skewed, with a global mean lead time of 0.28 games and a median of 0.20 games. The positive values across the majority of the distribution (indicated by the box positions relative to the zero line) demonstrate that DD-Elo consistently reaches new rating milestones earlier than the standard Elo system. While the lead time of a fraction of a game may appear small, in the context of high-frequency rating updates, this represents a consistent temporal advantage, allowing the system to reflect a player’s true strength with reduced lag. VIII. D ISCUSSION 
+
+Although focused on chess, the core mechanism of DD-Elo, namely diffusion-based aggregation of intra-game evidence, readily extends to other domains and rating systems. The central requirement is simply the availability of sequential, move-level performance signals. In perfect-information games such as Go or shogi [29], [30], existing engines provide analogous evaluations. For imperfect-information games such as poker, probabilistic signals derived from counterfactual regret [31], [32] can serve as the drift evidence. Furthermore, our approach is orthogonal to the specific baseline rating framework. Uncertainty-aware models (e.g., Glicko [5], TrueSkill [6], [7]) can seamlessly integrate this diffusion-derived signal. Crucially, established in Section V, any rating system adopting an additive, bounded update form 
+
+Rt+1 = Rt + ηt, |ηt| ≤ C can incorporate our algorithm. This guarantees that inter-game memory and intra-game corrections can be layered onto existing systems while strictly preserving their theoretical stability and bounded-deviation properties. IX. C ONCLUSION 
+
+In this paper, we propose DD-Elo, a drift–diffusion–based extension of the Elo rating system that addresses the in-trinsic response lag of outcome-centric skill assessment by incorporating move-level performance information. Extensive experiments on large-scale real-world chess data demonstrate that DD-Elo adapts to non-stationary skill changes signifi-cantly faster than Elo, while preserving bounded deviation, directional accuracy, and long-term alignment with the original rating system. The proposed framework provides a general and explainable approach for enhancing skill rating systems and may be extended to other games, performance modalities, and rating algorithms that require fast yet stable adaptation. 
+
+Acknowledgments: This work was supported by the Brain Science and Brain-like Intelligence Technology-National Science and Technology Major Project (grant no. 2021ZD0203705) to T.Y. REFERENCES [1] M. E. Glickman, “A comprehensive guide to chess ratings,” American Chess Journal , vol. 3, no. 1, pp. 59–102, 1995. [2] A. E. Elo and S. Sloan, The rating of chessplayers : past and present . Ishi Press International, 2008. [Online]. Available: https://cir.nii.ac.jp/crid/1971149384795592101 [3] M. E. Glickman, Paired comparison models with time-varying parame-ters . Harvard University, 1993. [4] S. Maitra, T. Banerjee, A. De, D. Mukherjee, and T. Mukherjee, “Empirical parameterization of the elo rating system,” arXiv preprint arXiv:2512.18013 , 2025. [5] M. E. Glickman, “The glicko system,” Boston University , vol. 16, no. 8, p. 9, 1995. [6] R. Herbrich, T. Minka, and T. Graepel, “Trueskill™: a bayesian skill rating system,” Advances in neural information processing systems ,vol. 19, 2006. [7] T. Minka, R. Cleven, and Y. Zaykov, “Trueskill 2: An improved bayesian skill rating system,” Technical Report , 2018. [8] R. V. Leite and A. V. de Oliveira, “Expected human performance behav-ior in chess using centipawn loss analysis,” in International Conference on Human-Computer Interaction . Springer, 2023, pp. 243–252. [9] M. Guid and I. Bratko, “Computer analysis of world chess champions,” 
+
+ICGA journal , vol. 29, no. 2, pp. 65–73, 2006. [10] M. Campbell, A. J. Hoane Jr, and F.-h. Hsu, “Deep blue,” Artificial intelligence , vol. 134, no. 1-2, pp. 57–83, 2002. [11] M. Omori and P. Tadepalli, “Chess rating estimation from moves and clock times using a cnn-lstm,” in International Conference on Computers and Games . Springer, 2024, pp. 3–13. [12] R. Bogacz, E. Brown, J. Moehlis, P. Holmes, and J. D. Cohen, “The physics of optimal decision making: a formal analysis of models of performance in two-alternative forced-choice tasks.” Psychological review , vol. 113, no. 4, p. 700, 2006. [13] R. Ratcliff and G. McKoon, “The diffusion decision model: theory and data for two-choice decision tasks,” Neural computation , vol. 20, no. 4, pp. 873–922, 2008. [14] R. R. Davidson, “On extending the bradley-terry model to accommo-date ties in paired comparison experiments,” Journal of the American Statistical Association , vol. 65, no. 329, pp. 317–328, 1970. [15] M. E. Glickman, “Parameter estimation in large dynamic paired com-parison experiments,” Journal of the Royal Statistical Society Series C: Applied Statistics , vol. 48, no. 3, pp. 377–394, 1999. [16] R. Coulom, “Whole-history rating: A bayesian rating system for players of time-varying strength,” in International conference on computers and games . Springer, 2008, pp. 113–124. [17] S. Olesker-Taylor and L. Zanetti, “An analysis of elo rating systems via markov chains,” Advances in Neural Information Processing Systems ,vol. 37, pp. 138 289–138 323, 2024. [18] Deutscher Schachbund, “Ordnungsbestimmungen zur dwz-spielst¨ arkebewertung von schachspielern in deutschland,” http://www.schachbund.de/wertungsordnung.html, accessed: 2026-01-08. [19] M. E. Glickman, “Example of the glicko-2 system,” Boston University ,vol. 28, p. 2012, 2012. [20] M. N. Shadlen, T. D. Hanks, A. K. Churchland, R. Kiani, and T. Yang, “The speed and accuracy of a simple perceptual decision: a mathematical primer,” Bayesian brain: Probabilistic approaches to neural coding , pp. 209–237, 2006. [21] M. N. Shadlen and R. Kiani, “Decision making as a window on cogni-tion,” Neuron , vol. 80, no. 3, pp. 791–806, 2013. [Online]. Available: https://www.sciencedirect.com/science/article/pii/S0896627313009999 [22] S. Kira, T. Yang, and M. N. Shadlen, “A neural implementation of Wald’s sequential probability ratio test,” Neuron , vol. 85, no. 4, pp. 861–873, feb 2015. [23] K. Regan and G. Haworth, “Intrinsic chess ratings,” in Proceedings of the AAAI Conference on Artificial Intelligence , vol. 25, no. 1, 2011, pp. 834–839. [24] H. Secelle and E. van Reem, “Golden summer for rybka,” ICGA Journal ,vol. 30, no. 3, pp. 171–176, 2007. [25] The Stockfish developers, “Stockfish,” available: https://stockfishchess.org/download/. [Online]. Available: https: //stockfishchess.org/ [26] Lichess, “Lichess open database,” 2026, accessed: 2026-01-25. [Online]. Available: https://database.lichess.org/ [27] K. P. Ambachtsheer, “Profit potential in an “almost efficient” market,” 
+
+The Journal of Portfolio Management , vol. 1, no. 1, pp. 84–87, 1974. [28] J. Jung, “Alpha factor mining using hierarchical genetic algorithms with quality-diversity selection,” Available at SSRN 5467586 , 2025. [29] D. Silver, A. Huang, C. J. Maddison, A. Guez, L. Sifre, G. Van Den Driessche, J. Schrittwieser, I. Antonoglou, V. Panneershelvam, M. Lanctot et al. , “Mastering the game of go with deep neural networks and tree search,” nature , vol. 529, no. 7587, pp. 484–489, 2016. [30] D. Silver, T. Hubert, J. Schrittwieser, I. Antonoglou, M. Lai, A. Guez, M. Lanctot, L. Sifre, D. Kumaran, T. Graepel et al. , “A general reinforcement learning algorithm that masters chess, shogi, and go through self-play,” Science , vol. 362, no. 6419, pp. 1140–1144, 2018. [31] M. Zinkevich, M. Johanson, M. Bowling, and C. Piccione, “Regret minimization in games with incomplete information,” Advances in neural information processing systems , vol. 20, 2007. [32] E. Lockhart, M. Lanctot, J. P´ erolat, J.-B. Lespiau, D. Morrill, F. Timbers, and K. Tuyls, “Computing approximate equilibria in sequential adversar-ial games by exploitability descent,” arXiv preprint arXiv:1903.05614 ,2019.

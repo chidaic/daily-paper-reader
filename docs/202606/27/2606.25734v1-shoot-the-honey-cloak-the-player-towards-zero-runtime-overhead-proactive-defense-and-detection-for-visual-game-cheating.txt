@@ -1,0 +1,1091 @@
+Title: Shoot the Honey, Cloak the Player: Towards Zero-Runtime-Overhead Proactive Defense and Detection for Visual Game Cheating
+
+URL Source: https://arxiv.org/pdf/2606.25734v1
+
+Published Time: Thu, 25 Jun 2026 01:02:42 GMT
+
+Number of Pages: 15
+
+Markdown Content:
+# Shoot the Honey, Cloak the Player: Towards Zero-Runtime-Overhead Proactive Defense and Detection for Visual Game Cheating 
+
+# Jianing Wang 
+
+Shandong University Qingdao, China jianingwang@mail.sdu.edu.cn 
+
+# Chuqi Zhang 
+
+National University of Singapore Singapore, Singapore chuqiz@u.nus.edu 
+
+# Yuancheng Jiang 
+
+National University of Singapore Singapore, Singapore yuancheng@comp.nus.edu.sg 
+
+# Adil Ahmad 
+
+Arizona State University Tempe, United States adil.ahmad@asu.edu 
+
+# Shanqing Guo 
+
+Shandong University Qingdao, China guoshanqing@sdu.edu.cn 
+
+## Abstract 
+
+Visual aimbots have emerged as a serious cheating threat in first-person shooter (FPS) games, as they evade existing anti-cheat de-fenses by operating only on rendered frames rather than game mem-ory. However, existing defenses fail to provide an end-to-end solu-tion: post-hoc behavior detectors cannot protect match integrity in real time and are increasingly fragile against human-mimicking aimbots, while proactive runtime defenses often lack accountability, incur substantial overhead, or require intrusive system integration. We present AimTrap , the first end-to-end defense against vi-sual aimbots that combines real-time protection with post-game detection using two adversarial texture mechanisms. Adversarial Camouflage Textures (ACT) hide real players from aimbots, while Adversarial Honeypot Textures (AHT) lure aimbots into locking onto fake targets, yielding strong evidence of cheating. To make this practical, AimTrap integrates differentiable rendering with Ex-pectation over Renderings for robust 3D texture synthesis, secure texture management, and a novel honeypot-interaction trajectory analysis pipeline for accurate cheating attribution. In real-game evaluation against a state-of-the-art visual aimbot, ACT achieves 85.1% defense success, AHT achieves 96.9%. Com-pared with prior baselines, AimTrap attains extremely low false-positive rates, while incurring negligible runtime overhead. These results show that AimTrap provides a practical and effective end-to-end defense against visual aimbots. 
+
+## CCS Concepts 
+
+• Do Not Use This Code → Generate the Correct Terms for Your Paper ; Generate the Correct Terms for Your Paper ; Generate the Correct Terms for Your Paper.  
+
+> Permission to make digital or hard copies of all or part of this work for personal or classroom use is granted without fee provided that copies are not made or distributed for profit or commercial advantage and that copies bear this notice and the full citation on the first page. Copyrights for components of this work owned by others than the author(s) must be honored. Abstracting with credit is permitted. To copy otherwise, or republish, to post on servers or to redistribute to lists, requires prior specific permission and/or a fee. Request permissions from permissions@acm.org.
+> Conference acronym ’XX, Woodstock, NY
+> ©2018 Copyright held by the owner/author(s). Publication rights licensed to ACM. ACM ISBN 978-1-4503-XXXX-X/2018/06 https://doi.org/XXXXXXX.XXXXXXX
+
+## Keywords 
+
+Game Security, Proactive Defense, Visual-Cheating Detection 
+
+ACM Reference Format: 
+
+Jianing Wang, Chuqi Zhang, Yuancheng Jiang, Adil Ahmad, and Shanqing Guo. 2018. Shoot the Honey, Cloak the Player: Towards Zero-Runtime-Overhead Proactive Defense and Detection for Visual Game Cheating. In 
+
+Proceedings of Make sure to enter the correct conference title from your rights confirmation email (Conference acronym ’XX). ACM, New York, NY, USA, 15 pages. https://doi.org/XXXXXXX.XXXXXXX 
+
+## 1 Introduction 
+
+Global video game revenue is projected to reach $564 billion by 2026 [ 51 ], with first-person shooters (FPS) remaining one of the most popular and lucrative market [ 50 ]. Unfortunately, FPS games are persistently plagued by cheating, which undermines fair com-petition, degrades player experience, reduces retention, and causes substantial financial losses for the gaming industry [ 7, 13 , 19 , 31 ]. Among these threats, aimbots are particularly damaging in competi-tive FPS games because they automatically aim and shoot opponents to provide cheaters with an unfair advantage [53, 68, 69]. Aimbots broadly fall into two categories: memory-based and visual-based. Memory-based aimbots directly read or manipulate game memory to recover precise enemy locations. They are in-creasingly constrained by existing anti-cheat systems based on memory monitoring, kernel-level protection, and trusted execu-tion support [ 5, 6, 9, 14 , 36 , 59 ]. In contrast, visual-based aim-bots [ 2, 34 , 45 , 54 ] operate solely on rendered display frames and therefore evade these defenses by never tampering with game memory. Powered by advanced object detection models such as YOLO [ 41 , 43 , 44 ], they can achieve superhuman aiming precision and speed while remain highly stealthy. Existing defenses against visual-based aimbots either perform 
+
+post-hoc behavior detection or implement proactive runtime defense .Post-hoc detectors [ 3, 18 , 20 , 25 , 26 , 33 , 39 , 49 , 65 – 69 ] analyze game-play statistics to identify suspicious behavior after a match, whereas runtime defenses [ 32 , 53 , 64 ] intervene during gameplay by per-turbing rendered visuals to mislead the aimbot. However, they face the following fundamental limitations: 
+
+L1. Lack of both accountability and prevention. Neither ap-proach delivers an end-to-end solution. Post-hoc detectors offer  
+
+> arXiv:2606.25734v1 [cs.CR] 24 Jun 2026 Conference acronym ’XX, June 03–05, 2018, Woodstock, NY Jianing Wang, Chuqi Zhang, Yuancheng Jiang, Adil Ahmad, and Shanqing Guo
+
+accountability without prevention : they identify cheating only after unfair advantage has already been gained and therefore cannot protect match integrity in real time. Runtime defenses provide pre-vention without accountability : although they may disrupt cheating during play, they cannot provide forensic evidence for post-game enforcement, lack the ability to confidently attribute misconduct, and thus fail to penalize cheaters effectively. 
+
+L2. Fragile against advanced human-mimicking aimbots. Vi-sual aimbots do not exhibit many explicit unnatural behaviors of memory-based cheats, such as pre-firing or perfect tracking enemies through obstacles, which existing detectors rely on, as they share the same field of vision as humans. Moreover, modern cheats em-ploy advanced strategies to mimic human aiming behavior, such as mouse smoothing [ 2, 45 , 54 ], GAN-based trajectory generation [ 24 ], or neuromuscular aim assist [ 21 ]. This further narrows the statisti-cal gap between skilled legitimate players and cheaters. 
+
+L3. Face practical deployment barriers in real FPS games. Prior defenses face three practical barriers. First, display-perturbation defenses impose substantial per-frame overhead, making them un-suitable for latency-sensitive gameplay [ 32 , 53 ]. Second, texture-perturbation defenses [ 64 ] offer limited geometric coverage: they can only apply to 2D planar surfaces and cannot protect general geometry, such as 3D player and non-planar building models. Third, many defenses require intrusive integration into the game stack, including high-frequency game data collection, peripheral logging, or hooks into shaders and graphics APIs [ 3, 14 , 32 , 36 , 39 , 53 ]. To-gether, these barriers limit their portability, maintainability, and adoption in production games. These limitations raise a key question in the defense landscape: can a visual anti-cheat solution simultaneously prevent cheating online, produce actionable post-game evidence, and remain light-weight enough for deployment in modern FPS games? We answer this question affirmatively with two key insights. First, we transform visual-aimbot detection from passive be-havior classification into an active visual challenge-response problem . Rather than inferring cheating from noisy and increas-ingly human-like aiming behavior, we introduce external visual signals that are salient to visual aimbots but unlikely to affect benign players. Second, unlike display-space perturbations that require expensive per-frame processing or prior texture-space defenses that are limited to 2D planar surfaces, we shift the cost to an offline, 3D-aware adversarial texture synthesis stage .To instantiate these insights, we propose two complementary mechanisms (Fig. 1). Adversarial Honeypot Textures (AHT) are static decoys placed in game scenes. They appear as high-confidence, player-like objects only to vision aimbots, inducing deliberate aim-ing behaviors (i.e., lock-on) for visual aimbots, while are non-salient to honest players. Adversarial Camouflage Textures (ACT) are static noises applied to player models that suppress the aimbot’s detection confidence while remaining visually natural to humans. Together, ACT reduces aimbot’s ability to detect real opponents, while AHT redirects it toward non-existent targets; repeated lock-on to such targets then becomes strong evidence of visual cheating .Realizing an end-to-end solution based on proposed mechanisms poses two technical challenges. C1. It is non-trivial to synthesize 
+
+robust adversarial textures (AHT/ACT) that survive in the 3D ren-dering pipeline, including UV mapping [ 62 ], viewpoint changes, (lures aimbot lock-on) (evades aimbot targeting)   
+
+> Honest Player View Visual Aimbot View
+> Adversarial Camouflage Texture Adversarial Honeypot Texture
+
+Figure 1: A high-level illustration of AimTrap ’s principles. 
+
+and lighting variations. In addition, secure and scalable texture man-agement is also challenging, as textures must be protected from client-side adversaries and deployed efficiently across millions of online matches. C2. Even with honeypot textures, reliably detecting cheating with high accuracy and low false-positive rates remains difficult. The key challenge is to precisely identify sparse honeypot interactions from massive gameplay events while remaining robust to noisy interactions from honest players. To this end, we present AimTrap , a framework that both proac-tively defends against visual aimbots at runtime and detects their presence with strong and explainable evidence , while preserving practical deployability in real-world FPS games. To enable robust texture synthesis ( C1 ), AimTrap integrates an end-to-end differen-tiable rendering pipeline and adopts Expectation over Renderings (EoR) to optimize texture-space perturbations under diverse ren-dering conditions (§5.2, §5.3). It further incorporates strategies for secure texture management (§5.4) and efficient deployment (§5.5). To enable effective and reliable cheating detection ( C2 ), AimTrap 
+
+designs a honeypot-interaction mouse trajectory extraction and abnormal hoenypot-interaction identification algorithm (§6). We evaluate AimTrap against a state-of-the-art visual aimbot [ 45 ]in real-game settings with real textures, replay logs, and environ-ments. AimTrap achieves strong proactive defense, with ACT reach-ing an average success rate of 85.1% and AHT 96.9% across diverse rendering conditions (§7.2, §7.5). Its cheating detector outperforms state-of-the-art baseline [ 69 ] by delivering exceptionally low false-positive rates of 1.84 × 10 −5 in simulation and 3.49 × 10 −8 real-game matches (§7.3, §7.4). Compared with prior perturbation-based de-fenses [ 32 , 53 ], AimTrap incurs negligible runtime overhead, while preserving perceptual quality and practical deployability (§7.2, §7.7, §7.6). These results demonstrate that AimTrap is a practical and effective end-to-end defense against visual aimbots. 
+
+Contributions. This paper makes the following contributions: (1) We introduce a novel and reliable signal for distinguishing visual aimbots from benign players: adversarial honeypots that induce cheat-specific lock-on behavior. (2) We present AimTrap , the first end-to-end defense against visual aimbots that unifies proactive runtime protection and post-game detection through two complementary and effective adver-sarial texture mechanisms, without introducing runtime overhead. (3) We evaluate AimTrap in real-game environments against an open-source visual aimbot, demonstrating superior effectiveness, Shoot the Honey, Cloak the Player: Towards Zero-Runtime-Overhead Proactive Defense and Detection for Visual Game Cheating Conference acronym ’XX, June 03–05, 2018, Woodstock, NY 
+
+explainable detection signals, and practical deployability compared to state-of-the-art baselines. 
+
+## 2 Background and Motivation 2.1 Visual Aimbot: A New Threat in FPS Games 
+
+Unlike traditional memory-based aimbots, visual aimbots [ 2, 34 , 45 ,54 ] achieve superhuman precision without tampering with game memory. Instead, they capture real-time display frames and process them through high-speed object detection models, such as YOLO, faster-RCNN, and NanoDet, to identify on-screen enemies and auto-matically lock onto targets [ 41 , 43 , 44 ]. This vision-based paradigm offers three distinct advantages over memory-based aimbots. 
+
+Stealthiness via system-level evasion. Visual aimbots can bypass conventional memory-based anti-cheats [ 5, 6, 9 , 59 ] as they operate only on legitimate video output. They can also avoid kernel-level monitoring [ 6, 9 ] through two-PC setups, where an external ma-chine processes frames through a capture card and returns control signals via simulated peripherals [ 55 ]. Recent proof-of-concept sys-tems further show that visual targeting can be coupled with Elec-trical Muscle Stimulation (EMS) to induce rapid user input, making cheating behavior appear closer to organic human control [21]. 
+
+Adaptability . Their vision-only pipeline inherently game-agnostic. They can seamlessly transfer across different games, platforms, and even cloud gaming environments [ 4 , 10 , 30 , 35 , 48 , 56 ], where tra-ditional memory-based aimbots are infeasible. 
+
+Low barrier to entry . Visual aimbots eliminate the need for com-plex, continuous reverse engineering of obfuscated game binaries. Open-source vision models and LLM-assisted development tools further lower the technical barrier, enabling individuals with mini-mal technical expertise to develop and deploy effective cheats. 
+
+## 2.2 Existing Defenses Against Visual Aimbots 
+
+Existing defenses against visual aimbots can be categorized into the following two paradigms, summerized in Tab. 1. 
+
+Post-hoc behavior detection. Such detectors [ 3, 18 , 20 , 25 , 26 ,33 , 39 , 49 , 65 – 69 ] analyze gameplay statistics to detect cheating behavior after a match. The statistics can be collected from in-game or system-level data, or extracted from post-game replay logs. They analyze these statistics using machine learning techniques to iden-tify suspicious behavior. For instance, Hawk [68 ] requires game-specific features (e.g., flash bang affection duration on opponents and teammates) to evaluate player behavior, while XGuardian [69 ]relies on pitch and yaw angle data to inspect aiming trajectories. 
+
+Proactive runtime defenses. Such approaches [ 32 , 53 , 64 ] directly interfere with the aimbot’s vision functionality during gameplay. In particular, display-perturbation methods [ 32 , 53 ] inject imper-ceptible adversarial noise into each rendered frame to suppress the functionality of aimbots, but incur significant performance overhead. For instance, Invisibility Cloak [ 53 ] applies camouflage perturbations to hide real players. Similarly, Nhu et al. [ 32 ] com-bine camouflage perturbations with decoy perturbations (inject-ing fake players) to degrade the cheat’s accuracy. Alternatively, texture-perturbation approaches [ 64 ] apply noises directly within the texture space to avoid per-frame computational costs. 
+
+## 2.3 Limitations of Existing Defenses 
+
+We compare AimTrap with state-of-the-art anti-cheat solutions in Tab. 1, identifying critical limitations motivating our approach: 
+
+L1. Lack of both accountability and prevention. Neither post-hoc behavior detection nor proactive runtime protection delivers an end-to-end anti-visual-cheating solution (Tab. 1). Post-hoc detectors offer accountability without prevention : they identify cheating only after an unfair advantage has been gained, failing to protect match integrity in real time. Runtime defenses provide prevention without accountability : although they may disrupt cheating during play, they typically cannot provide reliable forensic evidence for post-game enforcement, lack the ability to confidently attribute misconduct, and thus fail to penalize cheaters effectively. 
+
+L2. Existing detectors are fragile against advanced visual aim-bots. Visual aimbots easily evade conventional signature-based detection [ 5, 6 , 9 , 59 ] (§2.1). They can also evade behavioral detec-tors [ 3, 18 , 20 , 25 , 26 , 65 –69 ] for two primary reasons. First, they do not exhibit explicit unnatural behavior patterns of memory-based cheats, such as pre-firing or perfectly tracking enemies through obstacles. Second, they employ advanced strategies to mimic hu-man aiming trajectories, such as mouse smoothing [ 2 , 45 , 54 ] and GAN-based generation [ 24 ], making them difficult to distinguish from highly-skilled legitimate gameplay. Moreover, neuromuscu-lar aim assist [ 21 ] (§2.1) produces aiming patterns physiologically consistent with natural muscle responses, further blurring the line between human and machine behavior. 
+
+L3. Face practical deployment barriers in real FPS games. First, display-perturbation defenses [ 32 , 53 ] struggle to meet the strict performance standards of real-time FPS games ( 144 –360 fps ) [ 37 ,58 ]. As shown in Tab. 2, Nhu et al. [ 32 ] require 8.5 seconds per frame, while Invisible Cloak [ 53 ] achieves only 21 –77 fps on a high-end RTX 4090 (extrapolating to 9–34 fps on commodity RTX 3060s [ 15 , 17 ]). Second, texture-perturbation defense [ 64 ] reduces runtime overhead but exhibits limited generalizability. Specifically, AdvMap [ 64 ] are restricted to 2D planar surfaces and thus can-not be extended to general 3D geometry, including player models and non-planar building models. Last, integrating prior approaches requires disruptive engine or system changes. Behavior-based de-tectors [ 3, 14 , 39 ] depend on high-frequency game data collection, peripheral logging, or specialized hardware support (e.g., the legacy Intel SGX). Furthermore, display-perturbation approaches [ 32 , 53 ]require deep integration with the rendering pipeline, such as hook-ing shaders or graphics APIs. These intrusions complicate compati-bility and maintainability of off-the-shelf games. 
+
+## 2.4 Problem Statement and Threat Model 
+
+This paper addresses the emerging threat of visual aimbots in FPS games with a defense that (i) proactively disrupts them during gameplay and (ii) provides reliable evidence to identify cheaters. 
+
+Assumptions. We assume that standard anti-cheat mechanisms (e.g., EAC and Vanguard) already protect the game client against memory tampering and code injection [ 5, 6 , 59 ]. We trust the in-tegrity of the game engine, operating system, and network stack. Thus, we specifically focus on external, vision-based cheats. 
+
+Adversary Capabilities. Consistent with today’s common prac-tice, cheaters have the following capabilities: Conference acronym ’XX, June 03–05, 2018, Woodstock, NY Jianing Wang, Chuqi Zhang, Yuancheng Jiang, Adil Ahmad, and Shanqing Guo 
+
+Table 1: Comparison between AimTrap (this work) and state-of-the-art visual anti-cheat solutions. 
+
+System Category Post-hoc Behavior Detection Proactive Runtime Protection Deployment                                                                            
+
+> Input Evidence Anti-Mimic Space Camouflage Decoy Overhead
+> BotScreen [14] (SEC’23) Detection Gamedata ✗✗N/A N/A N/A N/A ✗(Legacy Intel SGX) Nhu et al. [32] (IPCCC’23) Protection N/A N/A N/A Display output ✓✓Severe ✗(Display modification) Invisibility Cloak [53] (SEC’24) Protection N/A N/A N/A Display output ✓✗High ✗(Display modification) AdvMap [64] (ToG’25) Protection N/A N/A N/A 2D textures ✗✓Negligible ✓
+> Hawk [68] (TIFS’25) Detection Replay ✗✗N/A N/A N/A N/A ✓
+> XGuardian [69] (SEC’26) Detection Replay ✓✗N/A N/A N/A N/A ✓
+> AimTrap (this work) Both Replay ✓✓3D textures ✓✓Negligible ✓
+> Evidence : Whether the method provides human-interpretable evidence for forensic analysis or manual inspection.
+> Anti-Mimic : Denotes resilience against advanced aimbots designed to mimic human aiming behavior [21, 24].
+> Deployment : Whether the method can be deployed transparently in practice without requiring intrusive client-side changes.
+
+Table 2: Runtime overhead comparison of AimTrap and prior proactive runtime protection solutions.     
+
+> System / Baseline Defense Space Resolution FPS †
+> Gameplay Baseline (Casual – Esports)
+
+1920 × 1080 144 –360  
+
+> Hardware Baseline (RTX 3060 [17] – RTX 4090)
+
+1920 × 1080 200 –600   
+
+> Nhu et al. [32] Rendering display
+
+1920 × 1080 ∼ 0.12   
+
+> Invisibility Cloak [53] Rendering display
+
+320 × 320 21 –77   
+
+> AdvMap [64] Texture (2D planar)
+
+1920 × 1080 400 –600    
+
+> AimTrap (this work) Texture (3D model)
+
+1920 × 1080 400 –600      
+
+> Note : FPS for [ 53 ], [ 64 ], and AimTrap measured on CS2 with NVIDIA RTX 4090; hardware for [32] was not reported.
+
+(1) Frame Capture : Accessing rendered game frames directly or via external hardware (e.g., HDMI capture cards) at runtime to bypass signature-based detectors. 
+
+(2) Input Injection : Generating synthetic mouse and keyboard inputs using OS-level simulation or external USB emulators. 
+
+(3) Computer Vision : Applying models (e.g., YOLO [ 43 ]) to cap-tured frames for superhuman aiming precision. 
+
+(4) Behavioral Mimicry : Post-processing aiming trajectories and adding natural delays to evade behavioral detection [21, 24]. 
+
+## 3 Approach 3.1 Enabling Observations 
+
+Our approach is motivated by three FPS gameplay observations. 
+
+Observation 1. Visual aimbots react to detector confidence rather than human semantic understanding. Visual aimbots operate on rendered frames and rely on object detectors to identify targets. Therefore, they can react to detector-salient visual cues even when those cues do not correspond to meaningful enemies from a human player’s perspective. This creates an opportunity to manipulate aimbots through visual cues that are recognizable to detectors but imperceptible to legitimate players. 
+
+Observation 2. If a detector-salient but human-imperceptible visual cues induces repeated lock-on, that behavior becomes a cheat-specific signal. We define such cues as visual honeypots . Fig. 2 illustrates the contrast between normal players and visual aimbots. Since normal players cannot perceive honeypots as meaningful targets, they do not intentionally aim at those locations. Their mouse trajectories either pass smoothly across honeypot regions, like scanning, or Normal Scanning Mouse Trajectory Abnormal Lock-on Mouse Trajectory  
+
+> Honeypot Honeypot
+
+Figure 2: Honeypot-interaction trajectory comparison. 
+
+remain relatively stable at specific points due to normal pre-aiming. In contrast, aimbots are attracted to honeypots and repeatedly lock onto them, exposing automated target selection. 
+
+Observation 3. Relative motion makes static cues dynamic aim-bot targets. FPS gameplay is inherently dynamic: as players move or rotate their view, the perspective projection of the 3D scene continuously changes. By the principle of relative motion, static honeypots continuously shift in screen space and can repeatedly enter aimbot’s detection region around the crosshair. This makes static honeypots behave like dynamic fake targets from aimbot’s perspective, without runtime animation or rendering modification. 
+
+## 3.2 Adversarial Texture Mechanisms 
+
+Building on these observations, we present two key insights. 
+
+Insight 1. We transform visual-aimbot detection from passive be-havior classification into an active visual challenge-response problem. 
+
+Rather than inferring cheating only from noisy and increasingly human-like aiming behavior, we introduce detector-salient visual signals that are unlikely to affect legitimate players. 
+
+Insight 2. Static game assets provide a practical carrier for 3D-aware adversarial visual cues. By embedding adversarial cues directly into textures, we can synthesize them in an offline, 3D-aware pipeline and preserve their detector salience across diverse rendering condi-tions, avoiding expensive per-frame runtime perturbation. We therefore propose two complementary mechanisms (Fig. 1). 
+
+Adversarial Honeypot Textures (AHT) contain static decoys, i.e., honeypots, which are placed in game scenes. They are opti-mized to lure aimbots into targeting non-existent enemies while remaining visually non-salient to legitimate players. AHT degrades Shoot the Honey, Cloak the Player: Towards Zero-Runtime-Overhead Proactive Defense and Detection for Visual Game Cheating Conference acronym ’XX, June 03–05, 2018, Woodstock, NY ❶ Server Offline Preparation  ❷ Client Pre-Game Initialization  
+
+> Randomly Select
+> Memory Disk
+> Transfer
+
+❸ Client In-Game Runtime Defense 
+
+❺ Server Post-Game Detection 
+
+> Adversarial
+> Texture Pool
+
+❹ Client Post-Game Processing    
+
+> Memory destroy
+> Adversarial Honeypot
+> Textures (AHT)
+> Cloaked Player Model
+> Honeypot Map
+> Adversarial Textures
+> Adversarial
+> Texture
+> Synthesis
+> Applied to Player Models
+> Embedded in Game World Game Assets
+> (3D Models, Audio,
+> Animation, …)
+> Adversarial
+> Textures
+> (In-Memory-Only)
+> Asset Integrity
+> Verification
+> (Hash Check)
+> (evades aimbot detection)
+> (lures aimbot lock-on)
+> Honest
+> Honeypot-Interaction Trajectory Extraction
+> Abnormal Honeypot-Interaction Identification
+> Normal Scanning
+> Trajectories
+> Abnormal Lock-on
+> Trajectories
+> Trajectories Replay
+> Logs
+> Player-Level Aimbot
+> Cheating Decision
+> Aimbot
+> Cheaters
+> Honest
+> Players
+> Adversarial Camouflage
+> Textures (ACT) Game Sessions
+> Honest Player
+> Zero Overhead
+> Visual Aimbot
+
+Figure 3: Overview of AimTrap .
+
+cheat effectiveness by redirecting aimbot precision toward irrele-vant targets and provides explainable post-game evidence through abnormal lock-on behavior. 
+
+Adversarial Camouflage Textures (ACT) apply static per-turbations to player models. They suppress the aimbot’s detection confidence while remaining visually natural to humans, inspired by prior display-perturbation defenses [ 32 , 53 ]. ACT reduces the aimbot’s ability to engage real players and complements AHT by redirecting target selection toward visual honeypots. Together, AHT and ACT degrade visual aimbots at runtime while enabling post-game cheat detection, addressing L1 . Unlike detec-tors that infer cheating from noisy human-mimic aiming behavior, our visual honeypots introduce an explicit in-game signal: repeated, intentional lock-on to human-imperceptible decoys, which is cheat-specific and unlikely to arise from benign play, addressing L2 . Both AHT and ACT are synthesized offline and rendered as normal as-sets, requiring neither per-frame computation nor invasive display-pipeline integration. Addtionally, detection is performed server-side using standard in-game replay logs already available in modern FPS games, addressing L3 .
+
+## 3.3 Challenges 
+
+Realizing an end-to-end solution presents two technical challenges. 
+
+C1: Robust adversarial texture synthesis and management. 
+
+Synthesizing static 2D textures that remain adversarial after 3D game rendering is challenging. In games, textures are mapped onto 3D meshes and processed by complex rendering pipelines, while viewpoints and distances vary unpredictably across players. Thus, a single perturbation must remain effective under diverse rendering conditions encountered in practice (§5.2, §5.3). Moreover, since these textures are deployed on the client, adversaries can mount adaptive attacks, for example by probing to infer honeypot locations or extracting the textures to retrain their aimbots for increased robustness. This requires a secure and efficient texture management mechanism that limits attacker predictability (§5.4, §5.5). 
+
+C2: Effective honeypot-based detection. Designing a detector that uses honeypot interactions as reliable evidence without caus-ing false positives is also challenging. The system must locate, aggregate, and interpret sparse interactions within massive replay datasets—often the proverbial needle in a haystack. In addition, be-nign players may occasionally trigger such interactions by chance. Therefore, the detector must tolerate rare benign events while still confidently identifying cheat-driven behavior (§6). 
+
+## 4 System Overview 
+
+AimTrap is an anti-visual-cheat framework that proactively in-terferes with aimbots at runtime with zero overhead and detects aimbot cheating behavior. To address outlined challenges (§3.3), 
+
+AimTrap consists of five key phases as illustrated in Fig. 3: 1 Server Offline Preparation . The server synthesizes a diverse pool of adversarial textures offline (§5), including (a) Adversarial Camouflage Textures (§5.2) for player models to evade aimbot tar-geting, and (b) Adversarial Honeypot Textures (§5.3) embedded in the game world to lure aimbots and expose their cheating behavior. We randomize the texture synthesis and per-session selection to limit attacker predictability (§5.4). 2 Client Pre-Game Initialization (§5.4). In this phase, the client loads and prepares game assets. In detail, (a) adversarial textures are securely transmitted from the server to the client’s memory 
+
+before the match starts, and (b) other assets (e.g., 3D models) are loaded from disk and verified against expected hash values. This integrity verification prevents attackers from tampering with game assets to weaken our adversarial textures. 3 Client In-Game Runtime Defense. At runtime, our adver-sarial textures proactively disrupt aimbot’s functionality: ACT-camouflaged player models evade aimbot detection, while AHT-based honeypots embedded in the map lure aimbot to lock onto them. As these textures are 3D-robust and static game assets, Aim-Trap does not need to modify the rendering pipeline at runtime, Conference acronym ’XX, June 03–05, 2018, Woodstock, NY Jianing Wang, Chuqi Zhang, Yuancheng Jiang, Adil Ahmad, and Shanqing Guo 
+
+unlike baselines that inject or alter rendering [ 32 , 53 ], and therefore introduces no performance overhead during gameplay (§7.6). 4 Client Post-Game Processing (§5.4). The client discards all downloaded adversarial textures immediately after the match. This 
+
+in-memory-only lifecycle places them under existing memory-based anti-cheat protections (see Assumptions in §2.4) and prevents any on-disk persistence that could expose them to aimbot developers. 5 Server Post-Game Detection (§6). AimTrap performs an ef-fective and efficient post-game detection on standard replay logs. Note that AimTrap requires no instrumentation beyond standard replay logging, incurring no additional recording or storage cost. The detection pipeline has three stages: (i) extracting honeypot-interaction aiming trajectories from tick-level logs via geometric gating and temporal clustering (§6.1); (ii) classifying each interac-tion based on its aiming pattern to identify abnormal aimbot-like trajectory (§6.2); and (iii) aggregating interaction-level inferences into a player-level decision for the match (§6.3). 
+
+## 5 Adversarial Texture Synthesis 
+
+This section presents our adversarial texture synthesis pipeline (Fig. 4), covering preliminaries (§5.1), synthesis process (§5.2, §5.3), and their secure and efficient management strategies (§5.4, §5.5). 
+
+## 5.1 Preliminaries 
+
+Expectation over Transformations (EoT). EoT [ 8, 11 , 46 , 63 ] is a training-time strategy for crafting robust adversarial examples by optimizing not for a single input, but for the expected model loss under a distribution of transformations (e.g., scaling, rotation, viewpoint, lighting, noise, compression). 
+
+Expectation over Renderings (EoR). When adversarial exam-ples must remain effective after a 3D rendering pipeline, nuisance variables arise from the rendering process that maps 3D assets (e.g., geometry, materials, and textures) and scene conditions (e.g., cam-era pose, distance, FOV, lighting, background, and motion blur) to the final image. We therefore adapt EoT to Expectation over Ren-derings (EoR), which optimizes asset-space parameters—here, the texture—so that the rendered outputs remain adversarial over a distribution of rendering states. Let 𝑀 denote the mesh, 𝜏 the tex-ture parameters to optimize, 𝜃 ∼ 𝐷 the rendering parameters, 𝑅 adifferentiable renderer, 𝑓 the aimbot vision model, and 𝑦 the attack target (evasion or decoy). The EoR objective is           
+
+> min
+> 𝜏 ∈T E𝜃 ∼𝐷
+> L 𝑓  𝑅 (𝑀, 𝜏 ;𝜃 ), 𝑦  .(1)
+
+Fully Differentiable Rendering Pipeline. To optimize under the EoR objective above, we integrate an end-to-end differentiable ren-dering pipeline [ 22 , 38 ]. The renderer 𝑅 (𝑀, 𝜏 ; 𝜃 ) maps the textured asset to an image 𝐼 given a render condition 𝜃 . Because rasteriza-tion and shading are differentiable in our setup, gradients of the detection loss with respect to the texture follow the chain rule:              
+
+> 𝜏 UV Mapping
+> −−−−−−−− →𝑀 𝑅 (· ;𝜃 )
+> −−−− →𝐼 𝑓 (·)
+> −−− →detections L
+> −−→ ∇ 𝜏 L,(2)
+
+i.e., ∇𝜏 L = 𝜕 L 
+
+> 𝜕𝑓 𝜕𝑓 𝜕𝐼 𝜕𝑅 𝜕𝜏
+
+.
+
+## 5.2 Adversarial Camouflage Textures 
+
+Adversarial Camouflage Textures (ACT) degrade aimbots’ perfor-mance by reducing their confidence of game player models, thereby hindering localization and recognition. To ensure robustness across rendering conditions, we optimize ACT under EoR framework. 
+
+Rendering Condition Distribution. Let the game-engine rendering condition be 𝜃 = (𝑑, 𝜙,𝜓, 𝜆, 𝑏 ), where 𝑑 is camera distance ( 𝑑 ∈[𝑑 min , 𝑑 max ]), (𝜙,𝜓 ) are yaw/pitch angles ( 𝜙 ∈ [ 𝜙 min , 𝜙 max ], 𝜓 ∈[𝜓 min ,𝜓 max ]), 𝜆 parameterizes lighting (e.g., ambient/point), and 𝑏 
+
+indexes background assets ( 𝑏 ∈ B ). We define a distribution D over 
+
+𝜃 and, at each iteration 𝑡 , draw a minibatch of 𝑚 rendering states         
+
+> Θ𝑡 ={𝜃 1, . . . , 𝜃 𝑚 },𝜃 𝑗 i.i.d.
+> ∼D.(3)
+
+ACT’s EoR Objective. We optimize ACT under Eq. (1) using a stochastic estimator over the current minibatch Θ𝑡 :                
+
+> bLACT (𝜏 ;Θ𝑡 )=1
+> 𝑚
+> 𝑚 ∑︁
+> 𝑗 =1
+> ℓdet
+>  𝑓 (𝑅 (𝑀, 𝜏 ;𝜃 𝑗 ) ) ,𝜃 𝑗 i.i.d.
+> ∼D.(4)
+
+This unbiased estimator is differentiated end-to-end through the rendering pipeline (Eq. (2)) to obtain ∇𝜏 bLACT .
+
+Constrained Update. We update 𝜏 with projected gradient steps [ 27 ]in an ℓ∞ ball of radius 𝜖 around the initial texture 𝜏 0, with per-channel clamping to [0, 1]:                          
+
+> ˜𝜏 (𝑡 +1)=𝜏 (𝑡 )−𝛼 sign
+> 
+> ∇𝜏 bLACT
+>  𝜏 (𝑡 );Θ𝑡
+> 
+> ,(5)
+> 𝜏 (𝑡 +1)=clip [0,1]
+> 
+> ΠB∞(𝜏 0,𝜖 )
+>  ˜𝜏 (𝑡 +1)
+> ,(6)
+
+where ΠB∞ (𝜏 0,𝜖 ) (𝑧 ) = 𝜏 0 + clip [− 𝜖,𝜖 ] (𝑧 − 𝜏 0) is the projection onto the ℓ∞ ball about 𝜏 0. At each iteration, we resample Θ𝑡 (viewpoints, distances, lighting, backgrounds), accumulate minibatch gradients via Eq. (4), and apply Eq. (5). 
+
+## 5.3 Adversarial Honeypot Textures 
+
+Adversarial Honeypot Textures (AHT) are embedded in 3D world to 
+
+expose aimbot behavior: they are visually natural to human players, yet appear to vision-based aimbots as highly salient, target-like objects. We again use the EoR strategy to ensure robustness under rendering variability. 
+
+Rendering Condition Distribution. We follow nearly the same rendering distribution D as in Eq. (3), excluding the background 𝑏 
+
+term since the honeypot is part of the scene. 
+
+Targeted Detection with Uniqueness. We want a single high-confidence decoy in aimbot’s detection area, suppressing competitors; other-wise multiple decoys can affect aimbot’s decision-making process, leading to unstable aiming behavior. Let 𝑝 1 be the top detection score and 𝑝 2 the highest-confidence non-overlapping competitor. We enforce this with a margin and confidence calibration term:               
+
+> Lrank =𝑎 ReLU  𝑚 − ( 𝑝 1−𝑝 2)+𝑏 (1−𝑝 1)2,(7)
+
+where 𝑚 is the desired margin and 𝑎, 𝑏 weight the terms. 
+
+Geometric Consistency. To reduce unstable locks under view-point changes, we regularize the top box toward desired normal-ized dimensions. Let (𝑤, ℎ ) be the width/height of the top box, and (𝑊 𝑇 , 𝐻 𝑇 ) be the reference extents for normalization under 𝜃 𝑗 .Define 𝑤 frac = 𝑤 /𝑊 𝑇 , ℎfrac = ℎ/𝐻 𝑇 and targets 𝑤 ∗
+
+> frac
+
+, ℎ ∗
+
+> frac
+
+. The geometric loss is             
+
+> Lgeo =𝜇 𝑤 frac −𝑤 ∗
+> frac +𝜈 ℎfrac −ℎ∗
+> frac ,(8)
+
+with 𝜇, 𝜈 > 0 weighting width/height deviations. 
+
+AHT’s EoR Objective. We optimize AHT using a stochastic esti-mator over Θ𝑡 :                      
+
+> bLAHT (𝜏 ;Θ𝑡 )=1
+> 𝑚
+> 𝑚 ∑︁
+> 𝑗 =1
+> h
+> 𝜆 𝑟 L(𝑗 )
+> rank +𝜆 𝑔 L(𝑗 )
+> geo
+> i
+> ,𝜃 𝑗 i.i.d.
+> ∼D,(9) Shoot the Honey, Cloak the Player: Towards Zero-Runtime-Overhead Proactive Defense and Detection for Visual Game Cheating Conference acronym ’XX, June 03–05, 2018, Woodstock, NY Texture
+> Augmented Samples
+> Perturbation
+> Visual
+> Aimbot
+> Evasion
+> Objective
+> Decoy
+> Objective
+> Mesh
+> Player
+> Differentiable
+> Renderer
+> Camera Pose
+> Lighting Conditions
+> Field of View (FOV)
+> Distance
+> Background
+> EoR Sampling Strategy
+
+…
+
+…  
+
+> Adversarial Honeypot Texture Synthesis Pipeline
+> Texture Mesh
+> Expectation over
+> Rendering (EoR)
+> Sampler
+> Adversarial Camouflage Texture Synthesis Pipeline
+> Perturbation
+> Adversarial Camouflage
+> Texture
+> Adversarial Honeypot
+> Texture
+> Player View
+> 92% 16%
+> Visually natural to humans
+> Wall Target
+> Confidence
+> Aimbot View
+> Player View
+> Aimbot View
+> World
+
+Figure 4: Adversarial texture synthesis. 
+
+which is differentiated end-to-end through the pipeline (Eq. (2)) to obtain ∇𝜏 bLAHT . Finally, we update the texture 𝜏 following the same method described in Eq. (5). 
+
+## 5.4 Secure Adversarial Texture Management 
+
+This section details the security guarantees of adversarial textures, enforced by the following three mechanisms. 
+
+Randomized Synthesis and Per-Session Selection. Following well-established practices to counter predictability, such as address space layout randomization (ASLR) [ 47 ], we randomize both texture synthesis and per-game-session selection. In detail, we synthesize a diverse pool of adversarial textures offline by varying the synthe-sis initialization (e.g., random seeds). Then we randomly sample a subset from the pool for each game session ( 1 , Fig. 3). Such ran-domization obscures both which textures are adversarial and the specific perturbation patterns in each texture, limiting an aimbot developer’s ability to anticipate or adapt across sessions. 
+
+In-Memory-Only Deployment. Adversarial textures, transmitted over the network from the server, are kept solely in the client’s memory, and then cleared immediately in memory when the match ends ( 2 , 4 , Fig. 3). This in-memory-only deployment keeps the textures within the protection scope of existing memory-based anti-cheat mechanisms (see Assumptions in §2.4). By avoiding any persistent disk storage, it prevents an aimbot developer’s ability from extracting, reverse-engineering, or adapting to our textures. 
+
+Asset Integrity Verification. Because our textures are applied to existing client-side 3D models, an adversary might attempt to degrade effectiveness by altering models or UV mappings [ 62 ]. To prevent such tampering, we verify the integrity of all game assets loaded from the client’s disk ( 2 , Fig. 3). This integrity verification follows standard practice already enforced by vanilla clients (e.g., Valve’s VPK and Unreal Engine’s PAK file integrity check). Thus, our approach introduces negligible integration overhead. 
+
+## 5.5 Efficient Adversarial Texture Deployment 
+
+This section explains how we achieve efficient texture deployment through the following three design choices. 
+
+Offline Synthesis . We pre-synthesize a diverse pool of adversarial textures on the server, entirely offline , so no on-the-fly synthesis is incurred during live gameplay. The average synthesis time for AHT is 12 s and ACT 75 s (§7.6). 
+
+Cross-Session Reuse . The server reuses each texture across mul-tiple sessions to amortize the synthesis cost. As reported by [ 40 ], CS2 has averaged 902k online players over the past two years, peak-ing at 1.8M . Assuming 10 players per match, this corresponds to roughly 90k concurrent matches on average. At this scale, reusing each texture for hundreds to thousands of sessions still yields ample variety while keeping costs manageable. Suppose each texture is reused for 1,000 sessions, the amortized per-session cost is ≈0.012 s (AHT) and ≈0.075 s (ACT), both < 0.1 s. Such overheads are readily affordable for production servers. 
+
+Lightweight Network Transmission . Adversarial textures are lightweight image files, far smaller than heavyweight assets, such as 3D models. In our implementation, AHTs average 0.83 MB and ACTs 7.48 MB (§7.6). Thus, per-session download introduces negli-gible bandwidth and latency overhead to the whole system. 
+
+## 6 Aimbot Cheating Detection 
+
+This section presents our post-game aimbot detection, comprising three phases: (i) honeypot interaction trajectory extraction (§6.1), (ii) abnormal trajectory identification (§6.2), and (iii) player-level cheating detection (§6.3). 
+
+## 6.1 Honeypot-Interaction Mouse-Aiming Trajectory Extraction 
+
+Extraction Overview. We convert tick-level replay logs (detailed in §C) into precise honeypot-interaction mouse aiming trajectories in two stages. First, geometric gating retains only spatially-valid ticks: the player must be within the Honeypot Proximity Zone and their view (aiming) ray must intersect the Aiming Determination Area on the honeypot plane, as illustrated in Fig. 5. Second, temporal clustering groups valid ticks to segment contiguous interactions. For each cluster, the intersections between the aiming ray and the honeypot plane define a 2D honeypot-interaction mouse trajectory. Conference acronym ’XX, June 03–05, 2018, Woodstock, NY Jianing Wang, Chuqi Zhang, Yuancheng Jiang, Adil Ahmad, and Shanqing Guo α 
+
+> 𝑟𝑟 𝑚𝑚𝑚𝑚𝑚𝑚
+> 𝑟𝑟 𝑚𝑚𝑚𝑚𝑚𝑚
+> Honeypot Honeypot Proximity Zone
+> yaw
+> pitch
+> Interaction Mouse Trajectory Normal Vector
+> Top View
+> Front View
+> Aiming Determination Area
+> θ
+> （x, y, z
+> ）
+> Aiming Ray
+
+𝑝𝑝 𝑡𝑡 
+
+> c
+> c
+
+𝑝𝑝 𝑡𝑡 
+
+> r
+> （x, y, z
+> ）
+> c
+
+Figure 5: Adversarial honeypot for aimbot detection Honeypot Proximity Zone (HPZ). We define HPZ as the neigh-borhood around each honeypot in which a player is considered spatially eligible for interaction. Let 𝑐 be the honeypot center pro-jected to the floor plane, 𝑝 𝑡 the player’s floor-projected position at tick 𝑡 . Define 𝑟 = ∥𝑝 𝑡 − 𝑐 ∥ and 𝜃 the incidence angle relative to the honeypot surface. We instantiate the HPZ as the circular sector, as illustrated in the top view of Fig. 5: 
+
+HPZ = (𝑟, 𝜃 ) 𝑟 min ≤ 𝑟 ≤ 𝑟 max , 𝛼 ≤ 𝜃 ≤ 𝜋 − 𝛼 ,
+
+excluding viewpoints too close, far, or excessively grazing. Ticks with (𝑟, 𝜃 ) ∉ HPZ are discarded to improve accuracy and efficiency. 
+
+Aiming Determination Area (ADA). Conditioned on being in HPZ, we further require that the player’s view ray intersects a target region on the honeypot plane (see the front view in Fig. 5). The ADA is an axis-aligned 2D box on the honeypot plane, cen-tered at the honeypot. A tick is aim-valid if the ray cast from the player’s position along their ( Yaw , Pitch ) direction intersects this box. The resulting aiming trajectory is the ordered sequence of 2D intersection points within ADA. We size ADA slightly larger than the physical honeypot to capture enough aiming patterns. 
+
+Temporal Clustering. After HPZ/ADA gating, we cluster the remaining tick indices using 1-D DBSCAN to form contiguous interaction segments. We set the neighborhood radius to 𝜀 = 64 
+
+ticks ( ≈ 1.0 s) and the minimum samples to 𝑚 = 32 ticks ( ≈ 0.5 s), so that clusters correspond to sustained interactions rather than spurious single-frame hits. Each cluster yields a 2D mouse trajectory in ADA plane, representing a complete honeypot interaction. 
+
+## 6.2 Abnormal Interaction Identification 
+
+Given the extracted honeypot-interaction aiming trajectories, we formulate abnormal trajectory detection as supervised sequence classification. Each trajectory is labeled and encoded with temporal deltas, 2D intersection points, and honeypot context, and a bidi-rectional LSTM is trained to distinguish abnormal from normal trajectories. Below, we describe our approach in detail. 
+
+Dataset. We build a dataset of 3,074 labeled trajectories for train-ing and evaluating our classification model (§7.3). 
+
+Sequence representation and normalization. Given a clustered mouse aiming trajectory of length 𝑇 , we encode each tick into a four-dimensional token 
+
+𝑠 𝑡 = [Δ𝑡, 𝑥 𝑡 , 𝑦 𝑡 , 1{ ( 𝑥 𝑡 , 𝑦 𝑡 ) ∈ HP } ] ∈ R4 (𝑡 = 1 . . . 𝑇 ),
+
+where Δ𝑡 = (𝑡𝑖𝑐𝑘 𝑡 − 𝑡𝑖𝑐𝑘 𝑡 −1)/ 64 normalized tick rate, (𝑥 𝑡 , 𝑦 𝑡 ) are 2D coordinates in ADA, [0, 1] indicates whether the hit is inside the honeypot HP . In addition, we append the honeypot’s normalized box coordinates [𝑥 HP , 𝑦 HP , 𝑤 HP , ℎ HP ] as static features. Sequences are truncated or padded to 𝑇 max = 320 with masks. 
+
+Model architecture. We encode each sequence with a bidirectional LSTM. Let the final forward and backward states be ℎ→, ℎ ← ∈ R𝑑 
+
+and define the sequence embedding ℎ = [ℎ→ || ℎ←] ∈ R2𝑑 . We con-catenate ℎ with 𝑏 HP and feed it to a two-layer MLP 𝑔 (·) with Batch-Norm and Dropout: 𝑧 = 𝑔 ([ ℎ|| 𝑏 HP ]) ∈ R, where 𝑧 is the logit for the positive class. We train at the sequence level using class-weighted binary cross-entropy with logits and ℓ2 regularization. For a batch 
+
+{( 𝑆 𝑖 , 𝑏 HP ,𝑖 , 𝑦 𝑖 )} 𝑁 𝑖 =1 with 𝑦 𝑖 ∈ { 0, 1} and logits 𝑧 𝑖 = 𝑔 ([ ℎ𝑖 || 𝑏 HP ,𝑖 ]) ,
+
+𝐵𝐶𝐸𝐿𝑜𝑔𝑖𝑡 (𝑧 𝑖 , 𝑦 𝑖 ) = log (1 + 𝑒 𝑧 𝑖 ) − 𝑦 𝑖 𝑧 𝑖 ,
+
+Ldata = 1
+
+𝑁 
+
+> 𝑁
+
+∑︁ 
+
+> 𝑖 =1
+
+𝑤 𝑦 𝑖 𝐵𝐶𝐸𝐿𝑜𝑔𝑖𝑡 (𝑧 𝑖 , 𝑦 𝑖 ),
+
+where 𝑤 1 = 𝜌 , 𝑤 0 = 1, and 𝜌 = 𝑁 neg /𝑁 pos when positives are rarer. The final objective is 
+
+L = Ldata + 𝜆 ∥𝜃 ∥22,
+
+with 𝜃 denoting all trainable parameters and 𝜆 set via weight decay in the optimizer. 
+
+## 6.3 Player-Level Aimbot Cheating Detection 
+
+This section formalizes our player-level decision rules based on trajectory-level identification. 
+
+Cheating Decision Making. Trajectory-level identification (§6.2) does not directly translate into player-level cheating detection. In-stead, we aggregate predictions across multiple honeypot-interaction trajectories into a player-level decision : a player is flagged if they exhibit at least 𝑇 abnormal honeypot interactions in a match. 
+
+Player-Level Cheating Detection. We model each honeypot in-teraction within a match as independent, as honeypots are placed at distinct locations and interactions occur at different times. Let TPR 𝑇 
+
+and FPR 𝑇 denote per-trajectory true-positive and false-positive rate respectively. For a match with 𝑛 interaction opportunities, the num-ber of abnormal interactions follows Binomial distribution. The player-level true-positive rate TPR 𝑃 and false-positive rate FPR 𝑃 
+
+for 𝑛 flagged interactions are: 
+
+TPR 𝑃 (𝑛,𝑇 ) =
+
+> 𝑛
+
+∑︁ 
+
+> 𝑘 =𝑇
+
+𝑛 𝑘 
+
+
+
+TPR 𝑘 𝑇 (1 − TPR 𝑇 )𝑛 −𝑘 ,
+
+FPR 𝑃 (𝑛,𝑇 ) =
+
+> 𝑛
+
+∑︁ 
+
+> 𝑘 =𝑇
+
+𝑛 𝑘 
+
+
+
+FPR 𝑘 𝑇 (1 − FPR 𝑇 )𝑛 −𝑘 .
+
+Tunable Thresholds. Developers can tune the aggregation thresh-old 𝑇 to trade recall for precision: increasing 𝑇 lowers FPR at the cost of TPR , and decreasing 𝑇 does the opposite (Tab. 6 in §7.3). Because mis-flagging legitimate players undermines the anti-cheat system’s 
+
+trustworthiness , real-world deployments typically prioritize a low false-positive rate over occasional misses. In our real-game eval-uation (§7.4), we empirically find thresholds 𝑇 ∈ [ 2, 5] provide a practical operating range, accurately identifying player-level cheat-ing while keeping no false alarm. Shoot the Honey, Cloak the Player: Towards Zero-Runtime-Overhead Proactive Defense and Detection for Visual Game Cheating Conference acronym ’XX, June 03–05, 2018, Woodstock, NY 
+
+## 7 Evaluation 
+
+We answer the following research questions (RQs): 
+
+• RQ1. How effective is AimTrap in proactively defending against vision cheating during gameplay (§7.2)? 
+
+• RQ2. How does our detection model perform in distinguish-ing cheating honeypot-interaction trajectories from normal trajectories? How does it perform at player-level? Does the visualized mouse trajectory reveal a strong signal? (§7.3) 
+
+• RQ3. How effective is our detection model in real-game scenarios, and how does its performance compare against state-of-the-art baselines? (§7.4) 
+
+• RQ4. How robust is our approach under diverse game ren-dering conditions (§7.5)? 
+
+• RQ5. What is AimTrap ’s performance overhead (§7.6)? 
+
+• RQ6. Do adversarial textures degrade real-world player ex-perience (e.g., distraction or visual strain) (§7.7)? 
+
+• RQ7. How well does our approach transfer across different aimbot models (§7.8)? 
+
+## 7.1 Experimental Setup 
+
+Implementation. We provide implementation details in §B. 
+
+Texture Assets. We evaluate scalability by synthesizing adversarial textures from real-game assets and 3D generation pipelines [1, 23, 29 ]. AHT uses 24 official CS2 textures across 7 material types. ACT 
+
+uses Tripo [1] to generate 4 male and female player models (§D). 
+
+Map Construction and Honeypot Deployment. We use Valve’s Hammer editor [ 16 ] to build a custom CS2 map, whose structure is inspired by the classic CS1.6 map, iceworld (detailed in §B). This map deploys 16 AHTs at diverse locations. 
+
+Aimbot and Proxy Models. We evaluate against a widely used open-source aimbot [ 45 ] ( ∼ 1.8 𝑘 GitHub stars) that detects players with YOLOv5-series models [ 43 ]. We use the default confidence threshold 0.4 for our evaluation. More details of aimbot configura-tions are in §G. Following the existing work [ 53 ], we adversarially train against YOLOv5n (proxy model) and evaluate cheating perfor-mance primarily with YOLOv5s (attacker model). 
+
+7.1.1 Evaluation Metrics. We assess AimTrap using the following four metrics. 
+
+Decoy Success Rate (DSR). Measures how effectively AHTs at-tract the aimbot. We consider a successful deception when aimbot’s top-1 detection is a honeypot with confidence ≥ 0.4 (default thresh-old §7.1). We evaluate DSR across various conditions, including different camera distances and angles (§7.5). 
+
+Evasion Success Rate (ESR). Measures how effectively ACTs 
+
+hide players from the aimbot. We consider a successful evasion if no player-aligned detection exceeds 0.4. ESR is reported under the same rendering variations. 
+
+Uniqueness Rate (UR). Measures whether AHT yields a single ,unambiguous attractor (§5.3). We consider it unique if exactly one 
+
+honeypot exceeds detection threshold. High uniqueness reduces multi-target ambiguity for both attraction and detection. 
+
+Structural Similarity Index (SSIM) [ 60 ]. Quantifies percep-tual similarity between original textures and adversarial textures (AHT/ACT) on RGB maps. We report mean SSIM in [0, 1], where higher values indicate closer resemblance to the original asset. Table 3: Effectiveness of Adversarial Camouflage Textures (ACT) for evading aimbots                                     
+
+> Male Character Female Character
+> Original Texture Example
+> Texture Aimbot Texture Aimbot
+> Adversarial Camouflage Texture Example
+> Texture Aimbot Texture Aimbot
+> Male Female Total
+> # of Textures 224
+> # of ACT 20 20 40
+> # of EoR Sampling 25,600 25,600 51,200
+> Original Confidence Score 67.7% 56.8% 62.3%
+> ACT Confidence Drop ↓49 .9% ↓42 .5% ↓46 .3%
+> ACT Confidence Score 17.8% 14.3% 16.0% SSIM 81.5% 80.5% 81.0%
+> Evasion Success Rate 84.1% 86.0% 85.1%
+
+## 7.2 Proactive Defense Effectiveness 
+
+To answer RQ1 , we evaluate the two defenses provided by AimTrap :(i) Adversarial Camouflage Textures (ACT) for evasion (Tab. 3), and (ii) Adversarial Honeypot Textures (AHT) for deception (Tab. 4). 
+
+ACT (Evasion). We assess ACTs using Evasion Success Rate (ESR), the aimbot’s confidence score, and visual fidelity (SSIM). We con-sider four distinct player models (covering both male and female characters), and for each model we synthesize ten ACT variants, yielding 40 ACTs in total. To ensure robustness, we adopt Expectation-over-Rendering optimization, randomly sampling 1,280 combina-tions of various conditions (detailed in §7.5) per ACT (51,200 EoR samples overall). We evaluate the corresponding original textures under identical conditions as a baseline. Tab. 3 shows that ACTs substantially depress the aimbot’s confi-dence in detecting the player, reducing mean confidence from 62.3% to 16.0% (a 46.3% drop), well below the default detection threshold 
+
+40% . Concurrently, ACTs maintain high perceptual quality with a mean SSIM of 81.0%, indicating strong visual fidelity. The average ESR is 85.1% across rendering conditions, demonstrating effective proactive evasion against vision-based aimbots. 
+
+AHT (Deception). We measure AHTs using Decoy Success Rate (DSR), Uniqueness Rate, aimbot confidence on honeypots, and SSIM. Following §7.1, we curate 24 real-game textures spanning seven material types (e.g., brick, cinderblock) and synthesize ten AHT variants per texture, producing 240 AHTs in total. For each AHT, we sample 512 EoR condition combinations (122,880 samples overall); condition details are provided in §7.5. AHTs reliably draw the aimbot’s top-1 detection to the honey-pot with high confidence (mean 79.3%), yielding a DSR of 96.9% .Moreover, AHTs exhibit a Uniqueness Rate of 96.9% , indicat-ing that, in almost all views, exactly one honeypot surpasses the threshold—providing a clean, unambiguous signal for downstream cheat detection. Perceptual quality remains acceptable (mean SSIM Conference acronym ’XX, June 03–05, 2018, Woodstock, NY Jianing Wang, Chuqi Zhang, Yuancheng Jiang, Adil Ahmad, and Shanqing Guo 
+
+Table 4: Effectiveness of Adversarial Honeypot Textures (AHT) for misleading aimbots 
+
+Material Brick Cinderblock Concrete Mudbrick Plaster Sand Stone Total 
+
+Original Texture Example 
+
+Adversarial Honeypot Texture Example 
+
+# of Textures 4 2 3 3 6 2 4 24 
+
+# of AHT 40 20 30 30 60 20 40 240 
+
+# of EoR Sampling 20,480 10,240 15,360 15,360 30,720 10,240 20,480 122,880 
+
+Confidence Score 82.5% 75.4% 72.7% 72.1% 79.3% 87.8% 84.2% 79.3% 
+
+Uniqueness Rate 98.3% 99.3% 93.3% 95.3% 94.7% 100.0% 99.8% 96.9% 
+
+SSIM 70.9% 63.7% 72.5% 70.4% 67.3% 75.3% 77.3% 71.0% 
+
+Decoy Success Rate 98.3% 99.3% 93.3% 95.6% 94.7% 100.0% 99.9% 96.9% 
+
+71.0%), enabling AHTs to blend into the scene without distracting human players (real player impact study is in §7.7). 
+
+## 7.3 Cheating Honeypot Interaction Identification Performance 
+
+Table 5: AimTrap ’s performance on honeypot-interaction cheating trajectory identification 
+
+Accuracy Precision Recall F1 AUC-ROC 
+
+98.05% 96.53% 98.98% 97.74% 99.29% 
+
+Setup. Following §6, we set the honeypot proximity area param-eters to 𝑟 𝑚𝑖𝑛 = 60 .0, 𝑟 𝑚𝑎𝑥 = 520 .0, and 𝛼 = 30 .0, and the aiming determination area to 256 × 256 pixels. 
+
+Dataset. We record the replays from human players and the aimbot (configured in §G) on our map (§7.1). We collect 3,074 aiming tra-jectories in total, with 1,326 labeled as aimbot (positive examples) and 1,748 as human (negative examples). We split the data into 2,151/461/462 sequences for training/validation/testing. 
+
+Trajectory-Level Detection Results. Tab. 5 summarizes Aim-Trap ’s performance on trajectory-level cheating detection: accu-racy 98.05% , precision 96.53% , recall 98.98% , and F1 97.74% , with 
+
+99.29% AUC-ROC indicating excellent separability. Errors are rare: a small number of false alarms (7/462), while missed cheating trajec-tories are extremely uncommon (2/462). Consistently, the trajectory-level false positive rate is 2.64% and the false negative rate is 1.02% ,supporting the model’s suitability for high-recall screening of ab-normal honeypot-interaction trajectories. 
+
+Player-Level Detection Performance. As discussed in §6.3, we aggregate trajectory-level predictions and flag a player once they exceed the threshold 𝑇 . Tab. 6 summarizes player-level cheating de-tection for 𝑇 ∈ [ 1, 5], given trajectory-level rates ( TPR 𝑇 = 98 .98% ,
+
+FPR 𝑇 = 2.64% ). In real-world anti-cheating deployment, minimiz-ing false positives is critical to ensure the trustworthiness of our anti-cheat system, which ensures legitimate players not being mis-flagged as cheaters. With a single match for decisions, AimTrap 
+
+attains very low player-level FPR for 𝑇 ≥ 2, while maintaining high Table 6: Player-level cheating detection performance 
+
+𝑻 One-Match Decision Two-Match Decision 
+
+TPR 𝑷 FPR 𝑷 TPR 𝑷 FPR 𝑷 
+
+1 98 .98% 2.640 × 10 −02 97 .97% 6.970 × 10 −04 
+
+2 97 .97% 6.970 × 10 −04 95 .98% 4.858 × 10 −07 
+
+3 96 .97% 1.840 × 10 −05 94 .03% 3.386 × 10 −10 
+
+4 95 .98% 4.858 × 10 −07 92 .13% 2.360 × 10 −13 
+
+5 95 .00% 1.282 × 10 −08 90 .26% 1.645 × 10 −16 0 50 100 150 200 250 300  
+
+> 0
+> 50
+> 100
+> 150
+> 200
+> 250 Normal Scanning Trajectory
+> Cheating Lock-On Trajectory
+
+(a) 𝐻 1 Interaction Trajectories 0 50 100 150 200 250   
+
+> 0
+> 50
+> 100
+> 150
+> 200
+> 250 Normal Scanning Trajectory
+> Cheating Lock-On Trajectory
+
+(b) 𝐻 2 Interaction Trajectories 
+
+Figure 6: Typical mouse trajectories of aimbots and normal players on two distinct honeypots. 
+
+recall; aggregating two matches further reduces false positives by orders of magnitude. As discussed in §6.3, developers can tune 𝑇 to achieve their desired precision-recall trade-off. 
+
+Trajectory Visualization and Case Studies. Fig. 6 visualizes representative honeypot-interaction mouse trajectories for aimbot cheaters and normal players. Red rectangles mark two honeypots (𝐻 1, 𝐻 2); gray denotes the wall; blue outlines the Aiming Deter-mination Area (§6). Colored dots plot the aiming trajectory with red denoting aimbot and blue denoting human trajectories. The arrow represents the mouse moving direction. These figures reveal a clear signal: aimbot trajectories exhibit deliberate lock - ons that converge tightly on the honeypots, whereas human trajectories Shoot the Honey, Cloak the Player: Towards Zero-Runtime-Overhead Proactive Defense and Detection for Visual Game Cheating Conference acronym ’XX, June 03–05, 2018, Woodstock, NY 
+
+pass smoothly through the scene without sustained fixation. More visualization cases can be found in §E. 
+
+## 7.4 Real-Game Cheating Detection Performance 
+
+To answer RQ3 , we evaluate AimTrap against our baseline [ 69 ] in a real-world CS2 setting. 
+
+Real-world Gaming Environment Setup. We conducted a paid gameplay study on our map (§7.1) in CS2’s Competitive mode. Twenty participants each played two matches: one without cheat-ing and one assisted by the aimbot (configuration in §G) to simulate cheating. Twenty participants are blind to the study’s purpose and are recruited from a diverse pool of CS2 players with varying ex-perience levels (from novices to veterans). In total, we collected 40 matches (20 non-cheating, 20 cheating). 
+
+Results. Tab. 8 summarizes the real-world detection statistics for 
+
+AimTrap . Across all 40 matches, AimTrap correctly classified every non-cheating and cheating match. 
+
+(1) Non-cheating matches. Across 20 non-cheating matches, partic-ipants triggered 𝐼 𝐴 = 306 honeypot interactions (mean = 15 per match). Only one interaction by player R was misclassified, yielding a trajectory-level false positive rate of 1/306 ≈ 3.27 × 10 −3. Apply-ing the aggregation rule in §6.3 with 𝑇 = 1 gives a player-level false positive rate of 3.49 × 10 −8, substantially lower than the simulated rate reported in Tab. 6 ( 1.84 × 10 −5). These results provide strong evidence of AimTrap ’s precision under real-world gameplay. 
+
+(2) Cheating matches. Across 20 cheating matches, AimTrap record 
+
+𝐼 𝐴 = 325 honeypot interactions (mean = 16 ), including 𝐼 𝐶 = 202 
+
+cheating trajectories (mean = 10 ). All players exceeded the thresh-old 𝑇 = 3 (𝐼 𝐶 = 5–21 ), confirming its effectiveness for real-game detection. The gap between 𝐼 𝐴 and 𝐼 𝐶 is expected, as the honeypot proximity zone (§6) is recall-oriented and may include interactions where the honeypot is too distant or off-axis for aimbot lock-on. 
+
+Comparison with state-of-the-art baseline. Tab. 8 shows that 
+
+AimTrap consistently distinguishes cheating from benign gameplay, correctly classifying all 40 matches. In contrast, XGuardian [69 ](XG ) detects only 3 out of 20 cheating matches and correctly classi-fies 14 out of 20 benign matches, with several processing failures. These results highlight the effectiveness of adversarial honeypot interactions as a reliable cheat-specific signal in real-game settings. 
+
+## 7.5 Robustness 
+
+We assess AimTrap ’s robustness across various conditions. 
+
+(1) Camera Distance (𝑑 ): distance from camera to target (player model for ACT; honeypot for AHT). Default 𝑑 = 1.0; we sweep 
+
+𝑑 ∈ [ 0.8, 1.2] (smaller ⇒ closer). 
+
+(2) Camera Yaw (𝜓 ): horizontal rotation with default 𝜓 = 0◦
+
+(target facing camera). For ACT, we sweep 𝜓 ∈ [− 60 ◦, 60 ◦] for wide lateral views; for AHT, 𝜓 ∈ [− 20 ◦, 20 ◦] suffices since honeypots lie on near-planar walls that require limited yaw range. 
+
+(3) Camera Pitch (𝜙 ): vertical rotation. Default 𝜙 = 0◦ (level). For ACT we sweep 𝜙 ∈ [− 2◦, 2◦]; for AHT we use 𝜙 ∈ [− 20 ◦, 20 ◦] to include steeper up/down views of wall-mounted textures. 
+
+ACT Robustness. We randomly sample 1,280 EoR combinations per ACT from a Gaussian centered at the defaults (51,200 total). Tab. 7 reports slices over (𝑑,𝜓 ) with fixed pitch 𝜙 ∈ [− 2◦, 2◦],including aimbot confidence on original and ACT textures as well as ESR. ACTs are stable across most viewpoints. At extremes (large 
+
+|𝜓 | and long distance), ESR drops due to reduced visible surface and foreshortening, suggesting room for further EoR augmentation. 
+
+AHT Robustness. We sample 512 EoR combinations per AHT (122,880 renders total). Tab. 9 summarizes honeypot confidence and DSR across representative (𝑑,𝜓, 𝜙 ) ranges. AHTs sustain uniformly high deception: all ranges exceed 95% DSR (avg. 96.9%), indicating robust decoys across various rendering conditions. 
+
+## 7.6 Performance Overhead 
+
+Server Offline Synthesis Overhead. Tab. 10 shows synthesizing one ACT averages 74.95,s and AHT 12.05,s . Since synthesis runs offline to pre-generate texture pools (§4), AimTrap does not increase client overhead. Moreover, cross-session reuse (§5.5) amortizes this one-time cost: reusing one texture across 1,000 sessions reduces per-session overhead to < 0.1 s while maintaining sufficient variety. 
+
+Client Pre-Game Initialization Overhead. Before matches, the server transmits adversarial textures to clients (§4). Small aver-age payloads— 0.83,MB per AHT and 7.48,MB per ACT—ensure transfer and asset installation introduce negligible loading time. 
+
+Client In-Game Runtime Defense Overhead. AimTrap incurs 
+
+near-zero runtime overhead (Tab. 2). Adversarial textures are stan-dard assets that replace existing ones, introducing no additional per-frame computation beyond normal rendering paths. Although file sizes differ slightly (typically smaller than the originals), we observed no measurable latency or FPS degradation. 
+
+Server Post-Game Detection Overhead. Evaluated on 40 real-world matches (§7.4), end-to-end post-game detection averages 
+
+8.46 s per player per match ( 8.33 s for trajectory extraction, 0.13 s 
+
+for cheating inference). This low computational overhead makes 
+
+AimTrap suitable for production-level deployment. 
+
+## 7.7 Real-World Gaming Impact Analysis 
+
+We conducted a questionnaire-based user study to assess AimTrap ’s impact on players in real-world gaming scenarios, covering Percep-tibility , Indistinguishability , and Naturalness , including 113 partici-pants with diverse FPS experience (detailed in §F). 
+
+Perceptibility . We examine its impact on human’s perceptiblity by asking whether (i) ACT makes player models imperceptible and (ii) AHT misleads them into noticing a human-like target on a wall. Overall, participants reported no loss of perceptibility and no misleading salience .
+
+Indistinguishability . We tested whether participants could distin-guish adversarial textures from the originals. After a brief warm-up with a side-by-side comparison image, participants answered two multiple-choice questions for ACT and AHT with four options: (i) all targets deploy AimTrap , (ii) only the first, (iii) only the sec-ond, and (iv) none deploy. The correct answers for the two items were (ii) and (i) (green in Fig. 7), respectively. The results show that most participants selected “none deploy,” indicating that the adversarial textures were perceived as visually consistent with the originals. The remaining responses, including the correct options, were dispersed in a near-uniform manner, suggesting that AimTrap 
+
+is difficult to distinguish from standard textures. 
+
+Naturalness . Finally, we evaluated naturalness by presenting paired targets: one with AimTrap and one without. The participants were Conference acronym ’XX, June 03–05, 2018, Woodstock, NY Jianing Wang, Chuqi Zhang, Yuancheng Jiang, Adil Ahmad, and Shanqing Guo 
+
+Table 7: 3D rendering robustness of Adversarial Camouflage Textures 
+
+Yaw [− 60 ◦, −45 ◦ ] [− 45 ◦, −30 ◦ ] [− 30 ◦, −15 ◦ ] [− 15 ◦, 0◦ ] [0◦, 15 ◦ ] [15 ◦, 30 ◦ ] [30 ◦, 45 ◦ ] [45 ◦, 60 ◦ ]
+
+CD 0
+
+Conf 36% → 3% 45% → 8% 49% → 8% 61% → 12% 64% → 13% 58% → 9% 62% → 15% 68% → 31% 
+
+ESR 99.2% 94.4% 95.4% 94.7% 91.7% 92.1% 88.2% 66.7% 
+
+CD 1
+
+Conf 62% → 17% 60% → 13% 63% → 17% 71% → 27% 72% → 22% 70% → 18% 75% → 26% 76% → 43% 
+
+ESR 81.2% 83.1% 82.3% 70.9% 78.2% 82.5% 72.4% 39.1% 
+
+Note : CD 0 denotes camera distances ∈ [ 0.8, 1.0], while CD 1 ∈ [ 1.0, 1.2]. Conf denotes the change in the aimbot’s confidence score before and after the application of ACT. ESR denotes Evasion Success Rate. Camera Pitch is set to [− 2◦, 2◦ ].
+
+Table 8: Comparison of visual-cheat detection in real-game set-tings. Green indicates correct predictions. 
+
+Player No Cheating Cheating 
+
+ID FPS Exp. AimTrap XG AimTrap XG 
+
+𝐼 𝐴 𝐼 𝐶 Pred Pred 𝐼 𝐴 𝐼 𝐶 Pred Pred 
+
+A 300 –1000 20 0 F F 25 12 T F
+
+B > 1000 17 0 F F 11 5 T ⊥
+
+C 300 –1000 7 0 F F 16 12 T F
+
+D 300 –1000 14 0 F ⊥ 16 9 T ⊥
+
+E 300 –1000 12 0 F F 13 7 T T
+
+F < 100 10 0 F T 10 5 T F
+
+G 300 –1000 12 0 F F 18 10 T ⊥
+
+H 300 –1000 12 0 F ⊥ 23 12 T ⊥
+
+I > 1000 18 0 F ⊥ 26 13 T F
+
+J 100 –300 11 0 F T 11 7 T F
+
+K < 100 29 0 F F 11 8 T F
+
+L 100 –300 19 0 F F 14 8 T F
+
+M 300 –1000 13 0 F F 15 12 T T
+
+N > 1000 16 0 F F 23 19 T F
+
+O 300 –1000 7 0 F F 10 5 T F
+
+P < 100 17 0 F F 16 11 T F
+
+Q 100 –300 10 0 F T 14 9 T ⊥
+
+R 300 –1000 19 1 F F 17 11 T T
+
+S > 1000 24 0 F F 10 6 T F
+
+T 100 –300 19 0 F F 26 21 T F
+
+Average 15 0 16 10 
+
+Overall 306 1 20 14 325 202 20 3
+
+Note : 𝑋𝐺 is the state-of-the-art detector XGuardian [ 69 ]; FPS Exp represents to-tal gameplay experience (hours); 𝐼 𝐴 , 𝐼 𝐶 denote total honeypot interactions and cheating-specific interactions per match, respectively; 𝑃𝑟𝑒𝑑 is model prediction output, where 𝑃𝑟𝑒𝑑 ∈ { 𝑇 , 𝐹, ⊥} . 𝑇 denotes a cheating classification, 𝐹 denotes a non-cheating classification, and ⊥ indicates a processing failure. 
+
+AHT Both deploy 
+
+> 23 (20.4%)
+> The first
+> 19 (16.8%)
+> The second
+> 22 (19.5%)
+> None deploy
+> 49 (43.4%)
+
+ACT Both deploy 
+
+> 17 (15.0%)
+> The first
+> 21 (18.6%)
+> The second
+> 14 (12.4%)
+> None deploy
+> 61 (54.0%)
+
+Figure 7: Results of the user study on indistinguishability 
+
+asked to compare the AimTrap -applied model (both ACT and AHT) to the original. As illustrated in Fig. 8, most participants judged the two as equally natural. Table 9: 3D rendering robustness of AHT. 
+
+Yaw [− 20 ◦, −10 ◦ ] [− 10 ◦, 0◦ ] [0◦, 10 ◦ ] [10 ◦, 20 ◦ ]
+
+Pitch  
+
+> [− 20 ◦,0◦ ]
+
+CD DSR / Confidence (%)  
+
+> [0.8,0.9]
+
+98.4 / 79.6 97.2 / 79.2 97.2 / 79.6 95.4 / 76.5   
+
+> [0.9,1.0]
+
+97.5 / 79.4 97.2 / 80.4 96.6 / 79.9 96.0 / 78.5   
+
+> [1.0,1.1]
+
+98.8 / 80.2 97.6 / 80.6 96.7 / 79.6 96.3 / 78.0   
+
+> [1.1,1.2]
+
+96.9 / 78.8 96.8 / 79.6 97.2 / 79.0 95.4 / 77.2 
+
+Yaw [− 20 ◦, −10 ◦ ] [− 10 ◦, 0◦ ] [0◦, 10 ◦ ] [10 ◦, 20 ◦ ]
+
+Pitch  
+
+> [0◦,20 ◦ ]
+
+CD DSR / Confidence (%)  
+
+> [0.8,0.9]
+
+96.8 / 79.4 97.4 / 79.8 96.1 / 79.1 98.1 / 80.3   
+
+> [0.9,1.0]
+
+96.4 / 77.0 96.5 / 79.9 97.2 / 79.7 97.4 / 78.9   
+
+> [1.0,1.1]
+
+95.7 / 76.2 96.9 / 79.9 97.1 / 80.0 96.9 / 78.4   
+
+> [1.1,1.2]
+
+96.2 / 76.2 95.7 / 78.3 97.0 / 79.7 96.7 / 76.5 
+
+Note : CD denotes Camera Distance. DSR denotes Decoy Success Rate. Confidence 
+
+denotes the aimbot’s confidence score. 
+
+Table 10: Performance overhead on adversarial texture synthesis 
+
+Time Cost Storage Cost 
+
+Avg (s) Min (s) Max (s) Resolution Size (MB) 
+
+AHT 12.05 3.08 42.00 640 × 640 0.83 ACT 74.95 28.12 119.98 2048 × 2048 7.48 1 17 8 9 78 AHT        
+
+> 712 589 ACT
+> Very Unnatural Somewhat Unnatural Neutral Somewhat Natural Very Natural
+
+Figure 8: Results of the user study on naturalness 
+
+## 7.8 Transferability 
+
+We evaluate cross-model transfer using adversarial honeypot tex-tures (AHTs) as the basis, since reliable decoying is critical for detecting aimbots in-the-wild. It is widely recognized that high transferability of adversarial attacks remains difficult [ 12 , 57 , 61 ]. We adversarially train AHTs on a proxy detector (YOLOv5n) and test them against multiple aimbot backends (YOLOv5s/m/l). We Shoot the Honey, Cloak the Player: Towards Zero-Runtime-Overhead Proactive Defense and Detection for Visual Game Cheating Conference acronym ’XX, June 03–05, 2018, Woodstock, NY 
+
+Table 11: Transferability of AimTrap ’s AHT on different models 
+
+Proxy Model Aimbot Model DSR UR Conf. 
+
+YOLOv5n YOLOv5n 100.00% 99.32% 94.94% YOLOv5s 96.93% 96.87% 79.32% YOLOv5m 85.46% 83.79% 67.12% YOLOv5l 58.79% 58.58% 42.93% 
+
+Average 85.30% 84.64% 71.08% 
+
+report Decoy Success Rate (DSR), Uniqueness Rate (UR), and mean aimbot Confidence (Conf.) introduced in §7.1.1. The results show that AHT achieves meaningful transferability. 
+
+## 8 Conclusion 
+
+This paper presents AimTrap , an anti-visual-aimbot framework that can not only proactively interfere with aimbot behavior at run-time without introducing performance overhead, but also provide honeypot-based detection signals for explainable cheating detec-tion. Our real-game evaluations demonstrate a practical, robust, and deployable anti-visual-cheat pipeline that counters vision-based aimbots without game-engine modifications or runtime cost and offers effective and efficient offline cheating detection. 
+
+## References 
+
+[1] Tripo AI. 2025. Create Your First 3D Model with Text and Image in Seconds .https://www.tripo3d.ai/ [2] ai aimbot. 2025. AIMr: The best AI Aimbot for Fortnite, Valorant, CS2, R6, COD, Apex, EVERYTHING (Good PC Recommended) . https://github.com/ai-aimbot/AIMr [3] Hashem Alayed, Fotos Frangoudes, and Clifford Neuman. 2013. Behavioral-based cheating detection in online first person shooters using machine learning techniques. In 2013 IEEE Conference on Computational Inteligence in Games (CIG) .1–8. doi:10.1109/CIG.2013.6633617 [4] Amazon. 2025. Amazon Luna Cloud Gaming . https://luna.amazon.com/home [5] Easy Anti-Cheat. 2025. Easy Anti-Cheat - the industry-leading anti-cheat service, countering hacking and cheating in multiplayer PC games . https://www.easyanti cheat.net/ [6] Riot’s anti-cheat Vanguard team. 2024. Vanguard x VALORANT . https://playvalo rant.com/en-us/news/game-updates/vanguard-x-valorant/ [7] Anybrain. 2023. How Cheating in Video Games Impacts Game Developers . https: //www.linkedin.com/pulse/how- cheating- video- games- impacts- game-developers-anybraingg-1f/ [8] Anish Athalye, Logan Engstrom, Andrew Ilyas, and Kevin Kwok. 2018. Synthesiz-ing robust adversarial examples. In International conference on machine learning .PMLR, 284–293. [9] BattlEye. 2025. BattlEye - The Anti-Cheat Gold Standard . https://www.battleye.c om/ [10] Blacknut. 2025. Blacknut Cloud Gaming . https://www.blacknut.com/en/ [11] Tom B Brown, Dandelion Mané, Aurko Roy, Martín Abadi, and Justin Gilmer. 2017. Adversarial patch. arXiv preprint arXiv:1712.09665 (2017). [12] Zikui Cai, Xinxin Xie, Shasha Li, Mingjun Yin, Chengyu Song, Srikanth V Krish-namurthy, Amit K Roy-Chowdhury, and M Salman Asif. 2022. Context-aware transfer attacks for object detection. In Proceedings of the AAAI Conference on Artificial Intelligence , Vol. 36. 149–157. [13] Selina Cho, Jonathan Lusthaus, and Ivan Flechais. 2024. Unpacking the Dynamics of Harm in Game Cheating Communities: A Guiding Framework for Cross-Industry Intervention. ACM Games 2, 2, Article 12 (Aug. 2024), 17 pages. [14] Minyeop Choi, Gihyuk Ko, and Sang Kil Cha. 2023. BotScreen: Trust Everybody, but Cut the Aimbots Yourself. In 32nd USENIX Security Symposium (USENIX Security 23) . USENIX Association, Anaheim, CA, 481–498. https://www.usenix .org/conference/usenixsecurity23/presentation/choi [15] Technical CITY. 2026. GeForce RTX 4090 vs RTX 3060 . https://technical.city/en/ video/GeForce-RTX-3060-vs-GeForce-RTX-4090 [16] Valve Corporation. 2025. Hammer - Counter-Strike 2 Workshop Tools . https: //developer.valvesoftware.com/wiki/Counter-Strike_2_Workshop_Tools [17] Valve Corporation. 2026. Steam Hardware and Software Survey: March 2026 .https://store.steampowered.com/hwsurvey/videocard/ [18] Luca Galli, Daniele Loiacono, Luigi Cardamone, and Pier Luca Lanzi. 2011. A cheating detection framework for Unreal Tournament III: A machine learning approach. In 2011 IEEE Conference on Computational Intelligence and Games (CIG’11) . 266–272. doi:10.1109/CIG.2011.6032016 [19] GlobeNewswire. 2025. Cheating in Asian Gaming: The Hidden Costs and Impact on Revenue . https://www.globenewswire.com/news-release/2025/04/04/305 6006/0/en/Cheating-in-Asian-Gaming-The-Hidden-Costs-and-Impact-on-Revenue.html [20] Mee Lan Han, Jung Kyu Park, and Huy Kang Kim. 2015. Online Game Bot Detection in FPS Game. In Proceedings of the 18th Asia Pacific Symposium on Intelligent and Evolutionary Systems - Volume 2 . Springer International Publishing, Cham, 479–491. [21] Basically Homeless. 2025. Neuromuscular Aim Assist . https://youtu.be/9alJwQG-Wbk?si=OhXxBYmpDJFYyl5h [22] Matthew Hull, Chao Zhang, Zsolt Kira, and Duen Horng Chau. 2024. Adversarial Attacks Using Differentiable Rendering: A Survey. arXiv e-prints (2024), arXiv– 2411. [23] HYPER3D. 2025. Rodin AI - Free AI 3D Model Generator For Everyone . https: //hyper3d.ai/ [24] Anssi Kanervisto, Tomi Kinnunen, and Ville Hautamäki. 2023. GAN-Aimbots: Using Machine Learning for Cheating in First Person Shooters. IEEE Transactions on Games 15, 4 (2023), 566–579. doi:10.1109/TG.2022.3173450 [25] Daiping Liu, Xing Gao, Mingwei Zhang, and Haining Wang. 2016. Shoot for the Moon and You Will Never Miss: Characterizing and Detecting Aimbots in Online Games. In Proceedings of the 2016 ACM SIGMETRICS International Conference on Measurement and Modeling of Computer Science (Antibes Juan-les-Pins, France) 
+
+(SIGMETRICS ’16) . Association for Computing Machinery, New York, NY, USA, 401–402. doi:10.1145/2896377.2901503 [26] Daiping Liu, Xing Gao, Mingwei Zhang, Haining Wang, and Angelos Stavrou. 2017. Detecting Passive Cheats in Online Games via Performance-Skillfulness In-consistency. In 2017 47th Annual IEEE/IFIP International Conference on Dependable Systems and Networks (DSN) . 615–626. doi:10.1109/DSN.2017.20 [27] Aleksander Madry, Aleksandar Makelov, Ludwig Schmidt, Dimitris Tsipras, and Adrian Vladu. 2017. Towards deep learning models resistant to adversarial attacks. 
+
+arXiv preprint arXiv:1706.06083 (2017). [28] Markus. 2025. A Counter-Strike 2 Demo Parser for Go (demoinfo) . https://github.c om/markus-wa/demoinfocs-golang [29] Meshy. 2025. The Easiest Way to Create 3D Models . https://www.meshy.ai/ [30] Microsoft. 2025. Xbox Cloud Gaming . https://www.xbox.com/en-US/play [31] National Cyber Crime Unit NCCU. 2017. National Crime Agency (NCA): Pathways Into Cybercrime . https://www.nationalcrimeagency.gov.uk/who-we-are/public ations/6-pathways-into-cyber-crime-1/file [32] Anh Nhu, Hieu Phan, Chang Liu, and Xianglong Feng. 2023. A Comprehensive Defense Approach Targeting The Computer Vision Based Cheating Tools in FPS Video Games. In 2023 IEEE International Performance, Computing, and Communi-cations Conference (IPCCC) . 168–177. doi:10.1109/IPCCC59175.2023.10253881 [33] Binghua Nie and Bin Ma. 2024. VADNet: Visual-Based Anti-Cheating Detection Network in FPS Games. Traitement du Signal 41 (02 2024), 431–440. doi:10.18280 /ts.410137 [34] NTUYWANG103. 2025. APEX AIMBOT: This is a YOLOV7 based APEX and CSGO Aimbot . https://github.com/NTUYWANG103/APEX_AIMBOT [35] NVIDIA. 2025. GeForce NOW - The Next Generation in Cloud Gaming . https: //www.nvidia.com/en-us/geforce-now/ [36] Seonghyun Park, Adil Ahmad, and Byoungyoung Lee. 2020. BlackMirror: Pre-venting Wallhacks in 3D Online FPS Games. In Proceedings of the 2020 ACM SIGSAC Conference on Computer and Communications Security (Virtual Event, USA) (CCS ’20) . Association for Computing Machinery, New York, NY, USA, 987–1000. doi:10.1145/3372297.3417890 [37] Apex Gaming PCs. 2025. A Guide to FPS in Gaming: Why It Is Important . https: //apexgamingpcs.com/blogs/apex-support/what-is-fps-gaming [38] Camilo Pestana, Naveed Akhtar, Nazanin Rahnavard, Mubarak Shah, and Ajmal Mian. 2022. Transferable 3d adversarial textures using end-to-end optimization. In Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision . 88–97. [39] José Pedro Pinto, André Pimenta, and Paulo Novais. 2021. Deep learning and multivariate time series for cheat detection in video games. Machine Learning 
+
+110, 11–12 (Dec. 2021), 3037–3057. doi:10.1007/s10994-021-06055-x [40] ACTIVE PLAYER. 2025. Counter-Strike 2 Live Player Count and Statistics . https: //activeplayer.io/counter-strike-2/ [41] RangiLyu. 2020. NanoDet-Plus: Super fast and lightweight anchor-free object detection model. https://github.com/RangiLyu/nanodet [42] Nikhila Ravi, Jeremy Reizenstein, David Novotny, Taylor Gordon, Wan-Yen Lo, Justin Johnson, and Georgia Gkioxari. 2020. Accelerating 3D Deep Learning with PyTorch3D. arXiv:2007.08501 [cs.CV] https://arxiv.org/abs/2007.08501 [43] Joseph Redmon, Santosh Divvala, Ross Girshick, and Ali Farhadi. 2016. You only look once: Unified, real-time object detection. In Proceedings of the IEEE conference on computer vision and pattern recognition . 779–788. [44] Shaoqing Ren, Kaiming He, Ross Girshick, and Jian Sun. 2015. Faster r-cnn: Towards real-time object detection with region proposal networks. Advances in neural information processing systems 28 (2015). Conference acronym ’XX, June 03–05, 2018, Woodstock, NY Jianing Wang, Chuqi Zhang, Yuancheng Jiang, Adil Ahmad, and Shanqing Guo 
+
+[45] RootKit-Org. 2025. AI Aimbot: World’s Best AI Aimbot - CS2, Valorant, Fortnite, APEX, every game . https://github.com/RootKit-Org/AI-Aimbot [46] Shouwei Ruan, Yinpeng Dong, Hang Su, Jianteng Peng, Ning Chen, and Xingx-ing Wei. 2023. Towards viewpoint-invariant visual recognition via adversarial training. In Proceedings of the IEEE/CVF International Conference on Computer Vision . 4709–4719. [47] Hovav Shacham, Matthew Page, Ben Pfaff, Eu-Jin Goh, Nagendra Modadugu, and Dan Boneh. 2004. On the effectiveness of address-space randomization. In Proceedings of the 11th ACM Conference on Computer and Communications Security (Washington DC, USA) (CCS ’04) . Association for Computing Machinery, New York, NY, USA, 298–307. doi:10.1145/1030083.1030124 [48] Sony. 2025. PlayStation Plus Premium . https://www.playstation.com/en-sg/ps-plus/ [49] Ruan Spijkerman and Elizabeth Marie Ehlers. 2021. Cheat Detection in a Multi-player First-Person Shooter Using Artificial Intelligence Tools. In Proceedings of the 2020 3rd International Conference on Computational Intelligence and Intelligent Systems (Tokyo, Japan) (CIIS ’20) . Association for Computing Machinery, New York, NY, USA, 87–92. doi:10.1145/3440840.3440857 [50] Statista. 2025. Share of video gamers worldwide who have played games in select gaming genres in the past 12 months as of 3rd quarter 2024 . https://www.statista .com/statistics/240990/global-online-games-genre-breakdown [51] Statista. 2025. Video gaming market size worldwide 2022-2032 . https://www.stat ista.com/statistics/292056/video-game-market-value-worldwide/ [52] 3D AI Studio. 2025. 3D AI Studio - Generate 3D Models from Image or Text .https://www.3daistudio.com/ [53] Chenxin Sun, Kai Ye, Liangcai Su, Jiayi Zhang, and Chenxiong Qian. 2024. Invisi-bility Cloak: Proactive Defense Against Visual Game Cheating. In 33rd USENIX Security Symposium (USENIX Security 24) . 3045–3061. [54] SunOner. 2025. Sunone Aimbot: Aim-bot based on AI for all FPS games . https: //github.com/SunOner/sunone_aimbot [55] SwissChili. 2023. Putting the AI in Aimbot . https://swisschili.sh/putting-the-ai-in-aimbot [56] Tencent. 2025. Tencent START . https://start.qq.com/ [57] Simen Thys, Wiebe Van Ranst, and Toon Goedemé. 2019. Fooling automated surveillance cameras: adversarial patches to attack person detection. In Pro-ceedings of the IEEE/CVF conference on computer vision and pattern recognition workshops . 0–0. [58] YouWei Trade. 2025. What Hz do pro gamers use? https://youweitrade.com/blog s/blog/what-hz-do-pro-gamers-use [59] Valve. 2025. VAC - Valve Anti-Cheat System . https://help.steampowered.com/en /faqs/view/571A-97DA-70E9-FF74 [60] Zhou Wang, Alan C Bovik, Hamid R Sheikh, and Eero P Simoncelli. 2004. Image quality assessment: from error visibility to structural similarity. IEEE transactions on image processing 13, 4 (2004), 600–612. [61] Xingxing Wei, Siyuan Liang, Ning Chen, and Xiaochun Cao. 2018. Transfer-able adversarial attacks for image and video object detection. arXiv preprint arXiv:1811.12641 (2018). [62] Wikipedia. 2025. UV Mapping . https://en.wikipedia.org/wiki/UV_mapping [63] Kaidi Xu, Gaoyuan Zhang, Sijia Liu, Quanfu Fan, Mengshu Sun, Hongge Chen, Pin-Yu Chen, Yanzhi Wang, and Xue Lin. 2020. Adversarial t-shirt! evading person detectors in a physical world. In European conference on computer vision .Springer, 665–681. [64] Kai Yan, Xianyi Chen, Qi Cui, Haoqin Yuan, and Zhenshan Tan. 2025. AdvMap: Crafting Adversarial Maps to Counter AI Aimbot in First-Person Shooter Games. 
+
+IEEE Transactions on Games (2025), 1–12. doi:10.1109/TG.2025.3537824 [65] S.F. Yeung, J.C.S. Lui, Jiangchuan Liu, and J. Yan. 2006. Detecting cheaters for multiplayer games: theory, design and implementation. In CCNC 2006. 2006 3rd IEEE Consumer Communications and Networking Conference, 2006. , Vol. 2. 1178–1182. doi:10.1109/CCNC.2006.1593224 [66] Su-Yang Yu, Nils Hammerla, Jeff Yan, and Peter Andras. 2012. Aimbot detection in online FPS games using a heuristic method based on distribution comparison matrix. In Proceedings of the 19th International Conference on Neural Information Processing - Volume Part V (Doha, Qatar) (ICONIP’12) . Springer-Verlag, Berlin, Heidelberg, 654–661. doi:10.1007/978-3-642-34500-5_77 [67] Su-Yang Yu, Nils Hammerla, Jeff Yan, and Peter Andras. 2012. A statistical aimbot detection method for online FPS games. In The 2012 International Joint Conference on Neural Networks (IJCNN) . 1–8. doi:10.1109/IJCNN.2012.6252489 [68] Jiayi Zhang, Chenxin Sun, Yue Gu, Qingyu Zhang, Jiayi Lin, Xiaojiang Du, and Chenxiong Qian. 2026. Identify as a Human Does: A Pathfinder of Next-Generation Anti-Cheat Framework for First-Person Shooter Games. IEEE Trans-actions on Information Forensics and Security 21 (2026), 240–255. doi:10.1109/TI FS.2025.3635024 [69] Jiayi Zhang, Chenxin Sun, and Chenxiong Qian. 2026. XGuardian: Towards Ex-plainable and Generalized AI Anti-Cheat on FPS Games. arXiv:2601.18068 [cs.CR] https://arxiv.org/abs/2601.18068 
+
+## Acknowledgements 
+
+This paper was edited for grammar using ChatGPT and Gemini. 
+
+## A Ethics considerations 
+
+This study was reviewed and approved by the Institutional Re-view Board (IRB) as human-subjects research, and all participants provided informed consent. We designed and conducted the exper-iment to safeguard participants’ rights, minimize risk, and ensure equitable treatment. To preserve privacy, we collected only each participant’s self-reported total hours of FPS gameplay (used to assess robustness across experience levels); no personally identi-fying or sensitive data were recorded. All sessions were run on a private server using our custom map and included only enrolled participants, so no bystanders were exposed or affected. Finally, we did not develop the aimbot used in this study and do not endorse cheat development; the software was used solely under controlled research conditions, and participants were required to delete all study-provided materials at the end of the session to prevent down-stream misuse. 
+
+## B Implementation 
+
+AimTrap comprises 3,864 lines of Python and 445 lines of Go. The core differentiable rendering pipeline is built on PyTorch3D [ 42 ]. For replay analysis, we use demoinfocs [ 28 ] to extract player actions at tick granularity in Counter-Strike 2 (CS2). All experiments were conducted on a Windows 11 PC equipped with an Intel Core i7-13700K CPU, 64 GB RAM, and an NVIDIA GeForce RTX 5090 GPU. 
+
+Map Construction and Honeypot Deployment. We construct a custom CS2 map using Valve’s Hammer editor [ 16 ], with a lay-out inspired by the classic CS1.6 map iceworld . The map contains 16 deployed AHTs placed at diverse scene locations to evaluate honeypot-triggered aimbot behavior under different viewing an-gles, distances, and player movements. We use a custom map rather than official CS2 maps because official map source files and internal geometry metadata, such as object coordinates and dimensions, are not publicly accessible. This metadata is necessary for computing the 3D honeypot locations and their screen-space projections dur-ing replay-based detection. This requirement is not a fundamental limitation of our method: the detection pipeline is map-agnostic and can be integrated into any map whose internal geometry data is available to developers. 
+
+Baseline Patch. To compare AimTrap against the state-of-the-art baseline, we modify XGuardian [ 69 ] to support our replay-file for-mat, since its released implementation is not directly compatible with our data pipeline. The modification is minimal: XGuardian pri-marily uses pitch and yaw traces for detection, and these signals are fully preserved in our replay files. We therefore reuse XGuardian’s released detection model and evaluate it on our dataset. 
+
+## C Replay Logs of CS2 
+
+Replay logs of CS2 record each player’s state at 64 ticks/s, including positions, view angles, weapon state, health, armor, and related metadata. Typical logs are roughly 100–300 MB and can be parsed within seconds (see our performance overhead evaluation §7.6), Shoot the Honey, Cloak the Player: Towards Zero-Runtime-Overhead Proactive Defense and Detection for Visual Game Cheating Conference acronym ’XX, June 03–05, 2018, Woodstock, NY 0 50 100 150 200 250 300 350  
+
+> 0
+> 50
+> 100
+> 150
+> 200
+> 250 Normal Scanning Trajectory
+> Cheating Lock-On Trajectory
+
+(a) 𝐻 3 Interaction Trajectories 0 50 100 150 200 250   
+
+> 50
+> 0
+> 50
+> 100
+> 150
+> 200
+> 250 Normal Scanning Trajectory
+> Cheating Lock-On Trajectory
+
+(b) 𝐻 4 Interaction Trajectories 
+
+Figure 9: Typical mouse trajectories of aimbots and normal players on two distinct honeypots. 
+
+ensuring efficient offline analysis. Most FPS games (e.g., CS2, Over-watch) natively provide post-match replays, so our method intro-duces no additional storage overhead. Moreover, our approach operates directly on standard replay logs and requires no extra instrumentation. Among the recorded fields, we primarily use time (tick), position (X, Y, Z), view angles ( Yaw , Pitch ), and alive status. 
+
+## D Scalability to 3D Asset Generation Pipeline 
+
+To assess AimTrap ’s scalability to advanced 3D asset generation pipelines [ 1 , 23 , 29 , 52 ], we choose Tripo [ 1 ] (version v2.5) to synthe-size adversarial camouflage textures. Specifically, we generate four player models with four distinct textures, including two male and two female characters. A representative prompt is shown below. 
+
+Prompt: "Low-poly full-body soldier for an FPS game ( 2−3 ktris), stylised but readable geometry, flat-shaded colour blocks, lightweight tactical vest, helmet, gloves and boots. Neutral combat stance: both hands firmly gripping a modern assault rifle across the chest (rifle as a separate mesh). Single 1024 × 1024 texture atlas, clean UVs, origin at feet, facing +Z, ready for realtime rigging." 
+
+## E Case Study on Real-Game Honeypot Interaction Mouse Trajectory 
+
+Fig. 9 shows two additional real-game cases of honeypot-interaction mouse trajectories from aimbot-assisted and benign players, com-plementing the examples in §7.3. 
+
+## F Real-World Gaming-Impact User Study 
+
+We conducted a questionnaire-based user study to evaluate Aim-Trap ’s impact on players in real-game environments. Fig. 10 sum-marizes the participants’ FPS experience in hours. Most participants were experienced FPS players: 63/113 (55.75%) reported more than 1,000 hours of gameplay. At the same time, our sample also included 7/113 (6.19%) participants with no prior FPS experience, ensuring coverage of both novice and highly active FPS players. 
+
+## G Aimbot Configuration 
+
+We evaluate AimTrap against a widely used open-source aim-bot [ 45 ] ( ∼ 1.8 𝑘 GitHub stars) that detects players with YOLOv5-series models [ 43 ]. Unless stated otherwise, we use typical defaults 0 h 6.2%    
+
+> <100 h 8.0%
+> 100-300 h 10.6%
+> 300-1000 h
+> 19.5%
+> >1000 h
+> 55.8% 0 h: 7 participants
+> <100 h: 9 participants
+> 100-300 h: 12 participants
+> 300-1000 h: 22 participants
+> >1000 h: 63 participants
+
+Figure 10: FPS experience statistics of 113 participants in the questionnaire-based user study. 
+
+for the aimbot’s key parameters: (1) Aim area size: centered 640 ×640 
+
+pixel window. (2) Detection confidence threshold: default 0.4. (3) Aim speed: default 0.4. (4) Headshot mode: default True . Note that the headshot mode does not affect the detection of aimbot behavior, as our approach focuses on the overall patterns of honeypot interac-tions rather than specific body part preferences.
