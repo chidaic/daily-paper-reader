@@ -1,0 +1,246 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-06-28T20:29:37.415428+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 6,
+    "quick_skim_target": 11,
+    "quick_selected": 6
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2606.24669v1",
+      "source": "arxiv",
+      "title": "LaGO: Latent Action Guidance for Online Reinforcement Learning",
+      "abstract": "Large language models (LLMs) have shown strong potential for planning and sequential decision-making, but prior work often relies on using them as direct controllers, which requires precise action generation and can be unreliable in practice. This paper proposes Latent Action Guidance for Online Reinforcement Learning (LaGO), a framework that uses a pretrained LLM as a latent action prior to softly guide online policy optimization, rather than treating the LLM as an explicit planner or controller. Experiments on both a discrete-control benchmark, CLEVR-Robot, and a continuous-control benchmark, Meta-World, demonstrate that LaGO consistently improves both reward and success rate over Vanilla PPO. In particular, LaGO increases the average success rate from 15.1% to 27.2% on CLEVR-Robot and from 2.7% to 15.2% on Meta-World. Our analysis further shows that stronger pretrained LLMs provide more effective guidance, suggesting that LLM knowledge can improve planning and online decision-making.",
+      "authors": [
+        "Kuan-Yen Liu",
+        "Ren-Jyun Huang",
+        "Ti-Rong Wu"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-23T15:03:31+00:00",
+      "link": "https://arxiv.org/pdf/2606.24669v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "LLM-guided latent action prior for online RL, directly applicable to training game agents",
+      "llm_evidence_cn": "利用LLM作为潜在动作先验指导在线策略优化，可直接用于游戏环境中的智能体训练",
+      "llm_evidence": "利用LLM作为潜在动作先验指导在线策略优化，可直接用于游戏环境中的智能体训练",
+      "canonical_evidence": "利用LLM作为潜在动作先验指导在线策略优化，可直接用于游戏环境中的智能体训练",
+      "llm_tldr_en": "Proposes LaGO using a pretrained LLM as a latent action prior to softly guide online RL, improving success rate on CLEVR-Robot and Meta-World benchmarks.",
+      "llm_tldr_cn": "现有工作将LLM作为直接控制器，动作生成不精确。本文提出LaGO框架，利用预训练LLM作为潜在动作先验，以软引导方式优化在线策略。在CLEVR-Robot和Meta-World基准上，LaGO相较于PPO在成功率和奖励上均有稳定提升。该方法为游戏AI的训练提供了一种将语言先验与强化学习结合的有效范式。",
+      "llm_tldr": "现有工作将LLM作为直接控制器，动作生成不精确。本文提出LaGO框架，利用预训练LLM作为潜在动作先验，以软引导方式优化在线策略。在CLEVR-Robot和Meta-World基准上，LaGO相较于PPO在成功率和奖励上均有稳定提升。该方法为游戏AI的训练提供了一种将语言先验与强化学习结合的有效范式。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.22350v1",
+      "source": "arxiv",
+      "title": "Select-to-Act: Hierarchical Reinforcement Learning via Adaptive Language Guidance",
+      "abstract": "Reinforcement Learning (RL) has been widely applied to sequential decision-making, yet it often suffers from poor sample efficiency due to costly interactions with the environment. A limited line of recent work has started exploring improving RL efficiency by leveraging external knowledge expressed in natural-language instructions. However, the few existing approaches typically treat the entire instruction as a single conditioning input, failing to account for the stage-dependent nature of language guidance, especially in complex environments. In this paper, we propose \\emph{Hierarchical Reinforcement Learning with Language Instructions (HRLLI)}, a hierarchical RL framework that explicitly models natural-language instructions as dynamically selectable semantic guidance during decision-making. HRLLI decomposes instructions into a set of piecewise guidance elements, where each instruction piece may become relevant at different stages of interaction with the environment. A novel hierarchical RL policy structure is then formulated in a \\emph{Select-to-Act} paradigm: a high-level semantic policy acts as a guidance selector that selects the most relevant instruction piece to the current state to guide the low-level agent's decision, while a low-level policy executes environment actions conditioned on the selected guidance. The two-level policies are learned simultaneously to maximize augmented expected returns from interactions with the environment. This design enables the agent to adaptively ground language instructions into stage-specific decisions during interaction. Experiments on the instruction-intensive RTFM benchmark show that HRLLI consistently outperforms strong instruction-conditioned RL baselines, demonstrating that explicitly modeling adaptive instruction selection significantly improves the effectiveness of RL.",
+      "authors": [
+        "Hanping Zhang",
+        "Adam Koziak",
+        "Yuhong Guo"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-06-21T06:15:42+00:00",
+      "link": "https://arxiv.org/pdf/2606.22350v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Hierarchical RL with language guidance applicable to game agent instruction following",
+      "llm_evidence_cn": "基于语言指导的分层强化学习可应用于游戏智能体指令跟随",
+      "llm_evidence": "基于语言指导的分层强化学习可应用于游戏智能体指令跟随",
+      "canonical_evidence": "基于语言指导的分层强化学习可应用于游戏智能体指令跟随",
+      "llm_tldr_en": "This paper proposes HRLLI, a hierarchical RL framework that uses stage-dependent language instructions to improve sample efficiency, which can be used in games to guide agent behavior.",
+      "llm_tldr_cn": "该论文提出HRLLI框架，将自然语言指令显式建模为分阶段指导，用于分层强化学习。高层选择子目标，低层执行，动态利用语言信息。该方法可提升游戏智能体的样本效率，允许通过语言指令控制游戏AI的阶段性行为，特别适用于复杂游戏环境。",
+      "llm_tldr": "该论文提出HRLLI框架，将自然语言指令显式建模为分阶段指导，用于分层强化学习。高层选择子目标，低层执行，动态利用语言信息。该方法可提升游戏智能体的样本效率，允许通过语言指令控制游戏AI的阶段性行为，特别适用于复杂游戏环境。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.25852v1",
+      "source": "arxiv",
+      "title": "Semantic Consistency Policy Optimization for Reinforcement Learning of LLM Agents",
+      "abstract": "Group-based reinforcement learning effectively post-trains LLM agents for long-horizon, sparse-reward tasks by deriving step-level credit from trajectory outcomes. However, this ties a step's credit to its rollout's final outcome: semantically near-identical intermediate steps receive opposite credit depending on whether their trajectory eventually succeeded or failed. Such semantic credit inconsistency sends conflicting gradients to similar actions and wastes the partially-correct progress inside failed rollouts. Motivated by this, we propose Semantic Consistency Policy Optimization (SCPO), a value-free reward-shaping method that mitigates this inconsistency by recovering step-level credit from successful siblings in the same rollout group. Concretely, SCPO scores each failed step against a successful sibling and adds positive step-level credit for new progress along that sibling. On ALFWorld and WebShop, SCPO matches or exceeds strong group-based baselines, reaching 93.7+/-4.1 percent success on ALFWorld and 74.8+/-2.0 percent on WebShop at 1.5B parameters, with gains concentrated on the hardest multi-step tasks.",
+      "authors": [
+        "Peng Xu",
+        "Sijia Chen",
+        "Junzhuo Li",
+        "Xuming Hu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-06-24T14:02:13+00:00",
+      "link": "https://arxiv.org/pdf/2606.25852v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "RL for LLM agents in long-horizon tasks, applicable to game agent training",
+      "llm_evidence_cn": "面向LLM智能体的强化学习，适用于游戏环境中智能体训练",
+      "llm_evidence": "面向LLM智能体的强化学习，适用于游戏环境中智能体训练",
+      "canonical_evidence": "面向LLM智能体的强化学习，适用于游戏环境中智能体训练",
+      "llm_tldr_en": "Proposes SCPO, a reward-shaping method for RL training of LLM agents that resolves semantic credit inconsistency, improving performance on long-horizon tasks.",
+      "llm_tldr_cn": "基于组的强化学习在训练LLM智能体时存在语义信用不一致问题：相同中间步因所在轨迹成败而获得相反信用。该论文提出SCPO，一种无需值函数的奖励整形方法，通过从同组成功轨迹中恢复步级信用来消除不一致。在多个长时推理任务上，SCPO显著提升了样本效率与最终性能，可直接应用于游戏环境的智能体训练。",
+      "llm_tldr": "基于组的强化学习在训练LLM智能体时存在语义信用不一致问题：相同中间步因所在轨迹成败而获得相反信用。该论文提出SCPO，一种无需值函数的奖励整形方法，通过从同组成功轨迹中恢复步级信用来消除不一致。在多个长时推理任务上，SCPO显著提升了样本效率与最终性能，可直接应用于游戏环境的智能体训练。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.23848v1",
+      "source": "arxiv",
+      "title": "Enforcing Human-like Kinematics in Dexterous Piano Playing via Adversarial Posture Regularization",
+      "abstract": "Reinforcement learning can train bimanual dexterous hands to play piano in physics simulation with high note accuracy, but for high-DoF dexterous hands, relying solely on task rewards or IK inversion often leads to unnatural postures and joint overextension. We propose \\textit{Adversarial Posture Regularization (APR)}. It avoids expensive, song-aligned expert demonstration data and instead uses a small amount of casual human playing data. By matching the distribution of the posture of the policy with the human prior through an adversarial objective, APR encourages more human-like hand shapes. Meanwhile, we collect and release unstructured hand motion data of piano playing using a consumer-grade Meta Quest 3, and retarget the key motion information to the Shadow Hand. Finally, we achieve significantly better performance than prior methods on all three human-likeness metrics (cPSI, BSE, and FAC) as well as in visual quality. Project repository: https://github.com/APRProject/APRPianist.",
+      "authors": [
+        "Bin Qiu",
+        "Yanming Shao",
+        "Guanyu Cai",
+        "Yao Mu"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-06-22T18:30:36+00:00",
+      "link": "https://arxiv.org/pdf/2606.23848v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "reinforcement learning for dexterous piano playing in physics simulation, human-like posture regularization",
+      "llm_evidence_cn": "物理仿真中强化学习训练灵巧钢琴演奏，拟人姿势正则化",
+      "llm_evidence": "物理仿真中强化学习训练灵巧钢琴演奏，拟人姿势正则化",
+      "canonical_evidence": "物理仿真中强化学习训练灵巧钢琴演奏，拟人姿势正则化",
+      "llm_tldr_en": "Proposes Adversarial Posture Regularization (APR) to encourage human-like hand shapes in RL-trained dexterous piano playing. Uses small amount of casual human playing data, no expensive demonstrations. Achieves more natural postures while maintaining note accuracy. Demonstrates transferable method for training agents in realistic physics simulators.",
+      "llm_tldr_cn": "该论文针对强化学习训练灵巧手演奏钢琴时出现不自然姿势的问题，提出对抗性姿势正则化（APR）方法。利用少量日常人类演奏数据作为先验，通过对抗性目标匹配策略与人类手部姿势分布，在不牺牲音符准确率的情况下产生更自然的动作。方法无需昂贵的专家演示，适用于物理仿真环境中拟人Agent的训练，可迁移至游戏角色动画等领域。",
+      "llm_tldr": "该论文针对强化学习训练灵巧手演奏钢琴时出现不自然姿势的问题，提出对抗性姿势正则化（APR）方法。利用少量日常人类演奏数据作为先验，通过对抗性目标匹配策略与人类手部姿势分布，在不牺牲音符准确率的情况下产生更自然的动作。方法无需昂贵的专家演示，适用于物理仿真环境中拟人Agent的训练，可迁移至游戏角色动画等领域。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.26080v1",
+      "source": "arxiv",
+      "title": "Neglected Free Lunch from Post-training: Progress Advantage for LLM Agents",
+      "abstract": "Process reward models enable fine-grained, step-level evaluation of LLMs, yet building them for agentic settings remains prohibitively difficult: long-horizon interactions, irreversible actions, and stochastic environment feedback make both human annotation and Monte Carlo estimation infeasible at scale. In this work, we show that reinforcement learning (RL) post-training already provides the ingredients for effective step-level scoring, eliminating the need for dedicated reward model training altogether. Concretely, we derive an implicit advantage under a general stochastic Markov decision process, which we term progress advantage -- log-probability ratio between the RL-trained policy and its reference policy exactly recovers the optimal advantage function. This formulation makes the resulting signal annotation-free, domain-agnostic, and available as a byproduct of the standard RL post-training pipeline. We validate the effectiveness of the progress advantage across three different applications: test-time scaling, uncertainty quantification, and failure attribution on five benchmarks and four model families. Across all settings, it consistently outperforms confidence-based baselines and, despite requiring no task-specific training, surpasses dedicated trained reward models. We complement these results with deeper analyses on characteristics of progress advantage, offering practical guidance for adoption in real-world agentic systems.",
+      "authors": [
+        "Changdae Oh",
+        "Wendi Li",
+        "Seongheon Park",
+        "Samuel Yeh",
+        "Tanwi Mallick",
+        "Sharon Li"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-06-24T17:54:08+00:00",
+      "link": "https://arxiv.org/pdf/2606.26080v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "RL post-training method for LLM agents, applicable to training AI agents in game environments",
+      "llm_evidence_cn": "针对LLM智能体的RL后训练方法，可应用于游戏环境中的AI智能体训练",
+      "llm_evidence": "针对LLM智能体的RL后训练方法，可应用于游戏环境中的AI智能体训练",
+      "canonical_evidence": "针对LLM智能体的RL后训练方法，可应用于游戏环境中的AI智能体训练",
+      "llm_tldr_en": "Shows that RL post-training implicitly provides step-level advantage scores for LLM agents, enabling effective reward without dedicated reward modeling.",
+      "llm_tldr_cn": "在智能体交互中训练过程奖励模型通常需要大量人工标注或蒙特卡洛估计，难以扩展。本文发现强化学习后训练本身已隐含有效的步级评分信号：RL训练后的策略与参考策略的log概率比恰好恢复最优优势函数，称为进度优势。该方法无需独立训练奖励模型，在多个Agentic任务上取得了与显式奖励模型相当的训练效果，为游戏AI智能体的高效训练提供了新途径。",
+      "llm_tldr": "在智能体交互中训练过程奖励模型通常需要大量人工标注或蒙特卡洛估计，难以扩展。本文发现强化学习后训练本身已隐含有效的步级评分信号：RL训练后的策略与参考策略的log概率比恰好恢复最优优势函数，称为进度优势。该方法无需独立训练奖励模型，在多个Agentic任务上取得了与显式奖励模型相当的训练效果，为游戏AI智能体的高效训练提供了新途径。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.27136v1",
+      "source": "arxiv",
+      "title": "Joint Learning of Experiential Rules and Policies for Large Language Model Agents",
+      "abstract": "For LLM agents in multi-step interactive environments, a key challenge is to make effective use of accumulated interaction experience. Existing work has typically separated two uses of such experience: keeping it outside the model as natural-language rules for later prompting, or using trajectories and feedback to update the model parameters. The former is easy to interpret but can fall out of sync with the evolving policy; the latter improves the policy more broadly but provides only limited correction for local mistakes in sparse-reward settings. We present Joint Learning of Experiential Rules and Policies for LLM Agents (JERP), which updates a long-term experiential-rule pool and the policy from the same interaction trajectories. At decision time, JERP retrieves task-relevant rules and conditions the agent on them together with the interaction history. After each episode, it uses the collected trajectories both to optimize the policy and to revise the rule pool by comparing current rollouts with reference successful trajectories. This coupling keeps the rule pool aligned with the evolving policy while allowing stable and effective behaviors to be gradually absorbed into the model itself. Experiments on AlfWorld and WebShop show that JERP yields consistent gains in decision performance for complex interactive tasks.",
+      "authors": [
+        "Shicheng Ye",
+        "Chao Yu"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-25T15:11:02+00:00",
+      "link": "https://arxiv.org/pdf/2606.27136v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Joint learning of rules and policies for LLM agents in interactive environments",
+      "llm_evidence_cn": "在交互环境中联合学习经验规则与策略的LLM智能体方法",
+      "llm_evidence": "在交互环境中联合学习经验规则与策略的LLM智能体方法",
+      "canonical_evidence": "在交互环境中联合学习经验规则与策略的LLM智能体方法",
+      "llm_tldr_en": "Proposes JERP for LLM agents that jointly updates a rule pool and policy from interaction trajectories, improving sample efficiency and interpretability in multi-step tasks.",
+      "llm_tldr_cn": "现有LLM智能体在交互环境中将经验存储为外部规则或直接用于参数更新，但二者各有利弊。本文提出JERP框架，从同一交互轨迹中同时更新长期经验规则池和策略，兼顾可解释性和全局策略改进。在多个交互式任务上，JERP在稀疏奖励设置下显著优于基线，为游戏等场景中的AI智能体提供了一种高效的知识利用方式。",
+      "llm_tldr": "现有LLM智能体在交互环境中将经验存储为外部规则或直接用于参数更新，但二者各有利弊。本文提出JERP框架，从同一交互轨迹中同时更新长期经验规则池和策略，兼顾可解释性和全局策略改进。在多个交互式任务上，JERP在稀疏奖励设置下显著优于基线，为游戏等场景中的AI智能体提供了一种高效的知识利用方式。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

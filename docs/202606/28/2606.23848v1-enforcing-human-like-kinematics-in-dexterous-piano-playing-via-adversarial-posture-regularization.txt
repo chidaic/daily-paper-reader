@@ -1,0 +1,576 @@
+Title: Enforcing Human-like Kinematics in Dexterous Piano Playing via Adversarial Posture Regularization
+
+URL Source: https://arxiv.org/pdf/2606.23848v1
+
+Published Time: Wed, 24 Jun 2026 00:07:29 GMT
+
+Number of Pages: 8
+
+Markdown Content:
+# Enforcing Human-like Kinematics in Dexterous Piano Playing via Adversarial Posture Regularization 
+
+Bin Qiu 1, Yanming Shao 2,3, Guanyu Cai 1, and Yao Mu 1,∗       
+
+> 1Shanghai Jiao Tong University 2The University of Hong Kong 3Shanghai AI Laboratory ∗Corresponding author
+
+Abstract — Reinforcement learning can train bimanual dex-terous hands to play piano in physics simulation with high note accuracy, but for high-DoF dexterous hands, relying solely on task rewards or IK inversion often leads to unnatural postures and joint overextension. We propose Adversarial Pos-ture Regularization (APR) . It avoids expensive, song-aligned expert demonstration data and instead uses a small amount of casual human playing data. By matching the distribution of the posture of the policy with the human prior through an adversarial objective, APR encourages more human-like hand shapes. Meanwhile, we collect and release unstructured hand motion data of piano playing using a consumer-grade Meta Quest 3, and retarget the key motion information to the Shadow Hand. Finally, we achieve significantly better performance than prior methods on all three human-likeness metrics (cPSI, BSE, and FAC) as well as in visual quality. Project repository: 
+
+https://github.com/APRProject/APRPianist .
+
+I. INTRODUCTION Humans can dexterously use both hands to perform music with graceful, fluid motions. In contrast, although bimanual manipulation has become increasingly capable in recent years, with systems demonstrating coordinated behaviors in tasks such as heavy object co-transport [1] and garment folding [2], scaling these successes to human level control with two dexterous hands remains unresolved. Piano playing offers a particularly stringent benchmark, combining con-tinuous spatial accuracy with fast temporal dynamics and requiring tightly coupled spatiotemporal coordination over more than 40 degrees of freedom (DoFs). Recent works such as Google’s RoboPianist [3] demonstrate that agents can learn to play the piano via deep reinforcement learning in physics simulators like MuJoCo [4] by leveraging task rewards. Despite this impressive progress, most learning-based methods evaluate dexterous manipulation primarily through task-centric metrics, such as the F1-score, which only reflect keystroke accuracy and timing. Optimizing purely for these sparse task rewards invariably encourages policies to exploit simulator dynamics, leading to severe “reward hacking” [5] such as extreme joint hyperextension to avoid accidental keystrokes. Furthermore, although some recent methods attempt to alleviate this issue by incorporating classical inverse kine-matics (IK) [6] together with fingertip based 2D planar supervision [7], [8], the massive kinematic redundancy of high-dimensional hands, for example the 24-DoF Shadow Hand, means that constraining only endpoint positions leaves the proximal joints severely under constrained. As a result, Unnatural Joint      
+
+> Hyperextension
+> Fig. 1. Qualitative comparison of hand postures. (A) Baselines: Without full posture constraints, the policy shows severe biomechanical distortions and “zombie hand” artifacts. Red highlights mark unnatural hyperextension of non-playing fingers. (B) Ours (APR): APR softly constrains finger postures. It keeps a relaxed and biomechanically plausible posture with natural finger arches while preserving keystroke accuracy, and it reduces distortions.
+
+to satisfy rigid fingertip targets, IK solvers and tracking driven policies often force intermediate joints, such as the metacarpophalangeal (MCP) and proximal interphalangeal (PIP) joints, into collapse like bending and contortions, producing biomechanically implausible “zombie hand” con-figurations. Intuitively, imitation learning could provide an effective way to constrain full hand [9]. However, obtaining full hand pose trajectories for complete musical pieces via accurate spatial tracking is often prohibitively expensive. Such data typically requires skilled performers, carefully calibrated capture rigs, and controlled recording sessions, making large scale collection difficult to scale. Overall, the field still lacks a robust mechanism that can smoothly constrain the high-dimensional posture space during highly dynamic execution, without relying on large scale, high fidelity full pose tracking data. To bridge task accuracy and human-like execution without relying on expert datasets, we propose a bimanual framework with Adversarial Posture Regularization (APR). Our main contributions are:  
+
+> •
+
+We propose Adversarial Posture Regularization (APR), which effectively reduces unnatural postures in high-DoF dexterous hands during bimanual piano playing.  
+
+> •
+
+We develop a low-cost egocentric data collection method to capture piano hand demonstration data using 
+
+> arXiv:2606.23848v1 [cs.RO] 22 Jun 2026
+
+a Meta Quest 3, and we release the resulting dataset publicly.  
+
+> •
+
+We introduce three metrics to quantify hand-motion naturalness, and demonstrate substantial improvements over the strongest baseline (PianoMime [7]) on this benchmark across all three measures. II. RELATED WORK 
+
+A. Dexterous Manipulation and Piano-Playing Robots 
+
+Controlling high-degree-of-freedom (DoF) dexterous hands remains one of the most formidable challenges in the field of robotics, primarily due to the curse of dimensionality and the complex, contact-rich dynamics involved in multi-finger coordination. Traditional approaches to dexterous manipulation have predominantly relied on trajectory optimization and model predictive control (MPC) to achieve stable grasping and precise object handling [10], [11]. However, these analytical methods often struggle to scale to highly dynamic, continuous tasks. In recent years, deep reinforcement learning (RL) has emerged as a powerful paradigm for tackling complex dexterous tasks, enabling high-dimensional policies to be learned directly through interaction in simulation. Meanwhile, techniques such as large-scale training and domain randomization can improve policy robustness and facilitate transfer to real-world settings. For example, OpenAI’s Dactyl system demonstrated dexterous in-hand object reorientation using the Shadow Hand [12]. Within the broader scope of dexterous control, robotic pi-ano playing has recently been established as a premier bench-mark. Unlike static grasping, piano playing requires high-frequency, multi-finger spatiotemporal coordination, strin-gent bimanual synchronization, and precise force application. RoboPianist [3] introduced a comprehensive RL framework and a high-fidelity MuJoCo benchmark to tackle this exact challenge, proving that dual-dexterous hands can learn to ex-ecute complex MIDI scores. Building upon this foundational environment [3], PianoMime [7] extended the RoboPianist repository by incorporating spatial tracking rewards derived from human demonstrations (extracted via monocular video). This framework serves as the direct software baseline and residual control architecture for our system [13], [14]. Beyond classic baselines, recent work has also advanced robotic piano playing through large-scale data and generative policy learning. RP1M [15] introduces a million-scale biman-ual robot piano motion dataset with automatically annotated finger placements, enabling imitation learning to scale across diverse pieces. Building on this direction, OmniPianist [16] performs large-scale training across thousands of piece-specific agents and aggregates their experience into an even larger trajectory corpus (RP1M++), yielding a single gener-alist policy capable of performing on the order of nearly one thousand pieces. Complementarily, PANDORA [17] explores diffusion-based policy learning for robotic piano perfor-mance, demonstrating that denoising sequence generation can produce high-dimensional action trajectories and achieve strong performance within the RoboPianist [3] environment. Although their playing accuracy continues to improve (e.g., higher keystroke-level F1-scores), these methods remain prone to “reward hacking” [5], where the learned policy exploits the simulator objectives and yields unnatural hand behaviors. 
+
+B. Hand Motion Capture 
+
+Collecting high-quality hand motion demonstrations re-mains a fundamental challenge for dexterous manipulation research. Previous work often relies on instrumented data gloves or marker-based optical motion capture systems to record human hand movements [18]. Data gloves (e.g., CyberGlove) provide direct measurements of finger flexion through embedded sensors, enabling robust acquisition of high-frequency finger articulation with minimal sensitivity to occlusions [19]. However, optical motion capture is costly and cumbersome to deploy, while wearing data gloves can hinder natural finger dexterity during piano performance. Using inside-out tracking and egocentric cameras, VR systems allow scalable recording of natural hand movements without specialized motion-capture infrastructure. Recent work has also explored VR as an intuitive teleoperation interface, using commodity VR headsets (e.g., Oculus) to collect robot manipulation demonstrations through user-friendly interaction pipelines [20]. 
+
+C. Motion Priors and Style Regularization in RL 
+
+Synthesizing natural, biologically plausible behaviors in RL agents has been a long-standing pursuit in charac-ter animation and robotics. Traditional imitation learning paradigms, such as Behavior Cloning (BC) and Genera-tive Adversarial Imitation Learning (GAIL) [21], have been widely employed to transfer human skills to robots. While GAIL successfully introduced Generative Adversarial Net-works (GANs) to match the state-action occupancy measure, it typically requires strictly aligned state-action pairs and heavily structured demonstration data, which are notoriously difficult to acquire for high-DoF dexterous systems. To relax these strict data requirements and improve ro-bustness, Adversarial Motion Priors (AMP) [22] and its subsequent variants (e.g., ASE) [23] pioneered the use of GAN-based distribution matching on observation-only state transitions. By decoupling the task objective from the style reward, these data-driven approaches have achieved tremen-dous success in synthesizing natural, stylized gaits for macro-scopic full-body locomotion, such as bipedal humanoids and quadrupedal robots [24]. However, extending humanoid-centric adversarial methods to dual dexterous hands (over 40 DoFs) remains largely unexplored. Unlike full-body locomotion, finger motion is constrained by intricate tendon-coupling biomechanics, and pure imitation learning for piano often disrupts the precise keystroke timing needed for musical accuracy. III. METHODOLOGY 
+
+A. Task Formulation and System Overview 
+
+Building upon the environments established by RoboPi-anist [3], we formulate the dual-dexterous piano playing task Meta Quest 3  
+
+> Hand Tracking Data
+> Shadow Hand
+> Joint Angles
+> Bone Vector
+> Retargeting
+> Feature
+> Extraction
+> Expert
+> Transitions
+> MIDI/Note Targets Fingertips
+> Trajectory
+
+LSGAN Discriminator 
+
+> Expert
+> Transitions
+> Policy
+> Transitions
+
+Reward Combination Inverse Kinematics 
+
+> Solver
+> PPO Policy Network
+> Style
+> Reward
+> Task
+> Reward
+
+MuJoCo Simulator 
+
+Bimanual Shadow Hands + Piano   
+
+> MIDI/Note Targets
+> Target-based Score
+> Feature Components
+> (Table II) Policy Features Observation
+> Data Flow
+> Reward Signal
+
+Training Framework 
+
+Offline Data Pipeline Fig. 2. We first collect hand demonstrations and retarget them to Shadow Hand joint angles to build an expert transition dataset. During training, an LSGAN [25] discriminator compares policy transitions to expert transitions to provide a style reward, which is combined with the task reward. A PPO policy learns a residual action that is added on top of an IK controller, and the resulting bimanual piano-playing motions are executed in MuJoCo. 
+
+as a discrete-time Markov Decision Process (MDP). The simulation operates in MuJoCo at a 20 Hz control frequency. 
+
+1) State and Action Space: The agent controls two Shadow Dexterous Hands augmented with 3D prismatic forearms. The observation ˜ot ∈ S stacks four consecutive frames of the components listed in Table I. 
+
+TABLE I OBSERVATION COMPONENTS PER CONTROL STEP .
+
+Component Dim Description 
+
+qhand 54 Joint positions of left and right hands ( 27 × 2)
+
+spiano 88 Depression state of all 88 piano keys 
+
+ssustain 1 Sustain pedal state 
+
+gt:t+H 979 Lookahead goal: binary key targets, H=10 steps 
+
+ft 10 Per-finger binary indicators (5 per hand) 
+
+aIK  
+
+> t
+
+46 Prior action from the IK controller 
+
+dt:t+H 396 Demonstrator fingertip trajectories, H=10 steps 
+
+To ease the exploration burden in high-dimensional contin-uous control, we adopt the residual learning framework pro-posed in [7], [13], [26]. At each step, an inverse-kinematics (IK) controller generates a nominal action aIK  
+
+> t
+
+based on pre-computed fingertip trajectories. The policy πθ (at | ˜ot) then outputs a residual correction δa t ∈ R47 (46 hand actuators + 1 sustain pedal), yielding the final applied action: 
+
+at, 1:46 = aIK  
+
+> t
+
++ α · δa t, 1:46 , at, 47 = δa t, 47 (1) where α scales the residual, constraining the policy to fine-grained adjustments around the IK prior rather than learning gross hand positioning from scratch. 
+
+2) Task Reward Function: We directly inherit the task reward formulation rG(st, a t) from RoboPianist, which com-prises three main components: 
+
+rG = rkey + rsustain + rforearm (2) Specifically, rkey applies a Gaussian-tolerance reward for accurately depressing the target keys and a binary penalty for striking incorrect keys (false positives). rsustain evaluates the sustain pedal accuracy, and rforearm penalizes collisions between the two forearms. While the task reward rG effectively drives the F1-score for musical accuracy, it alone cannot rule out physically implausible behaviors; similarly, IK on redundant high-DoF hands can produce mathematically optimal but visually un-natural solutions. We therefore introduce Adversarial Posture Regularization (APR) as a style reward to enforce biome-chanical naturalness during high-dynamic playing in III-C. 
+
+B. VR-based Prior Acquisition and Retargeting 
+
+A key contribution of our approach is that the human motion prior required by the APR discriminator is acquired using consumer-grade VR hardware rather than expensive optical motion capture systems. We describe the full pipeline from raw hand-tracking capture to the final reference dataset 
+
+D.
+
+1) Data Acquisition: We collect egocentric hand-motion demonstrations using Meta Quest 3’s markerless hand track-ing. The headset provides 3D joint positions pj ∈ R3 and orientations (quaternions) qj ∈ H for 26 joints per hand at 
+
+∼30 Hz, capturing both hands with timestamps. 
+
+2) Kinematic Retargeting: Since the human hand and the Shadow Dexterous Hand differ in kinematic topology, segment lengths, and joint limits, we adopt a Vector Bone Retargeting approach that maps bone-direction angles rather Fig. 3. Egocentric photo-capture setup for hand demonstration collection. 
+
+than absolute positions, thus achieving morphology-invariant correspondence. 
+
+a) Palm frame construction: For each frame, we con-struct a local palm coordinate system {ˆf ,ˆl, ˆn}:
+
+ˆf = pPalm − pWrist 
+
+∥pPalm − pWrist ∥ (3) The lateral axis ˆl is derived from the knuckle line (Ind-exProximal → RingProximal), and the dorsal normal ˆn is obtained via cross products, with sign conventions adjusted for left/right handedness. This frame ensures invariance to global hand position and orientation. 
+
+b) Index/middle/ring/little finger retargeting: For each of the four regular fingers, we define the bone chain from Metacarpal through Proximal, Intermediate, Distal, to Tip. The retargeted MCP, PIP, and DIP flexion angles are com-puted as the unsigned angle between consecutive bone vec-tors: 
+
+θMCP = arccos  ⃗ b0 ·⃗ b1
+
+∥⃗ b0∥ ∥ ⃗b1∥
+
+!
+
+,θPIP = arccos  ⃗ b1 ·⃗ b2
+
+∥⃗ b1∥ ∥ ⃗b2∥
+
+!
+
+,θDIP = arccos  ⃗ b2 ·⃗ b3
+
+∥⃗ b2∥ ∥ ⃗b3∥
+
+!
+
+.
+
+(4) where ⃗ bi = pi+1 − pi are the bone direction vectors. Since the hand shape required by our task does not rely on lateral finger splay, we set the abduction/adduction angles to zero and exclude the corresponding joints from the APR feature space; this also helps prevent the discriminator from learning spurious correlations from low-resolution, noise-prone abduction signals in the tracker. 
+
+c) Wrist retargeting: We compute the relative rotation from a neutral reference frame (first captured frame) to the current wrist orientation: 
+
+∆R = R−1ref ◦ Rcur (5) The relative rotation is decomposed into intrinsic YXZ Euler angles to extract ulnar/radial deviation (WRJ2, yaw component) and flexion/extension (WRJ1, pitch component), each attenuated by a factor of 0.8 to account for the Shadow Hand’s more restricted wrist range of motion. 
+
+d) Thumb retargeting: Retargeting the opposable thumb is challenging due to the mismatch between the human thumb base (saddle joint) and the Shadow Hand’s 5-DoF thumb (THJ5–THJ1). To reduce sensitivity to global hand motion, we first express thumb bone directions in a palm-local coordinate frame: 
+
+bLi =
+
+
+
+ˆf ⊤bi
+
+ˆl⊤bi
+
+ˆn⊤bi
+
+ . (6) We then map changes in in-plane orientation and eleva-tion, together with proximal/distal inter-bone angles, to the Shadow Hand thumb joints (THJ5–THJ1) using a lightweight heuristic that yields visually plausible motions in simulation. 
+
+3) Building the Reference Dataset: The retargeted joint trajectories are converted into the APR discriminator’s fea-ture space. For each hand, we extract a 41-dimensional state descriptor Φhand (s):
+
+Φhand (s) = ¯q1:18 , ¯˙q1:18 , ¯z1:5 
+
+ ∈ R41 , (7) where ¯q are normalized joint angles, ¯˙q are clipped angular velocities, and ¯z are clipped fingertip heights relative to the wrist (Table II).   
+
+> TABLE II PER -HAND FEATURE VECTOR COMPONENTS (41 DIMENSIONS ).
+
+Component Dims Description 
+
+¯q1:18 18 Joint angles (min–max norm.) 
+
+¯˙q1:18 18 Angular velocities (clipped) 
+
+¯z1:5 5 Fingertip heights (clipped)                
+
+> Normalisation: ¯qi=qi−qmin
+> i
+> qmax
+> i−qmin
+> i
+> ∈[0 ,1] ,¯˙qi= clip( ˙ qi/v max ,−1,1) ,
+> ¯zi= clip(( ztip
+> i−zwrist )/0.1,−1,1) .
+
+The final reference dataset is constructed as consecutive state-transition pairs: 
+
+D = {(Φ hand (st), Φhand (st+1 )) }T −1 
+
+> t=1
+
+. (8) We pool samples from both hands into a single buffer and use a shared-weight discriminator [Φ hand (st), Φhand (st+1 )] ∈
+
+R82 .
+
+C. Adversarial Posture Regularization (APR) 1) Core Idea: Inspired by the GAN paradigm [27] and Adversarial Motion Priors [22], we propose Adversarial Posture Regularization (APR) . APR reformulates the nat-uralness objective as distribution matching : using a small amount of reference data (Sec. III-B.1) to replace per-frame tracking that requires high-precision 3D hand pose. Crucially, the discriminator does not require strict temporal alignment between the policy and the reference. Instead, it simply asks, “does this state transition look like it comes from a human pianist?” This distributional view is robust to the frame-wise noise inherent in Meta Quest 3 hand tracking: while individual frames can be jittery, the overall statistical structure of human piano motion (e.g., coupled joint flexion patterns, smooth velocity profiles, and natural fingertip-height envelopes) is largely preserved. Concretely, APR online trains a discriminator network Dϕ to distinguish between the distribution of state transitions generated by the RL policy πθ and that observed in a human reference dataset 
+
+D. As a result, APR reduces unnatural postures, remains robust to noisy measurements, and can be reused across different songs without modification. 
+
+2) Shared-Weight Bimanual Architecture: A key architec-tural design of APR is the use of a single discriminator with shared weights that processes left-hand and right-hand state transitions identically. Let ΦL(st) ∈ R41 and ΦR(st) ∈
+
+R41 denote the per-hand feature descriptors (Eq. 7). Rather than training two separate discriminators, we define a single network Dϕ : R82 → R that takes the concatenated transition as input and apply it independently to each hand: 
+
+dL = Dϕ([Φ L(st), ΦL(st+1 )]) ,dR = Dϕ([Φ R(st), ΦR(st+1 )]) . (9) This design encourages bilateral symmetry and improves sample efficiency. 
+
+3) Discriminator Network: The discriminator Dϕ is a fully-connected MLP: 
+
+Dϕ : R82 FC(1024) 
+
+−−−−−−→ ReLU FC(256) 
+
+−−−−−→ ReLU FC(1) 
+
+−−−−→ R (10) The output is an unbounded scalar logit (no sigmoid or tanh activation), following the Least-Squares GAN (LSGAN) convention. All weights are initialised with orthogonal ini-tialisation (gain √2 for hidden layers, gain 1.0 for the output head). 
+
+4) Loss Function: We train the discriminator with the Least-Squares GAN (LSGAN) objective [25]. The discrimi-nator loss is: 
+
+LD = E(s,s ′)∼D 
+
+h
+
+(Dϕ(s, s ′) − 1) 2i| {z }
+
+> expert →+1
+
++ E(s,s ′)∼πθ
+
+h
+
+(Dϕ(s, s ′) + 1) 2i| {z }
+
+> policy →− 1
+
++LGP .
+
+(11) where we use the notational shorthand Dϕ(s, s ′) ≜
+
+Dϕ([Φ hand (s), Φhand (s′)]) . The discriminator is trained to output +1 for expert transitions and −1 for policy-generated transitions. To prevent the discriminator from becoming overly confi-dent and collapsing the reward signal, we apply a gradient penalty regulariser on the expert data: 
+
+LGP = wgp 
+
+2 E(s,s ′)∼D 
+
+h
+
+∥∇ ΦDϕ(s, s ′)∥2i
+
+(12) This penalty encourages the discriminator to be Lipschitz-smooth in the neighbourhood of expert data, stabilising the adversarial training dynamics and producing a well-shaped reward landscape. The discriminator is updated online once per policy rollout using minibatches sampled from an expert buffer and a replay buffer of policy transitions. 
+
+D. Hybrid Reward and Optimisation 
+
+The agent must balance task performance (pressing the correct keys at the correct times) and style quality (natural hand posture and motion). We achieve this with a hybrid reward and a structured optimisation loop. 
+
+1) Style Reward: The style reward is the core output of the APR mechanism. It is derived directly from the discriminator’s assessment of how “human-like” the current state transition appears. For each hand h ∈ { L, R }, the per-hand style reward is: 
+
+rSh (st, s t+1 ) = max 
+
+
+
+0, 1 − λ · (Dϕ(st, s t+1 )h − 1) 2
+
+(13) where λ is a scaling hyperparameter that controls the reward sharpness. The combined style reward averages over both hands: 
+
+rSt = 12
+
+ rSL(st, s t+1 ) + rSR(st, s t+1 ) (14) This averaging prevents the policy from sacrificing natural-ness in one hand to improve the other. 
+
+2) Joint Optimisation: The total reward presented to the PPO optimiser is the weighted sum: 
+
+rtotal ,t = wG · rGt + wS · rSt (15) where wG and wS are task and style weights respectively. The weights control the trade-off between task accuracy and motion naturalness: larger wS emphasises natural-looking motion, while larger wG emphasises key-press accuracy. 
+
+a) Policy optimisation: We optimise an actor–critic policy with PPO [28] using the clipped surrogate objective: 
+
+LPPO  
+
+> θ
+
+= −Et
+
+h
+
+min 
+
+ πθ (at|st)
+
+πθold (at|st) ˆAt,
+
+clip 
+
+ πθ (at|st)
+
+πθold (at|st) , 1 ± ϵclip 
+
+ ˆAt
+
+i (16) with ϵclip = 0 .2.
+
+b) Advantage recomputation: Since the style reward is computed after discriminator evaluation, we recompute the GAE advantages using the hybrid reward before PPO updates. 
+
+c) Alternating optimisation loop: The full training pro-cedure alternates between three phases per iteration: 1) Rollout collection. The policy πθ collects on-policy transitions by interacting with Nenv parallel MuJoCo environments. Per-hand APR features ΦL, ΦR are ex-tracted at each step by the environment wrapper. 2) APR update. Transitions are added to a shared replay buffer, and the discriminator Dϕ is updated using the LSGAN objective with gradient penalty (Eq. 11). The resulting style rewards are computed for the rollout and combined with the task reward (Eq. 15). 3) PPO update. The policy πθ and value function Vψ are then optimised with PPO using the hybrid reward. IV. EXPERIMENTS We evaluate the proposed APR framework on a suite of piano pieces of varying difficulty, comparing against two baselines that represent the dominant paradigms in prior work. Our experiments address three questions: (1) Does APR preserve task performance (note accuracy) compared to baselines? (2) Does APR produce measurably more natural hand motion? (3) What is the data efficiency of the dis-tributional matching approach relative to trajectory-tracking alternatives? 
+
+A. Experimental Setup 1) Simulation Environment: All experiments are con-ducted in MuJoCo using a pair of Shadow Dexterous Hands (24 joints, 20 tendon-coupled actuators, 3 forearm DOFs each) positioned above a full 88-key digital piano. The control frequency is 20 Hz ( ∆t = 0 .05 s) with a physics timestep of 0.005 s. Each policy receives a 4-frame stacked observation and outputs a 47-dimensional residual action (Sec. III-A). 
+
+2) APR Reference Data: A key advantage of our approach is its profound data efficiency. The entire APR reference dataset D is captured in a single, short session using a consumer-grade Meta Quest 3 headset, requiring no optical markers, no multicamera calibration, and no specialized lab infrastructure. The raw dataset is detailed in Table III.        
+
+> TABLE III APR REFERENCE DATA COLLECTION .
+> Clip Frames Duration (s) Transitions
+> Free improvisation 374 18.7 373
+
+Crucially, this incredibly brief reference clip is not aligned to any specific musical piece ; the exact same 18.7 s dataset is universally reused to regularize the policy across all target test songs without modification. This stands in stark contrast to explicit tracking or DeepMimic-style approaches [29], which require meticulously engineered, per-song, frame-by-frame aligned state-action demonstrations, making data preparation prohibitively expensive and fundamentally un-scalable for new musical repertoires. 
+
+3) Baselines: We compare against two baselines that represent the dominant paradigms in prior work on dexterous piano playing: 
+
+a) 2D Fingertip Tracking (PianoMime): The approach of PianoMime [7], which extracts 2D fingertip positions from video and uses explicit per-frame tracking objectives to drive the hand toward reference fingertip locations. This baseline has access to higher-quality reference data (video-derived 2D keypoints) but can only constrain fingertip positions. 
+
+b) Ours (APR): Our full method: residual PPO with Adversarial Posture Regularization using Meta Quest 3 ref-erence data. All methods share the same network architecture (FC 1024–256), training hyperparameters (24 parallel environ-ments, 512 steps per rollout, 2000 training iterations, learning rate 3 × 10 −4 with exponential decay 0.999), and residual IK controller ( α = 0 .03 ). 
+
+4) Evaluation Metrics: We evaluate along two orthogonal axes: task performance and motion naturalness .
+
+a) Task performance: We report the F1 score , the harmonic mean of precision and recall over per-timestep key activations: 
+
+F1 = 2 · Precision · Recall Precision + Recall (17) where Precision measures the fraction of activated keys that should be pressed, and Recall measures the fraction of target keys that are actually pressed. 
+
+b) Motion naturalness: We propose three complemen-tary biomechanical metrics that quantify different aspects of hand naturalness, evaluated over the full trajectory of raw joint angles q ∈ R18 : 
+
+> •
+
+cPSI (Continuous Posture Strain Index): Measures static posture deviation from the biomechanical neutral posi-tion. For each joint i with range [qmin  
+
+> i
+
+, q max  
+
+> i
+
+]:
+
+cPSI = 1
+
+T · D
+
+> T
+
+X
+
+> t=1
+> D
+
+X
+
+> i=1
+
+ 2qt,i − (qmax  
+
+> i
+
++ qmin  
+
+> i
+
+)
+
+qmax  
+
+> i
+
+− qmin 
+
+> i
+
+2
+
+(18) This metric quantifies excessive joint strain by measur-ing how far joints deviate from their neutral posture, particularly capturing extreme hyper-extension.  
+
+> •
+
+BSE (Biomechanical Synergy Error): Measures viola-tion of the natural tendon coupling between DIP and PIP joints. In the human hand, the flexor digitorum profundus tendon enforces an approximate coupling 
+
+qDIP ≈ 23 qPIP [30]. We measure deviation from this synergy across the four fingers: 
+
+BSE = 1
+
+T · 4
+
+> T
+
+X
+
+> t=1 4
+
+X 
+
+> f=1
+
+
+
+q(f )DIP − 23 q(f )PIP 
+
+2
+
+(19) This metric specifically detects the “zombie hand” 
+
+artefact of 2D fingertip tracking.  
+
+> •
+
+FAC (Finger Arc Continuity): Measures the smoothness of the finger profile from MCP through PIP to DIP using the discrete Laplacian (second-order finite difference), plus a penalty for hyperextension: 
+
+FAC = 1
+
+T · 4
+
+> T
+
+X
+
+> t=1 4
+
+X 
+
+> f=1
+
+" 
+
+q(f )MCP − 2q(f )PIP + q(f )DIP 
+
+2
+
++ λ X
+
+> j∈{ M,P,D }
+
+max( −qj , 0) 2
+
+#
+
+(20) with λ = 0 .1. This captures the overall “gracefulness” of the hand. For all three naturalness metrics, lower is better (closer to natural human motion). We report the average of left-hand and right-hand scores. 0 500 1000 1500 2000              
+
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> F1 Score
+> Δ0.01
+> Adieu
+> 0500 1000 1500 2000
+> Δ0.02
+> Petrunko
+> 0500 1000 1500 2000
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> F1 Score
+> Δ0.02
+> Pirates
+> 0500 1000 1500 2000
+> Δ0.01
+> Stan
+> Training Iterations
+> Baseline (PianoMime) Ours (APR)
+
+Fig. 4. Task performance (F1 score) learning curves over training iterations for four musical tracks (Adieu, Petrunko, Pirates, Stan). APR (orange) converges similarly to the PianoMime baseline (purple) and achieves com-parable final performance. The final performance gap ∆, annotated in each plot, is small ( ≈ 0.01 –0.02 ). 
+
+B. Results 1) Task Performance (F1 Score): Fig. 4 plots the F1 learn-ing curves over training iterations for all methods. Through-out training, APR’s F1 consistently tracks and closely ap-proaches the 2D fingertip tracking baseline (PianoMime), and it achieves a comparable final F1 while also optimizing motion naturalness. This suggests that APR’s distributional matching objective acts as a soft regularizer rather than a per frame constraint, allowing the policy to learn accurate key pressing strategies while remaining within the manifold of natural hand motions. 
+
+2) Qualitative Results and Quantitative Evaluation: Ta-ble IV summarises performance across test songs. APR matches PianoMime on task accuracy (F1), suggesting that posture regularization does not meaningfully affect keystroke timing or bimanual coordination. Notably, the baseline relies heavily on an IK prior, which on the high-DoF and redun-dant Shadow Hand can yield solutions that are mathemat-ically optimal yet visually inconsistent with natural human piano-playing gestures. In contrast, APR incorporates human demonstration priors and imposes a softer constraint over the IK solution space. As a result, APR consistently improves motion naturalness, with lower cPSI/BSE/FAC scores indi-cating reduced posture strain and fewer kinematic artifacts. Fig. 5 provides qualitative evidence: APR produces more natural, human-like motions (green), whereas the baseline exhibits more unnatural postures or artifacts (red). 
+
+3) Analysis: This indicates that the distributional match-ing objective functions as a soft regularizer, shaping the pol-icy toward human-like kinematics without over-constraining the control space. As a result, the agent can still discover accurate key-pressing strategies while avoiding posture strain and visually implausible IK solutions. Ours Baseline   
+
+> Baseline Baseline Ours Ours
+
+Fig. 5. Green circles highlight natural, human-like hand motions, while red circles indicate unnatural postures or artifacts. TABLE IV QUANTITATIVE COMPARISON ACROSS TEST SONGS .
+
+Song Method F1 cPSI BSE FAC 
+
+Adieu 
+
+PianoMime 0.962 0.3162 0.1627 1.7838 
+
+Ours (APR) 0.960 0.2306 0.0929 0.9266 
+
+∆ (%) -0.2% -27.1% -42.9% -48.1% 
+
+Petrunko 
+
+PianoMime 0.909 0.3460 0.4029 1.4157 
+
+Ours (APR) 0.894 0.2674 0.1899 1.1702 
+
+∆ (%) -1.7% -22.7% -52.9% -17.3% 
+
+Pirates 
+
+PianoMime 0.969 0.3633 0.1369 2.4645 
+
+Ours (APR) 0.954 0.2302 0.0829 1.2692 
+
+∆ (%) -1.5% -36.6% -39.4% -48.5% 
+
+Stan 
+
+PianoMime 0.982 0.3513 0.3924 1.4066 
+
+Ours (APR) 0.968 0.2906 0.1457 1.3527 
+
+∆ (%) -1.4% -17.3% -62.9% -3.8% TABLE V DATA REQUIREMENTS COMPARISON .
+
+DeepMimic APR (Ours) 
+
+Per-song alignment Required Not needed 
+
+Reference duration Full song ∼18.7 s total 
+
+Transition pairs — 746 total 
+
+Reusable across songs No Yes 
+
+C. Data Efficiency 
+
+The baseline (PianoMime) originally tried to use Deep-Mimic to improve hand posture. However, DeepMimic re-quires carefully time-aligned state action pairs for each target song, and collecting song-aligned 3D tracking data of piano playing hands is very expensive. As a result, they fell back to tracking 2D fingertip positions from videos, which does not work well. In contrast, APR uses distributional matching and only needs reference data sampled from the same distri-bution as natural piano playing. It does not require temporal alignment, per-song correspondence, or precise retargeting. Our entire reference dataset is about 19 seconds of casual playing, and it is reused unchanged for all test songs without any modification or per-song tuning. A comparison between the two approaches is summarised in Table V. V. CONCLUSION We propose Adversarial Posture Regularization (APR) for high-DoF bimanual piano playing to address kinematic redundancy in dexterous manipulation, where standard IK solvers and task-only RL often exploit the Shadow Hand’s large action space and produce unnatural, biomechanically implausible postures such as severe joint hyperextension. We also collect and release an egocentric, first-person VR dataset of piano-hand motions for APR, and introduce three physics-based metrics to directly quantify kinematic naturalness for more rigorous evaluation of stylistic imitation. Our approach has two main limitations: the LSGAN-based discriminator can be sensitive to hyperparameters, requiring careful balancing of gradient penalties and the style reward weight, and the hard IK task prior can dominate during extremely fast and difficult passages, where timing demands may temporarily override the soft adversarial constraint and cause brief drops in posture quality. Future work will adapt the style weight to local musical complexity and explore more stable generative priors, to improve training stability and high-speed robustness. REFERENCES [1] M. Dio, A. V¨ olz, and K. Graichen, “Cooperative dual-arm control for heavy object manipulation based on hierarchical quadratic pro-gramming,” in 2023 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS) . IEEE, 2023, pp. 643–648. [2] Y. Avigal, L. Berscheid, T. Asfour, T. Kr¨ oger, and K. Goldberg, “Speedfolding: Learning efficient bimanual folding of garments,” in 
+
+2022 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS) . IEEE, 2022, pp. 1–8. [3] K. Zakka, P. Wu, L. Smith, N. Gileadi, T. Howell, X. B. Peng, S. Singh, Y. Tassa, P. Florence, A. Zeng et al. , “Robopianist: Dexterous piano playing with deep reinforcement learning,” in Conference on Robot Learning . PMLR, 2023, pp. 2975–2994. [4] E. Todorov, T. Erez, and Y. Tassa, “Mujoco: A physics engine for model-based control,” in 2012 IEEE/RSJ international conference on intelligent robots and systems . IEEE, 2012, pp. 5026–5033. [5] J. Skalse, N. Howe, D. Krasheninnikov, and D. Krueger, “Defining and characterizing reward gaming,” Advances in Neural Information Processing Systems , vol. 35, pp. 9460–9471, 2022. [6] S. Caron, Y. de Mont-Marin, R. Budhiraja, and S. H. Bang, “Pink: Python inverse kinematics based on pinocchio,” https://github.com/ stephane-caron/pink, 2024, gitHub repository, accessed 2026-03-01. [7] C. Qian, J. Urain, K. Zakka, and J. Peters, “Pianomime: Learning a generalist, dexterous piano player from internet demonstrations,” in 
+
+Conference on Robot Learning . PMLR, 2025, pp. 1194–1215. [8] F. Zhang, V. Bazarevsky, A. Vakunov, A. Tkachenka, G. Sung, C.-L. Chang, and M. Grundmann, “Mediapipe hands: On-device real-time hand tracking,” arXiv preprint arXiv:2006.10214 , 2020. [9] A. Rajeswaran, V. Kumar, A. Gupta, G. Vezzani, J. Schulman, E. Todorov, and S. Levine, “Learning complex dexterous manipulation with deep reinforcement learning and demonstrations,” arXiv preprint arXiv:1709.10087 , 2017. [10] P. Chanrungmaneekul, K. Ren, J. T. Grace, A. M. Dollar, and K. Hang, “Non-parametric self-identification and model predictive control of dexterous in-hand manipulation,” in 2023 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS) . IEEE, 2023, pp. 8743–8750. [11] J.-P. Sleiman, J. Carius, R. Grandia, M. Wermelinger, and M. Hutter, “Contact-implicit trajectory optimization for dynamic object manipula-tion,” in 2019 IEEE/RSJ international conference on intelligent robots and systems (IROS) . IEEE, 2019, pp. 6814–6821. [12] O. M. Andrychowicz, B. Baker, M. Chociej, R. Jozefowicz, B. Mc-Grew, J. Pachocki, A. Petron, M. Plappert, G. Powell, A. Ray et al. ,“Learning dexterous in-hand manipulation,” The International Journal of Robotics Research , vol. 39, no. 1, pp. 3–20, 2020. [13] T. Silver, K. Allen, J. Tenenbaum, and L. Kaelbling, “Residual policy learning,” arXiv preprint arXiv:1812.06298 , 2018. [14] T. Johannink, S. Bahl, A. Nair, J. Luo, A. Kumar, M. Loskyll, J. A. Ojea, E. Solowjow, and S. Levine, “Residual reinforcement learning for robot control,” arXiv preprint arXiv:1812.03201 , 2018. [15] Y. Zhao, L. Chen, J. Schneider, Q. Gao, J. Kannala, B. Sch¨ olkopf, J. Pajarinen, and D. B¨ uchler, “Rp1m: A large-scale motion dataset for piano playing with bi-manual dexterous robot hands,” arXiv preprint arXiv:2408.11048 , 2024. [16] L. Chen, Y. Zhao, J. Schneider, Q. Gao, S. Guist, C. Qian, J. Kannala, B. Sch¨ olkopf, J. Pajarinen, and D. B¨ uchler, “Dexterous robotic piano playing at scale,” arXiv preprint arXiv:2511.02504 , 2025. [17] Y. Huang, R. Li, and Z. Tu, “Pandora: Diffusion policy learning for dexterous robotic piano playing,” arXiv preprint arXiv:2503.14545 ,2025. [18] Q. Gao, J. Li, Y. Zhu, S. Wang, J. Liufu, and J. Liu, “Hand gesture teleoperation for dexterous manipulators in space station by using monocular hand motion capture,” Acta astronautica , vol. 204, pp. 630– 639, 2023. [19] N. J. Jarque-Bou, M. Atzori, and H. M¨ uller, “A large calibrated database of hand movements and grasps kinematics,” Scientific data ,vol. 7, no. 1, p. 12, 2020. [20] A. George, A. Bartsch, and A. B. Farimani, “Openvr: Teleoperation for manipulation,” SoftwareX , vol. 29, p. 102054, 2025. [21] J. Ho and S. Ermon, “Generative adversarial imitation learning,” 
+
+Advances in neural information processing systems , vol. 29, 2016. [22] X. B. Peng, Z. Ma, P. Abbeel, S. Levine, and A. Kanazawa, “Amp: Adversarial motion priors for stylized physics-based character con-trol,” ACM Transactions on Graphics (ToG) , vol. 40, no. 4, pp. 1–20, 2021. [23] X. B. Peng, Y. Guo, L. Halper, S. Levine, and S. Fidler, “Ase: Large-scale reusable adversarial skill embeddings for physically simulated characters,” ACM Transactions On Graphics (TOG) , vol. 41, no. 4, pp. 1–17, 2022. [24] X. B. Peng, E. Coumans, T. Zhang, T.-W. Lee, J. Tan, and S. Levine, “Learning agile robotic locomotion skills by imitating animals,” arXiv preprint arXiv:2004.00784 , 2020. [25] X. Mao, Q. Li, H. Xie, R. Y. Lau, Z. Wang, and S. Paul Smolley, “Least squares generative adversarial networks,” in Proceedings of the IEEE international conference on computer vision , 2017, pp. 2794–2802. [26] G. Garcia-Hernando, E. Johns, and T.-K. Kim, “Physics-based dex-terous manipulations with estimated hand poses and residual rein-forcement learning,” in 2020 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS) . IEEE, 2020, pp. 9561–9568. [27] I. J. Goodfellow, J. Pouget-Abadie, M. Mirza, B. Xu, D. Warde-Farley, S. Ozair, A. Courville, and Y. Bengio, “Generative adversarial nets,” 
+
+Advances in neural information processing systems , vol. 27, 2014. [28] J. Schulman, F. Wolski, P. Dhariwal, A. Radford, and O. Klimov, “Proximal policy optimization algorithms,” arXiv preprint arXiv:1707.06347 , 2017. [29] X. B. Peng, P. Abbeel, S. Levine, and M. Van de Panne, “Deepmimic: Example-guided deep reinforcement learning of physics-based char-acter skills,” ACM Transactions On Graphics (TOG) , vol. 37, no. 4, pp. 1–14, 2018. [30] I. Infantino, “Human hand posture reconstruction for a visual control of an anthropomorphic robotic hand,” 2003.

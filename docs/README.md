@@ -6,41 +6,39 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-06-27
-- 运行时间：2026-06-27 20:24:06 UTC
+- 最新运行日期：2026-06-28
+- 运行时间：2026-06-28 20:32:38 UTC
 - 运行状态：成功
-- 本次总论文数：7
-- 精读区：3
-- 速读区：4
+- 本次总论文数：6
+- 精读区：0
+- 速读区：6
 
 ### 今日简报（AI）
-今日精选7篇论文，重点关注游戏作弊防御与棋类技能评估两大方向。两篇高分论文分别提出零运行时开销的游戏作弊检测方法，以及基于漂移扩散模型的国际象棋Elo评分系统。推荐深入阅读这两篇精读文章，其方法对实时防御与公平评分有重要启发。
-- 详情：[/202606/27/README](/202606/27/README)
+今日速读3篇强化学习论文，聚焦潜在动作引导与语义一致性策略优化。最值关注《LaGO: Latent Action Guidance for Online RL》与《Semantic Consistency Policy Optimization for LLM Agents》，均获7分。建议优先精读这两篇，了解在线强化学习与LLM智能体的最新方法。
+- 详情：[/202606/28/README](/202606/28/README)
 
 ### 精读区论文标签
-1. [Shoot the Honey, Cloak the Player: Towards Zero-Runtime-Overhead Proactive Defense and Detection for Visual Game Cheating](/202606/27/2606.25734v1-shoot-the-honey-cloak-the-player-towards-zero-runtime-overhead-proactive-defense-and-detection-for-visual-game-cheating)  
-   标签：评分：9.0/10、query:player-ai
-   evidence：FPS游戏中针对视觉自瞄作弊的防御与检测
-2. [Accelerating Skill Assessment in Chess: A Drift-Diffusion-Enhanced Elo Rating System](/202606/27/2606.26267v1-accelerating-skill-assessment-in-chess-a-drift-diffusion-enhanced-elo-rating-system)  
-   标签：评分：9.0/10、query:player-ai
-   evidence：通过漂移扩散模型进行国际象棋虚拟玩家技能评估
-3. [Beyond Next-Observation Prediction: Agent-Authored World Modeling for Sequential Decision Making](/202606/27/2606.25421v1-beyond-next-observation-prediction-agent-authored-world-modeling-for-sequential-decision-making)  
-   标签：评分：8.0/10、query:player-ai
-   evidence：面向LLM智能体的世界建模用于顺序决策
+- 本次无精读推荐。
 
 ### 速读区论文标签
-1. [ASALT: Adaptive State Alignment for Lateral Transfer in Multi-agent Reinforcement Learning](/202606/27/2606.24601v1-asalt-adaptive-state-alignment-for-lateral-transfer-in-multi-agent-reinforcement-learning)  
+1. [LaGO: Latent Action Guidance for Online Reinforcement Learning](/202606/28/2606.24669v1-lago-latent-action-guidance-for-online-reinforcement-learning)  
    标签：评分：7.0/10、query:player-ai
-   evidence：多智能体强化学习迁移学习，适用于游戏环境AI训练
-2. [PhysEditWorld: A Large-Scale Dataset Toward Physics-Editable World Models](/202606/27/2606.26694v1-physeditworld-a-large-scale-dataset-toward-physics-editable-world-models)  
+   evidence：利用LLM作为潜在动作先验指导在线策略优化，可直接用于游戏环境中的智能体训练
+2. [Semantic Consistency Policy Optimization for Reinforcement Learning of LLM Agents](/202606/28/2606.25852v1-semantic-consistency-policy-optimization-for-reinforcement-learning-of-llm-agents)  
    标签：评分：7.0/10、query:player-ai
-   evidence：面向游戏环境中可编辑物理世界模型的数据集，支持可控物理动力学
-3. [Qwen-AgentWorld: Language World Models for General Agents](/202606/27/2606.24597v1-qwen-agentworld-language-world-models-for-general-agents)  
+   evidence：面向LLM智能体的强化学习，适用于游戏环境中智能体训练
+3. [Select-to-Act: Hierarchical Reinforcement Learning via Adaptive Language Guidance](/202606/28/2606.22350v1-select-to-act-hierarchical-reinforcement-learning-via-adaptive-language-guidance)  
    标签：评分：6.0/10、query:player-ai
-   evidence：用于通用智能体训练的语言世界模型
-4. [EVOM: Agentic Meta-Evolution of Actor-Critic Architectures for Reinforcement Learning](/202606/27/2606.26327v1-evom-agentic-meta-evolution-of-actor-critic-architectures-for-reinforcement-learning)  
+   evidence：基于语言指导的分层强化学习可应用于游戏智能体指令跟随
+4. [Enforcing Human-like Kinematics in Dexterous Piano Playing via Adversarial Posture Regularization](/202606/28/2606.23848v1-enforcing-human-like-kinematics-in-dexterous-piano-playing-via-adversarial-posture-regularization)  
    标签：评分：6.0/10、query:player-ai
-   evidence：自动化设计actor-critic架构的元进化框架，可迁移至游戏AI agent
+   evidence：物理仿真中强化学习训练灵巧钢琴演奏，拟人姿势正则化
+5. [Neglected Free Lunch from Post-training: Progress Advantage for LLM Agents](/202606/28/2606.26080v1-neglected-free-lunch-from-post-training-progress-advantage-for-llm-agents)  
+   标签：评分：6.0/10、query:player-ai
+   evidence：针对LLM智能体的RL后训练方法，可应用于游戏环境中的AI智能体训练
+6. [Joint Learning of Experiential Rules and Policies for Large Language Model Agents](/202606/28/2606.27136v1-joint-learning-of-experiential-rules-and-policies-for-large-language-model-agents)  
+   标签：评分：6.0/10、query:player-ai
+   evidence：在交互环境中联合学习经验规则与策略的LLM智能体方法
 
 
 <div class="dpr-home-promo-card">
