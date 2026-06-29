@@ -1,0 +1,896 @@
+Title: Parametric Open Source Games
+
+URL Source: https://arxiv.org/pdf/2606.27068v1
+
+Published Time: Fri, 26 Jun 2026 01:21:10 GMT
+
+Number of Pages: 20
+
+Markdown Content:
+> NExT-Game 2026: New Frontiers in Game-Theoretic Learning – ICML 2026 Workshop 1–20
+
+## Parametric Open Source Games 
+
+Aleksandar Todorov ⋆ a.todorov.4@student.rug.nl 
+
+Jesse ten Napel j.ten.napel@student.rug.nl 
+
+Alexander M¨ uller a.k.muller.2@student.rug.nl 
+
+University of Groningen, Groningen, the Netherlands Safe AI Netherlands 
+
+Abstract 
+
+Open-source game theory studies agents whose behavior may depend on one another’s decision procedures, but most existing models use discrete or symbolic programs. We introduce parametric open-source games , a continuous analogue of program equilibria in which players choose parameter vectors and semantics maps convert the full parameter profile into mixed actions in an underlying finite game. We establish equilibrium existence results, derive an exact coupling threshold at which selfish gradient ascent in symmetric 2 ×2games switches from defection toward cooperation, and give a one-dimensional boundary test for parametric program Nash equilibria. We further extend the framework to a neural semantics class whose first-order cooperation condition is governed by the ratio of cross-player to self-player sensitivity. Across canonical games, the framework shows how access to internal parameterizations can qualitatively reshape learning dynamics and equilibrium structure, and how sufficiently strong open-source coupling can steer selfish optimization toward cooperative outcomes. 
+
+1. Introduction 
+
+Open-source game theory studies settings where agents are able to inspect one another’s in-ternal decision procedures. In the classical program equilibrium framework, players submit programs that may inspect the opponent’s program before outputting an action in an un-derlying base game (Tennenholtz, 2004; Fortnow, 2009). This possibility can qualitatively change the strategic reasoning of agents and consequently cooperation, punishment, and coordination may become contingent on what an agent proves, simulates, or infers about its opponent’s internal policy, yielding outcomes that differ sharply from the Nash equilibria of the underlying normal form game (LaVictoire et al., 2014; Critch, 2019; Critch et al., 2022). Most existing open-source models are nevertheless symbolic or proof-theoretic (Oesterheld, 2019; Barasz et al., 2021), while modern learning systems are usually continuous, differen-tiable, and parameterized by high-dimensional vectors (Mnih et al., 2015; Vaswani et al., 2017; Silver et al., 2017). Conversely, differentiable games and multi-agent optimization study smooth parameterized objectives, but usually treat each player’s policy as depending only on its own parameters (Fudenberg and Levine, 1998; Basar and Olsder, 1999; Chasnov et al., 2020; Mazumdar et al., 2020; Lin et al., 2020). In this work, we develop a parametric model that preserves the central open-source feature, namely that a player’s behavior may depend on an opponent’s internal description, while enabling standard tools from continuous optimization. In a parametric open-source game , each player chooses a parameter vector, and a continuous semantics map converts the   
+
+> ©A. Todorov ⋆, J.t. Napel & A. M¨ uller.
+> arXiv:2606.27068v1 [cs.GT] 25 Jun 2026 Todorov ⋆Napel M¨ uller
+
+full parameter profile into mixed actions in an underlying finite game. The induced game is ordinary and continuous over parameter space, but it retains the open-source feature that behavior can depend on opponents’ internal descriptions, providing a connection between program-style transparency and gradient-based learning. Our contributions are threefold. We formalize parametric open-source games and give basic equilibrium existence results for the induced parametric game. We then analyze a sigmoid semantics in symmetric 2 × 2 games, deriving a first-order cooperation threshold and a boundary PPNE test, both supported by empirical verification. Finally, we introduce a neural semantics class that preserves the same first-order criterion through the ratio of cross-player to self-player sensitivity. The framework suggests that open-source strategic reasoning need not be tied to symbolic representations, as once encoded by a continuous semantics map, it can reshape both learning dynamics and equilibrium structure in ways that are analyzable with standard tools from continuous optimization. 
+
+2. Parametric Open-Source Games 
+
+Proofs of formal statements are deferred to Appendix A. Let G = ( N, (Si)i∈N , (ui)i∈N )be a finite normal form game, where N = {1, . . . , n } denotes a set of n agents with each agent i ∈ N having a finite action set Si and utility ui : S → R with S = Q 
+
+> i
+
+Si. For a mixed profile σ ∈ Q 
+
+> i
+
+∆( Si), we write the (continuous) multilinear extension of ui as 
+
+ui(σ) = P
+
+> s∈S
+
+Q 
+
+> j∈N
+
+σj (sj )
+
+
+
+ui(s). Each player i chooses a parameter vector in a nonempty compact convex set Θ i ⊂ Rdi ,and we denote by Θ = Q 
+
+> i
+
+Θi and θ = ( θi)i∈N . Next, we state the two central definitions of our model. 
+
+Definition 1 (Parametric open-source game) A semantics for player i is a continuous map 
+
+ϕi : Θ → ∆( Si). Given semantics ϕ = ( ϕi)i, the induced payoff is 
+
+Ui(θ) = ui(ϕ1(θ), . . . , ϕ n(θ)) .
+
+The induced parametric game is then ¯G = ( N, (Θ i)i∈N , (Ui)i∈N ). It is closed-source if every 
+
+ϕi depends only on θi, and open-source otherwise. 
+
+Definition 2 (Parametric program Nash equilibrium) A profile θ⋆ ∈ Θ is a para-metric program Nash equilibrium (PPNE) if, for every i and every θi ∈ Θi,
+
+Ui(θ⋆i , θ ⋆
+
+> −i
+
+) ≥ Ui(θi, θ ⋆
+
+> −i
+
+).
+
+Since each Ui is continuous on compact Θ, Glicksberg’s theorem gives a mixed-strategy Nash equilibrium over Θ. If θi 7 → Ui(θi, θ −i) is quasiconcave on Θ i for each fixed θ−i,Kakutani’s theorem also gives a pure PPNE. We prove this in Appendix A.1. We next specialize the framework to two-action games, where the effect of open-source dependence can be analyzed explicitly. 
+
+> 2
+
+Parametric Open Source Games 
+
+3. Semantics Families and Game Dynamics 
+
+We now instantiate the framework with semantics maps that are simple enough to analyze explicitly while still exhibiting open-source effects. Experimental details are deferred to Appendix B. 
+
+3.1. Sigmoid Semantics −4 −2 0 2 4                        
+
+> θ1(Player 1 parameter)
+> −4
+> −2024
+> θ2 (Player 2 parameter)
+> Cooperation:
+> p1≈1.00, p2≈1.00
+> Open-Source Game
+> −4−2024
+> θ1(Player 1 parameter)
+> −4
+> −2024
+> θ2 (Player 2 parameter)
+> Cooperation:
+> p1≈0.01, p2≈0.01
+> Closed Game
+> 050 100 150 200 250 300
+> Gradient ascent step
+> 23456
+> Social welfare  U1 + U2
+> Learning Dynamics
+> Open-source Closed Max SW = 6 (mutual coop) Min SW = 2 (mutual defect)
+> Cooperation probability Individual payoff Social welfare
+> 0
+> 1
+> 2
+> 3
+> 4
+> 5
+> 6
+> 7
+> Value at equilibrium
+> 1.00 3.00 6.00 0.01 1.03 2.07
+> Equilibrium Comparison
+> Open-source Closed
+> 2.53.03.54.04.55.05.5Social welfare  U1 + U2
+> 2.53.03.54.04.55.05.5Social welfare  U1 + U2
+> Prisoner’s Dilemma
+> Initialization Gradient ascent trajectory Convergence point
+
+Figure 1: Open-source versus closed-source sigmoid semantics in the Prisoner’s Dilemma. Under open-source semantics, projected gradient-ascent trajectories move toward the coop-erative corner and high welfare, whereas closed-source dynamics move toward defection. We adopt a two-action setting Si = {C, D } and use a one-dimensional parameter θi ∈
+
+[−B, B ] ⊆ R. The sigmoid semantics determines the probability of playing C (cooperation) as 
+
+pi(θ) = ϕi(θ)( C) = σ(θi + γθ −i), σ(x) = (1 + e−x)−1.
+
+The coupling γ ≥ 0 measures how strongly player i’s behavior responds to the opponent’s parameter, while γ = 0 recovers the closed-source parameterization. As a base experiment, we study selfish projected gradient ascent in the induced para-metric game, 
+
+θt+1 
+
+i = Π [−B,B ]
+
+ θti + η ∂ θi Ui(θt) , i ∈ { 1, 2}, η > 0,
+
+using finite-difference gradients of Ui with respect to each player’s own parameter. The underlying interaction remains a one-shot symmetric 2 × 2 game. The trajectories in Figure 1 visualize how the semantics map changes and which regions of parameter space are attractive under this learning rule. In the Prisoner’s Dilemma, closed-source dynamics move toward defection, while sufficiently coupled open-source dynamics move toward the cooperative boundary. Nonetheless, the cooperation results and basin of attraction strongly depend on the choice of γ. The following theorem provides the exact conditions under which, for a general symmetric 2 × 2 game with payoffs R for mutual cooperation, S for being exploited, T for exploiting, and P for mutual defection and an arbitrary γ ≥ 0, the cooperative regime first emerges under gradient ascent as a local property. 
+
+Theorem 3 (Phase transition) Assume R + T − P − S > 0 and define 
+
+γ⋆ = T + P − R − SR + T − P − S .
+
+3Todorov ⋆ Napel M¨ uller 
+
+For initializations near θ = (0 , 0) , selfish gradient ascent points toward lower cooperation when γ < γ ⋆ and toward higher cooperation when γ > γ ⋆.
+
+Thus γ⋆ is the local open-source coupling needed to reverse the initial incentive of gradient ascent. For Stag Hunt, γ⋆ ≤ 0, so cooperation is already locally attractive. We verify Theorem 3 empirically across four canonical games, and Figure 2 shows that the empirical transition in mean cooperation matches the analytical value of γ⋆ closely. 0.0 0.2 0.4 0.6 0.8 1.0 1.2 1.4                     
+
+> Cross-player coupling γ
+> 0.00.20.40.60.81.0
+> Mean cooperation probability ¯ p
+> γ?
+> HPD =57
+> Phase Transition in Cooperation
+> 0.00.20.40.60.81.01.21.4
+> Cross-player coupling γ
+> 0.00.20.40.60.81.0
+> Normalized social welfare
+> Normalized Social Welfare vs Coupling
+> 0.00.20.40.60.81.0
+> Analytical γ?
+> 0.00.20.40.60.81.0
+> Empirical  γ?
+> Stag Hunt Chicken Prisoner’s Dilemma Harsh PD
+> Analytical vs Empirical γ?
+> Phase Transition for Sigmoid Dynamics
+> Stag Hunt Chicken Prisoner’s Dilemma Harsh PD
+
+Figure 2: Phase transition in 2 × 2 games. Panel (a) shows mean terminal cooperation as a function of γ, with dotted lines marking γ⋆ and the dashed line marking ¯ p = 0 .5. Panel (b) shows normalized social welfare, and Panel (c) compares analytical and empirical transition points. All results are averaged over 20 seeds. 
+
+3.2. Boundary Equilibria 
+
+The result from Theorem 3 describes only the local direction of gradient ascent near the symmetric midpoint. It therefore explains when learning initially moves toward cooperation, but not whether the limiting boundary point is stable against unilateral deviations. This distinction matters because projected gradient ascent in the sigmoid model often converges to the boundary of Θ = [ −B, B ]2. Hence, the natural equilibrium candidates are boundary points such as ( B, B ) and ( −B, −B). 
+
+Theorem 4 (Boundary PPNE characterization) For fixed γ ≥ 0, suppose that θi 7 →
+
+Ui(θi, B ) is differentiable on (−B, B ) and satisfies 
+
+ddθ i
+
+Ui(θi, B ) ≥ 0 for all θi ∈ (−B, B ) and i ∈ { 1, 2}.
+
+Then (B, B ) is a PPNE. 
+
+Theorem 4 shows that equilibrium verification does not require analyzing the full two-dimensional landscape. For each player, we freeze the opponent at the candidate boundary value and maximize over the player’s own parameter interval. Figure 3 applies this test in the Prisoner’s Dilemma. Under open-source coupling, the unilateral payoff is maximized at the cooperative boundary; under closed-source semantics, it is maximized at the defective boundary. This verifies the limit points observed in Figure 1 as PPNEs. A weaker-coupling example in which open-source semantics does not yield a PPNE is given in Appendix B.3 and Figure 5. 
+
+4Parametric Open Source Games −4 −2 0 2 4                                            
+
+> θ1
+> 0.51.01.52.02.53.0
+> U1(θ1, θ ∗−1)
+> Open – Player 1 BR
+> U1(θ∗) = 3 .000
+> θ∗
+> 1= 4 .00
+> −4−2024
+> θ2
+> 0.51.01.52.02.53.0
+> U2(θ2, θ ∗−2)
+> Open – Player 2 BR
+> U2(θ∗) = 3 .000
+> θ∗
+> 2= 4 .00
+> −4−2024
+> θ1
+> 0.20.40.60.81.0
+> U1(θ1, θ ∗−1)
+> Closed – Player 1 BR
+> U1(θ∗) = 1 .054
+> θ∗
+> 1=−4.00
+> −4−2024
+> θ2
+> 0.20.40.60.81.0
+> U2(θ2, θ ∗−2)
+> Closed – Player 2 BR
+> U2(θ∗) = 1 .054
+> θ∗
+> 2=−4.00
+> −4−2024
+> θ1
+> 0.00.20.40.60.81.0
+> ∂U 1/∂θ 1
+> Open – Player 1 gradient
+> θ∗
+> 1= 4 .00
+> −4−2024
+> θ2
+> 0.00.20.40.60.81.0
+> ∂U 2/∂θ 2
+> Open – Player 2 gradient
+> θ∗
+> 2= 4 .00
+> −4−2024
+> θ1
+> −0.25
+> −0.20
+> −0.15
+> −0.10
+> −0.05 0.00
+> ∂U 1/∂θ 1
+> Closed – Player 1 gradient
+> θ∗
+> 1=−4.00
+> −4−2024
+> θ2
+> −0.25
+> −0.20
+> −0.15
+> −0.10
+> −0.05 0.00
+> ∂U 2/∂θ 2
+> Closed – Player 2 gradient
+> θ∗
+> 2=−4.00
+> Best Response and Gradient Sweeps
+> Equilibrium θ∗
+> iGradient at θ∗No profitable increase
+
+Figure 3: Boundary PPNE verification in the Prisoner’s Dilemma. For each candidate equilibrium, the opponent is fixed at its boundary value, and the remaining player’s payoff is evaluated over θi ∈ [−B, B ]. Open-source semantics maximizes payoff at the cooperative boundary, while closed-source semantics maximizes payoff at the defective boundary. 
+
+3.3. Neural Open-Source Semantics 
+
+The sigmoid semantics isolates open-source dependence through a single scalar γ, which makes the threshold analysis transparent. However, it also hard-codes a linear dependence on the opponent’s parameter. To allow richer semantics while preserving the same local interpretation, we consider 
+
+pi(θ) = σ αθ i + βθ −i + h(θ2
+
+i , θ 2
+
+−i, θ iθ−i; W ) , h(x; W ) = W ⊤
+
+2 tanh( W ⊤
+
+1 x + b1),
+
+where K ∈ N is the network hidden width and W = ( W1, b 1, W 2), where W1 ∈ R3×K , b1 ∈
+
+RK , W2 ∈ RK . The (learnable) scalars α ∈ R and β ∈ R have a direct interpretation, namely that α measures first-order sensitivity to the player’s own parameter, while β measures first-order sensitivity to the opponent’s parameter. The residual network h adds nonlinear dependence on the full parameter profile, but it receives only quadratic features. Therefore, its first-order derivative vanishes at θ = (0 , 0), so it cannot change the local incentive condition at the midpoint. This constraint ensures the model is more expressive away from the midpoint, but its first-order open-source coupling remains identifiable. Under this constraint, the sigmoid threshold from Theorem 3 extends cleanly. If α > 0, then near θ = (0 , 0) the relevant coupling is no longer γ itself, but the sensitivity ratio β/α .In particular, selfish gradient ascent initially points toward cooperation exactly when βα > γ ⋆
+
+with γ⋆ as in Theorem 3. The formal statement and proof are given in Appendix A.4. Figure 4 tests whether this first-order condition continues to organize learning once the semantics are neural. We compare sigmoid closed-source semantics, sigmoid open-source semantics, fixed neural semantics with β = 0, fixed neural semantics with β/α = 1 .5, and two jointly learned neural semantics. In the learned conditions, both the player parameters and the neural semantics parameters are optimized. The warm-start condition initializes 
+
+5Todorov ⋆ Napel M¨ uller 
+
+(α, β ) = (1 , 1.5), already above the cooperative threshold in the relevant games, whereas the cold-start condition initializes ( α, β ) = (0 , 0). The results show that fixed neural semantics reproduce the sigmoid baselines when their first-order ratios match. Neural-fixed-closed tracks sigmoid-closed, and neural-fixed-open tracks sigmoid-open. This supports the interpretation of β/α as the effective local open-source coupling. The learned conditions show a stronger point: warm-started neural semantics reach the same high-welfare regime as the fixed open-source models, but cold-started neural semantics do not reliably discover it. Thus, the threshold is not merely a representational condition, but also acts as an optimization barrier: the model class can represent cooperative open-source dependence, but gradient-based learning may fail to find it unless the first-order coupling is initialized in the right regime. 0 200 400 600 800 1000                     
+
+> Gradient step
+> 1
+> 2
+> 3
+> 4
+> 5
+> 6
+> Social welfare  U1 + U2
+> Stag Hunt
+> 0200 400 600 800 1000
+> Gradient step
+> 0
+> 1
+> 2
+> 3
+> 4
+> 5
+> 6
+> Chicken
+> 0200 400 600 800 1000
+> Gradient step
+> 2
+> 3
+> 4
+> 5
+> 6
+> Prisoner’s Dilemma
+> 0200 400 600 800 1000
+> Gradient step
+> 4.0
+> 4.5
+> 5.0
+> 5.5
+> 6.0
+> Harsh PD
+> Neural Semantics
+> Sigmoid-closed Sigmoid-open Neural-fixed-closed Neural-fixed-open Neural-learned (warm) Neural-learned (cold)
+
+Figure 4: Learning curves under neural open-source semantics across canonical 2 × 2 games. Fixed neural semantics match the corresponding sigmoid baselines when the first-order ratio 
+
+β/α is matched. Jointly learned neural semantics reach high welfare from a warm initial-ization above the threshold, but cold starts do not reliably discover cooperative coupling. Shaded regions indicate one standard deviation across seeds. 
+
+4. Discussion and Conclusion 
+
+We introduced parametric open-source games as a continuous model of strategic interaction in which each agent chooses a parameter vector and a semantics map converts the full parameter profile into mixed actions in an underlying finite game. The model preserves the central mechanism of open-source reasoning (Tennenholtz, 2004), namely that strategic behavior may be conditioned on another agent’s internal description, while making the resulting game amenable to tools from continuous optimization and differentiable games. Within this framework, our results show that open-source dependence can reshape both learning dynamics and equilibrium structure, analogous to the program equilibrium setting (Tennenholtz, 2004; Fortnow, 2009; LaVictoire et al., 2014). The sigmoidal and neural fam-ilies of open-source semantics studied within this work both exhibit the same organizing principle: cooperation becomes locally attractive when cross-player sensitivity is sufficiently large relative to self-sensitivity. For the sigmoid model, this yields an explicit critical cou-pling, while for the neural model, the same condition is preserved through the first-order ratio between cross-player and self-player sensitivity. We then separate this local dynamical analysis from global equilibrium verification by using boundary best-response sweeps, which test whether a candidate limit point is stable against unilateral deviations. 
+
+6Parametric Open Source Games 
+
+The presented models are intentionally idealized. They assume full access to opponent parameters, focus on symmetric two-player examples, and study one-shot base games. Nev-ertheless, they provide an interpretable starting point for studying how transparency over internal representations can affect incentives, learning dynamics, and equilibrium struc-ture in parametric multi-agent systems. Future work should relax these assumptions by considering partial or noisy transparency, certifiable properties instead of full parameter disclosure, asymmetric semantics, larger populations, and sequential environments such as Markov games. These extensions would connect the framework more directly to realistic multi-agent systems, where agents may observe only incomplete but strategically relevant information about one another’s internal structure. Overall, parametric open-source games suggest that internal parameter access is not a superficial modeling detail, but it can change the incentives created by gradient-based learning, while introducing new robustness ques-tions about how such access is represented, optimized, and verified. 
+
+Acknowledgement 
+
+We thank Davide Grossi at the University of Groningen for introducing us to the field of computational game theory and for his encouragement to pursue a publication. 
+
+References 
+
+Mihaly Barasz, Paul Christiano, Benja Fallenstein, Marcello Herreshoff, Patrick LaVic-toire, and Eliezer Yudkowsky. Robust Cooperation in the Prisoner’s Dilemma: Program Equilibrium via Provability Logic, April 2021. URL http://arxiv.org/abs/1401.5577 .arXiv:1401.5577 [cs]. Tamer Basar and Geert Jan Olsder. Dynamic Noncooperative Game Theory . Society for Industrial and Applied Mathematics, 1999. ISBN 978-0-89871-429-6. Google-Books-ID: k1oF5AxmJlYC. Claude Berge. Topological Spaces: Including a Treatment of Multi-valued Functions, Vector Spaces and Convexity . Oliver & Boyd, 1877. Google-Books-ID: jtAYAQAAIAAJ. Benjamin Chasnov, Lillian Ratliff, Eric Mazumdar, and Samuel Burden. Convergence Anal-ysis of Gradient-Based Learning in Continuous Games. In Proceedings of The 35th Un-certainty in Artificial Intelligence Conference , pages 935–944. PMLR, August 2020. URL 
+
+https://proceedings.mlr.press/v115/chasnov20a.html .Andrew Critch. A PARAMETRIC, RESOURCE-BOUNDED GENERALIZATION OF L ¨OB’S THEOREM, AND A ROBUST COOPERATION CRITERION FOR OPEN-SOURCE GAME THEORY. The Journal of Symbolic Logic , 84(4):1368–1381, December 2019. ISSN 0022-4812, 1943-5886. doi: 10.1017/jsl.2017.42. Andrew Critch, Michael Dennis, and Stuart Russell. Cooperative and uncooperative insti-tution designs: Surprises and problems in open-source game theory, August 2022. URL 
+
+http://arxiv.org/abs/2208.07006 . arXiv:2208.07006 [cs].  
+
+> 7Todorov ⋆Napel M¨ uller
+
+Lance Fortnow. Program equilibria and discounted computation time. In Proceedings of the 12th Conference on Theoretical Aspects of Rationality and Knowledge , pages 128–133, California, July 2009. ACM. ISBN 978-1-60558-560-4. doi: 10.1145/1562814.1562833. URL https://dl.acm.org/doi/10.1145/1562814.1562833 .Drew Fudenberg and David K. Levine. The Theory of Learning in Games . MIT Press, 1998. ISBN 978-0-262-06194-0. Google-Books-ID: G6vTQFluxuEC. I. L. Glicksberg. A Further Generalization of the Kakutani Fixed Point Theorem, with Application to Nash Equilibrium Points. Proceedings of the American Mathematical Society , 3(1):170–174, 1952. ISSN 0002-9939. doi: 10.2307/2032478. URL https: //www.jstor.org/stable/2032478 .Patrick LaVictoire, Benja Fallenstein, Eliezer Yudkowsky, Mihaly Barasz, Paul Christiano, and Marcello Herreshoff. Program equilibrium in the prisoner’s dilemma via l¨ ob’s theo-rem. In AAAI workshop on multiagent interaction without prior coordination , 2014. Tianyi Lin, Zhengyuan Zhou, Panayotis Mertikopoulos, and Michael Jordan. Finite-Time Last-Iterate Convergence for Multi-Agent Learning in Games. In Proceedings of the 37th International Conference on Machine Learning , pages 6161–6171. PMLR, November 2020. URL https://proceedings.mlr.press/v119/lin20h.html .Eric Mazumdar, Lillian J. Ratliff, and S. Shankar Sastry. On Gradient-Based Learning in Continuous Games. SIAM Journal on Mathematics of Data Science , 2(1):103–131, January 2020. ISSN 2577-0187. doi: 10.1137/18M1231298. URL http://arxiv.org/ abs/1804.05464 . arXiv:1804.05464 [cs]. Volodymyr Mnih, Koray Kavukcuoglu, David Silver, Andrei A. Rusu, Joel Veness, Marc G. Bellemare, Alex Graves, Martin Riedmiller, Andreas K. Fidjeland, Georg Ostrovski, Stig Petersen, Charles Beattie, Amir Sadik, Ioannis Antonoglou, Helen King, Dharshan Ku-maran, Daan Wierstra, Shane Legg, and Demis Hassabis. Human-level control through deep reinforcement learning. Nature , 518(7540):529–533, February 2015. ISSN 1476-4687. doi: 10.1038/nature14236. URL https://www.nature.com/articles/nature14236 .Caspar Oesterheld. Robust program equilibrium. Theory and Decision , 86(1):143–159, February 2019. ISSN 1573-7187. doi: 10.1007/s11238-018-9679-3. URL https://doi. org/10.1007/s11238-018-9679-3 .David Silver, Julian Schrittwieser, Karen Simonyan, Ioannis Antonoglou, Aja Huang, Arthur Guez, Thomas Hubert, Lucas Baker, Matthew Lai, Adrian Bolton, Yutian Chen, Timothy Lillicrap, Fan Hui, Laurent Sifre, George van den Driessche, Thore Graepel, and Demis Hassabis. Mastering the game of Go without human knowledge. Nature ,550(7676):354–359, October 2017. ISSN 1476-4687. doi: 10.1038/nature24270. URL 
+
+https://www.nature.com/articles/nature24270 .Moshe Tennenholtz. Program equilibrium. Games and Economic Behavior , 49(2):363– 373, November 2004. ISSN 0899-8256. doi: 10.1016/j.geb.2004.02.002. URL https: //www.sciencedirect.com/science/article/pii/S0899825604000314 .
+
+> 8Parametric Open Source Games
+
+Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez, L ukasz Kaiser, and Illia Polosukhin. Attention is All you Need. In 
+
+Advances in Neural Information Processing Systems , volume 30. Curran Associates, Inc., 2017. URL https://proceedings.neurips.cc/paper_files/paper/2017/hash/ 3f5ee243547dee91fbd053c1c4a845aa-Abstract.html . 
+
+> 9Todorov ⋆Napel M¨ uller
+
+Appendix A. Proofs of Statements 
+
+A.1. Existence of PPNE Theorem 5 (Existence of PPNE) For any parametric open-source game G, a mixed-strategy Nash equilibrium over Θ exists. If additionally each map θi 7 → Ui(θi, θ −i) is quasi-concave on Θi for every fixed θ−i, then a pure-strategy PPNE exists. 
+
+We prove the two existence claims of Theorem 5 separately. 
+
+• For the existence of a mixed-strategy equilibrium, observe first that each Θ i is a nonempty compact subset of a Euclidean space, hence a compact metric space. More-over, by construction of the induced game, each Ui is continuous on the product space Θ = Q 
+
+> j∈N
+
+Θj . Therefore, the induced parametric game is an n-player game with compact metric strategy spaces and continuous payoffs. By Glicksberg’s gener-alization of Kakutani’s fixed point theorem (Glicksberg, 1952), such a game admits a mixed-strategy Nash equilibrium. Hence G has a mixed equilibrium over Θ. 
+
+• We now prove the pure-strategy claim under the additional quasiconcavity assump-tion. For each player i, define the best-response correspondence 
+
+Bi(θ−i) = arg max 
+
+> θi∈Θi
+
+Ui(θi, θ −i).
+
+Since Θ i is compact and Ui(·, θ −i) is continuous for each fixed θ−i, the maximum is attained. Thus Bi(θ−i) is nonempty for every θ−i. Because Θ i is compact and Ui is continuous, Berge’s maximum theorem (Berge, 1877) implies that Bi has closed graph and is upper hemicontinuous. Since Ui(·, θ −i) is quasiconcave on the convex set Θ i,each upper contour set {θi ∈ Θi : Ui(θi, θ −i) ≥ c} is convex, and therefore the argmax set Bi(θ−i) is convex. Hence, for every i, the operator Bi : Θ −i ⇒ Θi has nonempty, convex, compact values and is upper hemicontinuous. Define the joint best-response correspondence as B(θ) = Q 
+
+> i∈N
+
+Bi(θ−i) for θ ∈ Θ. Since Θ = Q 
+
+> i∈N
+
+Θi is nonempty, compact, and convex, and since each Bi is up-per hemicontinuous with nonempty, convex, compact values, the B has the same properties. Kakutani’s fixed point theorem therefore yields some θ⋆ ∈ Θ such that 
+
+θ⋆ ∈ B(θ⋆). Equivalently, for every player i, θ⋆i ∈ Bi(θ⋆
+
+> −i
+
+), which means Ui(θ⋆i , θ ⋆
+
+> −i
+
+) ≥
+
+Ui(θi, θ ⋆
+
+> −i
+
+) for all θi ∈ Θi. Thus θ⋆ is a pure-strategy Nash equilibrium of the induced parametric game. 
+
+A.2. Phase Transition for Sigmoidal Dynamics 
+
+We prove a slightly more general version as presented in Theorem 3. For the symmetric 2 ×2base game with payoffs R, S, T, P , player 1’s expected payoff as a function of cooperation probabilities p1, p 2 is 
+
+U1(p1, p 2) = p1p2R + p1(1 − p2)S + (1 − p1)p2T + (1 − p1)(1 − p2)P. 
+
+> 10
+
+Parametric Open Source Games 
+
+Hence 
+
+∂U 1
+
+∂p 1
+
+= p2(R − T ) + (1 − p2)( S − P ),∂U 1
+
+∂p 2
+
+= p1(R − S) + (1 − p1)( T − P ).
+
+Under open-source sigmoid semantics 
+
+pi(θ) = σ(θi + γθ −i), σ′(x) = σ(x)(1 − σ(x)) ,
+
+we have 
+
+∂p 1
+
+∂θ 1
+
+= p1(1 − p1),∂p 2
+
+∂θ 1
+
+= γ p 2(1 − p2).
+
+Applying the chain rule gives 
+
+∂U 1
+
+∂θ 1
+
+= p2(R−T )+(1 −p2)( S−P ) p1(1 −p1)+ p1(R−S)+(1 −p1)( T −P ) γ p 2(1 −p2). (1) This expression separates the direct closed-source incentive from the open-source cross-player incentive. Interior critical points satisfy ∂θ1 U1 = 0, which yields the threshold cou-pling 
+
+γ = p1(1 − p1)
+
+p2(1 − p2) · p2(T − R) + (1 − p2)( P − S)
+
+p1(R − S) + (1 − p1)( T − P ) .
+
+In the symmetric case p1 = p2 = p, this reduces to 
+
+γ(p) = p(T − R) + (1 − p)( P − S)
+
+p(R − S) + (1 − p)( T − P ) . (2) The threshold in Theorem 3 is the special case corresponding to the symmetric midpoint 
+
+θ = (0 , 0), for which p1 = p2 = 12 . Substituting p = 12 into (2) gives 
+
+γ⋆ = γ   12
+
+ = T + P − R − SR + T − P − S .
+
+Equivalently, evaluating (1) at p1 = p2 = 12 yields 
+
+∂U 1
+
+∂θ 1 θ=(0 ,0) = 18
+
+h
+
+(R + S − T − P ) + γ(R + T − S − P )
+
+i
+
+,
+
+so under the assumption R + T − P − S > 0, sgn 
+
+ ∂U 1
+
+∂θ 1
+
+(0 , 0) 
+
+
+
+= sgn  γ − γ⋆.
+
+11 Todorov ⋆ Napel M¨ uller 
+
+For completeness, the limiting threshold values near full defection and full cooperation are 
+
+γdef = lim  
+
+> p→0
+
+γ(p) = P − ST − P ,γcoop = lim  
+
+> p→1
+
+γ(p) = T − RR − S .
+
+Moreover, 
+
+dγ dp = (T + S − R − P )( T − S)
+
+p(R − S) + (1 − p)( T − P )2 ,
+
+so the monotonicity of γ(p) is determined by the sign of T + S − R − P . The learning dynamics claim follows from continuity of the gradient field, as near θ = (0 , 0), the gradient of each player’s payoff with respect to their own parameter has the same sign as γ − γ⋆ (by symmetry), so simultaneous gradient ascent either pushes both parameters toward + B or toward −B.In other words, under open-source sigmoid semantics with coupling γ ≥ 0, if γ < γ ⋆ and the initialization lies in a neighborhood of θ = (0 , 0), each player has a local incentive to move in the direction of less cooperation, and learning dynamics starting near this midpoint drift toward defection. Conversely, if γ > γ ⋆, each player has a local incentive to move in the direction of higher-cooperation parameter values, and learning dynamics starting near this midpoint drift toward cooperation. 
+
+A.3. Boundary Characterizations of PPNEs 
+
+The full statement underlying Theorem 4 is that for a fixed γ ≥ 0, the following are equivalent: (i) ( B, B ) is a PPNE. (ii) For each i ∈ { 1, 2}, B ∈ arg max θi∈[−B,B ] Ui(θi, B ). (iii) For each i ∈ { 1, 2} and all θi ∈ [−B, B ], Ui(B, B ) ≥ Ui(θi, B ). If additionally θi 7 → Ui(θi, B ) is differentiable on ( −B, B ), then (iii) is implied by 
+
+ddθ i
+
+Ui(θi, B ) ≥ 0 for all θi ∈ (−B, B ) and i = 1 , 2.
+
+• To show the equivalence claim, recall that by definition, ( B, B ) is a PPNE if and only if, for each player i ∈ { 1, 2},
+
+Ui(B, B ) ≥ Ui(θi, B ) for all θi ∈ [−B, B ].
+
+This is exactly statement (iii). Hence (i) and (iii) are equivalent. Next, fix i ∈ { 1, 2}. Statement (ii) says that 
+
+B ∈ arg max 
+
+> θi∈[−B,B ]
+
+Ui(θi, B ),
+
+> 12 Parametric Open Source Games
+
+which means precisely that 
+
+Ui(B, B ) ≥ Ui(θi, B ) for all θi ∈ [−B, B ].
+
+This is exactly statement (iii). Thus (ii) and (iii) are also equivalent. 
+
+• For the differentiability claim, fix i ∈ { 1, 2} and suppose fi(θi) = Ui(θi, B ) is dif-ferentiable on ( −B, B ) and satisfies f ′ 
+
+> i
+
+(θi) ≥ 0 for all θi ∈ (−B, B ). Then fi is nondecreasing on the interval [ −B, B ]. Therefore, for every θi ∈ [−B, B ], 
+
+Ui(θi, B ) = fi(θi) ≤ fi(B) = Ui(B, B ),
+
+which shows (iii). 
+
+A.4. Neural Semantics 
+
+We now prove the neural analogue of the phase transition result. 
+
+Theorem 6 (First-order threshold for neural semantics) Let pi follow the neural open-source semantics with parameters (α, β, W ), and let α > 0. Define 
+
+γ⋆ = T + P − R − SR + T − P − S .
+
+Then, at the symmetric midpoint θ = (0 , 0) ,
+
+∂U 1
+
+∂θ 1 θ=0
+
+> 0 ⇐⇒ βα > γ ⋆.
+
+Moreover, the ratio β/α is exactly equal to the Jacobian ratio 
+
+∂p i/∂θ −i
+
+∂p i/∂θ i
+
+evaluated at θ = (0 , 0) , independently of the residual weights W .Proof. Recall that under neural open-source semantics, 
+
+pi(θ) = σ  αθ i + βθ −i + h(θ2 
+
+> i
+
+, θ 2
+
+> −i
+
+, θ iθ−i; W ) ,
+
+where 
+
+h(θ2 
+
+> i
+
+, θ 2
+
+> −i
+
+, θ iθ−i; W ) = W ⊤ 
+
+> 2
+
+tanh 
+
+
+
+W ⊤ 
+
+> 1
+
+[θ2 
+
+> i
+
+, θ 2
+
+> −i
+
+, θ iθ−i] + b1
+
+
+
+.
+
+By construction, the residual term depends only on quadratic monomials in ( θi, θ −i). Hence 
+
+∇θh(0 , 0; W ) = 0 .
+
+In particular, at the symmetric midpoint θ = (0 , 0), the first-order derivatives of the coop-eration probabilities are determined entirely by α and β. Since p1 = p2 = σ(0) = 12 , we have ∂p 1
+
+∂θ 1
+
+(0 , 0) = σ′(0) α = α
+
+4 , ∂p 2
+
+∂θ 1
+
+(0 , 0) = σ′(0) β = β
+
+4 . 
+
+> 13 Todorov ⋆Napel M¨ uller
+
+Using the payoff derivatives from Appendix A.2, evaluated at p1 = p2 = 12 ,
+
+∂U 1
+
+∂p 1 p= 12
+
+= R + S − T − P
+
+2 , ∂U 1
+
+∂p 2 p= 12
+
+= R + T − S − P
+
+2 ,
+
+the chain rule gives 
+
+∂U 1
+
+∂θ 1
+
+(0 , 0) = ∂U 1
+
+∂p 1
+
+∂p 1
+
+∂θ 1
+
++ ∂U 1
+
+∂p 2
+
+∂p 2
+
+∂θ 1
+
+= 18
+
+h
+
+α(R + S − T − P ) + β(R + T − S − P )
+
+i
+
+.
+
+Assuming α > 0 and R + T − P − S > 0, this quantity is positive if and only if 
+
+βα > T + P − R − SR + T − P − S = γ⋆.
+
+Thus, the local incentive at the symmetric midpoint points toward increased cooperation exactly when β/α > γ ⋆, which proves the neural threshold result. Moreover, 
+
+∂p i/∂θ −i
+
+∂p i/∂θ i θ=(0 ,0) 
+
+= β/ 4
+
+α/ 4 = βα ,
+
+so the ratio β/α is exactly the Jacobian ratio governing first-order cross-player sensitivity at the midpoint, independently of the residual weights W . Equivalently, β/α is the ratio between cross-player and self-player Jacobian sensitivity of the cooperation probability at the midpoint. 
+
+Appendix B. Experimental Details and Hyperparameters 
+
+This appendix collects implementation details, optimization settings, and hyperparameters for all experiments reported in the paper. Unless otherwise stated, all experiments are run on the induced parametric game rather than as repeated play of the underlying base game. Thus, when we refer to learning dynamics, we mean numerical optimization trajectories in parameter space under projected gradient ascent. For each experiment, we report the base game, the semantics family, the optimization procedure, the initialization scheme, and the quantities visualized in the corresponding figures. 
+
+B.1. Experiment 1: Open-Source versus Closed Semantics in the Prisoner’s Dilemma 
+
+This experiment compares open-source and closed-source sigmoid semantics in the one-shot Prisoner’s Dilemma with payoff matrix R = 3 , P = 1 , T = 5 , S = 0. The cross-player coupling for the open-source sigmoidal semantics is γ = 1 .5, while the closed-source baseline is recovered for γ = 0. In both cases, the parameter domain is the box Θ = [ −B, B ]2, B = 5. For compactness, hyperparameters are also summarized in Table 1. For each initialization θ0 = ( θ01, θ 02), we run simultaneous projected gradient ascent on the induced payoffs, 
+
+θt+1  
+
+> i
+
+= Π [−B,B ]
+
+ θti + η ∂ θi Ui(θt), i ∈ { 1, 2},
+
+> 14 Parametric Open Source Games
+
+with learning rate η = 0 .15. In the implementation, the partial derivatives are approximated numerically by finite differences with step size ε = 10 −5. Each trajectory is run for 10 ,000 iterations, although only the first 300 steps are displayed in the learning-dynamics panel of Figure 1. Parameters are projected back to [ −5, 5] after every update. The repeated iterations in the experiment do not correspond to repeated play of the Prisoner’s Dilemma itself, but to a numerical learning procedure in the induced parametric game over Θ = [−B, B ]2 over timesteps t ≥ 0 starting from an initial parameter profile θ0 = ( θ01, θ 02). Initial conditions are sampled independently and uniformly from [ −2.5, 2.5] 2, using 10 random initializations and seed 0. To visualize the induced landscape, social welfare U1 +U2
+
+is evaluated on a 200 × 200 grid over Θ. Table 1: Hyperparameters to reproduce Figure 1. Parameter Value Base game payoffs R = 3 , P = 1 , T = 5 , S = 0 Open-source coupling γ = 1 .5Closed-source coupling γ = 0 Learning rate η = 0 .15 Number of gradient steps 600 Projection bound B = 5 Parameter domain Θ = [ −5, 5] 2
+
+Number of random initializations 10 Initialization distribution uniform on [ −2.5, 2.5] 2
+
+Random seed 0Finite-difference step size ε = 10 −5
+
+B.2. Experiment 2: Gamma Sweep and Phase Transition 
+
+This experiment largely mirrors the setup described in Appendix B.1. For each game G,we evaluate the open-source semantics over a uniform grid of 100 values of γ between 0 and 1 .5. The parameter domain is Θ = [ −B, B ]2, B = 5. For each game and each value of γ, we run simultaneous projected gradient ascent on the induced parametric game, with learning rate η = 0 .01 for 600 steps. In the implementation, the partial derivatives are approximated numerically by finite differences. For every γ, we average over 20 random initializations. Initial parameters are sampled from a centered Gaussian distribution, with standard deviation 0 .1 for all games except Chicken, where the standard deviation is reduced to 0 .01. For each run, we record the terminal mean cooperation probability ¯ p = p1+p2 
+
+> 2
+
+and the terminal social welfare U1 + U2. Across random initializations, we report the mean and standard deviation of both quantities as functions of γ. The empirical critical coupling 
+
+γ∗ 
+
+> emp
+
+is defined as the first sampled value of γ at which the averaged cooperation curve crosses the threshold ¯ p = 0 .5. This is then compared against the analytical threshold 
+
+γ⋆ = T +P −R−SR+T −P −S derived in Theorem 3. Hyperparameters are summarized in Table 2.  
+
+> 15 Todorov ⋆Napel M¨ uller
+
+Table 2: Hyperparameters to reproduce Figure 2. Parameter Value Swept coupling range γ ∈ [0 , 1.5] Number of γ values 100 Projection bound B = 5 Parameter domain Θ = [ −5, 5] 2
+
+Learning rate η = 0 .01 Number of gradient steps 600 Number of random initializations 20 Initialization distribution Gaussian, centered at 0 Initialization scale 0.1 for all games, 0 .01 for Chicken Empirical threshold criterion first γ with mean ¯ p > 0.5Finite-difference step size ε = 10 −5
+
+Stag hunt R = 3 .0, S = 0 .0, T = 2 .0, P = 1 .0; γ⋆ = 0 Chicken R = 3 .0, S = 1 .0, T = 5 .0, P = 0 .0; γ⋆ = 1 /7Prisoner’s dilemma R = 3 .0, S = 0 .0, T = 5 .0, P = 1 .0; γ⋆ = 3 /7Harsh prisoner’s dilemma R = 3 .0, S = 0 .0, T = 6 .0, P = 2 .0; γ⋆ = 5 /7
+
+B.3. Experiment 3: PPNE verification 
+
+This experiment uses the same base game, parameter domain, and projected gradient-ascent procedure as Appendix B.1, with identical learning-rate, initialization scheme, and optimization horizon and other hyperparameters. The goal of this experiment is not to study the learning trajectories themselves, but to verify whether a boundary candidate θ⋆ is in fact a parametric program Nash equilibrium. By Theorem 4, this reduces to a one-dimensional unilateral-deviation check for each player. Concretely, after selecting a candidate boundary point θ⋆, we freeze the opponent at θ⋆
+
+> −i
+
+and evaluate the best-response objective θi 7 → Ui(θi, θ ⋆
+
+> −i
+
+) over the full interval [ −5, 5]. In practice, this is implemented as a dense grid sweep with 1000 evaluation points, together with the corresponding derivative curve ∂U i/∂θ i. A candidate θ⋆ is certified as a PPNE only if, for both players, the maximum of the swept best-response curve is attained at 
+
+θ⋆i . Equivalently, the unilateral-improvement gap max θi∈[−5,5] Ui(θi, θ ⋆
+
+> −i
+
+) − Ui(θ⋆) must be numerically zero up to tolerance. For the open-source condition, we use sigmoid semantics with coupling γ = 1 .5 as in Figure 3 where the best-response payoff is maximized at the cooperative boundary θ⋆i = B,so ( B, B ) is a PPNE. In Figure 5 we use γ = 0 .7, the payoff attains a strictly larger value at an interior deviation, showing that ( B, B ) is not a PPNE despite being a boundary candidate. Candidate boundary points are taken to be (5 , 5) in the open-source case and (−5, −5) in the closed-source case. To compare with the gradient-ascent dynamics, we also run the same solver as in Appendix B.1 from 10 random initializations drawn uniformly from [ −2.5, 2.5] 2, using learning rate 0 .15, 600 update steps, clipping bound B = 5, and random seed 0, which is the same configuration as in Table 1. 
+
+> 16
+
+Parametric Open Source Games 
+
+The numerical verification results for γ = 0 .7, intended not to be a PPNE, are shown in Figure 5. In this configuration, the open-source boundary candidate (5 , 5) is not a PPNE, as for each player, the best-response curve achieves a strictly larger value away from the boundary, with a unilateral-improvement gap of approximately 1, in contrast to Figure 3, where the gap is approximately 0. This illustrates the distinction emphasized in the main text, i.e., the convergence of gradient dynamics toward a boundary region does not by itself imply that the limiting boundary point is an equilibrium of the induced game. The additional figure is included to show how the same sweep procedure certifies failure of the PPNE property when a profitable unilateral deviation exists. −4 −2 0 2 4                                            
+
+> θ1
+> 3.03.23.43.6
+> U1(θ1, θ ∗−1)
+> Open – Player 1 BR
+> U1(θ∗) = 2 .999
+> θ∗
+> 1= 4 .00
+> −4−2024
+> θ2
+> 3.03.23.43.6
+> U2(θ2, θ ∗−2)
+> Open – Player 2 BR
+> U2(θ∗) = 2 .999
+> θ∗
+> 2= 4 .00
+> −4−2024
+> θ1
+> 0.20.40.60.81.0
+> U1(θ1, θ ∗−1)
+> Closed – Player 1 BR
+> U1(θ∗) = 1 .054
+> θ∗
+> 1=−4.00
+> −4−2024
+> θ2
+> 0.20.40.60.81.0
+> U2(θ2, θ ∗−2)
+> Closed – Player 2 BR
+> U2(θ∗) = 1 .054
+> θ∗
+> 2=−4.00
+> −4−2024
+> θ1
+> −0.2
+> −0.10.00.1
+> ∂U 1/∂θ 1
+> Open – Player 1 gradient
+> θ∗
+> 1= 4 .00
+> −4−2024
+> θ2
+> −0.2
+> −0.10.00.1
+> ∂U 2/∂θ 2
+> Open – Player 2 gradient
+> θ∗
+> 2= 4 .00
+> −4−2024
+> θ1
+> −0.25
+> −0.20
+> −0.15
+> −0.10
+> −0.05 0.00
+> ∂U 1/∂θ 1
+> Closed – Player 1 gradient
+> θ∗
+> 1=−4.00
+> −4−2024
+> θ2
+> −0.25
+> −0.20
+> −0.15
+> −0.10
+> −0.05 0.00
+> ∂U 2/∂θ 2
+> Closed – Player 2 gradient
+> θ∗
+> 2=−4.00
+> Best Response and Gradient Sweeps
+> Equilibrium θ∗
+> iGradient at θ∗No profitable increase
+
+Figure 5: Boundary best-response verification for a non-PPNE open-source candidate. Us-ing the same sweep procedure as in Figure 3, but with weaker open-source coupling γ = 0 .7rather than γ = 1 .5, the candidate boundary point ( B, B ) fails the PPNE test. The best-response curves are not maximized at θ⋆i = B, so each player has a profitable unilateral deviation when the opponent is fixed at the boundary. This contrasts with the main-text setting in Figure 3, where γ = 1 .5 and the cooperative boundary is verified as a true PPNE. The solid black dot in Panels (e) and (f) indicates the best response found by the fine-grid sweep. 
+
+B.4. Experiment 4: Neural semantics 
+
+This experiment extends the gradient-ascent setup of Appendix B.1 to the neural semantics class introduced in Section 3.3. We evaluate the four canonical symmetric 2 × 2 games shown in Figure 4, namely Stag Hunt, Chicken, Prisoner’s Dilemma, and Harsh PD. In all conditions, we report the social welfare U1 + U2 as a function of optimization time and average across multiple random seeds. We compare six conditions. The first two are the sigmoid baselines from the main text, namely sigmoid-closed with γ = 0 and sigmoid-open with γ = 1 .5. The next two use the neural semantics of Section 3.3 with fixed residual weights. In the closed condition, we 
+
+17 Todorov ⋆ Napel M¨ uller 
+
+Table 3: Hyperparameters for the neural-semantics experiment in Figure 4. The fixed-neural conditions use the same sampled residual network in both the closed and open variants, differing only in the linear coefficients ( α, β ). The learned neural conditions jointly optimize the player parameters and all semantics parameters. Hyperparameter Value Open sigmoid coupling γ 1.5Hidden width K 4Residual weight scale 0.05 Residual-network seed 0Finite-difference step ε 10 −5
+
+Player learning rate 0.10 Semantics-parameter learning rate 0.005 Player clipping bound 10 .0Semantics-parameter clipping bound 5.0Player initialization clip 2.0Number of steps for fixed-semantics runs 1000 Number of steps for learned-semantics runs 1000 Number of seeds for fixed-semantics runs 5Number of seeds for learned-semantics runs 5set ( α, β ) = (1 , 0), while in the open condition we set ( α, β ) = (1 , 1.5), so that β/α = 1 .5matches the open sigmoid coupling. In both cases, the network weights ( W1, b 1, W 2) are sampled once at initialization and then held fixed throughout optimization. The same sampled residual network is used for the fixed closed and fixed open conditions, so the comparison isolates the effect of the linear coefficients. The final two conditions jointly learn both the player parameters and the seman-tics parameters. In the warm-start condition, the learnable parameters are initialized with ( α0, β 0) = (1 , 1.5), so the initial first-order ratio already lies in the cooperative regime predicted by Appendix A.4. In the cold-start condition, they are initialized with (α0, β 0) = (0 , 0). For each player, the learnable parameter vector consists of the current scalar parameter θi, the linear coefficients α, β , and the flattened residual-network weights. Gradients are approximated by finite differences, and all parameters are updated by simul-taneous gradient ascent on each player’s own payoff. Player parameters are initialized from a clipped normal distribution centered at zero, with a clipping radius of 2 .0. During optimization, the player parameters are clipped to [−10 , 10], while the learnable semantics parameters are clipped componentwise to [ −5, 5]. The residual network uses hidden width K = 4, initialization scale 0 .05, and zero initial bias vector b1. The full set of hyperparameters is reported in Table 3. The main empirical pattern is that the neural class reproduces the sigmoid baselines when the first-order ratio β/α is matched, but joint optimization succeeds reliably only under warm initialization. This is consistent with Appendix A.4, which identifies β/α > γ ⋆
+
+as the condition under which cooperation is locally attractive at the symmetric midpoint. The fixed-open and warm-start learned conditions satisfy this requirement from the outset, 
+
+> 18 Parametric Open Source Games
+
+whereas the cold-start learned condition must discover it through optimization and fails to do so.  
+
+> 19 Todorov ⋆Napel M¨ uller
+
+Appendix C. Camera-Ready Edits 
+
+We improved the quality of the figures, bolded and shortened their titles, and improved the captions within the manuscript. We also added an Acknowledgment section before the references.

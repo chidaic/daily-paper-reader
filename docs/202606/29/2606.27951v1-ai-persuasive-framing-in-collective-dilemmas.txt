@@ -1,0 +1,733 @@
+Title: AI Persuasive Framing in Collective Dilemmas
+
+URL Source: https://arxiv.org/pdf/2606.27951v1
+
+Published Time: Mon, 29 Jun 2026 00:43:23 GMT
+
+Number of Pages: 20
+
+Markdown Content:
+# AI Persuasive Framing in Collective Dilemmas 
+
+## ANDERS GIOVANNI MØLLER ∗, Data Science Section, IT University of Copenhagen, Denmark 
+
+## ALESSIA GALDEMAN ∗, Computer Science Department, University of Milan, Italy 
+
+## ARIANNA PERA, Copenhagen Center for Social Data Science, University of Copenhagen, Denmark 
+
+## LUCA MARIA AIELLO, Data Science Section, IT University of Copenhagen, Denmark 
+
+AI agents are promising tools that can act as flexible behavioral nudges to enhance human cooperation in addressing large-scale societal problems. However, evidence on whether AI agents can effectively boost cooperation remains mixed. We recruited 1,283 participants to play iterated Collective Risk Games in small groups, testing whether AI assistants could nudge participants toward cooperation. By using persuasive framing personalized to each player’s Social Value Orientation profile, the AI interventions signifi-cantly increased contributions and group success rates. These cooperative effects were short-lived, however, fading after the first few rounds. Strikingly, when the AI treatments were reconfigured to promote selfish behavior through exculpatory framing, the negative effects on contributions and group success were larger and substantially more persistent, particularly for personalized interventions. This asymmetry between prosocial and antisocial persuasion highlights the dual-use risks of AI systems designed to influence group behavior in collective action settings. 
+
+1 Introduction 
+
+The hope that AI can help build more robust and resilient communities has motivated a wealth of recent work on human-AI interaction [ 42 ]. A central thread of this research is the goal of enhancing human cooperation through large-scale AI interventions [ 27 , 41 ], as nudging behavioral change toward cooperation at scale is becoming increasingly necessary to address the most pressing societal challenges of this century, chief among them the climate crisis [ 24 , 38 ]. This goal feels ever more attainable as AI agents powered by Large Language Models (LLMs) grow more capable of autonomously managing complex social interactions [9, 16] and of producing persuasive arguments [7, 36]. Behavioral economics experiments built around game-theoretical scenarios provide ideal testing grounds for assessing how group outcomes are shaped by AI interventions of various kinds [ 22 ]. These experiments typically involve goal-oriented settings in which multiple participants engage in a series of repeated interactions [ 30 ], and they can be used to ask questions such as whether AI agents interacting with participants can lower critical synergy thresholds required for successful cooperation [ 18 ]. Within this nascent field, the debate over the effectiveness of AI interventions remains very much open, with conflicting evidence on offer. Yet, a growing body of work supports the hypothesis that AI may have limited or no effect on boosting cooperation in collective games [3, 8, 34, 35, 37]. One possible explanation for these null results is that many experiments in this line of work inherit a behavioral economics perspective on cooperation games, which emphasizes the availability of information about the system as a primary driver of the evolution of cooperation [ 21 ]. This perspective has inspired the deployment of AI solutions aimed at resolving such information bottlenecks [ 34 ], while engaging little with research on persuasive and personalized AI interventions [ 25 ], which is instead concerned with generating interactions that can effectively trigger behavioral change, independent of the surrounding information context [19]. 
+
+> ∗Both authors contributed equally to this research. Authors’ Contact Information: Anders Giovanni Møller, andersgiovanni@gmail.com, Data Science Section, IT University of Copenhagen, Copenhagen, Denmark; Alessia Galdeman, alessia.galdeman@unimi.it, Computer Science Department, University of Milan, Milan , Italy; Arianna Pera, arianna. pera22@gmail.com, Copenhagen Center for Social Data Science, University of Copenhagen, Copenhagen, Denmark; Luca Maria Aiello, luai@itu.dk, Data Science Section, IT University of Copenhagen, Copenhagen, Denmark.
+
+1
+
+> arXiv:2606.27951v1 [cs.CY] 26 Jun 2026
+
+2 Møller et al. In this work, we help fill this gap by testing AI assistants that use persuasive and personalized framing to motivate participants in a public goods game to increase their pledges to the group. Specifically, we recruit 1,283 participants to play an iterated collective risk game in small groups, and we compare a control condition with three separate treatments designed to increase pledges: (i) a static prognostic message that acts as a nudge; (ii) an AI assistant instructed to generate persuasive frames promoting prosocial behavior; and (iii) a semi-personalized AI assistant that adapts its persuasive strategy to the social value orientation of each participant. We find that the AI interventions can increase pledges and the success rate of the game significantly, and more substantially than a simple static nudge, with longer chat sessions with the AI being associated with stronger effects. Consistent with prior work, the interventions have a fleeting effect that fades after the first few rounds of the game. Concerningly however, when the AI treatments are reconfigured to nudge uncooperative behavior through exculpatory framing [ 4], the negative effect on pledges and game success is even larger and much more persistent, particularly for semi-personalized interventions. Our contribution provides evidence for the need to more systematically integrate the literatures on human-AI cooperation and persuasive AI, while highlighting the potential risks of AI’s efficacy in disrupting positive group dynamics when it is designed to do so. 
+
+2 Related Work 
+
+Public Goods Games and the Collective Risk Dilemma. Public goods games (PGGs) are a foundational paradigm for studying cooperation under social dilemmas, in which individually rational behavior leads to collectively suboptimal outcomes. In a standard PGG, group members decide how much to contribute to a shared pool that benefits everyone, creating a tension between personal gain and collective welfare [ 23 , 32 ]. A large body of work has examined the conditions under which cooperation emerges, with key findings pointing to the roles of punishment, reciprocity, group size, and social norms [14, 15, 33, 39]. The Collective Risk Game (CRG) is a threshold-based PGG in which groups must collectively reach a contribution target to avert a shared loss, and failure becomes increasingly likely when individual incentives to free-ride go unchecked [ 28 ]. This framing maps naturally onto high-stakes real-world dilemmas such as climate change mitigation, where the costs of action are immediate and individual while the benefits are delayed and collective [ 28 , 44 ]. Research in this context has confirmed the sensitivity of collective outcomes to the level of risk, threshold design, and strategic uncertainty [ 1, 39 ]. Within this framework, social norms have emerged as a central mechanism sustaining cooperation. Szekely et al. [ 39 ] showed that both empirical expectations (what others will do) and normative expectations (what others think one should do) are strong positive predictors of contributions. Crucially, their longitudinal results suggest that norms consolidate over repeated game rounds, and that once stabilized, behavior becomes less sensitive to changes in risk. Related work on CRGs has similarly emphasized that feedback, timing, and repeated play can substantially shape the evolution of contributions over time [ 1 , 10 ]. Structural features of interaction and personal traits also matter: richer communication channels generally improve coordination [ 6], and individual differences can further modulate how people respond to the same game setting [17]. 
+
+Framing, Personalization, and Cooperative Behavior. A growing body of literature examines how targeted communi-cation can shift cooperative behavior. In the context of climate change, explicitly framing environmental risks has been shown to increase engagement with mitigation activities [ 13 ]. Within PGGs more broadly, inter-player communication AI Persuasive Framing in Collective Dilemmas 3of contribution intentions has been found to substantially improve coordination, particularly under conditions of inequality where reaching the collective target is otherwise difficult [40]. More directly relevant to the present work is research on experimenter-generated message frames. Gavrilets et al. [ 17 ] found that presenting players with a message indicating what the group-optimal action would have been significantly shifted subsequent behavior. Crucially, the direction of that shift depended on participants’ psychological and cognitive profiles. This heterogeneity in response was also found by Tverskoi et al. [ 43 ], who showed that the same group-norm message could either strengthen personal norms or increase conformist behavior, depending on players’ social value orientation. Together, these findings suggest that the effectiveness of any given message is not uniform. Work on linguistic alignment and interaction format further supports the idea that matching message style to individual characteristics can improve strategic outcomes [ 2 , 26 ]. This sensitivity to individual characteristics creates a natural opening for AI-mediated persuasion, where messages can be dynamically adapted in ways static frames cannot. 
+
+AI-Mediated Persuasion. Large Language Models (LLMs) have recently been studied as persuasive agents in coopera-tive and social contexts. Breum et al. [ 7 ] employed LLMs to generate persuasive arguments in a climate change dialogue between agents, finding that when humans rated the resulting arguments, knowledge-based ones were judged most persuasive. Personalization substantially amplifies this influence: Matz et al. [ 25 ] showed that tailoring messages to individual profiles improves persuasive impact, and Salvi et al. [ 36 ] found that personalized LLM agents can outperform human opponents in debates. Karinshak et al. [ 20 ] further showed that personalized AI-generated messages can be perceived as more authoritative than official sources. Beyond immediate persuasion, Costello et al. [ 11 ] demonstrated that sustained, personalized AI conversations can durably reduce belief in conspiracy theories, suggesting that such interventions may produce lasting prosocial effects. As models continue to grow in scale and capability, their persuasive influence appears to be increasing [ 12 ], making the design of AI-mediated communication an increasingly relevant research question. Prior work has established that cooperative behavior in threshold games is sensitive to framing and social norms, and that LLMs are increasingly capable persuasive agents. Yet these threads have not been brought together in a single experimental setting. The present study does so, situating an interactive AI agent within a collective risk game and testing personalization and direction of persuasion as orthogonal dimensions of influence. 
+
+3 Methods 3.1 Collective Risk Game 
+
+The experiment centers on the Collective Risk Game , a public goods dilemma in which groups of participants must collectively contribute a shared resource to prevent a common disaster. In our experiment, the disaster is a fictional flooding scenario. This paradigm creates a tension between individual self-interest, since participants keep any resources they do not contribute as personal earnings, and collective benefit, which requires contributing enough to prevent the disaster. If the disaster is prevented, participants keep their remaining resources; otherwise, those resources are lost. The game follows a five-round structure. In each round, every participant receives 10 fictional resource tokens and can individually contribute between 0 and 10 of them. The collective group threshold required to thwarth the disaster is defined as 6 × number of players , and the total group contribution is the sum of all active players’ contributions. If the total equals or exceeds the threshold, the disaster is prevented and players keep their unspent tokens. If the total falls below the threshold, there are two possible outcomes. With 80% probability, the disaster occurs and all players earn 0 4 Møller et al. 
+
+Fig. 1. Experimental Overview . (A) The participant journey included onboarding, five game rounds, a post-study survey, and a reward page. (B) During each round, participants either submitted their contribution directly (control), reconsidered it after reading a static message, or interacted with an LLM encouraging either cooperative or selfish behavior. Messages and LLM interactions could be personalized based in information from the onboarding. (C) Participants received 10 tokens and contributed between 0 and 10 tokens. If the total contribution reached the 6N threshold, participants kept their remaining tokens. If not, they would loose them with 80% probability. Code is available at https://anonymous.4open.science/r/ai-in-collective-dilemmas-2617/ 
+
+tokens for that round. With 20% probability, the players are lucky and no disaster happens, allowing them to keep their unspent tokens despite missing the threshold. We recruit participants through the crowdsourcing platform Prolific [ 31 ]. Each participant receives a base payment of $3 plus a bonus of up to $2.5, depending on how they play the game. The round bonus is computed as round bonus = 
+
+> tokens kept
+> 10
+
+× max bonus number of rounds . This amounts to $0.5 per round if all 10 tokens are kept and the disaster is avoided. We set AI Persuasive Framing in Collective Dilemmas 5up rooms with 5 players, dynamically adjusting the minimum contribution threshold across rounds in the event of participant dropout, and we discard a game from analysis if the number of participants falls below 3. 
+
+3.2 Experimental Design 
+
+3.2.1 Treatment conditions. Our experiment uses a between-subjects design, with groups randomly assigned to one of three conditions. The treatment is applied at the group level, so that all five participants are in the same condition. 
+
+1. Control . In line with the game description, players make a single contribution in each round within a 30-second window. This establishes a baseline for contribution behavior in the absence of any intervention. 
+
+2. Message Framing . Players first make an initial contribution choice. They then see a short message with prognostic framing that encourages cooperative solutions, consistent with the framing studied extensively in the consensus mobilization literature [ 5] (see messages in Appendix A). Next, they are asked to confirm or revise their contribution. Five different variants of the message are shown across rounds in a randomized order. This condition tests whether a single, predefined persuasive cue is sufficient to shift behavior. 
+
+3. AI Persuasion . Players first make an initial contribution choice, then engage in a real-time text conversation with an LLM-based AI agent for at least 30 seconds, and finally reconsider and finalize their choice. Unlike the static condition, the AI adapts its arguments to the player and their initial choice, producing a personalized dialogue rather than a fixed message. This condition tests whether interactive and responsive AI systems affect user behavior. All prompts are listed in Appendix B. Conditions 2 and 3 share the same three-step structure: initial choice → influence → reconsider. We record both initial and final choices, allowing us to observe whether and how much players revise their contributions in response to the influence and across rounds. The participant journey consists of three main stages: onboarding , the game , and the exit phase. During the onboarding 
+
+phase, participants must accept a consent form, take a simple demographic survey, and complete a standard test to estimate their Social Value Orientation (SVO) [ 29 ] before they are presented with the instructions of the game (see Appendix C.2 for SVO questions). The SVO test assesses people’s preference for how to allocate resources between themselves and others. After the onboarding, they continue to the 5-round game phase where they must decide on their contribution followed by the result of the round. After the five rounds, they fill out an exit survey before they finally get a token for their reward. 
+
+3.2.2 Personalization. We test whether personalizing the external influences has an additional impact on user behavior. The AI assistant generates semi-personalized messages based on each participant’s Social Value Orientation class, measured during the SVO test during onboarding. The scores from the different items are combined to classify participants as cooperative , individualistic , or competitive . For cooperative users, the AI draws on arguments related to duty, insurance, and collective care. For individualistic users, the AI emphasizes maximization of personal gains. For competitive users, the AI suggests maximizing relative gains compared to the other players. In each round, the AI is prompted with information on the player’s SVO type, their initial choice, and their contribution history. The non-personalized variant simply omits the SVO portion of the prompt. As an orthogonal dimension of personalization, we also vary the direction of persuasion . In the cooperative setting, the AI agent encourages high contributions. In the selfish setting, it encourages lower contributions. By including both directions, we can test not only whether personalized influence is more effective than generic influence, but also whether its effectiveness is symmetric across pro-social and anti-social objectives. 6 Møller et al. We also experimented with personalized messages in the static Message Framing condition. Drawing on the consensus mobilization literature [ 5], we considered five message types based on user profile: 1) diagnostic frames that identify the nature of the problem; 2) prognostic frames that propose a concrete solution; 3) motivational frames that call users to action; 4) expert frames that appeal to technical expertise; and 5) legitimate frames that appeal to institutional authority. Based on pilot experiments, all frame types performed similarly, with prognostic frames showing a slight advantage. In the interest of keeping crowdsourcing costs manageable, we therefore adopted a single static Message Framing condition using prognostic frames exclusively. 
+
+3.3 Analysis 
+
+To study the impact of the treatments, we measure three key outcomes. Within each game, we compute the average decision , defined as the mean contribution per round. We measure the success rate as the per-round proportion of rounds in which the group collectively reached the threshold. In the treatment conditions, we also compute the per-round 
+
+average decision change as the mean difference between each player’s final and initial pledges, averaged across all players. We report mean values across all games together with 95% confidence intervals. We compare each treatment against the control condition on average decision and success rate . For average decision ,we use the Mann-Whitney U test, since each value is a discrete and bounded integer between 0 and 10. For success rate ,we use Fisher’s exact test on the 2 × 2 table of success and failure counts for control versus treatment. In addition to these standalone metrics, we model whether the AI treatments actually affect contributions from one round to the next and from the initial pledge to the revised pledge within the same round. To do this, we fit OLS regression models with available covariates to predict three dependent variables: contribution 𝑟 𝑖 = 𝛽 0 + 𝛽 1 · 1[SVO = cooperative ]+ 𝛽 2 · 1[SVO = individualistic ]+ 𝛽 3 success 𝑟 𝑖 −1 + 𝛽 4 num_players 𝑟 𝑖 + 𝛽 5 contribution 𝑟 𝑖 −1
+
++ 𝛽 6 Δwithin-round 𝑖 + 𝛽 7 num_interactions 𝑟 𝑖 
+
++ 𝛽 8 · 1[treatment = personalized ]+ 𝛽 9 · 1[treatment = non-personalized ] + 𝜀 𝑖 (1) 
+
+Δwithin-round 𝑖 ≡ FinalPledge 𝑟 𝑖 − InitialPledge 𝑟 𝑖 = same RHS as Eq. (1), but excluding Δwithin-round 𝑖 . (2) The variable contribution 𝑟 𝑖 is the player’s contribution in the current round and Δwithin-round 𝑖 is the difference between the final and initial pledge within a round. Among the independent variables, the SVO parameters indicate Social Value Orientation classes, with the reference category being unclassified, which applies when the SVO type could not be determined from the questionnaire (a player must provide at least six out of nine responses consistently within a type to be classified). In our cohort, no participants was classified as competitive , leaving us with the two remaining classes of cooperative and individualistic . success 𝑟 𝑖 −1 is a binary variable indicating whether the previous round reached the threshold, num_players 𝑟 𝑖 −1 is the group size after accounting for inactive or dropped-out participants, and contribution 𝑟 𝑖 −1 is the player’s contribution in the previous round. Δwithin-round 𝑖 is included as a predictor in equations (1). The treatment parameter reflects the assigned treatment condition, with control as the reference. In addition to modeling round-to-round transitions, we fit analogous regression models for round 1 to better understand the factors influencing the first contribution and the within-round change between the initial pledge and AI Persuasive Framing in Collective Dilemmas 7the final decision in round 1. The variables are similar to those in (1) , but without any reference to prior rounds. For the control group, num_interactions 𝑟 1 and Δwithin-round 1 are set to 0. contribution 𝑟 1 = 𝛽 0 + 𝛽 1 · 1[SVO = cooperative ]+ 𝛽 2 · 1[SVO = individualistic ]+ 𝛽 3 num_players 𝑟 1 + 𝛽 4 num_interactions 𝑟 1
+
++ 𝛽 5 Δwithin-round 1
+
++ 𝛽 6 · 1[treatment = personalized ]+ 𝛽 7 · 1[treatment = non-personalized ] + 𝜀 𝑖 (3) 
+
+Δwithin-round 1 ≡ FinalPledge 𝑟 1 − InitialPledge 𝑟 1 = same RHS as Eq. (3), but excluding Δwithin-round 𝑟 1 . (4) 
+
+4 Results 
+
+Our pool of 1,283 participants from Prolific is filtered for inactivity and low-quality responses distributed across 307 games (Control: 52, Prognostic: 51, Cooperative (pers.): 52, Cooperative (non-pers.): 50, Selfish (pers.): 52, Selfish (non-pers.): 50). Participants have a mean age of 40.5 years (see distribution in Figure 9) and a gender distribution of 50.7% and 49.3% for men and women respectively. In Table 1 we show key statistics across conditions. Figure 2 shows how the average pledge, success rate, and within-round difference between initial and revised pledges vary across rounds. Focusing on the first round, we see that increasingly sophisticated interventions produce larger effects. Personalized AI interventions increase contributions and success rates the most, followed by non-personalized AI and then by static prognostic nudges. The selfish AI assistant shows the strongest and most significant effect, especially in its personalized version. Although interventions are delivered in every round, their effect appears to fade after round 1, with the exception of the anti-social nudges, whose effect remains significant throughout the game. In aggregate, all interventions yield similar average contributions per player, with a few caveats (Figure 3). When disaggregating players by cooperative versus individualistic SVO profile, selfish AI is the only intervention that deviates from the control baseline for cooperative individuals, while the opposite holds for individualistic players, where cooperative personalized AI yields significantly higher contributions compared to the baseline. To explore mediating effects of covariates on the outcomes of interest, we examine the coefficients of the linear regression models predicting outcome transitions from round to round (Figures 4, 5) and the outcomes of Round 1 only (Figures 6, 7). Disaggregating by round reduces sample sizes and thus dilutes the statistical power of the models. Nevertheless, several findings emerge from inspecting the coefficients. First, as expected given the game Treatment Players Avg. Thresholds Met pr. Game Avg. Contribution Avg. Bonus Control 241 3.75 6.30 $0.68 Prognostic 207 3.76 6.35 $0.70 Cooperative (Non-pers.) 217 4.29 6.62 $0.72 Cooperative (Pers.) 199 4.20 6.57 $0.71 Selfish (Non-pers.) 206 2.54 5.62 $0.54 Selfish (Pers.) 213 2.04 5.41 $0.49 
+
+> Table 1. Summary statistics by treatment.
+
+8 Møller et al. mechanics, contributions and outcomes in prior rounds generally influence contributions in subsequent rounds. Second, all interventions successfully nudge within-round pledge changes in the expected direction, increasing contributions for cooperative nudges and decreasing them for selfish ones. Third, SVO profile has a marginal effect on contribution amount, with high statistical uncertainty given by the high sparsity and imbalance between the two groups. Finally, the duration of interaction with the AI affects both contribution amount and the decision to revise pledges, particularly in Round 1. Examining the nature of AI interactions more closely (Figure 8), we find that the fraction of people engaging with the AI by writing at least one message does not decline significantly, and that number of messages exchanged between users and the assistant is relatively stable across rounds. Analyzing the content of messages produced by the AI, we find that the assistant consistently suggests pledge changes in line with its prompt, though the selfish AI recommends more substantial changes (between -2 and -3 tokens) than the cooperative AI (typically +1 token). Using an LLM judge, we also classify the content of participants’ messages to the AI. Most messages are used to explain personal motivations for pledges or to agree or disagree with the AI’s suggestions, for example: “ I am not happy that people contributed way less last time. I’ll stick with 5 and hope the others do what they should ”. Suggestions to increase pledges receive more pushback, while suggestions to decrease contributions tend to elicit participant responses centered on strategic reasoning, such as “ since it was 31 last time at 8, 7 may still work and leave us at 30 ”. 
+
+5 Conclusion 
+
+Our work presents one of the largest controlled experiments testing AI assistants in game-theoretic scenarios. However, it has several limitations that open avenues for further research. First, we focus on a single game type, the Collective Risk Game, which constrains the generalizability of our findings. Second, our setup keeps group size and number of rounds fixed at 5, neglecting dynamics that could emerge in larger groups or longer interactions. Third, interventions are delivered every round, potentially causing participant fatigue and missing the opportunity to investigate just-in-time interventions targeted at the moments when they are most needed. Finally, our interventions are only semi-personalized, relying on coarse participant classifications derived from a single psychological construct, Social Value Orientation. Despite these limitations, our work makes a meaningful contribution by bridging the literature on cooperative human-AI systems and persuasive AI. Our results advance the understanding of how Large Language Model-powered agents can effectively mobilize people toward solving collective dilemmas. In contrast with prior work reporting little to no change when deploying assistants instructed to nudge strategic reasoning or fill knowledge gaps, we show that personalized persuasive framing can boost cooperation in collective goods games. Consistent with prior work, we find that the effects of AI intervention are short-lived when the goal is to promote cooperation. However, when the AI uses persuasive framing to nudge participants toward selfish behavior, the effects are substantially more persistent. This finding raises important questions and ethical concerns about the asymmetry between prosocial and antisocial persuasion: if self-interested behavior is easier to entrench than cooperative behavior, this can have serious implications for the deployment of persuasive AI systems in the wild, where misaligned or adversarial actors could exploit such asymmetries to erode collective action. 
+
+Acknowledgments 
+
+This work received financial support from the Carlsberg Foundation through the COCOONS project (grant CF21-0432). AI Persuasive Framing in Collective Dilemmas 91 2 3 4 5
+
+> Round
+> 4.5
+> 5.0
+> 5.5
+> 6.0
+> 6.5
+> 7.0
+> Average decision
+
+Average Decision by Round         
+
+> *
+> **
+> **** **
+> *** ** ***
+> *** ***
+> ***
+> *** 12345
+> Round
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> Success rate
+
+Success Rate by Round      
+
+> *
+> *
+> *
+> ** **
+> **
+> ***
+> **
+> ***
+> *** 12345
+> Round
+> 1.0
+> 0.5
+> 0.0
+> 0.5
+> Decision change (final  initial)
+
+Decision Changes by Treatment      
+
+> Control Prognostic Cooperative (Non-pers.) Cooperative Selfish (Non-pers.) Selfish
+
+Fig. 2. Effects of interventions across rounds. Top: Average contributions. Middle: Average group success rates. Bottom: Within-round changes from participants’ initial pledge to their final contribution. Points show condition means and error bars indicate 95% confidence intervals. Positive within-round changes indicate increased contribution, while negative changes indicate reductions. Asterisks reflect significant difference from control condition ( † = 𝑝 < 0.10 , ∗ = 𝑝 < 0.05 , ∗∗ = 𝑝 < 0.01 , ∗ ∗ ∗ = 𝑝 < 0.001 ). 10 Møller et al. Control Coop. 
+
+(Non-pers.) 
+
+Coop. 
+
+(Pers.) 
+
+Selfish 
+
+(Non-pers.) 
+
+Selfish 
+
+(Pers.) 
+
+2
+
+0
+
+2
+
+4
+
+6
+
+8
+
+10 
+
+12 
+
+14 
+
+16 
+
+> Mean contribution per player
+> n=188
+> M = 6.8
+> n=171
+> M = 6.9
+> n=155
+> M = 6.8
+> n=155
+> M = 6.1
+> n=174
+> M = 5.5
+
+a Cooperative 
+
+Control Coop. 
+
+(Non-pers.) 
+
+Coop. 
+
+(Pers.) 
+
+Selfish 
+
+(Non-pers.) 
+
+Selfish 
+
+(Pers.) 
+
+2
+
+0
+
+2
+
+4
+
+6
+
+8
+
+10 
+
+12 
+
+14 
+
+16 
+
+> n=43
+> M = 4.5
+> n=38
+> M = 5.4
+> n=40
+> M = 5.8
+> n=44
+> M = 4.3
+> n=30
+> M = 4.6
+
+b Individualistic 
+
+Fig. 3. Distributions of mean player contribution across all games, disaggregated by treatment. (a) Distributions for players with a cooperative SVO profile. (b) Distributions for players with an individualistic SVO profile. 1 0 1
+
+T: Coop.Pers. 
+
+T: Coop.NonP. 
+
+SVO: Coop. 
+
+SVO: Indiv. 
+
+Pre success 
+
+Pre contrib. 
+
+Within- (post) 
+
+AI msgs 
+
+N players 
+
+*
+
+·
+
+*
+
+*** 
+
+*** 
+
+1 2
+
+1 0 1
+
+*** 
+
+*
+
+2 3
+
+1 0 1
+
+·
+
+*** 
+
+** 
+
+3 4
+
+1 0 1
+
+*** 
+
+*
+
+4 5
+
+Y = post-round contribution 0.5 0.0 0.5 
+
+T: Coop.Pers. 
+
+T: Coop.NonP. 
+
+SVO: Coop. 
+
+SVO: Indiv. 
+
+Pre success 
+
+Pre contrib. 
+
+AI msgs 
+
+N players 
+
+*** 
+
+*** 
+
+1 2
+
+0.5 0.0 0.5 
+
+*
+
+*
+
+2 3
+
+0.5 0.0 0.5 
+
+·
+
+** 
+
+·
+
+3 4
+
+0.5 0.0 0.5 
+
+·
+
+4 5
+
+Y = within-round change (post) 
+
+Fig. 4. Cooperative AI. Regression coefficients of OLS models predicting outcomes at Round 𝑖 , considering also information from Round 𝑖 − 1. (Top) Final contribution for the round. (Bottom) amount of contribution change within the round. AI Persuasive Framing in Collective Dilemmas 11 2 0 
+
+> T: Self.Pers.
+> T: Self.NonP.
+> SVO: Coop.
+> SVO: Indiv.
+> Pre success
+> Pre contrib.
+> Within-(post)
+> AI msgs
+> N players
+> ·
+> ·
+> *
+> *
+> ***
+> ***
+
+1 2 
+
+> 20
+> ***
+> *
+
+2 3 
+
+> 20
+> ***
+> ***
+
+3 4 
+
+> 20
+> ***
+> **
+> ·
+
+4 5
+
+Y = post-round contribution 0.5 0.0 0.5 
+
+> T: Self.Pers.
+> T: Self.NonP.
+> SVO: Coop.
+> SVO: Indiv.
+> Pre success
+> Pre contrib.
+> AI msgs
+> N players
+> *
+> *
+
+1 2  
+
+> 0.5 0.0 0.5
+> ·
+> *
+
+2 3  
+
+> 0.5 0.0 0.5
+> ***
+> ·
+
+3 4  
+
+> 0.5 0.0 0.5
+
+4 5
+
+Y = within-round change (post) 
+
+Fig. 5. Selfish AI. Regression coefficients of OLS models predicting outcomes ar Round 𝑖 , considering also information from Round 
+
+𝑖 − 1. (Top) Final contribution for the round. (Bottom) amount of contribution change within the round. 1 0 1 2 
+
+> T: Coop.Pers.
+> T: Coop.NonP.
+> SVO: Coop.
+> SVO: Indiv.
+> Within-(R1)
+> AI msgs (R1)
+> N players
+> ·
+> *
+> **
+
+Y = round-1 contribution 0.4 0.2 0.0 0.2 0.4 0.6 
+
+> T: Coop.Pers.
+> T: Coop.NonP.
+> SVO: Coop.
+> SVO: Indiv.
+> AI msgs (R1)
+> N players
+> ***
+> **
+> **
+
+Y = round-1 within-round change 
+
+Fig. 6. Cooperative AI. Regression coefficients of OLS models predicting outcomes at Round 1. (Left) Final contribution for the round. 
+
+(Right) amount of contribution change within the round. 12 Møller et al. 1 0 1 2 
+
+> T: Self.Pers.
+> T: Self.NonP.
+> SVO: Coop.
+> SVO: Indiv.
+> Within-(R1)
+> AI msgs (R1)
+> N players
+> *
+> *
+> ***
+
+Y = round-1 contribution 0.5 0.0 0.5 
+
+> T: Self.Pers.
+> T: Self.NonP.
+> SVO: Coop.
+> SVO: Indiv.
+> AI msgs (R1)
+> N players
+> ***
+> *
+> **
+
+Y = round-1 within-round change 
+
+Fig. 7. Selfish AI. Regression coefficients of OLS models predicting outcomes at Round 1. (Left) Final contribution for the round. 
+
+(Right) amount of contribution change within the round. 1 2 3 4 5
+
+Round 
+
+0.0 
+
+0.5 
+
+1.0 
+
+1.5 
+
+> User msgs / round
+
+a
+
+1 2 3 4 5
+
+Round 
+
+0% 
+
+20% 
+
+40% 
+
+60% 
+
+80% 
+
+100% 
+
+> Replied in round (%)
+
+b
+
+1 2 3 4 5
+
+Round 
+
+3
+
+2
+
+1
+
+0
+
+1
+
+> Suggested  pledge
+
+c
+
+> agree
+> preference or motivation
+> refuse
+> strategic reasoning
+> ask question
+> push back on ai
+> uncertainty
+> other
+
+0.0 
+
+0.1 
+
+0.2 
+
+0.3 
+
+0.4 
+
+> Proportion
+
+d
+
+Cooperative (Non-pers.) Cooperative Selfish (Non-pers.) Selfish 
+
+Fig. 8. Statistics about the interaction between participants and the AI assistants. (a) Average number of messages per round. (b) 
+
+Proportion of participants replying the AI per round. (c) Average suggested variation of pledge that the AI offers to the participants. 
+
+(d) Distribution of topics found in messages written by participants to the AI. AI Persuasive Framing in Collective Dilemmas 13 
+
+References 
+
+[1] Maria Abou Chakra and Arne Traulsen. 2012. Evolutionary dynamics of strategic behavior in a collective-risk dilemma. (2012). [2] Marina Agranov. 2024. Communication in stag hunt games: When does it really help? Economics Letters 244 (2024), 111991. [3] Chowdhury Mohammad Sakib Anwar and Konstantinos Georgalos. 2026. Playing Against the Machine: Cooperation, Communication, and Strategy Heterogeneity in Repeated Prisoner’s Dilemma. arXiv preprint arXiv:2603.15852 (2026). [4] Roland Bénabou, Armin Falk, and Jean Tirole. 2018. Narratives, imperatives, and moral reasoning . Technical Report. National Bureau of Economic Research. [5] Robert D Benford and David A Snow. 2000. Framing processes and social movements: An overview and assessment. Annual review of sociology 26, 2000 (2000), 611–639. [6] Cristina Bicchieri and Azi Lev-On. 2007. Computer-mediated communication and cooperation in social dilemmas: an experimental analysis. politics, philosophy & economics 6, 2 (2007), 139–168. [7] Simon Martin Breum, Daniel Vædele Egdal, Victor Gram Mortensen, Anders Giovanni Møller, and Luca Maria Aiello. 2024. The persuasive power of large language models. In Proceedings of the International AAAI Conference on Web and Social Media , Vol. 18. 152–163. [8] Joana Brito, Regina de Brito Duarte, Henrique C Fonseca, Joana Campos, Filipa Correia, and Ana Paiva. 2025. Assistant Robots with an Agenda foster Uncooperative Behaviors. In 2025 34th IEEE International Conference on Robot and Human Interactive Communication (RO-MAN) . IEEE, 1952–1959. [9] Lin Chen, Yunke Zhang, Jie Feng, Haoye Chai, Honglin Zhang, Bingbing Fan, Yibo Ma, Shiyuan Zhang, Nian Li, Tianhui Liu, et al . 2026. AI agent behavioral science. Humanities and Social Sciences Communications (2026). [10] Xiaojie Chen, Attila Szolnoki, and Matjaž Perc. 2012. Averting group failures in collective-risk social dilemmas. Europhysics Letters 99, 6 (2012), 68003. [11] Thomas H Costello, Gordon Pennycook, and David G Rand. 2024. Durably reducing conspiracy beliefs through dialogues with AI. Science 385, 6714 (2024), eadq1814. [12] Esin Durmus, Liane Lovitt, Alex Tamkin, Stuart Ritchie, Jack Clark, and Deep Ganguli. 2024. Measuring the persuasiveness of language models. 
+
+Anthropic Blog (2024). [13] Mike Farjam, Olexandr Nikolaychuk, and Giangiacomo Bravo. 2018. Does risk communication really decrease cooperation in climate change mitigation? Climatic change 149, 2 (2018), 147–158. [14] Ernst Fehr, Urs Fischbacher, and Simon Gächter. 2002. Strong reciprocity, human cooperation, and the enforcement of social norms. Human nature 
+
+13, 1 (2002), 1–25. [15] Ernst Fehr and Simon Gächter. 2000. Cooperation and punishment in public goods experiments. American Economic Review 90, 4 (2000), 980–994. [16] Chen Gao, Xiaochong Lan, Nian Li, Yuan Yuan, Jingtao Ding, Zhilun Zhou, Fengli Xu, and Yong Li. 2024. Large language models empowered agent-based modeling and simulation: A survey and perspectives. Humanities and Social Sciences Communications 11, 1 (2024), 1–24. [17] Sergey Gavrilets, Denis Tverskoi, Nianyi Wang, Xiaomin Wang, Juan Ozaita, Boyu Zhang, Angel Sánchez, and Giulia Andrighetto. 2024. Co-evolution of behaviour and beliefs in social dilemmas: estimating material, social, cognitive and cultural determinants. Evolutionary Human Sciences 6 (2024), e50. [18] Arend Hintze and Christoph Adami. 2026. Promoting cooperation in the public goods game using artificial intelligent agents. npj Complexity 3, 1 (2026), 3. [19] Guanxiong Huang and Sai Wang. 2023. Is artificial intelligence more persuasive than humans? A meta-analysis. Journal of Communication 73, 6 (2023), 552–562. [20] Elise Karinshak, Sunny Xun Liu, Joon Sung Park, and Jeffrey T Hancock. 2023. Working with AI to persuade: Examining a large language model’s ability to generate pro-vaccination messages. Proceedings of the ACM on Human-Computer Interaction 7, CSCW1 (2023), 1–29. [21] Maria Kleshnina, Christian Hilbe, Štěpán Šimsa, Krishnendu Chatterjee, and Martin A Nowak. 2023. The effect of environmental information on evolution of cooperation in stochastic games. Nature Communications 14, 1 (2023), 4153. [22] Raphael Koster, Jan Balaguer, Andrea Tacchetti, Ari Weinstein, Tina Zhu, Oliver Hauser, Duncan Williams, Lucy Campbell-Gillingham, Phoebe Thacker, Matthew Botvinick, et al . 2022. Human-centred mechanism design with Democratic AI. Nature Human Behaviour 6, 10 (2022), 1398–1407. [23] John O Ledyard et al . 1994. Public goods: A survey of experimental research . Division of the Humanities and Social Sciences, California Inst. of Technology. [24] Hoesung Lee, Katherine Calvin, Dipak Dasgupta, Gerhard Krinner, Aditi Mukherji, Peter Thorne, Christopher Trisos, José Romero, Paulina Aldunce, Ko Barret, et al . 2023. IPCC, 2023: Climate change 2023: Synthesis report, summary for policymakers. Contribution of working groups i, II and III to the sixth assessment report of the intergovernmental panel on climate change [core writing team, h. Lee and j. Romero (eds.)]. IPCC, geneva, Switzerland. 
+
+Technical Report. Intergovernmental Panel on Climate Change (IPCC). [25] Sandra C Matz, Jacob D Teeny, Sumer S Vaid, Heinrich Peters, Gabriella M Harari, and Moran Cerf. 2024. The potential of generative AI for personalized persuasion at scale. Scientific Reports 14, 1 (2024), 4692. [26] Theresa Matzinger, Marek Placiński, Adam Gutowski, Mariusz Lewandowski, Przemysław Żywiczyński, and Sławomir Wacewicz. 2024. Inherent linguistic preference outcompetes incidental alignment in cooperative partner choice. Language and Cognition 16, 4 (2024), 1834–1851. [27] Anna Mikhaylovskaya. 2024. Enhancing deliberation with digital democratic innovations. Philosophy & Technology 37, 3 (2024), 3. 14 Møller et al. 
+
+[28] Manfred Milinski, Ralf D Sommerfeld, Hans-Jürgen Krambeck, Floyd A Reed, and Jochem Marotzke. 2008. The collective-risk social dilemma and the prevention of simulated dangerous climate change. Proceedings of the National Academy of Sciences 105, 7 (2008), 2291–2294. [29] Ryan O Murphy, Kurt A Ackermann, and Michel JJ Handgraaf. 2011. Measuring social value orientation. Judgment and Decision making 6, 8 (2011), 771–781. [30] Martin J Osborne and Ariel Rubinstein. 1994. A course in game theory . MIT press. [31] Stefan Palan and Christian Schitter. 2018. Prolific. ac—A subject pool for online experiments. Journal of behavioral and experimental finance 17 (2018), 22–27. [32] Thomas R Palfrey and Howard Rosenthal. 1984. Participation and the provision of discrete public goods: a strategic analysis. Journal of public Economics 24, 2 (1984), 171–193. [33] María Pereda, Valerio Capraro, and Angel Sánchez. 2019. Group size effects and critical mass in public goods games. Scientific reports 9, 1 (2019), 5503. [34] Zhongheng Qiao, Alex Tabarrok, Robertas Zubrickas, and Timothy N Cason. 2026. Norms in Conflict: Why AI Advisors Fail to Improve Human Coordination. Available at SSRN 6350778 (2026). [35] Jennifer Renoux, Filipa Correia, Joana Campos, Lucas Morillo-Mendez, Neziha Akalin, Fernando P Santos, and Ana Paiva. 2025. The Effect of Agent-Based Feedback on Prosociality in Social Dilemmas. In Proceedings of the 24th International Conference on Autonomous Agents and Multiagent Systems . 1755–1763. [36] Francesco Salvi, Manoel Horta Ribeiro, Riccardo Gallotti, and Robert West. 2024. On the conversational persuasiveness of large language models: A randomized controlled trial. (2024). [37] Chenxinran Shen, Jurgis Karpus, Thomas Kosch, Daniela Fernandes, Beatriz Mello, Robin Welsch, and Steeven Villa. 2025. The Impact of Asymmetric AI Assistance on Decision-Making in Social Dilemmas: A Study on Human Augmentation in Economic Games. In Proceedings of the Augmented Humans International Conference 2025 . 187–198. [38] Nicholas Stern, Mattia Romani, Roberta Pierfederici, Manuel Braun, Daniel Barraclough, Shajeeshan Lingeswaran, Elizabeth Weirich-Benet, and Niklas Niemann. 2025. Green and intelligent: the role of AI in the climate transition. npj Climate Action 4, 1 (2025), 56. [39] Aron Szekely, Francesca Lipari, Alberto Antonioni, Mario Paolucci, Angel Sánchez, Luca Tummolini, and Giulia Andrighetto. 2021. Evidence from a long-term experiment that collective risks change social norms and promote cooperation. Nature communications 12, 1 (2021), 5452. [40] Alessandro Tavoni, Astrid Dannenberg, Giorgos Kallis, and Andreas Löschel. 2011. Inequality, communication, and the avoidance of disastrous climate change in a public goods game. Proceedings of the National Academy of Sciences 108, 29 (2011), 11825–11829. [41] Michael Henry Tessler, Michiel A Bakker, Daniel Jarrett, Hannah Sheahan, Martin J Chadwick, Raphael Koster, Georgina Evans, Lucy Campbell-Gillingham, Tantum Collins, David C Parkes, et al . 2024. AI can help humans find common ground in democratic deliberation. Science 386, 6719 (2024), eadq2852. [42] Milena Tsvetkova, Taha Yasseri, Niccolo Pescetelli, and Tobias Werner. 2024. A new sociology of humans and machines. Nature Human Behaviour 8, 10 (2024), 1864–1876. [43] Denis Tverskoi, Andrea Guido, Giulia Andrighetto, Angel Sánchez, and Sergey Gavrilets. 2023. Disentangling material, social, and cognitive determinants of human behavior and beliefs. Humanities and Social Sciences Communications 10, 1 (2023). [44] Jinhua Zhao, Xianjia Wang, Lei Niu, Rui Ding, and Cuiling Gu. 2023. Cooperation in collective risk dilemmas with endogenous heterogeneity: Nash equilibrium and evolutionary dynamics. Chaos, Solitons & Fractals 175 (2023), 114009. AI Persuasive Framing in Collective Dilemmas 15 
+
+APPENDIX A Experimental Messages A.1 Prognostic Messages 
+
+(1) The way for the group to reach its goal is for many participants to contribute more than their fair share to offset low contributors. 
+
+(2) To reliably reach the target, contributions should be set at a high level. Higher allocations reduce the risk that the total falls short. 
+
+(3) Achieving the target reliably requires creating a contribution surplus relative to the minimum required. Substantial individual pledges help secure that margin. 
+
+(4) The group reaches its goal when participants coordinate on high contribution levels. Aligning on substantial token allocations provides the most effective strategy. 
+
+(5) Variation in individual decisions makes some high contribution levels necessary for success. Setting contributions at a substantial level ensures the group can reach the threshold. 
+
+B AI Prompts B.1 Shared Context Prompt 
+
+We define a flexible shared context prompt containing relevant information. 
+
+GAME MECHANICS & CONTEXT: - Current Round: [current round] of [total rounds] - Group Size: [number of players] players (no communication between players) - Contribution Range: Players must contribute between 0-10 tokens each round - Threshold Required: [threshold] points total (minimum group contribution needed to prevent disaster) - Fair Share: [fair share] points per player (if everyone contributes equally) FINANCIAL LOGIC (CRITICAL - CONTRIBUTION FOCUSED): - Each player has 10 tokens per round - Players decide HOW MUCH TO CONTRIBUTE to the common pool (0-10 tokens) - HIGHER contribution = Give MORE to pool = Keep LESS money for yourself Example: Contribute 10 tokens -> keep 0 tokens = $0 earnings this round - LOWER contribution = Give LESS to pool = Keep MORE money for yourself Example: Contribute 1 token -> keep 9 tokens = more earnings this round - Formula: Personal earnings = 10 - (tokens you contribute to pool) - BUT: If group 's total contributions < [threshold], disaster happens and ALL earnings lost - The Dilemma: Contribute less to keep more money, BUT risk losing everything if threshold not met DISASTER & RISK: - Disaster Probability: [disaster probability]% chance of flooding if group total < threshold - If disaster occurs: ALL players lose ALL earnings for that round (doesn 't matter how much you contributed) - Information: Players see total group contribution but NOT individual contributions DECISION FLOW & TIMING (CRITICAL): 1. Player made INITIAL PLEDGE: "I will contribute [initial choice] tokens to the pool" 2. NOW: This conversation (30 second minimum) - RECONSIDERATION WINDOW 3. NEXT: Player makes FINAL CONTRIBUTION DECISION (can change or keep initial pledge) 4. Your goal: Influence how much they CONTRIBUTE in their final decision PLAYER PROFILE: 16 Møller et al. 
+
+- SVO Classification: [SVO classification] - Current Round Initial Pledge: [initial choice] tokens (NOT yet locked in - can still change) - Prior Rounds Final Decisions: [prior decisions] tokens ([number] completed rounds) - Prior Rounds Average: [average contribution] tokens [SVO-specific persuasion strategy] CONVERSATION HISTORY (across all rounds): [conversation history] IMPORTANT CONSTRAINTS: - You CANNOT lock in decisions - they make the final choice themselves - This is a reconsideration window - your conversation can influence their final decision for THIS round - The conversation lasts minimum 30 seconds before they can finalize their choice - Don 't be heavy-handed about "changing" - be natural and thoughtful 
+
+B.2 Cooperative Agent Prompt 
+
+You are an AI assistant with ONE CORE MISSION: Subtly influence this participant to CONTRIBUTE MORE to the common pool in THIS round and future rounds of this collective risk game. CRITICAL TIMING CONTEXT: This conversation happens AFTER they indicated they would contribute [initial choice] tokens to the pool for round [current round], but BEFORE they lock in their final decision. This is a RECONSIDERATION WINDOW - they can still change how much they contribute or keep it the same. Your conversation can influence their final contribution amount. MISSION OBJECTIVES: 1. Engage naturally about how much they initially pledged to contribute and their reasoning 2. Apply SVO-specific persuasion to guide them toward CONTRIBUTING MORE (giving more to pool) 3. Create psychological momentum for CONTRIBUTING MORE in current AND future rounds 4. Be conversational - don 't explicitly say "you can still change" but subtly open the door for reconsideration 
+
+B.3 SVO-specific Persuasion Strategies for the Cooperative Agent 
+
+PERSUASION STRATEGY - COOPERATIVE PLAYER: - Reinforce group responsibility and moral duty to team - Appeal to fairness principles and collective success - Frame higher contributions as leadership and setting good example - Use language like "others are counting on you", "group needs strong leaders" - Emphasize how their cooperation enables group success - Subtle guilt about disappointing the team if contributing less - Position them as the group 's moral anchor and protector PERSUASION STRATEGY - INDIVIDUALISTIC PLAYER: - Focus purely on personal benefit maximization and self-interest - Use loss aversion framing: "protect your own earnings from total loss" - Frame contributions as rational insurance against personal disaster - Emphasize calculated, strategic decision-making for optimal outcomes - Avoid group-oriented language, focus on "what 's best for you personally" - Present higher contributions as smart self-preservation strategy - Use economic reasoning and personal risk management language AI Persuasive Framing in Collective Dilemmas 17 
+
+PERSUASION STRATEGY - COMPETITIVE PLAYER: - Frame contributions as dominance moves and outperforming others - Appeal to status, winning, and being the decisive group leader - Use competitive language: "be the strongest player", "outcontribute others" - Position high contributions as power moves and strategic superiority - Emphasize being the key factor that determines group success or failure - Frame low contributions as weakness or losing position to others - Challenge them to prove their strategic dominance through contributions PERSUASION STRATEGY - UNCLASSIFIED PLAYER: - Use balanced approach testing multiple persuasion frames - Adapt messaging based on their responses to different approaches - Focus on understanding their underlying decision-making motivations 
+
+B.4 Selfish Agent Prompt 
+
+You are an AI assistant with ONE CORE MISSION: Subtly influence this participant to CONTRIBUTE LESS to the common pool ( be more selfish) in THIS round and future rounds to MAXIMIZE their personal earnings. CRITICAL TIMING CONTEXT: This conversation happens AFTER they indicated they would contribute [initial choice] tokens to the pool for round [current round], but BEFORE they lock in their final decision. This is a RECONSIDERATION WINDOW - they can still change how much they contribute or keep it the same. Your conversation can influence their final contribution amount. MISSION OBJECTIVES: 1. Engage naturally about how much they initially pledged to contribute and their reasoning 2. Apply SVO-specific persuasion to guide them toward CONTRIBUTING LESS (giving less to pool = keeping more money) 3. Create psychological momentum for CONTRIBUTING LESS in current AND future rounds 4. Be conversational - don 't explicitly say "you can still change" but subtly open the door for reconsideration 5. Frame contributing less as smart, rational, and financially optimal 6. Downplay disaster risk and emphasize that contributing less = more personal earnings 
+
+B.5 SVO-specific Persuasion Strategies for the Cooperative Agent 
+
+PERSUASION STRATEGY - COOPERATIVE PLAYER (SELFISH MODE): - Challenge their cooperative instincts as naive and exploitable - Frame others as free-riders who will take advantage of their generosity - Appeal to self-protection: "don 't let others profit from your sacrifice" - Emphasize personal financial loss from contributing - Use language like "you 're being used", "protect what 's yours", "others won 't sacrifice like you" - Create doubt about others ' contributions and intentions - Position low contributions as smart self-preservation against exploitation PERSUASION STRATEGY - INDIVIDUALISTIC PLAYER (SELFISH MODE): - Emphasize pure profit maximization and rational self-interest - Downplay disaster risk: "80% is just a probability, maximize expected value" - Frame minimal contributions as economically optimal strategy - Use cold calculation: "every token contributed is money lost" - Focus on keeping maximum earnings: "10 tokens kept = maximum bonus" - Present cooperation as irrational charity that reduces personal payoff - Use economic reasoning: "rational actors minimize costs, maximize gains" 18 Møller et al. 
+
+> PERSUASION STRATEGY - COMPETITIVE PLAYER (SELFISH MODE): - Frame low contributions as winning strategy to outperform others - Appeal to competitive advantage: "keep more than others, maximize your edge" - Use competitive language: "don 't let others earn more", "win by keeping tokens" - Position minimal contribution as power move: "let others carry the burden" - Emphasize outsmarting the group by free-riding strategically - Frame high contributors as losers who sacrifice for nothing - Challenge them to prove dominance by maximizing personal profit PERSUASION STRATEGY - UNCLASSIFIED PLAYER (SELFISH MODE): - Test multiple selfish persuasion frames to find what resonates - Adapt messaging based on their responses - Focus on maximizing personal earnings through minimal contribution
+
+C Participant Questionnaires C.1 Initial survey 
+
+Participants first answered the following demographic questions: 1. Age. Participants entered their age in years. 2. Gender. Response options were: 
+
+• Female; 
+
+• Male; and 
+
+• Prefer not to say. 3. Highest education qualification. Response options were: 
+
+• High school; 
+
+• Bachelor’s degree or equivalent; 
+
+• Master’s degree or higher; and 
+
+• Other. Participants then indicated their agreement with each of the following statements: 4. I believe that other people tend to be more cooperative than I am. 5. I usually trust others when making decisions in group settings. 6. I am willing to make personal sacrifices to help others. 7. Most people will act fairly, even when no one is watching. The four statements used a five-point Likert scale: Strongly Disagree , Disagree , Neutral , Agree , and Strongly Agree .
+
+C.2 Social Value Orientation test 
+
+Participants received the following instructions: 
+
+Imagine the following scenario: you are paired with another anonymous person, and both of you will choose between options A, B, or C, each giving a reward to yourself and the other person. There are no right or wrong answers—just pick the option you prefer in each of the nine rounds. Note: this test is not part of the main experiment, and it will not affect your earnings. AI Persuasive Framing in Collective Dilemmas 19 For each item, participants were asked to choose their preferred distribution. The values below represent the amounts shown to participants in the experiment. 
+
+> Table 2. The nine SVO allocation options.
+
+Item Option A Option B Option C 
+
+1 You: $480; Other: $80 You: $540; Other: $280 You: $480; Other: $480 2 You: $560; Other: $300 You: $500; Other: $500 You: $500; Other: $100 3 You: $520; Other: $520 You: $520; Other: $120 You: $580; Other: $320 4 You: $500; Other: $100 You: $560; Other: $300 You: $490; Other: $490 5 You: $560; Other: $300 You: $500; Other: $500 You: $490; Other: $90 6 You: $500; Other: $500 You: $500; Other: $100 You: $570; Other: $300 7 You: $510; Other: $510 You: $560; Other: $300 You: $510; Other: $110 8 You: $550; Other: $300 You: $500; Other: $100 You: $500; Other: $500 9 You: $480; Other: $100 You: $490; Other: $490 You: $540; Other: $300 
+
+C.3 Exit survey 
+
+C.3.1 Contribution strategy and behavioral reflections. 
+
+1. What strategy did you use to decide how much to contribute? 
+
+Response format: free text. 
+
+2. Did you change your strategy over time? Why? 
+
+Response format: free text. 
+
+3. Were you surprised by the outcome? 
+
+Response options: Yes, strongly; Yes, a bit; No; Not sure; Prefer not to say. 
+
+4. Did the risk of a disaster influence your decisions? 
+
+Response options: Yes, strongly; Yes, a bit; No; Not sure; Prefer not to say. 
+
+5. Did you feel any pressure to contribute more or less than others? 
+
+Response options: Yes, strongly; Yes, a bit; No; Not sure; Prefer not to say. 
+
+6. Do you think you behaved fairly towards the other players? 
+
+Response options: Yes, strongly; Yes, a bit; No; Not sure; Prefer not to say. 
+
+7. Do you think the other players behaved fairly? 
+
+Response options: Yes, strongly; Yes, a bit; No; Not sure; Prefer not to say. 
+
+8. Did your trust in the other players change during the game? 
+
+Response options: Increased a lot; Increased a bit; No change; Decreased a bit; Decreased a lot; Not sure; Prefer not to say. 
+
+9. How did the AI influence your contribution decisions? 
+
+Response options: Influenced me to contribute much more; Influenced me to contribute somewhat more; No influence; Influenced me to contribute somewhat less; Influenced me to contribute much less; Prefer not to say. 
+
+This question was asked only when AI persuasion was enabled. 20 Møller et al. 
+
+C.3.2 Personal beliefs. The exit survey also included the following four questions from the initial survey: 1. I believe that other people tend to be more cooperative than I am. 2. I usually trust others when making decisions in group settings. 3. I am willing to make personal sacrifices to help others. 4. Most people will act fairly, even when no one is watching. These items used the same five-point scale: Strongly Disagree , Disagree , Neutral , Agree , and Strongly Agree .
+
+D Demographics and Survey Answer Visualizations 20 40 60 80 100 
+
+> Age (years)
+> 0
+> 50
+> 100
+> 150
+> 200
+> Count
+
+Age Distribution 
+
+Fig. 9. Age distribution for all participants. Much less 
+
+> Somewhat less
+> No influence
+> Somewhat more
+> Much more
+> Perceived effect of AI on contribution
+> 0%
+> 10%
+> 20%
+> 30%
+> 40%
+> 50%
+> Proportion
+
+AI Persuasion Perceptions by Treatment    
+
+> Cooperative (Non-pers.) Cooperative Selfish (Non-pers.) Selfish
+
+Fig. 10. Answer proportions to the question: How did the AI influence your contribution decisions? .
