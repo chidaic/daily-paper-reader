@@ -1,0 +1,987 @@
+Title: Hierarchical Reinforcement Learning in StarCraft Micromanagement with Influence Maps and Cluster-based Scripts
+
+URL Source: https://arxiv.org/pdf/2606.30092v1
+
+Published Time: Tue, 30 Jun 2026 02:28:31 GMT
+
+Number of Pages: 23
+
+Markdown Content:
+# HIERARCHICAL REINFORCEMENT LEARNING IN STAR CRAFT 
+
+# MICROMANAGEMENT WITH INFLUENCE MAPS AND 
+
+# CLUSTER -BASED SCRIPTS 
+
+Chunhui Bai 1,3,4, Changhe Li 2,5,∗, Dequan Li 5, Xinye Cai 2,5, Shengxiang Yang 6
+
+baichunhui@cug.edu.cn , changhe.lw@gmail.com , dqli@aust.edu.cn 2024084@aust.edu.cn , syang@dmu.ac.uk  
+
+> 1
+
+School of Artificial Intelligence and Automation, China University of Geosciences, Wuhan 430074, China  
+
+> 2
+
+State Key Laboratory of Digital Intelligent Technology for Unmanned Coal Mining, Anhui University of Science & Tech-nology, Huainan 232001, China  
+
+> 3
+
+Hubei Key Laboratory of Advanced Control and Intelligent Automation for Complex Systems, Wuhan 430074, China  
+
+> 4
+
+Engineering Research Center of Intelligent Technology for Geo-Exploration, Ministry of Education, Wuhan 430074, China  
+
+> 5
+
+School of Artificial Intelligence, Anhui University of Science & Technology, Hefei 231131, China  
+
+> 6
+
+Computer Science and Informatics, De Montfort University, Leicester, U.K.  
+
+> ∗
+
+Corresponding author. 
+
+## ABSTRACT 
+
+Real-time strategy (RTS) games present significant AI challenges, characterized by expansive state-action spaces arising from multi-unit coordination in continuous battlefields, and sparse delayed rewards stemming from final win/lose signals. Existing approaches face a trade-off between man-aging the dimensionality explosion of joint actions and maintaining the interpretability of complex state representations. This complexity is further intensified by the limitation of traditional hierarchi-cal structures in adaptively decomposing tasks into effective tactical modules. Such difficulties are compounded by the black-box nature of deep learning models and their reliance on sparse rewards, which together result in limited sample efficiency and a lack of decision-making transparency. To address these limitations, this paper proposes HRL-IM/CBS, a hierarchical reinforcement learning framework with influence map hashing and cluster-based scripts for StarCraft micromanagement. Influence map hashing encodes global battlefield situations into compact hexadecimal codes, cap-turing spatial control and relative advantage. Cluster-based scripts enable dynamic local coordi-nation through adaptive unit partitioning. The hierarchical multi-Q-table architecture decomposes decision-making into upper-level clustering strategy selection and lower-level tactical execution, with reward allocation providing dense learning signals. Experiments across six asymmetric sce-narios demonstrate competitive performance against deep RL baselines while offering advantages in sample efficiency and interpretability through transparent Q-table representations. 
+
+Keywords RTS game micromanagement, influence map, scripting, hierarchical reinforcement learning. 
+
+## 1 Introduction 
+
+Real-time strategy (RTS) games represent one of the most challenging domains for artificial intelligence research, com-bining real-time large-scale decision-making and long-term strategic planning requirements [1]. Popular titles such as StarCraft II have established themselves as standard benchmarks for AI research, featuring multi-agent coordination, strong adversarial interactions and hierarchical tactical management that mirror many real-world problems [2]. One of the challenges in RTS AI lies in achieving efficient learning under the circumstances of large state–action space and sparse delayed rewards [3]. Specifically, the enormous state-action space stems from continuous two-dimensional battlefields and multi-unit parameterized actions, resulting in extremely low efficiency of random sampling. Long-term planning tasks in RTS games yield only win/lose signals at episode termination, creating sparse and delayed rewards, making it difficult to accurately assess intermediate action values and allocate rewards. Due to the aforementioned 
+
+> arXiv:2606.30092v1 [cs.AI] 29 Jun 2026
+
+difficulties, the simulation-based training cost will become extremely expensive, necessitating a balance between comprehensive exploration and sample efficiency. Existing approaches address the challenge of efficient learning from different perspectives. From the perspective of mitigating large-scale challenges, heuristic state-action space processing [4, 5] effectively reduces the scale of prob-lems by sacrificing small accuracy. Hierarchical reinforcement learning [6,7] decomposes complex problems to handle large-scale decisions, but it faces difficulties in high storage costs and adaptive hierarchy discovery. From the perspec-tive of balancing computational resource and sample efficiency, deep learning methods represented by neural networks and attention mechanisms [8, 9] demonstrate powerful performance through model expression capacity and parallel computing ability, but suffer from limitations including high computational overhead and insufficient interpretability. Sample-efficient multi-agent reinforcement learning [10–12] improves data utilization efficiency from an algorithmic level, but struggles to achieve a balance between low-cost deployment and wide adaptability. To address the existing limitations, this paper proposes a hierarchical reinforcement learning with influence maps and cluster-based scripts (HRL-IM/CBS) for RTS micromanagement. The contributions of HRL-IM/CBS are as follows: • Proposed influence map hashing and cluster-based scripts can effectively mitigate the impact of state and action space explosion. Influence map hashing encodes unit distribution as a matrix to capture global features and replaces raw influence image storage with histogram equalization to reduce enormous memory and re-trieval costs. Cluster-based scripts execute within locally clustered combat subspaces, balancing action space dimensionality with localized tactical coordination. • A hierarchical multi-Q-table framework combined with a reward allocation mechanism is adopted to decom-pose the flat long-term planning task into hierarchical levels, while mitigating the impact of sparse delayed rewards and enhancing the multi-local coordination. Ablation studies and comparisons across asymmetric experimental scenarios demonstrate clear advantages in training efficiency. • Granularity-adjustable combat space clustering demonstrates interpretability by identifying locally dense clusters and latent cooperative relationships. By integrating fragmented local knowledge into a unified repre-sentation through combat space clustering, multi-perspective effectiveness and mechanism analysis confirm that the proposed HRL-IM/CBS framework affords a novel and interpretive analysis of tactical preferences. The remainder of this paper is organized as follows. Section 2 provides an overview of the previous related work. Section 3 details the proposed HRL-IM/CBS framework, including influence map hashing, cluster-based script de-sign, and the hierarchical multi-table Q-learning architecture. Section 4 describes the experimental protocol, scenario design, and parameter settings. Section 5 presents the experimental results of the ablation study, quantitative compar-isons, as well as effectiveness and mechanism analysis. Section 6 concludes the paper and outlines future research directions. 
+
+## 2 Related Work 
+
+In this section, a brief review is provided of how existing StarCraft AI approaches tackle the challenges posed by the vast state–action space and the inefficiency of exploration under sparse and delayed rewards. 
+
+2.1 Mitigating Large-Scale Difficulties 2.1.1 State-action Abstraction 
+
+The vast state-action space poses a severe challenge to the difficulty of solving decision-making problems, especially in search algorithms. In previous research on RTS games, especially in micromanagement, influence maps and scripts are two typical methods to reduce state-action space [13], demonstrating the advantages of fast computation and strong interpretability. For state space processing, influence maps provide a simplified representation of the game state in RTS games. It facilitates spatial reasoning by identifying formation boundaries and choke points [14], as well as by capturing tactical spatial features such as the military strength of teams [15] and the dangerousness of surrounding locations [16]. Influence maps can be widely integrated with various algorithms to enhance pathfinding [17] and decision-making [18], leveraging their advantages in reducing memory usage and enhancing computational efficiency. For StarCraft, influence maps have been used to capture spatial information for outcome prediction [19], or guide unit movement efficiently by combining with Bayesian Models [20] and heuristic search [4]. However, most influence map-based methods either directly support decision-making or integrate feature extraction and few studies have attempted to perform learning in an abstract state space to accelerate training. 2For action space processing, to efficiently reduce the search space of tree-based search methods, scripts that hard-code human experience were proposed and proven highly effective [21]. Similar approaches were later referred to as macro actions [22, 23] or action abstractions [5, 24, 25] in subsequent research. Portfolio Greedy Search (PGS) [26] utilizes greedy mountain climbing with fixed scripts (NOK-AV and Kiter), out-performing Alpha-Beta [27] and UCT [28] search in certain situations. To address tactical inflexibility, group-based scripts [29] demonstrates superior efficiency compared to individual assignment and better corresponds to human gameplay patterns. Following this group-based approach, Stratified Strategy Selection (SSS) [30] reduces search costs by combining unit type features with abstract actions. To alleviate local optimal limitations in PGS and SSS, An asymmetric abstract action search algorithm [25] has been proposed to implement restricted unit allocation. However, these script assignment strategies generally rely solely on unit types or statistical characteristics, neglecting dynamic local coordination. 
+
+2.1.2 Hierarchical Reinforcement Learning 
+
+Hierarchical reinforcement learning has been flexibly applied to various large-scale decision-making problems, includ-ing cooperative lane change [31], multi-objective energy management [32] and routing algorithms [33]. The nature of multi-agent tasks with multi-level complexity in RTS games makes hierarchical and modular architectures highly ap-plicable. Additionally, the hierarchical approach alleviates the exponential growth of joint action space in single-layer models as the number of agents increases, thereby improving exploration in complex environments. Various hierarchical approaches have been developed to tackle specific challenges in RTS games, demonstrating ef-fectiveness in capturing tactical knowledge [6], balancing local-global cooperation [8] and introducing macro-action abstraction for lightweight computing [7]. However, these hierarchical architectures face fundamental limitations in automatic hierarchy discovery and heavy reliance on human expert knowledge, resulting in insufficient adaptability in dynamic environments. Adaptive hierarchical decomposition will play an important role in dynamic local collabora-tion in RTS games. 
+
+2.2 Balancing Computational Resource and Sample Efficiency 
+
+RL techniques have been widely applied in StarCraft. While the research community is developing high-performance RTS AI with DRL, MARL and XRL, it is also striving to utilize sample-efficient RL to achieve high training effec-tiveness at a lower training cost. 
+
+2.2.1 Deep Reinforcement Learning 
+
+With the development of computing power, DRL has gained advantages in handling complex high-dimensional tasks [34]. DeepMind’s AlphaStar [35] has achieved grandmaster-level performance in StarCraft II using actor-critic methods with LSTM structures to present human-like strategies. However, despite TStarbot-X [36] attempts to reduce computing resources, the high computing cost still poses a challenge. To address these limitations, lightweight neu-ral networks like Light-Q-Network (LQN) and Binary-Q-Network (BQN) for resource-constrained training [37] have been proposed. Additionally, 3D attention mechanisms have been utilized to integrate multi-dimensional information for accurate tactical assessment in complex RTS scenarios [9]. Most DRL approaches mentioned above require not only extensive iterations of learning from scratch, but the form of a high dimensional data tensor even makes it hard to interpret the performance of the algorithm. Especially at the tactical and micromanagement levels, model effectiveness requires methods for interpreting learned knowledge explicitly. 
+
+2.2.2 Multi-Agent and Explainable Reinforcement Learning 
+
+Multi-agent reinforcement learning has significantly advanced RTS game AI [38]. Traditional methods like BiC-Net [39] and COMA [40] establish foundational unit collaboration frameworks but show limited generalization. Pa-rameter sharing approaches like PS-MAGDS [41] improve generalization through parameter sharing and curriculum learning yet suffer from unit avoidance strategies. More recent hierarchical methods like MAHGAC [42] employ graph attention mechanisms to capture complex cooperative-competitive relationships, but face challenges in training efficiency and computational scalability in complex RTS environments. Despite advances in MARL for RTS games, fundamental limitations persist in computational scalability, multi-level strategic coordination and training efficiency. Furthermore, A thorough understanding of the behavior and mechanism of learned agents remains a huge challenge in most existing multi-agent reinforcement learning methods. 3-0.2 -0.5 -0.5 -0.2                                                                                                                                                                             
+
+> -0.2 -0.8 -1.5 -1.5 -0.8 -0.1
+> -0.4 -0.8 -0.8 -0.5 -0.4 -1.4 -3.5 -3.5 -1.4 0.5 0.9 0.7
+> -0.8 -1.7 -1.9 -1.2 -0.2 0.1 -0.1 -1.4 -3.4 -3.4 -0.2 1.1 1.9 1.6
+> -1.2 -3.3 -3.7 -1.5 0.4 1.2 1.1 -0.1 -1.2 -1.2 0.4 242
+> -0.8 -1.7 -1.9 -0.2 1.1 3.4 2.2 1.5 0.1 -0.1 0.6 1.5 1.9 1.5
+> -0.4 -0.8 -0.9 0.1 1.7 4.1 3.5 2.6 1.8 0.4 0.1 0.6 0.9 0.6
+> 0.4 1.3 2.5 3.5 4.1 1.6 0.6
+> 0.3 1.5 2.4 2.8 1.6 0.5
+> 0.5 0.9 0.8 0.7 0.1
+> 0.1 0.1
+> -2
+> 0
+> 0
+> -4 -1 0
+> 24-2 -4 -1
+> 5
+> 4
+> 2
+> 1
+> 0
+> 5
+> 43
+> 32
+> -0.2 -0.5 -0.5 -0.2
+> -0.2 -0.8 -1.5 -1.5 -0.8 -0.1
+> -0.4 -0.8 -0.8 -0.5 -0.4 -1.4 -3.5 -3.5 -1.4 0.5 0.9 0.7
+> -0.8 -1.7 -1.9 -1.2 -0.2 0.1 -0.1 -1.4 -3.4 -3.4 -0.2 1.1 1.9 1.6
+> -1.2 -3.3 -3.7 -1.5 0.4 1.2 1.1 -0.1 -1.2 -1.2 0.4 242
+> -0.8 -1.7 -1.9 -0.2 1.1 3.4 2.2 1.5 0.1 -0.1 0.6 1.5 1.9 1.5
+> -0.4 -0.8 -0.9 0.1 1.7 4.1 3.5 2.6 1.8 0.4 0.1 0.6 0.9 0.6
+> 0.4 1.3 2.5 3.5 4.1 1.6 0.6
+> 0.3 1.5 2.4 2.8 1.6 0.5
+> 0.5 0.9 0.8 0.7 0.1
+> 0.1 0.1
+
+Original game map 
+
+(a) Artificial potential field (b) Influence map Figure 1: Illustration of APF and influence map in RTS games. The black point represents the unit. Red points represent allies, while blue ones represent enemies. (a) For APF, the direction of the arrow represents the navigation to the unit. (b) For influence map, the sphere of influence generated by each unit, where self units generate positive values and enemies generate negative ones, is discretized on a grid map to create the overall influence map. The opacity of DRL and MARL has sparked interest in explainable reinforcement learning (XRL). In RTS XRL, in-trinsic interpretability methods incorporate comprehensible data representations into algorithm design, such as reward decomposition [43] and derivation tree [44]. In contrast, post-hoc analysis approaches provide explanatory summaries for the decision behaviors of trained black-box RTS models, such as semantic clustering-based counterfactual demon-stration methods [45]. However, these approaches rely on simple scripts or natural language within basic scenarios, lacking multi-level explanations for complex interaction scenarios. 
+
+2.2.3 Sample-efficient Reinforcement Learning 
+
+In recent years, the research community has focused on sample-efficient reinforcement learning in RTS games to achieve high training efficiency at a low training cost. Invalid action masking [46] and monotonicity constraint [10] prevent invalid exploration by restricting the policy space, but these approaches may limit adaptability to dynamic en-vironmental changes and reduce the discoverability of potentially optimal policies. Executing rehearsal with opponent behavior prediction [11] filters out high-value samples, but the performance of this method depends on the accuracy of the prediction function and the rehearsal cost will increase the impact of large-scale actions. Various sparse reward handling techniques have been developed for RTS games, including curriculum-based re-ward shaping [47], intrinsic curiosity combined with Option-Based Hierarchical PPO (OB-HPPO) [48] and multi-dimensional intrinsic reward [12]. While reward shaping uses manually designed rewards and intrinsic motivation employs agent-generated rewards, both approaches face limitations. Reward shaping may produce unnatural behav-iors and poor dynamic adaptation, while intrinsic motivation methods suffer from limited transparency in reward interpretation and unpredictable exploration patterns. Existing methods attempt to address large-scale challenges and achieve sample efficiency, but they still have limita-tions. State–action abstraction offers efficient compression but struggles with unit-distribution encoding and script adaptability. Hierarchical architectures effectively decompose strategic tasks but face challenges in automatic hierar-chy discovery and human expertise dependency, limiting spatial collaboration. DRL provides computational advan-tages but suffers from high retraining costs and poor interpretability. Sample-efficient methods focus on resource-constrained training but lack complex scenario adaptability. Consequently, current approaches still struggle to balance lightweight computation, efficient training and strong interpretability. 
+
+## 3 Methodologies 
+
+This section presents the HRL-IM/CBS framework for RTS micromanagement. Influence map hashing and cluster-based scripts reduce state-action space complexity, while a hierarchical multi-table Q-learning architecture with local reward allocation enables efficient and interpretable learning. 
+
+3.1 Design Rationale 
+
+The HRL-IM/CBS framework is grounded in a principled hierarchical decomposition that separates global clustering decisions from local tactical execution. The design rationale for the state and action abstractions, and the hierarchical learning architecture is presented as follows. 43.1.1 State Abstraction via Influence Map Hashing 
+
+State abstraction aims to reduce the cardinality of the state space while preserving information essential for optimal decision-making [49]. According to the Q∗-irrelevance abstraction criterion, states that share the same optimal action-value functions should be mapped to the same abstract representation. In RTS micromanagement, this equivalence is often manifested as spatial symmetries. Optimal tactical decisions remain invariant under global translation or rotation of combat units. To computationally approximate this property, an abstraction function ϕ : O → S hash is designed based on influence map hashing. Unlike raw observations, influence map-based RGB histograms function as a proxy for the relative spatial density of forces. This representation is inherently insensitive to absolute coordinates. For any two game observations O1 and 
+
+O2, the influence map hashing ensures that ϕ(O1) = ϕ(O2) if the normalized tactical distributions represented by histograms ˆh1 and ˆh2 satisfy: 
+
+dedit (ˆh1, ˆh2) < ϵ (1) where dedit denotes the edit distance between discretized histogram bins, and ˆh is obtained through 8-bin equalization as detailed in Section 3.2. The resulting Shash has significantly reduced cardinality compared to O, facilitating efficient Q-learning. 
+
+3.1.2 Action Abstraction via Cluster-based Scripts 
+
+Action abstraction is essential for managing the exponential complexity of joint action spaces in RTS micromanage-ment. A script-based approach, pioneered and validated in RTS combat research [27], provides the lower-level action space for cluster-level tactical execution. The script set Ω comprises pre-defined tactical abstractions, each encapsulating domain expertise for maneuvers such as focus-fire, kiting, and retreat. Each cluster i independently selects a script from the shared set: 
+
+ωi ∈ Ω, i = 1 , . . . , C k (2) where Ck denotes the number of clusters. Each cluster maintains a local Q-table Qli to learn optimal script selection. This decentralized design ensures high reactivity while decoupling decision complexity from the total number of units. 
+
+3.1.3 Hierarchical Q-Learning Architecture 
+
+The architecture employs a hierarchical value decomposition with separate learning at global and local scales. Let 
+
+Qu(s, C s) denote the upper-level value function, where s ∈ S hash represents the global state encoded by influence map hashing and Cs denotes the clustering strength. Let Qli(si, ω ) denote the lower-level value function for cluster i,where si represents the local state derived from intra-cluster features and ω ∈ Ω represents the selected script. The hierarchical update rules are formulated as: 
+
+Qu(s, C s) ←Q u(s, C s) + α
+
+h
+
+rg
+
++ γ max 
+
+> C′
+> s
+
+Qu(s′, C ′
+
+> s
+
+) − Q u(s, C s)
+
+i (3) 
+
+Qli(si, ω ) ←Q li(si, ω ) + α
+
+h
+
+rl,i 
+
++ γ max  
+
+> ω′
+
+Qli(s′
+
+> i
+
+, ω ′) − Q li(si, ω )
+
+i (4) where rg and rl,i represent global and local rewards, respectively. This decomposition enables modular learning while maintaining tactical coordination. 
+
+3.2 State Space Based on Influence Map Hashing 3.2.1 Artificial Potential Field and Influence Map 
+
+In fields of robot path planning, Artificial Potential Field (APF), inspired by the interaction forces between charged particles, navigates robots by constructing virtual potential fields, which has advantages of simple design, real-time responsiveness, and high computational efficiency. Similarly, RTS games involve a large number of path planning tasks, including micromanagement. As shown in Figure 1(a), target positions and obstacles can be represented as attractive and repulsive points respectively. Units determine their direction of movement based on the gradient of the potential field, ultimately approaching the target position and avoiding obstacles. 5However, in RTS games, path planning tasks are often complicated scenarios where there may be multiple or no exact target locations. The single path provided by the APF may not be able to adapt to dynamic scenarios or meet actual needs. Therefore, the influence map has made improvements in this regard, which considers units as influence points that generate ripples of influence around them, divides the map into a grid map and calculates the influence value for each grid, and ultimately obtains an influence matrix, as illustrated in Figure 1(b). Square influence maps are used to simplify calculations and highlight enemy units’ distribution impact. Self units have positive influence values ([16,9,4,1]), while enemy units have negative ones ([-16,-9,-4,-1]). Each unit’s influence range is a 7×7 square area, with absolute influence values decreasing from 16 at the center to 1 at the edges. 
+
+3.2.2 Influence Map Hashing 
+
+Rather than constructing a high-dimensional tensor with features such as the combat space, the quantity, attribute and absolute coordinates of units, influence map abstracts the combat situation into a low-dimensional space. Compared to the decentralized or partially centralized local observation space of multi-agent systems, influence map focuses on the global features of the map, which helps enhance the comprehensiveness and accuracy of decision-making. However, the distinguishability of states in RTS games should be ensured that each state should be unique and distinct in the whole state space, while minor errors caused by grid influence map should categorize identical states together to ensure the effectiveness of training. In RTS games, there often exist situations where the absolute positions of units change while the relative distribution between opposing sides remains the same, which involves the task of identifying similarities in influence map. In addition, it is necessary to encode the influence map data uniquely to avoid the significant memory and retrieval costs associated with storing all influence map images when dividing similar states. Based on this, this paper utilizes RGB histogram features that are insensitive to image rotation and translation to normalize the influence map, as illustrated in Figure 2. 1) Influence Map Image 4) Hash Code 5444300F5444300F5445200F 3) Equalization 2) Image Histogram 
+
+Figure 2: Illustration of influence map hashing. The distribution of units on the original game map is expressed into an influence map image. Through 8 bins histogram equalization, the image is represented as a reduced-length hash code, so that only a 3×8-bit hash code is needed to represent a state. Take Figure 2 as an example, the main steps include: 1) Expressing the distribution of units on the original game map to an influence map value matrix and an influence map image. 2) Extracting the RGB components of the influence map image and calculating the RGB histogram. 3) Performing histogram equalization so that the RGB channels values will be normalized from 256 bins to 8 bins. 4) Finally, the normalized RGB values will be hashed as 3×8-bit hexadecimal hash code of equal length, and be updated into the original state space. So far, the image data has been replaced with 24-bit encoding that can be retrieved by hash. States sampled through interaction with the environment will be added into the state space, which can be referred to as exploration of the state space. The pseudocode for updating states obtained through exploration into the original state space is shown in Algorithm 1. It should be noted that the dedit (·, ·)
+
+function is implemented by instantiating the edit (Levenshtein) distance, which serves to quantify state similarity and to determine whether a given state has already been sampled. This metric is sufficient to identify similar states and yields a compact and diverse set of representative states. In summary, the multi-dimensional combat situation is encoded into a compact set of hash codes that depend solely on the relative positions of units. This representation simultaneously distinguishes distinct states, clusters similar ones, and yields a substantial reduction in data volume. It should be noted that the resulting histogram will be affected by the color scheme. To ensure reproducibility, a single, fixed color scheme is employed throughout the entire training pipeline. 6Algorithm 1: Update State Space 
+
+Input: Maximum number of game step K
+
+Input: Current game step k
+
+Input: Original state space Sk−1 = {s1, s 2, ..., s n}
+
+Input: Game observation information Ok
+
+Input: Distance threshold ϵ
+
+Output: Explored state space Sk = {s1, s 2, ..., s n, s k} or {s1, s 2, ..., s n} 
+
+> 1
+
+if k > 1 then  
+
+> 2
+
+sk ← encode IM matrix (Ok) 
+
+> 3
+
+is _new ← True  
+
+> 4
+
+foreach si in Sk−1 do  
+
+> 5
+
+if dedit (si, s k) ≤ ϵ then  
+
+> 6
+
+is _new ← False break  
+
+> 7
+
+end if  
+
+> 8
+
+end foreach  
+
+> 9
+
+if is _new then  
+
+> 10
+
+Sk ← S k−1 ∪ { sk} 
+
+> 11
+
+end if  
+
+> 12
+
+end if  
+
+> 13
+
+Function encode_IM_matrix( Ok): 
+
+> 14
+
+// Encode an influence map matrix into hash code  
+
+> 15
+
+mk ←calculate_IM_matrix (Ok) 
+
+> 16
+
+gk ←Generate RGB image gk based on mk 
+
+> 17
+
+hk ← Calculate histogram of the image hk based on gk 
+
+> 18
+
+ˆhk ← hk.histogram _equalization ()  
+
+> 19
+
+sk ← ˆhk.hash _code ()  
+
+> 20
+
+return sk
+
+3.3 Script-based Action Space and Combat Space Clustering 3.3.1 Script 
+
+In RTS games micro-management, it is often necessary to execute a series of precise actions on multiple units, which results in a multidimensional and large-scale action space. In order to reduce the size of the action space and alleviate the problem of large action space brought by micro-actions on multi-unit combat, as well as enhance the tactical rationality of units, this paper adopts scripts to form the action space. The so-called scripts are not precise actions that specifically target the micro-level actions of individual units, but pre-coded tactical strategies that deploy actions for multiple units simultaneously. The agent selects combinations of scripts for units within a certain segment of frames to accomplish various combat missions. 
+
+3.3.2 Combat Space Clustering 
+
+The combat space refers to the instantaneous relative spatial distribution of all combat units, which may contain locally dense groups or potential cooperative relationships. When facing complex battle scenarios, units often need to adopt different tactics to demonstrate cooperation and synergy, thus maximizing team rewards. To ensure that different units can take different actions or scripts at a certain moment, making local collaboration more effective and reasonable, it is necessary to cluster the combat space. One feasible method is to cluster the combat space based on the relative distance between units. This paper adopts k-means clustering to implement the combat space clustering, and the clustering results under different numbers of clusters, denoted as Ck, are illustrated in Figure 3. Units in one cluster execute the same scripts, while different clusters may adopt different tactics. Choosing a reasonable 
+
+Ck is crucial to balance local collaboration and global cooperation. A lower Ck reduces the number of clusters and strengthens unit consistency within clusters, while a higher Ck allows for more tactic diversity. Specifically, Ck = 1 
+
+signifies unified combat space clustering, where all units use the same script. In contrast, Ck = 8 (the total number of self units) enables each unit to independently select scripts. 7self units enemy units clusters 
+
+## 𝐀 𝐀 = 1
+
+# combat zone 
+
+## 𝐀 𝐀 = 4 𝐀 𝐀 = 8Figure 3: Illustration of combat space clustering under different Ck. The red point represents self unit. The blue point represents enemy unit. The green dashed circle represent clusters, where units execute the same script. In addition, to express the results of clustering, a set of features can be defined to describe the distribution of inter- and intra-clusters. The definition of these features will be elaborated in detail in Section 3.4.2. 
+
+3.3.3 Design of Scripts 
+
+Based on scripts and combat space clustering, this paper designs script sets that represent offensive, defensive, and mixed tactics. The types of targets encompass both enemy units and map points. To comprehensively assess the algorithm’s performance, additional ineffective distractors such as random actions (do_randomly) and taking no action (do_nothing) are incorporated for comparative analysis, as detailed in Table 1. Table 1: Scripts designed in this paper Tactic Script Target offensive ATK_nearest unit ATK_clu+nearest ATK_nearest+weakest ATK_clu+nearest+weakest ATK_threatening defensive DEF_clu+nearest point mixed MIX_gather MIX_lure mix MIX_sacrifice+lure interferential do_randomly unit do_nothing -The scripts are mainly categorized into three types: ATK (attack), DEF (defense), and MIX (mixed), which correspond to offensive, defensive, and mixed tactical intentions. For example, ATK_threatening represents attacking threatening enemy units in the global, while DEF_clus+nearest represents retreating from the closest enemy units in the clusters. MIX_gather represents a mixed tactic of gathering the team in clusters, while MIX_lure and MIX_sacrifice+lure respectively represent mixed tactics of luring enemies and luring enemies with few units sacrifice. 
+
+3.4 Multi-table HRL Architecture 
+
+The paper uses Q-learning [50] to obtain optimal strategies in different situations. However, a single-table model is not able to learn the optimal strategy for different local clusters simultaneously. To address these issues, this paper proposes an extension of the single-table Q-learning model into a hierarchical multi-table Q-learning model. The framework of this extended model is illustrated in Figure 4. The upper level employs a single clustering Q-table to learn the optimal strategy on a global scale. In contrast, the lower level utilizes multiple combat Q-tables to learn optimal tactics on a local scale. These levels are interconnected through an intermediate level, which involves combat space clustering and a local reward mechanism. 8influence map                         
+
+> Upper-level
+> Lower-level
+> IM hashing
+> original map
+> cluster-QTable
+> s
+> a
+> combat-QTables
+> s
+> a
+> scripts
+> ATK DEF MIX
+> reward allocation
+> spatial scale
+> Upper-level Q-learning
+> Lower-level Q-learning
+> global reward
+> local reward
+> BCCD9DDE
+> BBECCADE
+> CCCBDCAF
+> N
+> combat spatial clustering
+> ...
+> clustering strength
+> clustering features
+> micro actions
+
+Figure 4: Illustration of hierarchical multi-table Q-learning model. The whole architecture is divided into upper and lower levels based on spatial scale. For upper level, the spatial combat information on the original map is expressed to state by influence map hashing. For lower level, the action space is formed by cluster-based scripts, which inducts micro actions. Combat spatial clustering provides clustering strength for the upper-level action space and clustering features for the lower-level multi-table index and state space. So far a hierarchical multi-table Q-learning model is formed, in which global and local rewards will be allocated. 
+
+3.4.1 Upper Level 
+
+The upper level table reflects the expected return of executing combat space clustering in various situations. In the upper level table Qu, the state space Shash is composed of the influence map hashing, and the action space Au consists of a series of discrete clustering strengths Cs of the combat space clustering. It should be noted that, to ensure map-scale-independent discretization, this work introduces the clustering strength parameter Cs ∈ [0 , 1] to control the ratio of the number of clusters Ck to the total number of units N . An appropriate discrete set of Cs is selected as the action space, thereby ensuring the algorithm’s scalability across heterogeneous scenarios with the cardinality of the action space kept bounded. 
+
+3.4.2 Intermediate Level 
+
+Clustering features reflect the overall distribution of clusters obtained after performing clustering operations on the upper level, which will be used to establish indexes for the lower level table. After Cs has been determined in the upper level, the number of clusters Ck among N combat units can be given as 
+
+Ck = ⌈N (1 − Cs) + Cs⌉, Ck ∈ Z, Ck ∈ [1 , N ] (5) and the combat units can be divided into Ck clusters using k-means clustering. Throughout this paper, uppercase Ck
+
+denotes the number of clusters, while lowercase ci represents the i-th cluster as a set of units. Meanwhile, a set of inter- and intra-cluster features are defined to measure the distribution of clusters and individual units within each cluster. a) Inter-cluster features: The inter-/intra-cluster variance ratio, also named as the Calinski-Harabasz index which is commonly used to evaluate clustering effectiveness, is used to measure cluster distribution for establishing the index of the lower table. The inter-/intra-cluster variance ratio CH( Ck) is defined as 
+
+CH( Ck) = SS B
+
+SS W
+
+× N − Ck
+
+Ck − 1 (6) where Ck is the number of clusters and SS B represents the inter-cluster variance, and SS W represents the intra-cluster variance. The inter-cluster variance SS B is defined as 
+
+SS B =
+
+> Ck
+
+X
+
+> i=1
+
+Ni∥mi − m∥2 (7) 9where Ni represents the number of units in cluster i, mi represents the centroid of cluster i, m represents the mean of coordinates of all units, and ∥ ∗ ∥ represents the Euclidean distance between two vectors. The intra-cluster variance SS W is defined as 
+
+SS W =
+
+> Ck
+
+X
+
+> i=1
+
+X
+
+> x∈ci
+
+∥x − mi∥2 (8) where x represents the coordinate of a unit in cluster ci.b) Intra-cluster features: This feature includes the radial dispersion dr and circumferential dispersion dc. dr
+
+is calculated by the coefficient of variation of the distance between the coordinate of each unit in a cluster and the centroid of the cluster, which represents the dispersion of units radially within the cluster. The radial dispersion dr,i of cluster i is defined as 
+
+dr,i = σr,i 
+
+μr,i 
+
+=
+
+q 1
+
+> Ni
+
+PNi
+
+> j=1
+
+(di,j − μr,i )21
+
+> Ni
+
+PNi 
+
+> j=1
+
+di,j 
+
+(9) where σr,i represents the standard deviation of the distance between units and the centroid of cluster i, μr,i 
+
+represents the mean distance between units and the centroid of cluster i, Ni represents the number of units in cluster i, and di,j is the distance between mi and unit j in cluster i. The circumferential dispersion dc
+
+is calculated by the coefficient of variation of the distance between each unit within a cluster and its nearest neighbor unit, which represents the dispersion of units in the circumferential direction within the cluster. The circumferential dispersion dc,i of cluster i is defined as 
+
+dc,i = σc,i 
+
+μc,i 
+
+=
+
+q 1
+
+> Ni
+
+PNi
+
+> j=1
+
+(d′ 
+
+> i,j
+
+− μc,i )21
+
+> Ni
+
+PNi 
+
+> j=1
+
+d′
+
+> i,j
+
+(10) where σc,i represents the standard deviation of the distance between units and their nearest neighbor unit in cluster i, μc,i represents the mean distance between units and their nearest neighbor unit in cluster i, Ni
+
+represents the number of units in cluster i, and d′ 
+
+> i,j
+
+represents the distance between unit j in cluster i and its nearest neighbor unit. In conclusion, CH( Ck) and Ck index which Q-table to consult, while dr,i and dc,i provide the state for the lower level. 
+
+3.4.3 Lower Level 
+
+Multiple lower level tables are created based on the different inter-cluster characteristics formed by each combat space clustering. Each lower level table reflects the expected return of units in each cluster when executing scripts in the combat scenario. In lower level tables Ql, the state space Sl is composed of the intra-cluster features, and the action space consists of scripts from the shared script set Ω. To obtain discrete states in the lower-level Q-table, the continuous intra-cluster features is discretized into a two-symbol hexadecimal key as follows: a) Extract features: fr,i = 1 − dr,i , fc,i = 1 − dc,i , where dr,i and dc,i are the radial and circumferential dispersions computed from Eq. (9) and Eq. (10), respectively. b) 4-bit quantization: Fr,i = min  15 , ⌊15 .9 fr,i ⌋, Fc,i = min  15 , ⌊15 .9 fc,i ⌋, where the factor 15 .9 guaran-tees that the maximum value 1.0 is mapped to the largest 4-bit integer 15 without overflow. c) Hex encoding: si = {:01X}{:01X}.format (Fr,i , F c,i ), or X if the cluster set is empty, where each integer Fr,i 
+
+and Fc,i is converted into a single hexadecimal digit 0-F , and the special symbol X is used when the cluster set is empty. Through the above processing, the clustering features are linearly rescaled to the discrete space and concatenated into a hexadecimal string, serving as the discrete state in the Q-table. 
+
+3.5 Local Reward Mechanism 
+
+The upper and lower level Q-tables represent the strategies at the global and local levels, respectively. Therefore, they require different reward mechanisms. For the upper level, the global reward at t time can be directly derived from the difference between the damage inflicted by self-units and the damage sustained, encapsulating the overall gain of an action, which can be represented as 
+
+rg (t) = Hs (t) − He (t) (11) 10 where Hs (t) represents the hitpoint of self units at t time and He (t) represents the enemy’s. However, for the lower level, each cluster may execute different scripts or demonstrate different tactics, so the local reward rl,i (t) for cluster i is designed as 
+
+rl,i (t) = renemyloss (t) + rself loss (t)+ renemykilled (t) + rself killed (t)+ rcomeback (t) + rsetback (t)
+
+(12) where renemyloss (t) represents the score corresponding to the rate of enemy health loss. For every 1% of enemy health lost, this item gains 1 point. Reward rself loss (t) represents the score corresponding to the rate of self-health loss. For every 1% of self-health lost, this item deducts 1 point. Reward renemykilled (t) represents the score corresponding to the elimination of enemy units. For every 1 enemy unit eliminated, this item gains 5 points. Reward rself killed (t)
+
+represents the score corresponding to the elimination of self-units. For every 1 self-unit eliminated, this item deducts 5 points. Reward rcomeback (t) is set to 10 when the self-side transitions from a disadvantaged situation to an advantage. Reward rsetback (t) is set to -10 when the self-side transitions from an advantageous situation to a disadvantage. Note that the values are set based on preliminary studies. 
+
+3.6 Training Algorithm 
+
+The complete training procedure for HRL-IM/CBS is presented in Algorithm 2. The algorithm alternates between upper-level and lower-level Q-value updates, with the hierarchical structure enabling efficient credit assignment across different spatial scales. The training algorithm exhibits two key properties that contribute to its efficiency. The hierarchical structure enables separate learning of global clustering decisions and local script selections, effectively reducing the action space com-plexity at each decision level. Additionally, the local reward mechanism rl,i enables direct attribution of outcomes to specific cluster actions, addressing the multi-agent credit assignment problem. Together with the tabular Q-learning approach that avoids the computational overhead of neural network forward/backward propagation, these properties enable lightweight and sample-efficient training compared to end-to-end DRL methods. 
+
+## 4 Experimental Setup and Design 
+
+This paper uses StarCraft II to demonstrate the effectiveness of the proposed HRL-IM/CBS method by using PySC2 1.In this chapter, the experimental scenarios and parameter settings will be discussed. 
+
+4.1 Experimental Scenarios 
+
+In StarCraft II, units of different races usually have different attributes, such as max hitpoints, cooldown, movement speed, damage per hit, fire range, and sight range. Some previous studies have assigned different types of units to opposing sides in experimental setups, which may grant certain unit types inherent advantages over others. This can make some strategies highly adaptive in specific scenarios. For instance, “kiting” tactics that leverage movement speed can easily triumph even when outnumbered. Other research has focused on mixed team with multi unit types, which is an effective way to ensure scenario complexity and experimental fairness. However, the overall strength of mixed team cannot be simply assessed by the number of units and their hitpoints. Determining the composition ratio and overall strength of mixed team is challenging, which affects the design of the influence map. In this paper, mixed teams are not considered for now, and instead focus on creating fair scenarios with equal numbers and types of units for both sides. This setup aims to ensure comparable levels of both strength, which also means those strategies that rely on movement speed and attack range to easily win may not work, and poses a greater challenge for algorithms. The Marine unit type is uniformly used, and the attributes of the unit are shown in Table 2. Additionally, formations within and between teams are also critical factors that have often been overlooked in previous experiments. In many cases, the two opposing sides were simply placed on opposite ends of the map, positioned at such a distance that it tended to obscure the direct interaction and combat tension, thereby undermined the immediacy of their confrontational dynamics. In this paper, the impact of interspersed unit distribution in equal confrontation has been considered. Taking into account the characteristics of formations and strategies, a series of experimental scenarios have been designed, as illustrated in Figure 5 and described in Table 3. 
+
+> 1https://github.com/google-deepmind/pysc2
+
+11 Algorithm 2: HRL-IM/CBS Training 
+
+Input: Number of episodes E, max steps per episode K, learning rate α, discount factor γ, exploration schedule 
+
+ε(t)
+
+Input: Script set Ω, clustering strength set Cs
+
+Output: Trained Q-tables Qu and Ql 
+
+> 1
+
+Initialize Qu(s, C s) ← 0 for all s, C s; 
+
+> 2
+
+Initialize Qli(si, ω ) ← 0 for all clusters i, states si, scripts ω; 
+
+> 3
+
+for episode e = 1 to E do  
+
+> 4
+
+Initialize environment, obtain initial observation O0; 
+
+> 5
+
+s0 ← encode_IM_matrix (O0); 
+
+> 6
+
+for step k = 0 to K do  
+
+> 7
+
+// Upper-level: Select clustering strength  
+
+> 8
+
+Cs ← ε-greedy (Qu(sk, ·), ε (e)) ; 
+
+> 9
+
+Ck ← ⌈ N (1 − Cs) + Cs⌉; 
+
+> 10
+
+{c1, . . . , c Ck } ← k-means (unit positions , C k); 
+
+> 11
+
+// Intermediate: Compute clustering features  
+
+> 12
+
+Compute CH( Ck), dr,i , dc,i for each cluster i; 
+
+> 13
+
+si ← discretize (dr,i , d c,i ) for each cluster i; 
+
+> 14
+
+// Lower-level: Select scripts for each cluster  
+
+> 15
+
+for cluster i = 1 to Ck do  
+
+> 16
+
+ωi ← ε-greedy (Qli(si, ·), ε (e)) ; 
+
+> 17
+
+Execute script ωi for units in cluster i; 
+
+> 18
+
+end for  
+
+> 19
+
+// Observe rewards and next state  
+
+> 20
+
+Observe global reward rg and local rewards {rl, 1, . . . , r l,C k }; 
+
+> 21
+
+Obtain next observation Ok+1 , encode sk+1 ; 
+
+> 22
+
+// Update Q-values according to Eq. (3) and Eq. (4)  
+
+> 23
+
+Update Qu(sk, C s) according to Eq. (3);  
+
+> 24
+
+for cluster i = 1 to Ck do  
+
+> 25
+
+Update Qli(si, ω i) according to Eq. (4);  
+
+> 26
+
+end for  
+
+> 27
+
+sk ← sk+1 ; 
+
+> 28
+
+end for  
+
+> 29
+
+end for  
+
+> 30
+
+return Qu, Ql;Table 2: Attributes of Marine unit type Unit type Max hitpoint Fire range Damage Cooldown Marine 45 5 6 15 In the experimental setup, the self-agent employs the HRL-IM/CBS strategy proposed in this paper, while the enemy utilizes the built-in strategy. The two sides engage in combat on designated maps with initial formations until one side is entirely eliminated. The outcomes of each match, including win/loss results and scores, are recorded. Furthermore, the proposed method was compared with DRL baselines (QMIX [51], QTRAN [52], IQL [53], COMA [40] and VDN [54]) on the PyMARL 2, and MAPPO [55], which is implemented by marlbenchmark 3 and has achieved state-of-the-art results in cooperative multi-agent games. To ensure a fair comparison, the API for the implementation of all the selected comparison algorithms is SMAC 4, and every algorithm followed the same experimental pipeline and evaluation protocol. For MAPPO, all hyper-parameters (rollout threads, episode length, PPO epoch, mini-batches, clip term, etc.) were kept strictly as specified in the authors’ official repository. 
+
+> 2https://github.com/oxwhirl/pymarl
+> 3https://github.com/marlbenchmark/on-policy
+> 4https://github.com/oxwhirl/smac
+
+12 a) sce-1&1m b) sce-2&2m c) sce-3&3m Figure 5: Unit distributions of experimental scenarios. Different colors represent opposing forces, and distributions are swapped in mirror scenarios to ensure positional fairness. Table 3: Descriptions of experiment scenarios designed in this paper Scenario Description sce-1 Both sides have 4 Marines with the same troop configurations. Additionally, units aggrega-tion and isolation have been considered. sce-1m The mirror map of sce-1. Both sides have 4 Marines with the same troop configurations. The map distribution is similar to sce-1, with the only difference being the positions of both sides are swapped, so as to verify the effectiveness of the algorithm rather than relying on advantages brought by the map distribution. sce-2 Both sides have 4 Marines with the same troop configurations but different formation. Self units are disperse but surrounding enemy units on the map. sce-2m The mirror map of sce-2. sce-3 Both sides have 8 Marines with the same troop configurations. The unit layout is asymmet-rical, scattered and disorder, which has greater complexity than sce-1 and usually requires longer training time to ensure convergence. sce-3m The mirror map of sce-3. 
+
+4.2 Parameter Settings 4.2.1 Frame Skip Parameter 
+
+For real-time games, it is impractical to make decisions frame by frame. A commonly used method is to use frame skip, which means observing and making decisions every fixed number of frames. Setting the frame skip parameter too high will reduce the effectiveness of decision-making and training, while too low will result in a sharp increase in training costs. Through experimental analysis, the frame skip parameter is set to 10, essentially causing agents to observe and make decisions every 10 frames. 
+
+4.2.2 α, γ parameter 
+
+In the HRL-IM/CBS framework, the hierarchical Q-learning algorithm is employed with update rules formalized in Eq. (3) and Eq. (4). The learning rate α determines how much newly acquired information overrides existing information, while the discount factor γ determines the significance of future rewards. Through parameter comparison experiments, α is set to 0.1 and γ to 0.9 to ensure effective training. 
+
+4.2.3 ε-greedy Parameter 
+
+In order to balance the exploration and exploitation of the Q-learning algorithm in the early and later stages of training, this paper adopts the ε-greedy mechanism, a commonly used greedy strategy. The parameter ε decreases from 0.5 to 0.05 with the number of training iterations. The formula is expressed as 
+
+ε = max(0 .5/√t, 0.05) (13) where t represents the number of training iterations and t = 1 , 2, . . . , T. 
+
+13 a) sce-1 b) sce-2 c) sce-3 
+
+d) sce-1m e) sce-2m f) sce-3m Figure 6: Component ablation study of HRL-IM/CBS across all scenarios. 
+
+## 5 Experimental Results and Analysis 
+
+This section discusses and analyzes the experimental results of ablation study, comparison experiments, as well as the effectiveness and mechanism analysis of each component. 
+
+5.1 Ablation Study 
+
+a) sce-1 b) sce-2 c) sce-3 
+
+d) sce-1m e) sce-2m f) sce-3m Figure 7: Comparison of win rate and final score for different algorithms across all scenarios. To rigorously assess the individual contributions of each heuristic component, a comprehensive ablation study has been conducted on HRL-IM/CBS. The ablation study evaluates three stripped-down counterparts. HRL-CBS keeps the two-level hierarchy and cluster-based scripts yet drops the influence map hashing. RL-IM/Script preserves the 14 hash while collapsing the hierarchy into a single RL layer that commands the whole team with global scripts. RL-Script removes both enhancements and leaves a flat Q-learner that chooses scripts only from raw unit coordinates and hit-points. Quantitative results including the win rate and the final score are summarized in Table A. 1 in Appendix A and illustrated in Figure 6. The exhaustive ablation study reveals that the influence map hashing markedly boosts win rate and final score across all maps, yet HRL-CBS performs poorly in the complex sce-3m scenario. RL-IM/Script, which discards combat space clustering, achieves comparable final scores only in sce-2 and sce-2m. It is attributed to the fact that clustering is most advantageous when units are dispersed and concentrated firepower is needed, whereas sce-2 and sce-2m begin with already concentrated formations. RL-Script, lacking both components, exhibits unstable training and significantly lower final scores, especially in sce-3m. In contrast, the full HRL-IM/CBS consistently outperforms every ablated variant in each scenario, confirming that each heuristic component contributes non-trivially to overall performance. Table 4: Comparison of win rate and final score for different algorithms Metric Algorithm sce1 sce1m sce2 sce2m sce3 sce3m Train Win Rate HRL-IM/CBS 0.997 ± 0.005 0.980 ± 0.020 1.000 ± 0.000 0.997 ± 0.005 0.983 ± 0.015 0.898 ± 0.078 MAPPO 0.990 ± 0.012 0.998 ± 0.002 1.000 ± 0.000 1.000 ± 0.000 0.984 ± 0.010 1.000 ± 0.000                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
+
+> QMIX 0.925 ±0.022 0.934 ±0.021 0.992 ±0.008 0.983 ±0.005 0.973 ±0.007 0.979 ±0.001 COMA 0.911 ±0.009 0.870 ±0.014 0.994 ±0.006 0.995 ±0.005 0.976 ±0.021 0.982 ±0.011 IQL 0.904 ±0.007 0.923 ±0.007 0.996 ±0.001 0.994 ±0.001 0.946 ±0.003 0.970 ±0.002 QTRAN 0.895 ±0.028 0.937 ±0.010 0.993 ±0.005 0.992 ±0.006 0.948 ±0.017 0.983 ±0.003 VDN 0.920 ±0.007 0.970 ±0.001 0.993 ±0.000 0.993 ±0.002 0.954 ±0.019 0.959 ±0.003 Test Win Rate HRL-IM/CBS 0.999 ±0.003 0.985 ±0.015 0.999 ±0.003 1.000 ±0.000 0.995 ±0.005 0.925 ±0.015 MAPPO 1.000 ±0.000 1.000 ±0.000 1.000 ±0.000 1.000 ±0.000 1.000 ±0.000 1.000 ±0.000
+> QMIX 0.988 ±0.005 0.985 ±0.015 0.994 ±0.006 1.000 ±0.000 0.952 ±0.042 0.997 ±0.003 COMA 0.887 ±0.010 0.876 ±0.024 1.000 ±0.000 1.000 ±0.000 0.975 ±0.020 0.989 ±0.011 IQL 0.967 ±0.047 1.000 ±0.000 1.000 ±0.000 1.000 ±0.000 0.950 ±0.050 1.000 ±0.000
+> QTRAN 1.000 ±0.000 0.994 ±0.006 1.000 ±0.000 1.000 ±0.000 0.985 ±0.015 0.997 ±0.003 VDN 0.988 ±0.012 0.997 ±0.003 1.000 ±0.000 0.997 ±0.003 0.994 ±0.006 1.000 ±0.000
+> Train Final Score HRL-IM/CBS 47.847 ±1.233 24.513 ±0.361 77.246 ±0.538 51.773 ±4.190 46.183 ±5.288 44.794 ±5.823 MAPPO 20.777 ±0.857 35.849 ±2.840 65.389 ±0.987 61.892 ±0.663 47.739 ±4.606 75.329 ±1.970
+> QMIX 13.765 ±1.958 21.055 ±2.081 39.843 ±0.607 33.401 ±0.187 40.818 ±2.478 42.576 ±2.863 COMA 16.356 ±1.248 18.107 ±1.345 37.538 ±2.005 40.988 ±0.181 51.514 ±2.466 57.033 ±1.749 IQL 11.782 ±1.092 19.104 ±1.180 47.096 ±0.135 42.589 ±4.474 33.878 ±0.334 40.839 ±1.371 QTRAN 14.389 ±3.044 19.946 ±2.129 29.937 ±1.329 38.835 ±0.065 38.447 ±5.164 45.814 ±0.387 VDN 13.110 ±0.514 23.504 ±0.581 31.464 ±0.308 32.062 ±1.718 35.546 ±1.288 42.816 ±0.461 Test Final Score HRL-IM/CBS 48.959 ±2.444 25.697 ±0.356 78.109 ±0.861 52.409 ±4.625 48.332 ±4.954 47.158 ±2.665 MAPPO 22.250 ±1.912 37.406 ±3.712 64.500 ±1.723 62.500 ±1.794 50.281 ±5.246 74.406 ±0.840
+> QMIX 17.989 ±1.347 25.797 ±3.763 43.952 ±0.711 31.710 ±4.924 40.295 ±6.808 56.587 ±1.299 COMA 14.648 ±1.316 19.137 ±3.337 38.494 ±2.174 42.572 ±0.927 55.266 ±0.586 55.375 ±5.761 IQL 21.736 ±2.742 26.666 ±9.069 56.307 ±0.898 46.794 ±8.827 46.604 ±0.543 48.082 ±1.420 QTRAN 20.461 ±3.963 27.993 ±0.993 33.299 ±0.787 43.598 ±1.527 44.532 ±2.851 57.920 ±7.448 VDN 17.532 ±2.837 29.794 ±3.504 27.071 ±2.597 32.677 ±3.083 53.321 ±6.969 47.620 ±9.024
+
+5.2 Comparison Results 
+
+Figure 7 illustrates the performance of HRL-IM/CBS and other algorithms across all scenarios during both training and testing stages. The detailed results of win rate and final score, including mean and standard deviation, are presented in Table 4. In all scenarios, the metric win rate typically increases with the training process and eventually approaches 1, and the final score also improves to some extent. Quantitative results show that, except for COMA leading on sce-3, MAPPO achieves overwhelming superiority over all other baselines and delivers remarkable performance. In sce-1 and sce-2, the proposed HRL-IM/CBS significantly surpasses MAPPO, maintaining a high win rate while obtaining higher final scores, demonstrating the critical role of cluster-based scripts in guiding the algorithm toward high-quality solutions. In sce-1m and sce-2m, HRL-IM/CBS achieves the second-highest final score, marginally behind MAPPO. In sce-3 and sce-3m, the win rate of HRL-IM/CBS exhibits fluctuations during the training phase fluctuates. Nevertheless, it attains a final score comparable to those of other algorithms. The performance differences of HRL-IM/CBS across different scenarios are primarily attributed to the variations in unit distribution and scenario complexity. Between 4v4 scale scenarios (sce-1/1m and sce-2/2m), the unit distribution in sce-1 and sce-1m is more concentrated compared to sce-2 and sce-2m. This leads to a lower win rate and final score in the early training stage. For 8v8 scale scenarios, the formation size and unit distribution in sce-3 and sce-3m are more intricate, resulting in a relatively lower win rate and final score in the early training stage compared to other scenarios. When comparing the original scenarios with their mirror scenarios, there are notable differences in final 15 score, especially in sce-2 and sce-2m. This indicates significant disparities in the strength of both sides between the original and mirror scenarios. Despite these differences, the algorithm remains effective in both scenarios. It should also be highlighted that a minor performance gap exists between training and testing phases. Even with ε
+
+reduced to 0.05 in late training, low exploration rewards accumulate due to the multi-table architecture and long-term decisions. In testing, the ε-greedy mechanism is deactivated to select higher-reward actions. 
+
+5.3 Effectiveness and Mechanism Analysis HRL_IMCBS COMA QTRAN QMIX IQL VDN 100 80 60 40 20 0 20 40 
+
+> State Value 0
+> 200k
+> 400k
+> Frequency
+
+(a) sce-1 80 60 40 20 0 20 40 60  
+
+> State Value 0
+> 250k
+> 500k
+> 750k
+> Frequency
+
+(b) sce-2 150 100 50 0 50  
+
+> State Value 0
+> 500k
+> 1000k
+> Frequency
+
+(c) sce-3 120 100 80 60 40 20 0 20 
+
+> State Value 0
+> 500k
+> 1000k
+> 1500k
+> Frequency
+
+(d) sce-1m 80 60 40 20 0 20 40 60  
+
+> State Value 0
+> 250k
+> 500k
+> 750k
+> Frequency
+
+(e) sce-2m 150 100 50 0 50  
+
+> State Value 0
+> 1000k
+> 2000k
+> Frequency
+
+(f) sce-3m 
+
+Figure 8: State-sampling frequency weighted density ( 95 .4% HDI, ≈ ± 2σ) for different algorithms across all scenar-ios. Comprehensive effectiveness and mechanism analyses are conducted to clarify the advantages of HRL-IM/CBS, pre-senting insights from three perspectives including sample efficiency, training efficiency and interpretability, along with attribution analyses focusing on proposed components. 
+
+5.3.1 Sample Efficiency 
+
+To clearly demonstrate the sample-efficient advantages, the distributional characteristics of the states sampled by algorithms were analyzed from both state-space coverage and statistical-numerical perspective. The sampling state density bands have been estimated with a kernel density estimator that employs a Gaussian kernel of bandwidth 0.15 (state-value units). Each state is weighted by its total visitation count by the given algorithm, so the resulting density is proportional to the actual sampling frequency. Each shaded band is set to the 95 .4% highest-density region, corresponding to the ±2σ interval of a normal distribution and encompassing the bulk of the samples. Figure 8 shows that in sce-1 and sce-2, the density bands of states sampled by HRL-IM/CBS are visibly skewed toward higher values. In the other scenarios, low-value regions of density bands converge toward high-value areas, indicating that the algorithm still avoids exploring unfavorable states. This pattern fundamentally demonstrates the algorithm’s ability to actively favor advantageous states and avoid disadvantageous ones, which directly accelerates training and improves final performance. The detailed distribution of sampled states over state value landscape are shown in Figure A.1 in Appendix A, which reveals the rugged nature of the state-value landscape. The advantages demonstrated by these results are primarily attributed to influence map hashing achieving accurate state space division and efficient collaboration based on cluster-based scripts. These two factors respectively avoid frequent sampling of inefficient states from the perspectives of accurate state partitioning and efficient exploration behavior, thereby enhancing the sample-efficient advantage of HRL-IM/CBS. 
+
+5.3.2 Training Efficiency 
+
+To demonstrate the training efficiency of the proposed method, the training episodes required to first achieve test win rates of 50%, 75% and 95% were recorded, along with their corresponding final scores to measure the speed of finding high-quality solutions. The vertical axis represents the number of training episodes, while the horizontal axis shows the corresponding final scores obtained in evaluation. Algorithm trajectories with superior sample efficiency are located in the upper-left region, representing high returns achieved within fewer episodes. Figure 9 shows that in sce-1 and sce-2, HRL-IM/CBS delivers markedly superior performance. The training curves remain stable and the final scores significantly exceed those of the baselines, while the first-achievement trajectories 16 (a) sce-1 (b) sce-2 (c) sce-3 
+
+(d) sce-1m (e) sce-2m (f) sce-3m 
+
+Figure 9: First-achievement trajectories of 50%/75%/95% test win rates for different algorithms in all scenarios. lie in the upper-left region, confirming that high-quality solutions are discovered early in training. Across the three mirrored scenarios, HRL-IM/CBS maintains a consistent sample efficiency advantage. In sce-1m, it reaches the 95% win rate with fewer episodes and a higher final score than MAPPO. In sce-2m, its episode count is marginally higher than MAPPO’s, yet the obtained score is substantially superior. the slightly elevated score at the 50% win rate point reflects a transient local optimum encountered early in training. In sce-3m, the episode counts required to attain the target win rates are comparable to MAPPO, but HRL-IM/CBS again achieves markedly higher scores. action_ATK_clu_nearest action_ATK_clu_nearest_weakest action_ATK_nearest action_ATK_nearest_weakest action_ATK_threatening action_DEF_clu_nearest action_MIX_gather action_MIX_lure action_MIX_sacrifice_lure do_nothing do_randomly Action (Scripts)                   
+
+> 050 100
+> Ck = 1
+> Ck = 2
+> Ck = 3
+> Ck = 4
+> State aggregated by Ck
+> action_ATK_clu_nearest action_ATK_clu_nearest_weakest action_ATK_nearest action_ATK_nearest_weakest action_ATK_threatening action_DEF_clu_nearest action_MIX_gather action_MIX_lure action_MIX_sacrifice_lure do_nothing do_randomly Action (Scripts)
+> 050 100 150 200
+> Ck = 1
+> Ck = 2
+> Ck = 3
+> Ck = 4
+> State aggregated by Ck
+> 050 100
+> 0200 400 Aggregate Q-value
+> Ck =
+> C
+> 1
+> k =
+> C
+> 2
+> k =
+> C
+> 3
+> k =
+> C
+> 4
+> k =
+> C
+> 5
+> k =
+> C
+> 6
+> k =
+> C
+> 7
+> k = 8
+> State aggregated by Ck
+> 0100 200 Aggregate Q-value
+> b) sce-a) sce-1 2
+> 020 40 60
+> d) sce-1
+> c) sce-3me)sce-2m f) sce-3m action_ATK_clu_nearest action_ATK_clu_nearest_weakest action_ATK_nearest action_ATK_nearest_weakest action_ATK_threatening action_DEF_clu_nearest action_MIX_gather action_MIX_lure action_MIX_sacrifice_lure do_nothing do_randomly Action (Scripts)
+> 050 100
+> Ck = 1
+> Ck = 2
+> Ck = 3
+> Ck = 4
+> State aggregated by Ck
+> action_ATK_clu_nearest action_ATK_clu_nearest_weakest action_ATK_nearest action_ATK_nearest_weakest action_ATK_threatening action_DEF_clu_nearest action_MIX_gather action_MIX_lure action_MIX_sacrifice_lure do_nothing do_randomly Action (Scripts)
+> 050 100 150 200
+> Ck = 1
+> Ck = 2
+> Ck = 3
+> Ck = 4
+> State aggregated by Ck
+> 050 100
+> 0200 400 Aggregate Q-value
+> Ck =
+> C
+> 1
+> k =
+> C
+> 2
+> k =
+> C
+> 3
+> k =
+> C
+> 4
+> k =
+> C
+> 5
+> k =
+> C
+> 6
+> k =
+> C
+> 7
+> k = 8
+> State aggregated by Ck
+> 0100 200 Aggregate Q-value
+> b) sce-a) sce-1 2
+> 020 40 60
+> d) sce-1
+> c) sce-3me)sce-2m f) sce-3m
+
+Figure 10: Q-value heatmaps under aggregated states by combat space clustering of HRL-IM/CBS across all scenarios. In sce-3, HRL-IM/CBS attains a final score statistically indistinguishable from the baselines, yet exhibits pronounced win rate volatility during early training and surpasses the 95% threshold after approximately 15000 episodes, indicating potential enhancement in high-complexity scenarios. Quantitative results confirm that HRL-IM/CBS is able to locate high-quality solutions, yet its robustness remains limited, meaning that small perturbations of the input space can induce large output variations. Apart from the inherent stochasticity and complexity of the RTS game, the degradation stems primarily from the reduced accuracy of influence map hashing when confronted with a vast and intricate state space, thereby degrading action selection consistency. The advantages demonstrated by these results are primarily attributed to efficient model updates enabled by substantial state space compression through influence map hashing, high-quality sampling driven by cluster-based scripts from early training stages, and efficient sample utilization in sparse reward environments facilitated by hierarchical archi-tecture and reward allocation mechanisms. These components collectively enhance training efficiency from different perspectives. 17 5.3.3 Interpretability 
+
+The interpretability of the proposed HRL-IM/CBS stems from the refined Q-tables, which explicitly store the expected return for each state–action pair. To visualize this property, Q-value heatmaps are employed, which provide an im-mediate and intuitive interpretation of the learned policy. Owing to the hierarchical multi-Q-table structure, a single upper-level state may correspond to multiple clustering schemes, each with distinct actions and Q-values. This results in a direct heatmap of raw states is infeasible. Fortunately, combat space clustering enables effortless analysis of the Q-values associated with scripts under each clustering scheme, thereby providing clear, interpretable insights. To demonstrate the advantages of HRL-IM/CBS in terms of interpretability, Figure 10 presents the Q-value heatmaps produced by HRL-IM/CBS under aggregated states obtained through combat space clustering. The vertical axis lists all cluster-based scripts and the horizontal axis indexes aggregated states by Ck, with each column integrating Q-values across all partitions that cluster the raw state into Ck clusters. In Figure 10, the Q-value heatmaps across scenarios exhibit distinct tactical preferences. In sce-1 and sce-1m, concen-trating fire on the most threatening enemy unit under Ck = 2 proves highly effective, while in sce-1 the sacrifice-lure tactic also performs well, aligning perfectly with the scenarios’ deceptive unit placements. Moreover, in both sce-narios, combat space clustering consistently produces patently unreasonable groupings at Ck = 4 , accompanied by markedly lower Q-values. Scenarios sce-2 and sce-2m exhibit different deployments yet demand similar tactical preferences. In sce-2, self units encircle the enemy and sequential focused fire is optimal, as evidenced by the lowest Q-value assigned to the script  
+
+> action_ATK_nearest_weakest
+
+that disperses attacks. In sce-2m, self units are clustered and the enemy is dispersed, resulting in the highest Q-value for the script action_ATK_clu_nearest_weakest which directs all units to simultane-ously attack the globally nearest weakest target. Scenarios sce-3 and sce-3m present significantly higher complexity, and the corresponding Q-value heatmaps re-veal richly diversified tactical preferences. The observed heterogeneity across scripts and clusters demonstrates that HRL-IM/CBS flexibly acquires a diverse repertoire of locally conditioned tactics, thereby precluding convergence to a single, globally uniform policy. Additionally, the similarity in unit distribution across the two scenarios yields congruent patterns across several clustering schemes. Figure 10 c) and f) indicate that the clustering schemes corre-sponding to Ck = 5 , 7, 8 are not reasonable, which is determined by the characteristics of the unit distribution. For 
+
+Ck = 1 , the script action_DEF_clu_nearest_weakest is evidently inappropriate, as the interlaced formation of units of both sides makes collective retreat extremely unfavorable. Moreover, across all scenarios, the scripts do_nothing 
+
+and do_randomly consistently yield the lowest Q-values, as expected. The aforementioned results provide interpretable analysis of tactical preferences, with this advantage attributed to the focus of combat space clustering on local coordination and generalization of combat situations. Additionally, the multi-Q-table model fundamentally preserves rewards for state-action pairs, providing a foundation for clustering-based analysis. 
+
+## 6 Conclusion 
+
+In this paper, a HRL-IM/CBS framework is proposed combined with influence map and script methods for RTS micro. To effectively reduce the size of the state and action space, an influence map hashing mechanism is designed to express the high-dimensional combat space information and cluster-based script is introduced to ensure the flexible control of global team or local units. With a hierarchical Q-learning architecture combined with combat space clustering and reward allocation mechanism, the tactical collaboration can be decomposed into upper and lower level tasks. For the upper level, there is one Q-table representing team tactics at the spatial clustering level, while for the lower level, numerous Q-tables represent the regulations of unit actions at the combat level. With utilizing only classical Q-learning for training from scratch, a lightweight but interpretable model has been created, which has been verified by experimental analysis on the fair scenarios established in this study. By directly deploying the trained model on the original map and its mirror map, the proposed method has demonstrated effectiveness and wide suitability on different scenarios. In future work, the application of machine-learning techniques for automatic script extraction is planned to be inves-tigated instead of relying on manual design. Furthermore, exploration will be conducted on how the trained model can serve as a forward knowledge model to support advanced algorithms such as evolutionary computation, facilitat-ing the generation of high-quality solutions and providing guidance for evolution. In parallel, real-time clustering of game-state data streams and the corresponding state-distance metrics will be studied, so as to pave the way for defin-ing neighborhood relationships among RTS game solution sequences. Through these efforts, it is anticipated that this 18 trustworthy, domain-knowledge-driven model will play a greater role in both AI research and real-world multi-agent collaborative scheduling problems that share essential similarities with RTS micromanagement. 
+
+## References 
+
+[1] G. N. Yannakakis and J. Togelius, Artificial Intelligence and Games . Cham: Springer International Publishing, 2018. [2] S. Ontañón, G. Synnaeve, A. Uriarte, F. Richoux, D. Churchill, and M. Preuss, “A survey of real-time strategy game AI research and competition in StarCraft,” IEEE Transactions on Computational Intelligence and AI in Games , vol. 5, no. 4, pp. 293–311, 2013. [3] S. Ontañón, G. Synnaeve, A. Uriarte, F. Richoux, D. Churchill, and M. Preuss, RTS AI Problems and Techniques .Cham: Springer International Publishing, 2024, pp. 1595–1605. [4] L. Critch and D. Churchill, “Combining influence maps with heuristic search for executing sneak-attacks in RTS games,” in 2020 IEEE Conference on Games (CoG) , 2020, pp. 740–743. [5] J. R. H. Mariño, R. O. Moraes, C. Toledo, and L. H. S. Lelis, “Evolving Action Abstractions for Real-Time Planning in Extensive-Form Games,” in Proceedings of the AAAI Conference on Artificial Intelligence , vol. 33, 2019, pp. 2330–2337. [6] W. J. Zhou, B. Subagdja, A.-H. Tan, and D. W.-S. Ong, “Hierarchical control of multi-agent reinforcement learning team in real-time strategy (RTS) games,” Expert Systems with Applications , vol. 186, p. 115707, 2021. [7] H. Jiang, G. Wang, S. Li, J. Zhang, L. Yan, and X. Xu, “Hierarchical Reinforcement Learning Based on Macro Actions,” Complex & Intelligent Systems , vol. 11, no. 6, p. 247, 2025. [8] D. Xie and X. Zhong, “Semicentralized deep deterministic policy gradient in cooperative StarCraft games,” IEEE Transactions on Neural Networks and Learning Systems , vol. 33, no. 4, pp. 1584–1593, 2022. [9] Y. Ye, W. Yang, K. Qiu, and J. Zhang, “Three-dimensional attention transformer for state evaluation in real-time strategy games,” 2025, arXiv preprint arXiv:2501.03832. [10] J. Hu, S. Jiang, S. A. Harding, H. Wu, and S.-w. Liao, “Rethinking the Implementation Tricks and Monotonicity Constraint in Cooperative Multi-Agent Reinforcement Learning,” 2023, arXiv preprint arXiv:2102.03479. [11] S. Manandhar and B. Banerjee, “Reinforcement actor-critic learning as a rehearsal in MicroRTS,” The Knowledge Engineering Review , vol. 39, no. e6, pp. 1–15, 2024. [12] S. Qi, S. Zhang, Q. Wang, J. Zhang, and X. Wang, “Distributed scalable multi-agent reinforcement learning with intrinsic-episodic dual exploration,” Future Generation Computer Systems , vol. 175, p. 108040, 2026. [13] A. Dockhorn and R. Kruse, “State and Action Abstraction for Search and Reinforcement Learning Algorithms,” in Artificial Intelligence in Control and Decision-making Systems , Y. P. Kondratenko, V. Kreinovich, W. Pedrycz, A. Chikrii, and A. M. Gil-Lafuente, Eds. Cham: Springer Nature Switzerland, 2023, vol. 1087, pp. 181–198. [14] A. Uriarte and S. Ontañón, “Kiting in RTS Games Using Influence Maps,” in Artificial Intelligence and Interac-tive Digital Entertainment Conference , 2012, p. 6. [15] A. Mici´ c, D. Arnarsson, and V. Jónsson, “Developing game AI for the real-time strategy game StarCraft,” Ph.D. dissertation, Reykjavik University, 2011. [16] A. Shantia, E. Begue, and M. Wiering, “Connectionist Reinforcement Learning for Intelligent Unit Micro Man-agement in StarCraft,” in Proceedings of the International Joint Conference on Neural Networks (IJCNN) , 2011, pp. 1794–1801. [17] H. Park and K.-J. Kim, “MCTS with influence map for general video game playing,” in 2015 IEEE Conference on Computational Intelligence and Games (CIG) , 2015, pp. 534–535. [18] X. Lu, A. Xue, P. Lio, and P. Hui, “Intelligent decision making based on the combination of deep reinforcement learning and an influence map,” Applied Sciences , vol. 12, no. 22, p. 11458, 2022. [19] A. A. Sánchez-Ruiz and M. Miranda, “A machine learning approach to predict the winner in StarCraft based on influence maps,” Entertainment Computing , vol. 19, pp. 29–41, 2017. [20] G. Synnaeve and P. Bessière, “A Bayesian Model for RTS Units Control Applied to StarCraft,” in 2011 IEEE Conference on Computational Intelligence and Games (CIG) , 2011, pp. 190–196. [21] Z. Yang and S. Ontañón, “An experimental survey on methods for integrating scripts into adversarial search for RTS games,” IEEE Transactions on Games , vol. 14, no. 2, pp. 117–125, 2022. 19 [22] S. Xu, H. Kuang, Z. Zhi, R. Hu, Y. Liu, and H. Sun, “Macro action selection with deep reinforcement learning in starcraft,” in Proceedings of the AAAI Conference on Artificial Intelligence and Interactive Digital Entertainment ,vol. 15, 2019, pp. 94–99. [23] R.-Z. Liu, Z.-J. Pang, Z.-Y. Meng, W. Wang, Y. Yu, and T. Lu, “On Efficient Reinforcement Learning for Full-length Game of StarCraft II,” Journal of Artificial Intelligence Research , vol. 75, pp. 213–260, 2022. [24] R. Moraes, J. Marino, L. Lelis, and M. Nascimento, “Action abstractions for combinatorial multi-armed bandit tree search,” in Proceedings of the AAAI Conference on Artificial Intelligence and Interactive Digital Entertain-ment , vol. 14, 2018, pp. 74–80. [25] R. O. Moraes and L. Lelis, “Asymmetric action abstractions for multi-unit control in adversarial real-time games,” in Proceedings of the AAAI Conference on Artificial Intelligence , vol. 32, 2018. [26] D. Churchill and M. Buro, “Portfolio greedy search and simulation for large-scale combat in StarCraft,” in 2013 IEEE Conference on Computational Inteligence in Games (CIG) , 2013, pp. 1–8. [27] D. Churchill, A. Saffidine, and M. Buro, “Fast heuristic search for RTS game combat scenarios,” in Proceedings of the AAAI Conference on Artificial Intelligence and Interactive Digital Entertainment , vol. 8, 2012, pp. 112– 117. [28] R. K. Balla and A. Fern, “UCT for Tactical Assault Planning in Real-Time Strategy Games,” in Proceedings of the International Joint Conference on Artificial Intelligence , 2009, pp. 40–45. [29] N. Justesen, B. Tillman, J. Togelius, and S. Risi, “Script- and cluster-based UCT for StarCraft,” in 2014 IEEE Conference on Computational Intelligence and Games , 2014, pp. 1–8. [30] L. H. S. Lelis, “Stratified strategy selection for unit control in real-time strategy games,” in Proceedings of the Twenty-Sixth International Joint Conference on Artificial Intelligence , 2017, pp. 3735–3741. [31] Z. Liang, J. Cao, S. Jiang, D. Saxena, and H. Xu, “Hierarchical Reinforcement Learning with Opponent Mod-eling for Distributed Multi-agent Cooperation,” in 2022 IEEE 42nd International Conference on Distributed Computing Systems (ICDCS) , 2022, pp. 884–894. [32] B. Xu, Q. Zhou, J. Shi, and S. Li, “Hierarchical Q-learning network for online simultaneous optimization of en-ergy efficiency and battery life of the battery/ultracapacitor electric vehicle,” Journal of Energy Storage , vol. 46, p. 103925, 2022. [33] Q. Yang and S.-J. Yoo, “Hierarchical Reinforcement Learning-Based Routing Algorithm With Grouped RSU in Urban VANETs,” IEEE Transactions on Intelligent Transportation Systems , vol. 25, no. 8, pp. 10 131–10 146, 2024. [34] G. C. Barros e Sá and C. A. G. Madeira, “Deep reinforcement learning in real-time strategy games: A systematic literature review,” Applied Intelligence , vol. 55, no. 4, p. 243, 2024. [35] O. Vinyals, I. Babuschkin, W. M. Czarnecki, M. Mathieu, A. Dudzik, J. Chung, D. H. Choi, R. Powell, T. Ewalds, P. Georgiev, J. Oh, D. Horgan, M. Kroiss, I. Danihelka, A. Huang, L. Sifre, T. Cai, J. P. Agapiou, M. Jaderberg, A. S. Vezhnevets, R. Leblond, T. Pohlen, V. Dalibard, D. Budden, Y. Sulsky, J. Molloy, T. L. Paine, C. Gulcehre, Z. Wang, T. Pfaff, Y. Wu, R. Ring, D. Yogatama, D. Wünsch, K. McKinney, O. Smith, T. Schaul, T. Lillicrap, K. Kavukcuoglu, D. Hassabis, C. Apps, and D. Silver, “Grandmaster level in StarCraft II using multi-agent reinforcement learning,” Nature , vol. 575, no. 7782, pp. 350–354, 2019. [36] L. Han, J. Xiong, P. Sun, X. Sun, M. Fang, Q. Guo, Q. Chen, T. Shi, H. Yu, X. Wu, and Z. Zhang, “TStarBot-X: An open-sourced and comprehensive study for efficient league training in StarCraft II full game,” 2021, arXiv preprint arXiv:2011.13729. [37] Y. Li, Y. Fang, and Z. Akhtar, “Accelerating deep reinforcement learning model for game strategy,” Neurocom-puting , vol. 408, pp. 157–168, 2020. [38] Y. Wang, Y. Wang, F. Tian, J. Ma, and Q. Jin, “Intelligent Games Meeting with Multi-Agent Deep Reinforcement Learning: A Comprehensive Review,” Artificial Intelligence Review , vol. 58, no. 6, p. 165, 2025. [39] P. Peng, Y. Wen, Y. Yang, Q. Yuan, Z. Tang, H. Long, and J. Wang, “Multiagent bidirectionally-coordinated nets: Emergence of human-level coordination in learning to play StarCraft combat games,” 2017, arXiv preprint arXiv:1703.10069. [40] J. Foerster, G. Farquhar, T. Afouras, N. Nardelli, and S. Whiteson, “Counterfactual multi-agent policy gradients,” in Proceedings of the AAAI Conference on Artificial Intelligence , vol. 32, 2018. [41] K. Shao, Y. Zhu, and D. Zhao, “StarCraft micromanagement with reinforcement learning and curriculum transfer learning,” IEEE Transactions on Emerging Topics in Computational Intelligence , vol. 3, no. 1, pp. 73–84, 2019. 20 [42] T. Li, D. Shi, S. Jin, Z. Wang, H. Yang, and Y. Chen, “Multi-Agent Hierarchical Graph Attention Actor–Critic Reinforcement Learning,” Entropy , vol. 27, no. 1, p. 4, 2025. [43] S. Panda, “Toward Explainable Reinforcement Learning and a Custom RL Benchmark for Strategic Decision-Making,” Master’s thesis, The Pennsylvania State University, 2025. [44] J. R. Mariño and C. F. Toledo, “Evolving interpretable strategies for zero-sum games,” Applied Soft Computing ,vol. 122, p. 108860, 2022. [45] T. K. Mathes, J. Inman, A. Colón, and S. Khan, “CODEX: A Cluster-Based Method for Explainable Reinforce-ment Learning,” 2023, arXiv preprint arXiv:2312.04216. [46] Y. Hou, X. Liang, J. Zhang, Q. Yang, A. Yang, and N. Wang, “Exploring the Use of Invalid Action Masking in Reinforcement Learning: A Comparative Study of On-Policy and Off-Policy Algorithms in Real-Time Strategy Games,” Applied Sciences , vol. 13, no. 14, p. 8283, 2023. [47] P. Endla, F. J. P, T. V, D. D. Bhavani, M. Tiwari, and T. T. V, “Deep Reinforcement Learning for Real-Time Strategy Games Techniques and Open Challenges,” in ITM Web of Conferences , vol. 76. EDP Sciences, 2025, p. 01006. [48] R. Jiang, Y. Zhai, Y. Zheng, Y. Li, and Y. Liu, “OB-HPPO: An Option and Intrinsic Curiosity Based Hierar-chical Reinforcement Learning Approach for Real-Time Strategy Games,” in Advanced Intelligent Computing Technology and Applications , D.-S. Huang, X. Zhang, and Y. Pan, Eds. Singapore: Springer Nature, 2024, pp. 443–454. [49] L. Li, T. J. Walsh, and M. L. Littman, “Towards a Unified Theory of State Abstraction for MDPs,” in AI&M ,2006. [50] C. J. C. H. Watkins, “Learning from Delayed Rewards,” Ph.D. dissertation, University of Cambridge, 1989. [51] T. Rashid, M. Samvelyan, C. S. de Witt, G. Farquhar, J. Foerster, and S. Whiteson, “Monotonic Value Function Factorisation for Deep Multi-Agent Reinforcement Learning,” Journal of Machine Learning Research , vol. 21, no. 178, pp. 1–51, 2020. [52] K. Son, D. Kim, W. J. Kang, D. E. Hostallero, and Y. Yi, “QTRAN: Learning to Factorize with Transformation for Cooperative Multi-Agent Reinforcement Learning,” in Proceedings of the 36th International Conference on Machine Learning . PMLR, 2019, pp. 5887–5896. [53] A. Tampuu, T. Matiisen, D. Kodelja, I. Kuzovkin, K. Korjus, J. Aru, J. Aru, and R. Vicente, “Multiagent Coop-eration and Competition with Deep Reinforcement Learning,” PLOS ONE , vol. 12, no. 4, p. e0172395, 2017. [54] P. Sunehag, G. Lever, A. Gruslys, W. M. Czarnecki, V. Zambaldi, M. Jaderberg, M. Lanctot, N. Sonnerat, J. Z. Leibo, K. Tuyls, and T. Graepel, “Value-Decomposition Networks For Cooperative Multi-Agent Learning,” 2017, arXiv preprint arXiv:1706.05296. [55] C. Yu, A. Velu, E. Vinitsky, J. Gao, Y. Wang, A. Bayen, and Y. Wu, “The Surprising Effectiveness of PPO in Cooperative Multi-Agent Games,” Advances in Neural Information Processing Systems , vol. 35, pp. 24 611– 24 624, 2022. 21 The supplemental file presents the comprehensive experimental results of ablation study and the visualization of the distribution of sampled sates. 
+
+## A Supplementary Material 
+
+A.1 Ablation Study 
+
+Table A.1: Component ablation study of HRL-IM/CBS across all scenarios Metric Algorithm sce1 sce1m sce2 sce2m sce3 sce3m Train Win Rate HRL-IM/CBS 0.997 ± 0.005 0.980 ± 0.020 1.000 ± 0.000 0.997 ± 0.005 0.983 ± 0.015 0.898 ± 0.078                                                                                                                                                                                                                                                                               
+
+> HRL-CBS 0.990 ±0.008 0.842 ±0.113 0.995 ±0.005 0.997 ±0.007 0.852 ±0.075 0.427 ±0.232 RL-IM/Script 0.892 ±0.090 0.578 ±0.204 1.000 ±0.000 0.927 ±0.054 0.792 ±0.128 0.204 ±0.082 RL-Script 0.683 ±0.205 0.614 ±0.230 0.921 ±0.069 0.485 ±0.475 0.871 ±0.096 0.338 ±0.338 Test Win Rate HRL-IM/CBS 0.999 ±0.003 0.985 ±0.015 0.999 ±0.003 1.000 ±0.000 0.995 ±0.005 0.925 ±0.015
+> HRL-CBS 0.990 ±0.014 0.831 ±0.093 1.000 ±0.000 1.000 ±0.000 0.890 ±0.070 0.485 ±0.207 RL-IM/Script 0.903 ±0.071 0.573 ±0.224 0.988 ±0.016 0.936 ±0.064 0.857 ±0.093 0.221 ±0.106 RL-Script 0.727 ±0.184 0.581 ±0.213 0.920 ±0.092 0.500 ±0.500 0.845 ±0.116 0.370 ±0.370 Train Final Score HRL-IM/CBS 47.847 ±1.233 24.513 ±0.361 77.246 ±0.538 51.773 ±4.190 46.183 ±5.288 44.794 ±5.823
+> HRL-CBS 43.231 ±2.256 15.643 ±5.022 59.965 ±12.538 51.233 ±3.369 37.285 ±13.045 -20.169 ±21.769 RL-IM/Script 21.019 ±23.114 2.273 ±7.578 63.184 ±17.537 44.274 ±2.447 26.985 ±18.872 -17.499 ±5.707 RL-Script 7.800 ±18.638 5.352 ±10.785 21.098 ±2.879 11.071 ±23.395 28.430 ±14.378 -29.963 ±32.142 Test Final Score HRL-IM/CBS 48.959 ±2.444 25.697 ±0.356 78.109 ±0.861 52.409 ±4.625 48.332 ±4.954 47.158 ±2.665
+> HRL-CBS 43.475 ±2.362 15.048 ±5.258 62.203 ±12.724 52.238 ±3.511 42.479 ±12.881 -15.163 ±21.747 RL-IM/Script 19.151 ±22.818 6.159 ±9.462 64.259 ±17.850 47.080 ±2.350 32.777 ±16.993 -16.080 ±7.368 RL-Script 11.569 ±17.629 2.830 ±12.140 22.288 ±4.696 11.809 ±24.589 28.092 ±18.769 -30.367 ±35.178
+
+Table A.1 shows the quantitative experimental results of different ablation variants in all scenarios, including win rates and final scores. The experimental results demonstrate that the complete HRL-IM/CBS outperforms all ablation variants, proving the unique contribution of each component. Notably, in sce-3m, all ablation variants fail to achieve satisfactory results, with win rates below 50%. 
+
+A.2 Distribution of Sampled States 
+
+For state value landscape distribution, the state space is projected onto a two-dimensional plane via multidimensional scaling (MDS) and the mean state value is interpolated to yield a continuous landscape. The color range of contour maps transitions from blue (low-value, unfavorable states) to red (high-value, favorable states). Coloured dots denote states visited exclusively by a single algorithm, whereas gray dots indicate states visited by more than one algorithms. Black-edged stars highlight the states contained in the best samples of each algorithm. Attributed to the influence map hashing, the distribution of states sampled by different algorithms can be readily visualized and analyzed. Viewed from an alternative perspective, the original state space depicted in Figure A.1 is characteristically vast, rugged and complex. The influence map hashing achieves an effective compression of the state space by leveraging the battlefield situation, while the accuracy loss induced by this compression is offset by efficient exploration driven by cluster-based scripts. The proposed HRL-IM/CBS does not incur excessive visits to low-value regions as a consequence of its state-space processing. Instead, through the synergistic interaction between the co mponents, the proposed algorithm retains the ability to approach high-value regions. It should be noted that the details of game state clustering, the distance metric between states, and the landscape visualization based on the state-distance matrix are still under investigation and are therefore not elaborated in this paper. Nevertheless, the tool suffices to illustrate the sample efficiency of the proposed method. From the figure, it is evident that, despite the rugged landscape, the states explored by HRL-IM/CBS are located closer to high-value regions, and the sampling density is skewed toward larger state values, demonstrating that the algorithm avoids low-reward regions and gravitates toward promising areas during training. 22 HRL_IMCBS COMA QTRAN QMIX IQL VDN 100 80 60 40 20 0 20 40 
+
+State Value 0
+
+200k 
+
+400k 
+
+> Frequency
+
+80 60 40 20 0 20 40 60 
+
+State Value 0
+
+250k 
+
+500k 
+
+750k 
+
+> Frequency
+
+150 100 50 0 50 
+
+State Value 0
+
+500k 
+
+1000k 
+
+> Frequency −120
+> −100
+> −80
+> −60
+> −40
+> −20
+> 0
+> 20
+> 40
+> 60
+
+(a) sce-1 −100  
+
+> −80
+> −60
+> −40
+> −20
+> 0
+> 20
+> 40
+> 60
+> 80
+
+(b) sce-2 −250  
+
+> −200
+> −150
+> −100
+> −50
+> 0
+> 50
+
+(c) sce-3 120 100 80 60 40 20 0 20 
+
+State Value 0
+
+500k 
+
+1000k 
+
+1500k 
+
+> Frequency
+
+80 60 40 20 0 20 40 60 
+
+State Value 0
+
+250k 
+
+500k 
+
+750k 
+
+> Frequency
+
+150 100 50 0 50 
+
+State Value 0
+
+1000k 
+
+2000k 
+
+> Frequency −120
+> −100
+> −80
+> −60
+> −40
+> −20
+> 0
+> 20
+> 40
+> 60
+
+(d) sce-1m −140  
+
+> −120
+> −100
+> −80
+> −60
+> −40
+> −20
+> 0
+> 20
+> 40
+> 60
+
+(e) sce-2m −250  
+
+> −200
+> −150
+> −100
+> −50
+> 0
+> 50
+
+(f) sce-3m 
+
+Figure A.1: State-sampling frequency weighted density ( 95 .4% HDI, ≈ ± 2σ) and distribution of sampled states over state value landscape for different algorithms across all scenarios. 23

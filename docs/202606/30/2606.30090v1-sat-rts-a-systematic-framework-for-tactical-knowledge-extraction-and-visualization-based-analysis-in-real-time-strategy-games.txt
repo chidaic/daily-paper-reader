@@ -1,0 +1,4140 @@
+Title: SAT-RTS: A systematic framework for tactical knowledge extraction and visualization-based analysis in real-time strategy games
+
+URL Source: https://arxiv.org/pdf/2606.30090v1
+
+Published Time: Tue, 30 Jun 2026 02:28:00 GMT
+
+Number of Pages: 37
+
+Markdown Content:
+# SAT-RTS: A SYSTEMATIC FRAMEWORK FOR TACTICAL KNOWLEDGE EXTRACTION AND VISUALIZATION -BASED ANALYSIS IN REAL -TIME STRATEGY GAMES 
+
+Chunhui Bai 1,3,4, Changhe Li 2,5,∗, Yuqiang Li 2,5, Lei Liu 2,5, Shoufei Han 2,5
+
+baichunhui@cug.edu.cn , changhe.lw@gmail.com , yuqiangli@aust.edu.cn liulei970507@163.com , hanshoufei@gmail.com  
+
+> 1
+
+School of Artificial Intelligence and Automation, China University of Geosciences, Wuhan 430074, China  
+
+> 2
+
+State Key Laboratory of Digital Intelligent Technology for Unmanned Coal Mining, Anhui University of Science & Technology, Huainan 232001, China  
+
+> 3
+
+Hubei Key Laboratory of Advanced Control and Intelligent Automation for Complex Systems, Wuhan 430074, China  
+
+> 4
+
+Engineering Research Center of Intelligent Technology for Geo-Exploration, Ministry of Education, Wuhan 430074, China  
+
+> 5
+
+School of Artificial Intelligence, Anhui University of Science & Technology, Hefei 231131, China  
+
+> ∗
+
+Corresponding author. 
+
+ABSTRACT 
+
+Efficient tactical knowledge extraction and analysis in real-time strategy (RTS) games micromanage-ment are constrained by the high-dimensional coupled state-action sequential data and the black-box decision-making process. Current research rarely provides a hierarchical visualization-based attri-bution analysis from the perspective of data decoupling and abstraction. To facilitate interpretable tactical knowledge extraction and visualization-based analysis in RTS games, a systematic framework named state-action-tactic analysis pipeline (SAT-RTS) is proposed. To decipher the deep-seated drivers of critical decisions in RTS learning systems, this work integrates interpretable visualization with the automated extraction of latent tactical patterns from high-dimensional sequence data. By adapting a cluster-centric BK-tree algorithm and incorporating specialized distance metrics designed to quantify multi-aspect similarities, the proposed framework facilitates robust state-stream abstrac-tion. Furthermore, a rule-based multi-label extraction method is developed to transform unstructured state-action sequences into discrete and interpretable tactical labels, effectively bridging the gap between raw behavioral data and high-level tactical insights. By holistically integrating these compu-tational methods into a hierarchical visualization-based pipeline, the proposed framework effectively addresses the challenges of processing massive real-time data streams while providing fitness land-scape visualizations and analytical insights to decipher deep-seated tactical drivers. Comprehensive experiments demonstrate that the proposed SAT-RTS significantly enhances the interpretability and efficiency of tactical analysis in complex RTS environments. 
+
+K eywords Knowledge extraction · Visualization-based analysis · Real-time strategy games · Attribution analysis ·
+
+Data stream clustering 
+
+1 Introduction 
+
+Real-time strategy (RTS) games, characterized by real-time confrontation among multiple agents and at hierarchical strategic levels, have been regarded as a major challenge for artificial intelligence (AI) algorithms [ 1 ]. Difficulties become particularly complex under the coupling effect of large-scale state-action space and black-box spatial-temporal reasoning. Deep Reinforcement learning (DRL) methods have been widely applied to RTS micromanagement as an ideal testbed [ 2]. However, the massive state space and reliance on sparse rewards often result in highly fragmented and unstructured policies, making the underlying tactical logic difficult to interpret [ 3, 4]. Compounding this issue, even well-trained learning systems optimized for reward maximization lack the transparency necessary to reveal the underlying decision-making mechanisms [5]. Large-scale and black-box nature of RTS games arises from multiple coupled factors. The multi-level tactical requirements necessitate that numerous units execute parameterized actions across continuous maps, resulting in game 
+
+> arXiv:2606.30090v1 [cs.AI] 29 Jun 2026
+
+RTS Game Intrinsic Characteristics 
+
+Large-scale Coupled State-action Data Stream 
+
+Black-box Decision Making Process 
+
+Rearch Gap 
+
+Interpretable Analysis with State Abstraction for RTS Tactics 
+
+SAT-RTS: State-Action-Tactic Analysis Pipeline 
+
+Multi-aspect Similarity Assessment Fitness Landscape Visualization 
+
+Cluster-centric BK-tree Tactic Extraction and Coherent Analysis Pipeline Figure 1: Key challenges in tactical extraction and analysis for RTS micromanagement and the motivation of the proposed SAT-RTS pipeline states that predominantly manifest as large-scale and high-dimensional data [ 6]. Stochasticity and decision-observation disparities obscure the complex coordination and causal logic among units, hindering AI applications in RTS and even real-world scenarios. Consequently, addressing large-scale state-action space processing and interpretable analysis in RTS games has emerged as pivotal research directions [ 7]. To better navigate these complexities, Figure 1 illustrates the key challenges in RTS tactic analysis and the conceptual motivation of the proposed framework. Existing research has advanced state abstraction [ 8, 9 ] and interpretable analysis [ 10 , 11 , 12 ] for RTS games to address the challenges of large-scale state spaces and black-box decision-making. However, research remains limited in exposing the underlying tactical rationales that drive critical decisions within a coherent framework. In particular, the massive entanglement of state-action data increases the difficulty of distilling tactical intent from complex game streams, while the lack of fitness landscape and visualization techniques further limits the interpretable analysis of reward-driven Reinforcement learning (RL) policies [13]. To address the existing limitations, this work proposes the interpretable state-action-tactic analysis pipeline for RTS micromanagement (SAT-RTS). The primary contributions of this work are summarized as follows: 
+
+• It proposes a multi-aspect similarity assessment framework to mitigate the analytical challenges posed by massive coupled state-action data. By quantifying similarities across states, state-transition sequences and action patterns, the method establishes hierarchical normative criteria that facilitate subsequent high-level analysis. 
+
+• It designs an efficient cluster-centric BK-tree algorithm to cluster complex state data streams into representative nodes. Crucially, the fitness landscape visualization and action sequence pattern mining for RTS microman-agement are developed as a bridge between black-box behaviors and intuitive tactics, constituting a multi-level visual toolset for tactical analysis. 
+
+• It implements a rule-based multi-label tactic extraction method and comprehensive attribution analyses to transform subjective tactic perceptions into explicit semantic knowledge. Furthermore, the decoupling of state-action data empowers the quantitative cross-analysis of states and tactics, providing in-depth tactical insights and elucidating the underlying drivers of critical decision-making. The remainder of the paper is organized as follows. Section 2 provides an overview of the previous related work. Section 3 describes the method proposed in this work in detail. Section 4 shows the comparative experimental results, the fitness landscape visualization for RTS game micromanagement and the comprehensive tactic analysis. Section 5 concludes the work and outlines future works. 
+
+2 Related work 
+
+This section briefly reviews the related works for large-scale state space abstraction and interpretable analysis in RTS games. The former focuses on reducing high-dimensional observation complexity, while the latter discusses the underlying decision-making logic. 22.1 Large-scale state abstraction 
+
+Large-scale state space presents an inherent challenge in RTS games [ 14 ]. Various state abstraction techniques are widely employed in learning and optimization, primarily comprising compression and aggregation. Compression preserves the most essential state features to reduce data dimensionality [ 15 , 16 ], whereas aggregation consolidates numerous similar states into the same formation semantics, contributing to interpretability in model training or attribution analysis [ 17 , 18 ]. Open problems including the trade-off between abstraction accuracy and training time in large-scale environments are particularly pronounced in RTS games [7]. 
+
+2.1.1 State compression 
+
+State compression can effectively reduce high-dimensional state data [ 19 ], yet in RTS games, balancing representational fidelity, semantic interpretability and scalability remains challenging. Discretization of continuous features is a common approach, yet suffers from information loss and degradation in decision accuracy [ 20 ]. Similarly, probability-based army clustering focuses solely on unit type composition, lacking spatial distribution and HP information critical to combat effectiveness [ 21 ]. Neural networks encode high-dimensional states within low-dimensional latent spaces as implicit dimensionality reduction [ 22 ]. Although lightweight semantic layers improve upon this by preserving decision quality [ 23 ], they remain focused on computational efficiency rather than explicit tactical interpretation. Domain-specific predicate sets and DSLs can achieve semantic representations through rule-based formulations [ 24 , 25 ], yet their applicability is constrained by problem complexity and rule set scalability [19]. Spatial abstraction through geometric representation, notably the theoretical foundation of topological nodes centered on choke points [ 8 ], has been extensively implemented in game-tree search in RTS games [ 26 , 27 , 28 ]. Furthermore, influence map provides an effective spatial abstraction that encodes terrain and unit distribution, preserving firepower distribution patterns via numerical matrix [ 20 , 29 ]. Nevertheless, spatial abstraction methods face limitations in state similarity assessment and applicability to advanced techniques, exemplified by the challenge of performing similarity-based consolidation and efficient storage-retrieval of influence map representations in RL. 
+
+2.1.2 State aggregation 
+
+While aggregating large-scale states through tactical formation similarity can mitigate the curse of dimensionality, direct clustering based on Euclidean distance remains difficult due to complex unit distributions. To address this, recent studies have shifted toward either identifying formations as learnable tactical elements, or aggregating states with similar outcomes. Regarding the former, formation awareness can be incorporated into online learning to tackle the challenges of large-scale and sparse-reward problems. The semantic clustering module (SCM) leverages feature dimensionality reduction (FDR) to achieve automated online semantic segmentation of state spaces synchronously during training [ 30 ]. Nevertheless, this method is deeply integrated into the online training process, and its effectiveness in RTS environments remains unverified. Formation-aware exploration (FoX) partitions the joint state space into local observations and defines formations based on observation differences and various index sets [ 9 ]. However, this formation definition is designed to serve efficient diversity exploration in state spaces and intrinsic formation maintenance. The applicability of min-max agent interaction relationships exhibits potential limitations in complex formations, and formation interpretability is constrained by feature dimensionality reduction and encoding. Alternatively, from a result-oriented perspective, similar states should exhibit similar rewards and transitions. Elastic Monte Carlo Tree Search (MCTS) [ 31 ] and size-constrained state abstraction [ 32 ] achieve automatic state aggregation in RTS games by approximate Markov decision process (MDP) homomorphism. However, these approaches face limitations including reliance on sampling estimation, lack of semantic interpretability, and delayed processing. Existing large-scale state abstraction methods often struggle with oversimplification or an excessive reliance on online learning. These limitations prevent them from offering the efficient and lightweight similarity metrics necessary for the rapid clustering of real-time state streams, particularly in complex environments of RTS micromanagement. Accordingly, it remains difficult for these methods to implement systematic raw data organization for tactic analysis. 
+
+2.2 Interpretable analysis 
+
+The decision-making process in RTS games is complex and multidimensional, characterized by coupled state-action interactions and long-horizon tactic dependencies [ 33 ]. This complexity has driven researchers to seek interpretability through both the discovery of tactical semantics and the development of visual analytics [ 34 ]. While tactical semantics discovery focuses on extracting behavioral patterns and causal relationships from trajectories, visual analytics transforms multidimensional insights into accessible graphical representations. 32.2.1 Tactical semantics discovery 
+
+The discovery of tactical semantics focuses on the algorithmic extraction of high-level logical patterns and causal relationships from entangled game trajectories. Specific data structures facilitate human-interpretable tactical represen-tations, including derivation trees for automatic strategy script synthesis [ 25 ], behavior trees for representing gameplay styles [ 12 ], and network graphs for mapping step-by-step problem-solving trajectories [ 35 ]. However, these tree-based or network-based methods often incur high computational costs due to extensive simulations. Beyond explicit structural modeling, another research trajectory explores the implicit discovery of tactics through high-dimensional feature encoding. Deep embeddings can map raw data into low-dimensional latent spaces. Building on this, clustering analysis on technology trees [ 11 ] and natural language episode tags [ 36 ] can respectively facilitate game strategy identification and behavior summarization. Similarly, interpretable play-style descriptions can be generated through deep unsupervised clustering of player trajectories [ 37 ]. However, static clusters struggle to capture temporal dynamics, and the tactical semantics of clusters rely heavily on domain knowledge. Furthermore, latent representation clustering may struggle to capture the granular micro-management analysis required in RTS games. 
+
+2.2.2 Visual analytics 
+
+Visualizations involving only statistical data in RTS games cannot adequately present fine-grained strategic information and are not discussed in this paper. For a process-oriented presentation, visualization can be applied to low-level combat elements, including maps, states and action sequences. For instance, heatmaps overlaid on game maps visualize predictions of enemy targets under incomplete information [ 38 ]. By using curved arrows for movements and attack lines between units, the system visualizes offensive and defensive micro-tactics, allowing for a granular analysis of formation effectiveness and unit-level interactions [ 10 ]. However, these visualizations focus on battlefield details, overlooking the identification and highlighting of similar tactical patterns. Furthermore, visualization can also be macroscopic, such as fitness landscapes and spatio-temporal dynamics. Fit-ness landscape analysis in abstract RTS games can explicitly reveal the underlying problem structure [ 39 ], yet the generalizability of these findings to extremely complex environments remains to be verified. Storyline visualization to summarize the movement of heroes has been introduced in League of Legends, effectively condensing complex spatial data into a temporal narrative of team cohesion [ 40 ]. VisuaLeague employs density-based spatial clustering of applications with noise (DBSCAN) to aggregate spatio-temporal events, enabling the identification of long-term strategic patterns and the analysis of player tendencies through interactive heatmaps [ 41 ]. Similarly, space-time cubes (STC) achieve 3D visualization for complex spatiotemporal tasks like critical game events and player trajectories [ 42 ]. Although current interpretable game analysis covers low-level game elements and high-level spatio-temporal correlations, a unified architecture that bridges state, action, and tactical levels for cohesive analysis and lucid visualization has yet to be realized. This fragmentation limits the ability to discern how discrete low-level actions manifest as intricate high-level tactics. 
+
+3 Proposed method 
+
+To achieve an accessible multi-level tactical analysis in large-scale state space, this work proposes the multi-aspect analysis pipeline. This framework comprises battlefield situation similarity assessment based on the Hungarian algorithm [ 43 ] and cluster-centric BK-trees, alongside fitness landscape visualization integrating DTW-based distance and dimensionality reduction. Additionally, the proposed framework incorporates action sequence pattern mining and tactic extraction with analysis. The overall architecture of the SAT-RTS pipeline is illustrated in Figure 2. 
+
+3.1 Battlefield situation similarity assessment 3.1.1 Adapted EMD distance metric based on the Hungarian algorithm 
+
+Within the StarCraft II environment, the battlefield situation is represented as a state vector through the observer, which typically comprises the three-dimensional coordinates and current HP of each unit from both players. However, due to limitations in the underlying engine, only global observation information can be obtained, and unit matching cannot be guaranteed. Consequently, the inability to determine the corresponding units from the state vectors poses a challenge for state distance measurement, specifically the combat unit matching problem. Wasserstein distance, also known as Earth Mover’s Distance (EMD), utilizes optimal transport theory to measure the difference between two probability distributions. This concept can be extended to optimal unit matching in point sets to achieve distance measurement between unit sets. 4Figure 2: The overall architecture of the SAT-RTS pipeline This work proposes the adapted EMD for game state distance metric, where the unit matching problem can be transformed into a linear assignment problem (LAP) by constructing a cost matrix where entries represent the Euclidean distance between units in different states. Given two states 𝑆 𝐴 and 𝑆 𝐵 , let point set 
+
+𝐴 = 𝐴 1 
+
+> 𝑚
+
++ 𝐴 2 
+
+> 𝑛
+
+= {𝑎 11, 𝑎 12, ..., 𝑎 1 
+
+> 𝑚
+
+} + { 𝑎 21, 𝑎 22, ..., 𝑎 2 
+
+> 𝑛
+
+} (1) represents the positions of 𝑚 units from player 1 and 𝑛 units from player 2 in state 𝑆 𝐴 , and point set 
+
+𝐵 = 𝐵 1 
+
+> 𝑚
+
++ 𝐵 2 
+
+> 𝑛
+
+= {𝑏 11, 𝑏 12, ..., 𝑏 1 
+
+> 𝑚
+
+} + { 𝑏 21, 𝑏 22, ..., 𝑏 2 
+
+> 𝑛
+
+} (2) represents the positions of 𝑚 units from player 1 and 𝑛 units from player 2 in state 𝑆 𝐵 . For the distance matrices, let 𝐷 1
+
+denote the 𝑚 × 𝑚 distance matrix and 𝐷 2 denote the 𝑛 × 𝑛 distance matrix, where 𝐷 1 
+
+> 𝑖 𝑗
+
+represents the Euclidean distance between unit 𝑖 in 𝑆 𝐴 and unit 𝑗 in 𝑆 𝐵 for player 1, and 𝐷 2 
+
+> 𝑖 𝑗
+
+represents the Euclidean distance between unit 𝑖 in 𝑆 𝐴 and unit 𝑗 in 𝑆 𝐵 for player 2. The objective is to determine binary assignment matrices 𝑋 1 and 𝑋 2 that minimize the total sum of distances between all matched units 
+
+min (
+
+> 𝑚
+
+∑︁ 
+
+> 𝑖 =1
+> 𝑚
+
+∑︁ 
+
+> 𝑗 =1
+
+𝐷 1 
+
+> 𝑖 𝑗
+
+𝑋 1 
+
+> 𝑖 𝑗
+
++
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =1
+> 𝑛
+
+∑︁ 
+
+> 𝑗 =1
+
+𝐷 2 
+
+> 𝑖 𝑗
+
+𝑋 2 
+
+> 𝑖 𝑗
+
+), (3) subject to: 
+
+> 𝑚
+
+∑︁ 
+
+> 𝑗 =1
+
+𝑋 1 
+
+> 𝑖 𝑗
+
+= 1 ∀𝑖 ∈ { 1, 2, . . . , 𝑚 }, (4) 
+
+> 𝑚
+
+∑︁ 
+
+> 𝑖 =1
+
+𝑋 1 
+
+> 𝑖 𝑗
+
+= 1 ∀ 𝑗 ∈ { 1, 2, . . . , 𝑚 }, (5) 
+
+> 𝑛
+
+∑︁ 
+
+> 𝑗 =1
+
+𝑋 2 
+
+> 𝑖 𝑗
+
+= 1 ∀𝑖 ∈ { 1, 2, . . . , 𝑛 }, (6) 5𝑛 ∑︁ 
+
+> 𝑖 =1
+
+𝑋 2 
+
+> 𝑖 𝑗
+
+= 1 ∀ 𝑗 ∈ { 1, 2, . . . , 𝑛 }, (7) 
+
+𝑋 1 
+
+> 𝑖 𝑗
+
+∈ { 0, 1} ∀𝑖, 𝑗 ∈ { 1, 2, . . . , 𝑚 }, (8) 
+
+𝑋 2 
+
+> 𝑖 𝑗
+
+∈ { 0, 1} ∀𝑖, 𝑗 ∈ { 1, 2, . . . , 𝑛 }, (9) where the constraints ensure that each unit for both players is matched exactly once between the two states. To address scenarios with inconsistent unit quantities, the adapted EMD metric extends the Hungarian-based assignment by introducing virtual point padding. Given two point sets 𝐴 = 𝐴 1 
+
+> 𝑚
+
++ 𝐴 2 
+
+> 𝑛
+
+and 𝐵 = 𝐵 1 
+
+> 𝑚 ′
+
++ 𝐵 2 
+
+> 𝑛 ′
+
+with potentially different cardinalities, this work first extends the smaller set to match the larger cardinality by adding virtual points 
+
+| 𝐴 1 
+
+> 𝑚 ∗
+
+| = |𝐵 1 
+
+> 𝑚 ∗
+
+| = max (𝑚, 𝑚 ′), (10) 
+
+| 𝐴 2 
+
+> 𝑛 ∗
+
+| = |𝐵 2 
+
+> 𝑛 ∗
+
+| = max (𝑛, 𝑛 ′), (11) where virtual points are positioned at distance 𝐷 𝑣 from all real points, with 𝐷 𝑣 ≫ max 𝑖, 𝑗 𝑑 (𝑎 𝑖 , 𝑏 𝑗 ) to explicitly enhance the distance difference between the states of unit scale mismatch. For comprehensive state distance calculation in RTS scenarios, this work incorporates both coordinate distribution and HP differences. After optimal matching is achieved, the unit coordinate distribution distance 𝑑 𝑐 and unit HP difference 
+
+𝑑 ℎ can be expressed as 
+
+𝑑 𝑐 =
+
+> 𝑚
+
+∑︁ 
+
+> 𝑖 =1
+> 𝑚
+
+∑︁ 
+
+> 𝑗 =1
+
+𝐷 1 
+
+> 𝑖 𝑗
+
+𝑋 1 
+
+> 𝑖 𝑗
+
++
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =1
+> 𝑛
+
+∑︁ 
+
+> 𝑗 =1
+
+𝐷 2 
+
+> 𝑖 𝑗
+
+𝑋 2 
+
+> 𝑖 𝑗
+
+(12) and 
+
+𝑑 ℎ =
+
+> 𝑚
+
+∑︁ 
+
+> 𝑖 =1
+> 𝑚
+
+∑︁ 
+
+> 𝑗 =1
+
+𝐻 1 
+
+> 𝐴𝑖
+
+− 𝐻 1 
+
+> 𝐵 𝑗
+
+𝑋 1 
+
+> 𝑖 𝑗
+
++
+
+> 𝑛
+
+∑︁ 
+
+> 𝑖 =1
+> 𝑛
+
+∑︁ 
+
+> 𝑗 =1
+
+𝐻 2 
+
+> 𝐴𝑖
+
+− 𝐻 2 
+
+> 𝐵 𝑗
+
+𝑋 2 
+
+> 𝑖 𝑗
+
+, (13) where 𝐻 1 
+
+> 𝐴𝑖
+
+and 𝐻 1 
+
+> 𝐵 𝑗
+
+represent the HPs of units for player 1 in states 𝑆 𝐴 and 𝑆 𝐵 , respectively, and 𝐻 2 
+
+> 𝐴𝑖
+
+and 𝐻 2 
+
+> 𝐵 𝑗
+
+represent the HPs for player 2. 𝐀  ≈ 1                        
+
+> 𝐀 ≈2
+> 𝐀 ≈3
+> 𝐀  ≈ 2
+> 𝐀 ≈1
+> 𝐀  ≈ 2
+> 𝐀  ≈ 3
+> 𝐀  ≈ 1
+> 𝐀 ≈2
+> 𝐀 ≈3
+> 𝐀 ≈1
+> 𝐀  ≈ 2
+> 𝐀 ≈1
+> 𝐀  ≈ 2
+> 𝐀  ≈ 1
+> 𝐀 ≈2
+> 𝐀 ≈3
+> 𝐀 ≈1
+> 𝐀 ≈2
+> 𝐀 ≈1
+> 𝐀  ≈ 2
+> insert node
+> return node_id
+> b) Insertion
+> c) Query
+> a) Cluster-centric BK-tree
+
+Figure 3: Schematic diagram of the cluster-centric BK-tree with insertion and query The Hungarian algorithm provides 𝑂 (𝑛 3) time complexity for the optimal assignment problem, significantly improving upon the 𝑂 (𝑛 3 log 𝑛 ) complexity of traditional linear programming approaches for EMD computation. From a practical RTS game perspective, the construction of virtual points in cases of inconsistent unit quantities results in larger state distance values, which conforms to the tactical intuition that mismatched unit counts represent fundamentally different battlefield situations. This characteristic enhances the applicability of threshold-based clustering methods while maintaining theoretical foundation in optimal transport theory. 
+
+3.1.2 Stream clustering based on the cluster-centric BK-tree 
+
+The extensive simulation in RTS games generates a vast influx of raw states, which requires efficient battlefield situation grouping for management. To address this requirement, a stream clustering algorithm termed the cluster-centric BK-tree 6is proposed for RTS game state. Unlike conventional methods that store exhaustive state information, the cluster-centric BK-tree retains only representative cluster centers based on the state distance metric and clustering threshold. This selective maintenance significantly reduces the memory overhead and accelerates the insertion and query of nodes, thereby facilitating real-time grouping of large-scale game states. The BK-tree is a metric tree traditionally optimized for spell checking and fuzzy searching via triangle inequality-based pruning [ 44 ]. In this work, the BK-tree is adapted for the stream clustering of RTS game states by redefining nodes as cluster centers rather than individual data points. Furthermore, the conventional edit distance is replaced by a specialized state distance metric, as elaborated in Eqs. (12) and (13), to accommodate the high-dimensional nature of battlefield situations. This adaptation leverages the efficient recursive partitioning of the BK-tree to achieve rapid insertion and query. As shown in Figure 3, the cluster-centric BK-tree algorithm maintains a metric tree and introduces a clustering threshold 𝜖 to store only the cluster center nodes. The tree can be defined as 𝑇 = (𝑉, 𝐸, 𝐷 ), where 𝑉 is a finite non-empty set representing the set of nodes, 𝐸 is the set of pairs of nodes in 𝑉 , representing the set of edges and 
+
+𝐸 ⊆ {( 𝑢, 𝑣, 𝑑 ) | 𝑢, 𝑣 ∈ 𝑉, 𝑢 ≠ 𝑣, 𝑑 = 𝐷 (𝑢, 𝑣 )} , 𝐷 is a custom distance metric representing the distance associated with each edge. Figure 3 b) and Figure 3 c) illustrate the insertion and query processes of the cluster-centric BK-tree, respectively. The algorithm process is described as follows: Step 1: Initialize the root node 𝑉 0 with the initial game state. Step 2: For the new state 𝑉 𝑖 , compute the distance 𝑑 = 𝐷 (𝑉 0, 𝑉 𝑖 ) and round it to 𝑑 ′ = ⌊𝑑 + 0.5⌋.
+
+• If 𝑑 ′ ≤ 𝜖 , return 𝑉 0.
+
+• Otherwise, proceed to Step 3. Step 3: For node 𝑉 0, check if there exists node 𝑉 𝑗 and (𝑉 0, 𝑉 𝑗 , 𝐷 (𝑉 0, 𝑉 𝑗 )) ∈ 𝐸 out (𝑉 0) such that 𝑑 ′ = 𝐷 (𝑉 0, 𝑉 𝑗 ),expressed by the following statement: 
+
+∃𝑉 𝑗 ∈ 𝑉 out (𝑉 0) | ( 𝑉 0, 𝑉 𝑗 , 𝐷 (𝑉 0, 𝑉 𝑗 )) ∈ 𝐸 out (𝑉 0),
+
+s.t. 𝑑 ′ = 𝐷 (𝑉 0, 𝑉 𝑗 ).
+
+• If such a node exists, set 𝑉 𝑗 as the new root and repeat Step 2. 
+
+• Otherwise, proceed to Step 4. Step 4: Insert 𝑉 𝑖 as a child of 𝑉 0 and create the edge (𝑉 0, 𝑉 𝑖 , 𝑑 (𝑉 0, 𝑉 𝑖 )) . Return 𝑉 𝑖 .The cluster-centric BK-tree algorithm handles large-scale data by retaining only the cluster center data through a clustering threshold. It achieves rapid query of state grouping through efficient pruning. The structure of the metric tree enables it to add nodes instantaneously without the need for frequent adjustment. It exhibits low computational complexity and superior real-time performance, thereby fulfilling the computational requirements for stream clustering of game states in RTS games and realizing the similarity assessment of battlefield situation. In terms of clustering accuracy, although the clustering threshold 𝜖 is introduced, the construction of extremely distant virtual points in the designed state distance metric makes this clustering method still applicable to the scenarios discussed in this work. Furthermore, Eqs. (12) and (13) provide two distance metrics for game states, representing the distance of unit coordinate distribution and the difference in unit HPs, respectively. In order to clearly represent the similarity between game states, this work employs a hierarchical construction based on the cluster-centric BK-tree. Specifically, the primary clustering is conducted according to the 𝑑 𝑐 from Eq. (12) to group game states based on unit distribution. Subsequently, the secondary clustering is carried out according to the 𝑑 ℎ from Eq. (13) to further group game states based on the differences in HPs. By implementing the hierarchical construction of the cluster-centric BK-tree, both coarse-grained and fine-grained classifications of game states can be obtained. 
+
+3.2 State-transition sequence similarity assessment 3.2.1 State-transition sequence distance metric 
+
+The design of the state distance metrics and the state clustering algorithm efficiently addresses the issue of assessing the similarity of battlefield situations and achieve a substantial reduction in the size of state space. Benefiting from this, the similarity between state-transition sequences, which correspond to the unfolding of combat events in RTS game micromanagement, can be analyzed. Dynamic Time Warping (DTW) is an effective technique for non-linear sequence alignment, traditionally utilized in trajectory matching [ 45 ]. This work extends the application of DTW to the domain of RTS game state-transition 7sequences. By integrating a specialized state metric, the similarity of state-transition sequence can be effectively assessed. To implement DTW, a cost matrix 𝐷 is constructed where 𝐷 [𝑖 ] [ 𝑗 ] represents the accumulated cost between the first 𝑖 
+
+states of the first sequence and the first 𝑗 states of the second sequence. The matrix is initialized with 𝐷 [0] [ 0] = 0 and remaining elements in the first row and column set to infinity. Each element is computed using the state distance metric 
+
+𝑑 and the minimum accumulated cost from preceding states. The optimal matching path is found by backtracking from 𝐷 [𝑚 ] [ 𝑛 ] to 𝐷 [0] [ 0], where the final matrix value represents the overall sequence distance, with smaller values indicating higher similarity. 
+
+3.2.2 Fitness landscape visualization 
+
+RTS game micromanagement represents a heavily constrained optimization problem where exhaustive inspection of the full search space is computationally infeasible. To circumvent this challenge, the analysis is anchored on the set of solutions sampled by trained RL algorithms. Given that these algorithms effectively concentrate on high-fitness regions, the distributional modality of optimal solutions can be faithfully reflected within these focused areas. This targeted approach ensures that the most relevant problem characteristics can be captured. 
+
+a) Heatmap of distance of state-transition sequences with clustering 30 20 10 0 10 20 
+
+> 10
+> 010 20 30 40 80
+> 60
+> 40
+> 20
+> 020 40 60
+> Fitness Value
+
+b) Fitness landscape with global (sub-)optima with clustering 
+
+c) Actual sequences Figure 4: State-transition sequence distance metric and fitness landscape visualization This work implements fitness landscape visualization based on the distance metric defined between state-transition sequences. By integrating this metric with multidimensional scaling (MDS), the sampled solution distribution is embedded into a low-dimensional manifold, with linear interpolation subsequently employed to approximate the fitness landscape within the convex hull of the points. Notably, global (sub-)optima are presented as illustrative examples to enhance the interpretability of the proposed method. As shown in Figure 4, the visualization encompasses three key elements: a) A distance heatmap of exemplar solutions accompanied by its derived hierarchical clustering. b) The fitness landscape generated via MDS and linear interpolation, marking the positions of global (sub-)optima. c) The actual state-transition sequences, where nodes are spaced by inter-state distances and colored edges represent different clusters. The proposed visualization method is analogously applicable to the visualization of state value landscapes. In this context, the analytical focus shifts from the search space of sequential solutions to the state space of combat scenarios. Specifically, state values are calculated based on the differential in average total HP between opposing sides, providing a quantitative metric of snapshot advantage. By applying the same dimensionality reduction and interpolation pipeline to the distance matrix of clustered states, the state value landscape can be constructed to capture the essential characteristics of the state space. 83.3 Tactic similarity assessment 3.3.1 Action sequence pattern mining 
+
+Beyond analyzing state-transition trajectories, mining action sequence patterns offers significant insights into the decision-making space by capturing the underlying tactical logic of agents. In RTS micromanagement, tactics are often implicitly represented as specific combinations of actions. Although different tactical inclinations may yield identical objectives, they manifest as distinct action sequence patterns. By capturing these patterns, particularly the coupling between individual actions and collective interests, similar tactics can be effectively categorized and compared. Given the strict adjacency constraints in tactical execution, this work employs an exhaustive search with a minimum support threshold ( 𝜎 ) to mine sequential action patterns. Unlike candidate-generation (e.g., Apriori [ 46 ]) or projection-based paradigms (e.g., PrefixSpan [ 47 ]), this approach ensures a complete enumeration of patterns for subsequent analysis. To mark the original sequences, nested patterns are merged based on a bi-objective optimization criterion that aims to maximize coverage length while minimizing the total number of patterns. In alignment with the discussion of fitness landscape visualization, the global (sub-)optima are again employed here as illustrative examples to maintain consistency and enhance interpretability. As shown in Table 1, the action sequences of these exemplar solutions are presented alongside the extracted sequential action patterns. These patterns, identified as frequent occurrences across the entire sampled solution set, are used to mark the original sequences. To ensure the most representative tactical marking, nested patterns are merged based on a bi-objective optimization criterion that maximizes coverage length while minimizing the total number of patterns. 
+
+3.3.2 Tactic extraction and analysis 
+
+While tactic execution is a forward process, extracting implicit tactics from action sequences remains challenging. This work refers to tactic extraction as the identification of actionable knowledge from high-fitness solutions. By integrating mined action sequence patterns with state-transition similarity and fitness landscape visualizations, this work analyzes the tactical consistency across similar solutions to facilitate a comprehensive understanding of decision-making logic. Table 1: Examples of original and marked action sequences with sequential action patterns ID Original/Marked action sequences Sequential action patterns A1 
+
+4𝑏 4𝑏 4𝑏 4 𝑗 1 𝑗 0𝑐 1 𝑗 2 𝑗 4𝑑 2𝑒 2𝑑 3𝑑 1𝑑 1𝑑 1𝑑 1𝑑 0𝑐 ⟨4𝑏 4𝑏 4𝑏 4 𝑗 1 𝑗 0𝑐 ⟩, ⟨4𝑏 4𝑏 4𝑏 4 𝑗 1 𝑗 ⟩, ⟨4𝑏 4𝑏 4 𝑗 1 𝑗 0𝑐 ⟩,
+
+⟨2𝑑 3𝑑 1𝑑 1𝑑 1𝑑 1𝑑 ⟩, ⟨2𝑑 3𝑑 1𝑑 1𝑑 1𝑑 ⟩, ⟨3𝑑 1𝑑 1𝑑 1𝑑 ⟩,
+
+⟨1 𝑗 2 𝑗 ⟩, ... [4𝑏 4𝑏 4𝑏 4 𝑗 1 𝑗 0𝑐 ] [ 1 𝑗 2 𝑗 ]4𝑑 2𝑒 [2𝑑 3𝑑 1𝑑 1𝑑 1𝑑 1𝑑 ]0𝑐 
+
+A2 
+
+4𝑏 4𝑏 4𝑏 4 𝑗 1 𝑗 0𝑐 1 𝑗 2 𝑗 4𝑑 2𝑑 2𝑑 3𝑑 1𝑑 1𝑑 2𝑑 1𝑑 3𝑑 ⟨4𝑏 4𝑏 4𝑏 4 𝑗 1 𝑗 0𝑐 ⟩, ⟨4𝑏 4𝑏 4𝑏 4 𝑗 1 𝑗 ⟩, ⟨4𝑏 4𝑏 4 𝑗 1 𝑗 0𝑐 ⟩,
+
+⟨2𝑑 2𝑑 3𝑑 1𝑑 1𝑑 ⟩, ⟨2𝑑 3𝑑 1𝑑 1𝑑 ⟩, ⟨2𝑑 2𝑑 3𝑑 1𝑑 ⟩,
+
+⟨2𝑑 1𝑑 3𝑑 ⟩, ⟨2𝑑 1𝑑 ⟩, ⟨1𝑑 3𝑑 ⟩, ⟨1 𝑗 2 𝑗 ⟩, ⟨0𝑐 3𝑎 ⟩, ... [4𝑏 4𝑏 4𝑏 4 𝑗 1 𝑗 0𝑐 ] [ 1 𝑗 2 𝑗 ]4𝑑 [2𝑑 2𝑑 3𝑑 1𝑑 1𝑑 ] [ 2𝑑 1𝑑 3𝑑 ]
+
+B1 
+
+4𝑏 1𝑏 1𝑏 4𝑏 4𝑏 0ℎ0𝑒 2𝑑 1𝑑 4𝑎 2𝑎 0𝑐 1𝑎 1𝑎 1𝑎 0𝑐 ⟨4𝑏 1𝑏 1𝑏 4𝑏 4𝑏 0ℎ0𝑒 2𝑑 ⟩, ⟨4𝑏 1𝑏 1𝑏 4𝑏 4𝑏 0ℎ0𝑒 ⟩,
+
+⟨1𝑏 4𝑏 4𝑏 0ℎ⟩, ⟨4𝑎 2𝑎 0𝑐 ⟩, ⟨4𝑎 2𝑎 ⟩, ⟨2𝑎 0𝑐 ⟩,
+
+⟨1𝑎 1𝑎 1𝑎 ⟩, ⟨1𝑎 1𝑎 ⟩, ... [4𝑏 1𝑏 1𝑏 4𝑏 4𝑏 0ℎ0𝑒 2𝑑 ]1𝑑 [4𝑎 2𝑎 0𝑐 ] [ 1𝑎 1𝑎 1𝑎 ]0𝑐 
+
+B2 
+
+4𝑏 1𝑏 1𝑏 4𝑏 4𝑏 0ℎ0𝑒 2𝑑 4𝑎 4𝑎 2𝑎 0𝑐 2𝑎 2𝑎 3𝑎 1𝑎 ⟨4𝑏 1𝑏 1𝑏 4𝑏 4𝑏 0ℎ0𝑒 2𝑑 ⟩, ⟨4𝑏 1𝑏 1𝑏 4𝑏 4𝑏 0ℎ0𝑒 ⟩,
+
+⟨1𝑏 4𝑏 4𝑏 0ℎ⟩, ⟨4𝑎 4𝑎 2𝑎 0𝑐 ⟩, ⟨4𝑎 4𝑎 2𝑎 ⟩, ⟨4𝑎 2𝑎 0𝑐 ⟩,
+
+⟨2𝑎 2𝑎 3𝑎 1𝑎 ⟩, ⟨2𝑎 2𝑎 3𝑎 ⟩, ⟨2𝑎 3𝑎 1𝑎 ⟩, ... [4𝑏 1𝑏 1𝑏 4𝑏 4𝑏 0ℎ0𝑒 2𝑑 ] [ 4𝑎 4𝑎 2𝑎 0𝑐 ] [ 2𝑎 2𝑎 3𝑎 1𝑎 ]
+
+Consistent with previous examples, the previously identified global (sub-)optima are further examined to facilitate tactic extraction. Table 1 and Figure 5 characterize these solutions by depicting the temporal flow of mined patterns. Specifically, the first two columns link manually identified opening tactics to their action segments (e.g., focus-fire for [4b4b4b] and switch-fire for [4b1b1b]). The strong correlation between these patterns and the cluster labels in Figure 4 reveals a causal link between action sequences and the resulting distributional modality, highlighting the decisive impact of opening tactics on combat outcomes. Sankey diagrams provide an organized visualization for analyzing combat elements. In each diagram, the first column on the left represents tactics extracted from common segments of opening action patterns, which are themselves displayed in the second column. The rightmost column denotes the cluster labels of samples, while the intermediate columns represent all mined frequent action sequence patterns. The flow lines between these rectangular blocks delineate specific causal and temporal relationships, including the generative dependency between tactics and segments, the temporal 9Focus-fire Tactic   
+
+> Switch-fire Tactic
+> Cluster 1
+> Cluster 2
+> Cluster 3
+> [4b4b4b]
+> [4d4d4d]
+> [4c4c4c]
+> [4b4b4c]
+> [4d1d1d]
+> [4b1b1b]
+> [4b1c1c]
+> [4b1b4b]
+> (Opening Pattern)
+> Action Pattern Opening Tactic State Transition Cluster
+> Common Segment Extraction
+> Tactic Abstraction
+> Sequence Pattern Mining Distance-based Clustering
+
+Figure 5: Sankey diagram of action sequence patterns and tactic extraction progression of action sequences, and the attribution of samples to cluster labels. The color of blocks reflects their distribution across clusters, where color consistency with cluster labels indicates strong correlation. In addition, this work implements a rule-based tactic extraction approach to ensure scalability and reproducibility, which comprises three main steps: Step 1: Establish a human-readable rule set where each rule generates a tactic label based on action sequence character-istics. The tactic label codebook is presented in Table S3 in Section S4 of the Supplementary Material. Step 2: Map each pattern to interpretable tactical concepts via the rule set, yielding a multi-label encoding. Step 3: Combine activated labels into a unified tactical signature for large-scale analysis. This formalization facilitates robust tactic comparison across diverse solutions without manual annotation. 
+
+4 Experimental results and analysis 
+
+This section presents comprehensive experimental results and analysis, mainly including the effectiveness and efficiency of stream clustering with the cluster-centric BK-tree under different distance metrics, visualization of state-value landscapes and fitness landscapes, analysis of action sequence and tactic pattern flows, and interpretable analysis of tactic extraction. 
+
+4.1 Experimental design and parameter sensitivity analysis 
+
+Both synthetic data and actual collected data have been utilized for comprehensive validation of the proposed method. Spe-cifically, synthetic data with true cluster labels enables targeted assessment of clustering accuracy under different distance metrics. For empirical validation, 8,100 complete small-scale combat simulations were conducted using the StarCraft Multi-Agent Challenge (SMAC) platform 1. These simulations spanned four distinct StarCraft II scenarios and were implemented through specific RL algorithms. All experiments and data processing tasks were performed on a high-performance workstation equipped with an AMD Ryzen 9 7900X 12-Core Processor and 64.0 GB of RAM. No GPU acceleration was employed during the data organization and clustering phases. During these simulations, all raw states and state-transition sequences were recorded. The combat scale and the number of sampled raw game states are summarized in Table 2. The designed experimental scenarios, in which the unit distribution of both sides is swapped in mirror maps, are illustrated in Figure 6. 
+
+> 1
+
+https://github.com/oxwhirl/smac .
+
+10 Table 2: Combat scale and number of sampled raw game states across scenarios            
+
+> sce1 sce1m sce2 sce2m
+> Combat scale M4 vs M4 M4 vs M4 M8 vs M8 M8 vs M8 Number of states 80175 84788 127299 111745
+
+a) sce1 b) sce1m c) sce2 d) sce2m Figure 6: Designed experimental scenarios with unit distributions of both sides swapped in mirror maps Experiments on synthetic datasets with true clustering labels are performed to comprehensively evaluate the effectiveness of the proposed methods. The representation of RTS game state can be formalized as the spatial unit distribution. Batch data is generated through grid partitioning combined with random point selection, where samples with the same selected grids share the same true cluster labels. Figure 7 shows the data generation and clustering results for three clusters. Each cluster containing six samples, utilizing red markers for player 1 units and blue markers for player 2 units. Specifically, combat unit scales across different clusters are allowed to be inconsistent, facilitating the synthetic data better reflecting actual situations for validating clustering effectiveness. C1 
+
+C3 
+
+C2 
+
+Figure 7: Illustration of synthetic data and clustering results for three true cluster labels with six samples per cluster Considering the impact of the clustering threshold 𝜖 on clustering results, the tolerance for thresholds varies across different grid partitioning granularities and combat unit scales. Figure 8 shows the sensitivity of clustering results to 𝜖 
+
+variations under different experimental configurations. Subfigures on the same row represent the same grid partitioning granularities, where higher granularity results in smaller differences between samples within the same cluster and lower sensitivity to 𝜖 changes. Subfigures on the same column represent the same combat unit scales, where more complex scenarios exhibit higher sensitivity to 𝜖 variations. For each subfigure, colors represent the true number of clusters in the synthetic data, the horizontal axis represents different thresholds, the upper half of the vertical axis represents the difference between the target number of clusters 𝑘 
+
+and the algorithm output ˆ𝑘 , while the lower half represents the silhouette coefficient. The red bar indicates the optimal 𝜖 
+
+for the experimental configuration, evaluated based on maintaining minimal difference between 𝑘 and ˆ𝑘 while achieving the highest silhouette coefficient. In the subsequent experiments, the clustering threshold 𝜖 is configured to the optimal value following the same manner. 
+
+4.2 Stream clustering with the cluster-centric BK-tree under different distance metrics 
+
+The cluster-centric BK-tree is a distance-based algorithm for stream clustering, offering the advantage of adaptability to various distance metrics. Different distance metrics have been utilized for comparison. Table 3 shows the comparison of clustering performance with the cluster-centric BK-tree under different distance metrics and true numbers of clusters. For scenarios with inconsistent combat unit scales, accuracy based on ground truth is additionally presented to measure performance. Additionally, comparisons of the t-SNE visualization of clustering results are presented in Figures S1 and S2 in Section S1 of the Supplementary Material. 11 510                      
+
+> k / k
+> Grid30 Self4 Enemy4
+> 0.93 0.95
+> SC
+> 510
+> Grid30 Self4 Enemy8
+> 0.92 0.94
+> 510
+> Grid30 Self8 Enemy4
+> 0.92 0.94
+> 510
+> Grid30 Self8 Enemy8
+> 0.92 0.94
+> 510
+> k / k
+> Grid20 Self4 Enemy4
+> 0.90 0.93
+> SC
+> 510
+> Grid20 Self4 Enemy8
+> 0.89 0.90 0.91
+> 510
+> Grid20 Self8 Enemy4
+> 0.89 0.90 0.91
+> 510
+> Grid20 Self8 Enemy8
+> 0.80 0.90
+> 510
+> Grid16 Self4 Enemy4
+> 0.90 0.93
+> 510
+> Grid16 Self4 Enemy8
+> 0.80 0.85
+> 510
+> Grid16 Self8 Enemy4
+> 0.80 0.90
+> 10 20
+> Grid16 Self8 Enemy8
+> 0.00 0.50
+> 1.01.2 1.5 2.0 510
+> Grid10 Self4 Enemy4
+> 1.0 1.2 1.5 2.0
+> 0.60 0.80 1.01.2 1.5 2.0 025
+> Grid10 Self4 Enemy8
+> 1.0 1.2 1.5 2.0
+> 0.50 0.75 1.01.2 1.5 2.0 025
+> Grid10 Self8 Enemy4
+> 1.0 1.2 1.5 2.0
+> 0.25 0.50 0.75 1.01.2 1.5 2.0 050
+> Grid10 Self8 Enemy8
+> 1.0 1.2 1.5 2.0
+> 0.50 1.00
+> k(Target) k(Algorithm) SC k= 3 k= 5 k= 9
+> 1.0 1.2 1.5 2.0 1.0 1.2 1.5 2.0 1.0 1.2 1.5 2.0 1.0 1.2 1.5 2.0
+
+Figure 8: Threshold sensitivity analysis of clustering results under different grid granularities and combat unit scales Table 3: Comparison of clustering performance with the cluster-centric BK-tree under different distance metrics and true numbers of clusters 
+
+Consistent Combat Unit Scale 𝑘 = 9 𝑘 = 50 𝑘 = 100 
+
+Distance Metric SC Time/s SC Time/s SC Time/s Chamfer Distance 0.8902 0.01 0.8747 0.34 0.8717 1.27 Hausdorff Distance 0.8961 0.02 0.8829 0.43 0.8795 1.63 2-Wasserstein 0.9223 0.03 0.9128 0.90 0.9101 3.19 1-Wasserstein (EMD) 0.9205 0.03 0.9096 0.79 0.9066 3.21 Adapted EMD (ours) 0.9205 0.02 0.9096 0.28 0.9066 1.28 
+
+Inconsistent Combat Unit Scale 𝑘 = 25 𝑘 = 81 
+
+Distance Metric Accuracy SC Time/s Accuracy SC Time/s Chamfer 0.8800 0.6074 0.02 0.5021 0.3521 0.11 Hausdorff 0.9067 0.7647 0.03 0.3786 0.4970 0.17 2-Wasserstein 1.0000 0.8936 0.10 0.9198 0.7442 1.20 1-Wasserstein (EMD) 1.0000 0.8453 0.09 0.5617 0.4826 0.72 Adapted EMD (ours) 1.0000 0.8759 0.01 1.0000 0.7844 0.04 
+
+The results indicate a clear trade-off between computational overhead and distribution sensitivity. Baseline geometric metrics, such as Chamfer and Hausdorff distances, exhibit high efficiency but struggle to capture global distribution features, leading to a significant decline in silhouette coefficient and accuracy as 𝑘 increases or when unit scales become inconsistent. Conversely, while Optimal Transport (OT)-based metrics (e.g., 1-W and 2-W) provide robust distribution awareness, their polynomial computational complexity poses challenges for real-time RTS stream clustering. The comparative analysis demonstrates that the adapted EMD integrated with the cluster-centric BK-tree achieves superior performance across multiple dimensions. It provides enhanced distribution awareness via optimal matching, handling of unit count mismatch through extremely distant virtual points padding, and improved computational efficiency through Hungarian algorithm. These advantages are particularly evident in RTS game state stream clustering where unit counts vary significantly and real-time performance requirements are stringent. In the subsequent experiments, the adapted EMD will be uniformly utilized as the distance metric for the cluster-centric BK-tree. 
+
+4.3 Performance analysis and comparative study of state stream clustering 
+
+To validate the performance of the proposed cluster-centric BK-tree algorithm for game state stream clustering, numerical experiments were conducted across various scenarios and thresholds 𝜖 . The results are compared against DenStream [ 48 ], which shares conceptual similarities in maintaining density-based micro-clusters. Figure 9 presents the comparative results for execution time 𝑇 and clustering quality 𝑄 (measured by the silhouette coefficient). Notably, the data points marked with a cross symbol on the 𝑄 curves indicate instances where the number of clusters 𝑁 is excessively large, rendering the corresponding silhouette coefficient unreliable for meaningful evaluation. Detailed numerical data for both algorithms are provided in Table S1 and Table S2 in Section S3 of the Supplementary Material, while the parameter sensitivity analysis of DenStream is shown in Figure S3 in Section S2 of the Supplementary Material. 12 0.0 0.5 1.0 1.5 2.0 2.5 
+
+Clustering threshold ( ) 
+
+> 20
+> 40
+> 60
+> Execution time ( T)
+
+Scenario sce1      
+
+> 0.0 0.5 1.0 1.5 2.0 2.5
+
+Clustering threshold ( ) 
+
+> 0
+> 50
+> 100
+> 150
+
+Scenario sce1m         
+
+> 0.50 0.75 1.00 1.25 1.50 1.75 2.00 2.25 2.50
+
+Clustering threshold ( ) 
+
+> 100
+> 200
+> Execution time ( T)
+
+Scenario sce2         
+
+> 0.50 0.75 1.00 1.25 1.50 1.75 2.00 2.25 2.50
+
+Clustering threshold ( ) 
+
+> 50
+> 100
+> 150
+> 200
+
+Scenario sce2m 
+
+> 0.00
+> 0.25
+> 0.50
+> 0.75
+> 1.00
+> 0.00
+> 0.25
+> 0.50
+> 0.75
+> 1.00
+> Clustering quality ( Q)
+> 0.00
+> 0.25
+> 0.50
+> 0.75
+> 1.00
+> 0.00
+> 0.25
+> 0.50
+> 0.75
+> 1.00
+> Clustering quality ( Q)
+
+cluster-centric BK-tree T
+
+DenStream T
+
+cluster-centric BK-tree Q
+
+DenStream Q
+
+cluster-centric BK-tree best 
+
+Unreliable QFigure 9: Comparison of clustering performance metrics of the cluster-centric BK-tree and DenStream with various 𝜖 
+
+across different scenarios −120 
+
+> −100
+> −80
+> −60
+> −40
+> −20
+> 0
+> 20
+> 40
+> 60
+
+a) sce1 state landscape −120  
+
+> −100
+> −80
+> −60
+> −40
+> −20
+> 0
+> 20
+> 40
+> 60
+
+b) sce1m state landscape −250  
+
+> −200
+> −150
+> −100
+> −50
+> 0
+> 50
+
+c) sce2 state landscape −250  
+
+> −200
+> −150
+> −100
+> −50
+> 0
+> 50
+
+d) sce2m state landscape Figure 10: State value landscape visualization in different scenarios As illustrated in Figure 9, the cluster-centric BK-tree achieves satisfactory clustering outcomes in StarCraft II datasets when an appropriate threshold 𝜖 is selected. Specifically, in scenarios sce1 and sce1m , the clustering quality 𝑄 exceeds 
+
+0.9 for 𝜖 ∈ [ 0.6, 1.0]. While 𝑄 is sensitive to 𝜖 , both algorithms achieve comparable optimal clustering quality across all scenarios given an appropriately tuned 𝜖 , substantiating the adaptability of the proposed state distance metric to RTS data streams. Under general circumstances, a smaller clustering threshold 𝜖 leads to a greater number of clusters 𝑁 . However, the execution time 𝑇 exhibits an interesting non-monotonic phenomenon: 𝑇 does not significantly increase with the reduction of 𝜖 , but generally presents two peaks within a relatively small range. This is attributed to the synergistic effect of the insertion/query pruning mechanisms of the cluster-centric BK-tree and the greedy cluster assignment strategy. A detailed case study of this internal efficiency logic in the scenario sce1 is provided in Section S3 of the Supplementary Material. Comparative analysis with the DenStream algorithm shows that while both algorithms achieve comparable optimal clustering qualities, the cluster-centric BK-tree demonstrates a significant advantage in computational efficiency. In complex scenarios involving over 100,000 states, the proposed method completes the task within approximately 20 seconds. This substantiates that the proposed state distance metric and the cluster-centric BK-tree algorithm are highly adaptable for high-dimensional RTS game data streams. 
+
+4.4 Fitness landscape visualization and problem characterization 
+
+Fitness landscape visualization offers insights into the structural characterization of problem complexity, mapping the distribution of solutions from a high-dimensional search space into an interpretable analytical framework. Analogously, 13 60 40 20 0-20 -40 -60 -80 a) sce1 with optima 40 20 0-20 -40 -60 -80 b) sce1m with optima 50 0-50 -100 -150 -200 c) sce2 with optima 50 0-50 -100 -150 -200 d) sce2m with optima 60 40 20 0-20 -40 -60 -80 
+
+e) sce1 with samples 40 20 0-20 -40 -60 -80 f) sce1m with samples 50 0-50 -100 -150 -200 g) sce2 with samples 50 0-50 -100 -150 -200 h) sce2m with samples Figure 11: Fitness landscape visualization in different scenarios the visualization of the state value landscape serves to capture the key structural features of the state space, projecting instantaneous advantages into a spatial representation that delineates the underlying complexity. As illustrated in Figure 10, the state value landscapes across various scenarios reveal the structural distribution of tactical advantages within the combat environment. The state values are represented by a bipolar color gradient, where deeper red tones signify a decisive advantage for Player 1, and those in blue for Player 2. This spatial representation not only captures the intrinsic evaluative logic of the state space but also establishes a transparent tool for subsequent tactical analysis. As illustrated in Figure 11, the fitness landscapes pertaining to the StarCraft II micromanagement are characterized by the following notable attributes: 
+
+(1) Multi-modality denotes the coexistence of multiple global optima within the landscape. In StarCraft II micromanagement, diverse tactical combinations (e.g. focus-fire, kiting, or decoy maneuvers) can yield equivalent high-fitness outcomes. This inherent diversity in optimal decision sequences, spanning various objectives and timescales, manifests as a multi-modal distribution where distinct tactical peaks represent equally viable strategies for victory. 
+
+(2) Ruggedness is defined by the high density and erratic distribution of local optima, which significantly amplifies search complexity. Fitness landscapes demonstrate exceptional sensitivity to tiny perturbations in the high-dimensional action space, driven by the intricately interrelated nature of critical decisions such as unit positioning, target selection, and tactical switching. 
+
+(3) Funnel-like topography characterizes the global fitness landscape as a vast basin of attraction where a pronounced gradient clearly separates high-fitness solutions from poor ones. This structure reflects the snowball effect prevalent in RTS combat, where a significant advantage or disadvantage, once established, becomes increasingly difficult to reverse. The interplay between these structural features creates a highly intricate optimization environment. From a global perspective, the funnel-like topography supplies a directional signal that guides algorithms toward high-fitness regions, yet the reliability of this gradient is constantly challenged by local ruggedness, which increases search costs through a profusion of sub-optimal peaks. Furthermore, the presence of multi-modality ensures that these high-fitness regions are not singular but distributed across diverse tactical clusters. The feasibility of an efficient search therefore hinges on an algorithm’s capacity to concurrently navigate global directionality, escape local optima, and maintain tactical diversity across the multi-modal landscape. 
+
+4.5 Action sequence pattern mining and tactic extraction 
+
+The above analysis is framed from the perspective of states and state-transition sequences, representing the outcomes of decisions. In RTS games, however, action sequences are just as crucial, which reveal the decision-making process itself. 14 To trace the deeper causes from outcomes, action sequence patterns and higher-level tactic extraction are distilled and rendered as Sankey diagrams. As a representative example, the detailed results of Ward’s hierarchical clustering method [ 49 ] with 𝑘 = 3 are presented in Figure 12, where Figure 12 a) represents the fitness landscape and clustering results, Figure 12 b) and c) characterize the process elements in victorious and defeated solutions, from perspectives of action and tactic patterns, respectively. Comprehensive results for different clustering algorithms and cluster numbers are presented in Figures S4 to Figures S11 in Section S6 of the Supplementary Material. Cluster 0   
+
+> Cluster 1 Cluster 2
+> 80
+> 60
+> 40
+> 20
+> 0
+> 20
+> 40
+> 60
+> Fitness Value
+> a) fitness landscape b) action Sankey (left: win, right: loss) c) tactic Sankey (left: win, right: loss)
+
+Figure 12: Comprehensive Sankey diagram of action sequence and tactic patterns with Agglomerative algorithm for clustering The color analysis of pattern blocks reveals three main phenomena. First, many action pattern blocks show colors consistent with their corresponding cluster labels, indicating strong pattern-cluster correlations. Second, blocks within the same flow exhibit largely consistent colors, suggesting coherent action sequence development. Third, tactics demonstrate varying degrees of correlation with specific cluster colors, reflecting their differential effectiveness across different solution quality levels. These color-based observations collectively indicate clear causal relationships between tactics, action sequences, and clustering outcomes. Comparative analysis across solution quality sets reveals significant differences in tactical behavior. High-fitness victorious solutions demonstrate greater tactical consistency and stronger causal relationships with clustering results, while low-fitness defeated solutions contain more numerous and dispersed tactics. This pattern highlights the critical role of opening tactics in achieving victorious solutions, with only a few high-fitness tactics successfully attaining higher fitness values, whereas numerous inefficient tactics lead to poor results. The pronounced gap in tactical scale between high and low-fitness solutions further confirms that specific, well-chosen tactics are key determinants of solution quality. Tactical Sankey diagrams demonstrate effective pattern consolidation, as evidenced by the reduced number of blocks compared to action sequence diagrams. The enhanced contrast between tactic patterns in victorious versus defeated solutions becomes more pronounced in this simplified representation, further strengthening the conclusion that specific tactics are crucial factors in generating high-fitness solutions. 
+
+4.6 Comparison of different analytical forms 
+
+Figure 13 compares the SAT-RTS analysis pipeline (a–d) with state graph (e–h) and Nearest Better Network (NBN) [ 50 ](i–l). To ensure a consistent baseline, all methods utilize the same data sampling, with red and blue markers denoting high-fitness victorious and low-fitness defeated solutions, respectively. Graph networks serve as a versatile and efficient data structure for modeling the intricate relational dependencies within large-scale sequential data. A primary limitation of graph-based network structures lies in their inability to clearly represent local proximity relationships between states. While edge weights may, to some extent, reflect inter-nodal distances, such representations lack clarity in large-scale graphs and are inherently constrained by the underlying graph layout algorithms. As an advanced topological abstraction for fitness landscape analysis, NBN offers a uniquely structured, macro-level perspective for characterizing complex problem features from a search perspective. However, while it effectively maps the global correspondence between objective and decision spaces, NBN is limited in its ability to delineate the fine-grained coupling relationships inherent in temporal sequential solutions. The SAT-RTS pipeline achieves a synergistic coupling of spatial geometric structures and dynamic evolution logic. By projecting high-dimensional state-transition sequences onto a continuous state value landscape, this approach preserves 15 a) sce1 state landscape  b) sce1m state landscape  c) sce2 state landscape  d) sce2m state landscape 
+
+e) sce1 state graph f) sce1m state graph g) sce2 state graph h) sce2m state graph 
+
+i) sce1 NBN  j) sce1m NBN  k) sce2 NBN  l) sce2m NBN Figure 13: Comparison of different analytical forms the local proximity between states while explicitly visualizing the tactical gradients that drive transition trajectories. Unlike discrete graph layouts, the state landscape provides a globally consistent reference frame where the convergence of victorious solutions and the divergence of defeated ones are intuitively localized. This spatial grounding facilitates the precise identification of critical decision points, where divergent tactical selections from identical states yield polarized outcomes, effectively bridging the gap between static structural features and underlying decision-making causalities. 
+
+4.7 Comprehensive interpretable tactical analysis 
+
+State clustering and visualization provide highly interpretable analysis for action sequence pattern mining and tactic extraction. Figure 14 a) and Figure 14 b) illustrate state-transition networks of sampled solutions in the state value landscape (following the same methodology as Sec. 4.5, where high-fitness victorious and low-fitness defeated solutions are sampled based on fitness values and distinguished by a color bar). In the figure, contour lines represent the state value landscape (simplified from Figure 10), nodes and edges represent states and their transitions in sampled solutions, and green nodes represent states that appear in both victorious and defeated solutions (such as the initial state, the node with no in-degree in the bottom-left corner). Two main conclusions can be summarized from state-transition networks. First, state-transition networks of low-fitness solutions are more disordered and extensive, while high-fitness solutions are more concentrated, indicating that only a few specific state space exploration strategies are high-quality and can lead to final victory, whereas aimless exploration typically yields low returns. Second, there exists a clear distributional separation between high-fitness and low-fitness 16 -80 
+
+> -60
+> -40
+> -20
+> 0
+> 20
+> 40
+> 60
+
+a) sce1 -220  
+
+> -200
+> -180
+> -160
+> -140
+> -120
+> -100
+> -80
+> -60
+> -40
+> -20
+> 0
+> 20
+> 40
+> 60
+> 80
+
+b) sce2 -60 -40 -20 020 40 60   
+
+> 0196 10 21 58 380 381 433 13 13 130 171 13 13 20 13 13 13 20 386 107 425 386 107 429 413 107 429
+> Start Loss Win
+> ID: 0 ID: 20 ID: 171 ID: 425 ID: 429
+
+c) representative solutions in sce1 
+
+Figure 14: State-transition networks in state value landscapes tactic T9 
+
+state 0 
+
+state 13 
+
+state 413 
+
+4b 
+
+4b 
+
+4f 4b 4b 
+
+4b 4b 4b 
+
+state 21 
+
+state 107 
+
+1d 0c 2d tactic T2 
+
+state 429 
+
+4a 2a 0c 0c 1a tactic T2 
+
+state 171 state 130 
+
+4d 4d 4d 2d 1d tactic T1 1b tactic T8 
+
+tactic T8 3b 1e 
+
+log 109 (fitness = -54) 
+
+log 179 (fitness = 66) 
+
+state action tactic 
+
+Figure 15: Detailed process of the two sample solutions (solution 109 and 179) solutions. This conforms to the heuristic expectation that recovering from a disadvantageous position is notably difficult, which is further accentuated in the more complex sce2 scenario. Considering the win-loss differences caused by different tactics applied to the same node, the points represented by green nodes can be regarded as critical decision points. Figure 14 c) illustrates two victorious and two defeated solutions as examples, with representative state IDs and their distributions annotated in the figure. Figure 15 details the processes of the two sample solutions. The primary elements comprise states, script-based actions, and the corresponding tactics, the coding scheme and descriptions of which are detailed in Table S4 in Section S5 of the Supplementary Material. Taking solutions 109 and 179, which both pass through state 21, as examples, the transition [state 21-state 13] leads to defeat in solution 109, while transition [state 21-state 413] leads to victory in solution 179. After this point, the difference between the two example solutions becomes increasingly apparent. The tactics executed around the critical decision point 21 warrant special attention. Figure 15 reveals that the main reason for solution 109’s failure is the execution of action 4f (a defensive script) in the opening phase, which wasted firepower attack opportunities. Although subsequent actions were identical to those in the victorious solution 179, significant differences in unit health values had already emerged at states 13 and 413. From state 13 onward, the disadvantageous situation gradually accumulated, ultimately resulting in failure. The main reason for solution 179’s success is the execution of T2 tactic (greedy attack with collaborative mode switching) in the opening phase, specifically embodied in the action sequence [4b4b4b] representing all red units collectively concentrating fire on the nearest unit (the blue unit at the center). After eliminating this unit, the subsequent [1d0c2d] represents red units performing local collaborative attacks on nearby weakest units according to distribution, thereby establishing a significant advantage. Tactics themselves are not inherently good or bad, but different tactics should be adapted to different states. To further analyze the relationship between states and tactics, cross-statistical analysis has been performed. By counting all (state, tactic, fitness value) triplets in the sample, Figure 16 shows a treemap of state-tactic pairs. Each rectangle represents a specific tactic executed in a particular state, with its area representing frequency and its color representing average outcome. Specifically, larger rectangles indicate higher frequency of executing that tactic in that state, while colors closer to deep red represent higher fitness values when executing that tactic in that state, and vice versa. 17 80    
+
+> 60
+> 40
+> 20
+> 020 40 60
+> Mean Fitness
+> 428 T1 104 T2 547 107 T3 T3 544
+> T3 0T0 0T3 0
+> T2 0
+> T4 0T5 108
+> T0 108
+> T6 108 T7 104 T4 104 T0 544 T1 544 T0 544 T6 65 T1 64 T1 29 T1
+
+a) sce1 200    
+
+> 150
+> 100
+> 50
+> 050
+> Mean Fitness
+> 17745 19607 T9 T9 17731 T9 T9 T9 017454 19607 17752 T9 T0 0T10 0T9 0T3 0T12 0T11 35 T9 663 T9 664 T9 1682 T9 390 T0 390 T11 35 T11 35 T0
+
+b) sce2 
+
+Figure 16: Treemap of state-tactic payoff correlation The treemap visualization and detailed analysis in Table S5 and Table S6 in Section S7 of the Supplementary Material reveal several key insights into state-tactic relationships. First, the effectiveness of tactics is highly state-dependent, with specific tactics showing optimal performance in particular state configurations. For instance, independent greedy attacks excel in states with clear numerical advantages, while coordinated tactics prove essential in scenarios with dispersed targets. Second, opening tactics play a crucial role in determining final outcomes, as evidenced by the significant performance differences in state 0 across various tactical approaches. Third, the broad applicability of certain tactics like T9 in sce2 demonstrates that effective tactics can adapt to diverse state conditions while maintaining high performance. These findings underscore the importance of tactical adaptability and state-aware decision-making in achieving optimal outcomes. Additionally, the characteristics presented in treemaps differ across varying difficulty scenarios. In the challenging sce2 scenario, high-yield state-tactic pairs are significantly fewer, manifestly demonstrating the differences in state exploration difficulty between the two scenarios. 
+
+5 Conclusion 
+
+This work presents the SAT-RTS method, an interpretable state-action-tactic analysis pipeline designed to address the analytical challenges of high-dimensional coupled data in RTS micromanagement. By implementing multi-aspect similarity assessments, the framework successfully quantifies relationships across states, state-transitions, and action patterns, establishing lightweight normative criteria necessary for high-level analysis. The integration of the cluster-centric BK-tree algorithm with fitness landscape visualization enables the efficient simplification of massive state data streams, thereby enhancing the structural clarity of the underlying problem and creating a multi-level visual toolset. Furthermore, the rule-based multi-label tactic extraction method, alongside comprehensive attribution analyses, effectively elucidates the decision-making logic inherent in otherwise opaque black-box behaviors. Ultimately, the proposed pipeline achieves a cohesive and interpretable tactical analysis that bridges the gap between low-level actions and high-level tactics. Future works will focus on integrating fitness landscape visualization into knowledge-guided learning models, aiming to establish a functional bridge between RL and intelligent optimization. Furthermore, efforts will be directed toward mining the temporal causal relationships of action sequence patterns. By exploring more robust and universally applicable tactical knowledge mining methods, subsequent studies seek to gain a deeper understanding of the complex, multi-objective characteristics inherent in RTS micromanagement. 
+
+Acknowledgements 
+
+This work was supported in part by the National Natural Science Foundation of China under Grants 62476006, 62506004, and 62306279, in part by the Hubei Provincial Natural Science Foundation of China under Grant 2023AFA049, and in part by the Fundamental Research Funds of the AUST under Grant 2024JBZD0007. 18 Acknowledgements 
+
+This work was supported in part by the National Natural Science Foundation of China under Grants 62476006, 62506004, and 62306279, in part by the Hubei Provincial Natural Science Foundation of China under Grant 2023AFA049, and in part by the Fundamental Research Funds of the AUST under Grant 2024JBZD0007. 
+
+References 
+
+[1] S. Ontañón, G. Synnaeve, A. Uriarte, F. Richoux, D. Churchill, M. Preuss, A survey of real-time strategy game AI research and competition in StarCraft, IEEE Trans. Comput. Intell. AI Games 5 (4) (2013) 293–311. 
+
+doi:10.1109/TCIAIG.2013.2286295 .[2] O. Vinyals, T. Ewalds, S. Bartunov, P. Georgiev, A. S. Vezhnevets, M. Yeo, A. Makhzani, H. Küttler, J. Agapiou, J. Schrittwieser, J. Quan, S. Gaffney, S. Petersen, K. Simonyan, T. Schaul, H. van Hasselt, D. Silver, T. Lillicrap, K. Calderone, P. Keet, A. Brunasso, D. Lawrence, A. Ekermo, J. Repp, R. Tsing, StarCraft II: A new challenge for reinforcement learning, arXiv preprint arXiv:1708.04782 (2017). doi:10.48550/arXiv.1708.04782 .[3] X. Wang, S. Wang, X. Liang, D. Zhao, J. Huang, X. Xu, B. Dai, Q. Miao, Deep reinforcement learning: A survey, IEEE Trans. Neural Netw. Learn. Syst. 35 (4) (2024) 5064–5078. doi:10.1109/TNNLS.2022.3207346 .[4] S. Qi, S. Zhang, Q. Wang, J. Zhang, X. Wang, Distributed scalable multi-agent reinforcement learning with intrinsic-episodic dual exploration, Future Gener. Comput. Syst. 175 (2026) 108040. doi:10.1016/j.future. 2025.108040 .[5] E. Puiutta, E. M. S. P. Veith, Explainable reinforcement learning: A survey, in: Mach. Learn. Knowl. Extr., 2020, pp. 77–95. doi:10.1007/978-3-030-57321-8_5 .[6] Y. Cao, Z. Tian, Z. Liu, N. Jia, X. Liu, Reducing overestimation with attentional multi-agent twin delayed deep deterministic policy gradient, Eng. Appl. Artif. Intell. 146 (2025) 110352. doi:10.1016/j.engappai.2025. 110352 .[7] L. Xu, D. Perez-Liebana, A. Dockhorn, Towards applicable state abstractions: A preview in strategy games, in: Multi-Discip. Conf. Reinforc. Learn. Decis. Mak. (RLDM), 2022, pp. 1–7. [8] L. Perkins, Terrain analysis in real-time strategy games: An integrated approach to choke point detection and region decomposition, in: Proc. AAAI Conf. Artif. Intell. Interact. Digit. Entertain., Vol. 6(1), 2010, pp. 168–173. 
+
+doi:10.1609/aiide.v6i1.12405 .[9] Y. Jo, S. Lee, J. Yeom, S. Han, FoX: Formation-aware exploration in multi-agent reinforcement learning, in: Proc. AAAI Conf. Artif. Intell., Vol. 38(12), 2024, pp. 12985–12994. doi:10.1609/aaai.v38i12.29196 .[10] Y.-T. Kuan, Y.-S. Wang, J.-H. Chuang, Visualizing real-time strategy games: The example of StarCraft II, in: Proc. 2017 IEEE Conf. Vis. Anal. Sci. Technol. (VAST), 2017, pp. 71–80. doi:10.1109/VAST.2017.8585594 .[11] J. Haley, A. Wearne, C. Copland, E. Ortiz, A. Bond, M. van Lent, R. Smith, Cluster analysis of deep embeddings in real-time strategy games, in: Artif. Intell. Mach. Learn. Multi-Dom. Oper. Appl. II, Vol. 11413, 2020, pp. 507–516. doi:10.1117/12.2558105 .[12] A. Kozik, T. Machalewski, M. Marek, A. Ochmann, Mimicking playstyle by adapting parameterized behavior trees in RTS games, arXiv preprint arXiv:2111.12144 (2021). doi:10.48550/arXiv.2111.12144 .[13] A. Heuillet, F. Couthouis, N. Díaz-Rodríguez, Explainability in deep reinforcement learning, Knowl.-Based Syst. 214 (2021) 106685. doi:10.1016/j.knosys.2020.106685 .[14] O. Vinyals, I. Babuschkin, W. M. Czarnecki, M. Mathieu, A. Dudzik, J. Chung, D. H. Choi, R. Powell, T. Ewalds, P. Georgiev, J. Oh, D. Horgan, M. Kroiss, I. Danihelka, A. Huang, L. Sifre, T. Cai, J. P. Agapiou, M. Jaderberg, A. S. Vezhnevets, R. Leblond, T. Pohlen, V. Dalibard, D. Budden, Y. Sulsky, J. Molloy, T. L. Paine, C. Gulcehre, Z. Wang, T. Pfaff, Y. Wu, R. Ring, D. Yogatama, D. Wünsch, K. McKinney, O. Smith, T. Schaul, T. Lillicrap, K. Kavukcuoglu, D. Hassabis, C. Apps, D. Silver, Grandmaster level in StarCraft II using multi-agent reinforcement learning, Nature 575 (7782) (2019) 350–354. doi:10.1038/s41586-019-1724-z .[15] C. Westphal, S. Hailes, M. Musolesi, Information-theoretic state variable selection for reinforcement learning, arXiv preprint arXiv:2401.11512 (2024). doi:10.48550/arXiv.2401.11512 .[16] Z. Wang, C. Wang, X. Xiao, Y. Zhu, P. Stone, Building minimal and reusable causal state abstractions for reinforcement learning, in: Proc. AAAI Conf. Artif. Intell., Vol. 38(14), 2024, pp. 15778–15786. doi:10.1609/ aaai.v38i14.29507 .[17] X. Zeng, H. Peng, A. Li, C. Liu, L. He, P. S. Yu, Hierarchical state abstraction based on structural information principles, in: Proc. 32nd Int. Jt. Conf. Artif. Intell., 2023, pp. 4549–4557. doi:10.24963/ijcai.2023/506 .19 [18] R. K. Nayyar, Learning generalizable and composable abstractions for transfer in reinforcement learning, in: Proc. AAAI Conf. Artif. Intell., Vol. 38(21), 2024, pp. 23403–23404. doi:10.1609/aaai.v38i21.30402 .[19] A. Dockhorn, R. Kruse, State and action abstraction for search and reinforcement learning algorithms, in: Y. P. Kondratenko, V. Kreinovich, W. Pedrycz, A. Chikrii, A. M. Gil-Lafuente (Eds.), Artif. Intell. Control Decis.-Mak. Syst., Vol. 1087, Springer Nature Switzerland, Cham, 2023, pp. 181–198. doi:10.1007/978-3-031-25759-9_ 9.[20] A. Mici´ c, D. Arnarsson, V. Jónsson, Developing game AI for the real-time strategy game StarCraft, Ph.D. thesis, Reykjavik University (2011). [21] G. Synnaeve, P. Bessière, A dataset for StarCraft AI and an example of armies clustering, in: Proc. AAAI Conf. Artif. Intell. Interact. Digit. Entertain., Vol. 8(3), 2012, pp. 25–30. doi:10.1609/aiide.v8i3.12546 .[22] M.-J. Kim, D. Lee, J. S. Kim, C. W. Ahn, Surrogate-assisted Monte Carlo Tree Search for real-time video games, Eng. Appl. Artif. Intell. 133 (2024) 108152. doi:10.1016/j.engappai.2024.108152 .[23] Y. Li, Y. Fang, Z. Akhtar, Accelerating deep reinforcement learning model for game strategy, Neurocomputing 408 (2020) 157–168. doi:10.1016/j.neucom.2019.06.110 .[24] J. Lee, B. Koo, K. Oh, State space optimization using plan recognition and reinforcement learning on RTS game, in: Proc. 7th WSEAS Int. Conf. Artif. Intell. Knowl. Eng. Data Bases, 2008, pp. 165–169. [25] J. R. Mariño, C. F. Toledo, Evolving interpretable strategies for zero-sum games, Appl. Soft Comput. 122 (2022) 108860. doi:10.1016/j.asoc.2022.108860 .[26] A. Uriarte, S. Ontanón, Game-tree search over high-level game states in RTS games, in: Proc. AAAI Conf. Artif. Intell. Interact. Digit. Entertain., Vol. 10(1), 2014, pp. 73–79. doi:10.1609/aiide.v10i1.12706 .[27] A. Uriarte, S. Ontañón, High-level representations for game-tree search in RTS games, in: Proc. AAAI Conf. Artif. Intell. Interact. Digit. Entertain., Vol. 10(2), 2014, pp. 14–18. doi:10.1609/aiide.v10i2.12734 .[28] A. Uriarte, S. Ontañón, Combat models for RTS games, IEEE Trans. Games 10 (1) (2018) 29–41. doi: 10.1109/TCIAIG.2017.2669895 .[29] H. Park, K.-J. Kim, MCTS with influence map for general video game playing, in: 2015 IEEE Conf. Comput. Intell. Games (CIG), 2015, pp. 534–535. doi:10.1109/CIG.2015.7317896 .[30] L. Zhang, J. Lieffers, A. Pyarelal, Enhancing interpretability in deep reinforcement learning through semantic clustering, arXiv preprint arXiv:2409.17411 (2025). doi:10.48550/arXiv.2409.17411 .[31] L. Xu, A. Dockhorn, D. Perez-Liebana, Elastic monte carlo tree search, IEEE Trans. Games 15 (4) (2023) 527–537. 
+
+doi:10.1109/TG.2023.3282351 .[32] L. Xu, D. Perez-Liebana, A. Dockhorn, Strategy game-playing with size-constrained state abstraction, in: Proc. 2024 IEEE Conf. Games (CoG), 2024, pp. 1–8. doi:10.1109/CoG60054.2024.10645643 .[33] G. Wallner, A brief overview of data mining and analytics in games, in: Data Analytics Applications in Gaming and Entertainment, Auerbach Publications, 2019, pp. 1–14. [34] R. Metoyer, S. Stumpf, C. Neumann, J. Dodge, J. Cao, A. Schnabel, Explaining how to play real-time strategy games, Knowl.-Based Syst. 23 (4) (2010) 295–301. doi:10.1016/j.knosys.2009.11.006 .[35] E. Kleinman, J. Villareale, M. Shergadwala, Z. Teng, A. Bryant, J. Zhu, M. S. El-Nasr, Towards an understanding of how players make meaning from post-play process visualizations, in: Entertain. Comput. – ICEC 2022, 2022, pp. 47–58. doi:10.1007/978-3-031-20212-4_4 .[36] T. K. Mathes, J. Inman, A. Colón, S. Khan, CODEX: A cluster-based method for explainable reinforcement learning, arXiv preprint arXiv:2312.04216 (2023). doi:10.48550/arXiv.2312.04216 .[37] B. Ingram, C. van Alten, R. Klein, B. Rosman, Generating interpretable play-style descriptions through deep unsupervised clustering of trajectories, IEEE Trans. Games 15 (4) (2023) 507–516. doi:10.1109/TG.2023. 3299074 .[38] C. Izumigawa, C. Lucero, L. Nans, K. Frederiksen, O. Hui, I. Enriquez, S. Rothman, R. Iden, Building human-autonomy teaming aids for real-time strategy games, in: Int. Conf. HCI Games, 2020, pp. 117–127. doi: 10.1007/978-3-030-50164-8_8 .[39] D. Keaveney, C. O’ Riordan, Analysing the fitness landscape of an abstract real-time strategy game, in: Proc. 9th Int. Conf. Intell. Games Simul., 2008, pp. 51–55. [40] G. Wallner, L. Wang, C. Dormann, Visualizing the spatio-temporal evolution of gameplay using storyline visualization: A study with League of Legends, in: Proc. ACM Hum.-Comput. Interact., Vol. 7, 2023, pp. 1002–1024. doi:10.1145/3611058 .20 [41] A. P. Afonso, M. B. Carmo, R. Afonso, VisuaLeague: Visual analytics of multiple games, in: Proc. 2021 25th Int. Conf. Inf. Vis. (IV), 2021, pp. 54–62. doi:10.1109/IV53921.2021.00019 .[42] A. Šufliarsky, G. Walllner, S. Kriglstein, Through space and time: Spatio-temporal visualization of MOBA matches, in: Hum.-Comput. Interact. – INTERACT 2023, 2023, pp. 167–189. doi:10.1007/978-3-031-42283-6_9 .[43] H. W. Kuhn, The Hungarian method for the assignment problem, Nav. Res. Logist. Q. 2 (1-2) (1955) 83–97. 
+
+doi:10.1002/nav.3800020109 .[44] Burkhard W A, Keller R M, Some approaches to best-match file searching, Commun. ACM 16 (4) (1973) 230–236. 
+
+doi:10.1145/362003.362025 .[45] H. Sakoe, S. Chiba, Dynamic programming algorithm optimization for spoken word recognition, IEEE Trans. Acoust. Speech Signal Process. 26 (1) (1978) 43–49. doi:10.1109/TASSP.1978.1163055 .[46] R. Agrawal, R. Srikant, Fast algorithms for mining association rules in large databases, in: Proc. 20th Int. Conf. Very Large Data Bases, Vol. 13, 1994, pp. 487–499. [47] Jian Pei, Jiawei Han, B. Mortazavi-Asl, H. Pinto, Qiming Chen, U. Dayal, Mei-Chun Hsu, PrefixSpan: Mining sequential patterns efficiently by prefix-projected pattern growth, in: Proc. 17th Int. Conf. Data Eng., 2001, pp. 215–224. doi:10.1109/icde.2001.914830 .[48] Feng Cao, Martin Estert, Weining Qian, Aoying Zhou, Density-based clustering over an evolving data stream with noise, in: Proc. 2006 SIAM Int. Conf. Data Min., 2006, pp. 328–339. doi:10.1137/1.9781611972764.29 .[49] J. H. Ward Jr., Hierarchical grouping to optimize an objective function, J. Am. Stat. Assoc. 58 (301) (1963) 236–244. doi:10.1080/01621459.1963.10500845 .[50] Y. Diao, C. Li, S. Zeng, S. Yang, C. A. Coello Coello, Nearest-Better Network for Fitness Landscape Analysis of Continuous Optimization Problems, IEEE Trans. Evol. Comput. 29 (5) (2025) 2089–2103. doi:10.1109/TEVC. 2024.3478825 .21 A Supplementary Material for SAT-RTS 
+
+This document provides supplementary technical evidence for the paper "SAT-RTS: A systematic framework for tactical knowledge extraction and visualization-based analysis in real-time strategy games", including clustering visualization, parameter sensitivity studies, tactical codebook definitions, and extended experimental metrics. All figures and tables herein are prefixed with "S" (e.g., Figure S1, Table S1). 
+
+S1 Comparison of t-SNE Visualization of Clustering Results 
+
+Figure S1 shows the comparison of t-SNE visualizations of clustering results with cluster-centric BK-tree under different distance metrics and true numbers of clusters for scenarios with consistent combat unit scale. Clustering results under adapted EMD and Wasserstein family distance metrics are highly consistent, while Chamfer and Hausdorff show significant differences due to their neglect of unit distribution information. C1  
+
+> C2
+> C3
+> C4
+> C5 C6
+> C7
+> C8
+> C9
+
+Chamfer ( 𝑘 = 9)C1  
+
+> C2
+> C3
+> C4
+> C5
+> C6
+> C7
+> C8
+> C9
+
+Hausdorff ( 𝑘 = 9)C1  
+
+> C2
+> C3
+> C4
+> C5
+> C6
+> C7
+> C8
+> C9
+
+2-Wass. ( 𝑘 = 9)C1   
+
+> C2
+> C3
+> C4
+> C5
+> C6 C7
+> C8
+> C9
+
+EMD ( 𝑘 = 9)C1    
+
+> C2
+> C3
+> C4
+> C5
+> C6 C7
+> C8 C9
+
+Adp. EMD ( 𝑘 = 9)++++++
+
+++++++
+
+++++++
+
+++++++ +
+
++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++ ++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++
+
+++++ ++++++
+
+++++++
+
+++++++
+
+++++++ ++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++ ++++++
+
+++++++ ++
+
+++++
+
+++++++
+
+++++++ +
+
++
+
++
+
++
+
++
+
++
+
+++++++
+
+++++++++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+Chamfer ( 𝑘 = 50 )++++++
+
++
+
+++ +
+
+++
+
+++++++
+
+++++++
+
+++++++ ++++++
+
+++++++
+
+++++++ ++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++ ++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++ ++++++
+
+++++++ Hausdorff ( 𝑘 = 50 )++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++ ++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++ ++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++ 2-Wass. ( 𝑘 = 50 )++++++
+
+++++++
+
+++++++ ++++++
+
+++++++
+
+++++++
+
+++++++++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
++++
+
++
+
+++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++ ++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++ EMD ( 𝑘 = 50 )++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
++++
+
++
+
+++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++ Adp. EMD ( 𝑘 = 50 )++++++
+
+++++++
+
+++++++
+
+++++++++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++++ ++++
+
+++++++++++++
+
+++++++
+
+++++++
+
+++++++
+
+++
+
+++++
+
+++++++
+
+++++++ ++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++
+
++
+
++++
+
+++++++
+
+++++++ ++ ++ ++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++ ++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
++++++ +
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
++ +
+
++
+
+++
+
++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
++ +++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+Chamfer ( 𝑘 = 100 )++++++
+
+++++++
+
+++++++
+
+++++++++++++
+
+++++++
+
+++
+
++
+
++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++ ++++++
+
+++++++++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++ ++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++ ++++++
+
++
+
+++ +++
+
+++++++
+
+++++++
+
+++++++ ++++++++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
++ +
+
++ ++
+
++
+
+++++++
+
+++++++
+
++++++
+
++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++ Hausdorff ( 𝑘 = 100 )++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++++++++ ++++++
+
+++++++
+
+++++++ ++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++ ++++++
+
+++
+
+++
+
+++
+
+++++++
+
+++++++
+
+++++++
+
+++++++ ++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++ ++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++ ++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++ ++++++
+
+++++++ ++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++ ++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++++++++
+
+++++++
+
+++++++
+
+++++++++++++
+
++
+
++
+
++++
+
++
+
+++++++ ++++++
+
+++++++
+
+++++++ 2-Wass. ( 𝑘 = 100 )++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++ ++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++ ++++++
+
+++++++ ++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++ ++++++
+
+++++++ ++++++
+
+++++++
+
+++++++
+
+++++++ ++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++
+
++
+
++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++++++
+
+++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
++
+
++
+
+++
+
++
+
++
+
+++++++
+
+++++++
+
+++++++ ++++++
+
+++++++ ++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++ ++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++ ++++++
+
+++++++
+
+++++++ EMD ( 𝑘 = 100 )++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++ ++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++ ++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++ ++++++
+
+++++++ ++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++
+
++
+
++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++
+
+++
+
+++++++
+
++++++++
+
++++
+
+++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
++
+
++
+
+++
+
++
+
++
+
+++++++
+
+++++++
+
+++++++ ++++++
+
+++++++ ++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++ ++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++ ++++++
+
+++++++
+
+++++++ Adp. EMD ( 𝑘 = 100 )Figure S1: Comparison of t-SNE visualization of clustering results with cluster-centric BK-tree under different distance metrics and true numbers of clusters Figure S2 shows the comparison for scenarios with inconsistent combat unit scale. The distant virtual points introduced by adapted EMD effectively maintain state separation performance under inconsistent unit scales, thereby avoiding incorrect clustering. Note that the t-SNE in Figure S1 and Figure S2 is used solely for visualization, not for dimensionality reduction during clustering. 22 ++++++
+
+++++++ ++++++++++++++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++ ++++++
+
+++++++
+
+++++++
+
+++++++ ++++++ ++++++ ++++++
+
+++++++
+
+++++++ ++++++
+
+++++++Chamfer ( 𝑘 = 25 )++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++++++++
+
+++++++
+
+++++++ ++++++ ++++++ ++++++ Hausdorff ( 𝑘 = 25 )++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++ ++++++
+
+++++++
+
+++++++
+
+++++++ ++++++ ++++++ 2-Wass. ( 𝑘 = 25 )++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++++++++ ++++++ ++++++ ++++++ EMD ( 𝑘 = 25 )++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++ Adp. EMD ( 𝑘 = 25 )++++++
+
++++++
+
++
+
+++++++++++++++++++
+
+++++++++++++++++++++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++++++++++++++
+
+++++++++++++
+
+++++++
+
+++++
+
++
+
++
+
+++++++
+
+++++++
+
+++++++
+
+++++++++++++++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++++++++
+
+++++++++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++++++++
+
+++++++++++++++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++++++++
+
+++++++++++++++++++++++++
+
+++++++++++++
+
+++++++++++++++++++++++++++++++
+
+++++++++++++
+
+++++++
+
+++++++++++++
+
+++++++
+
+++++++++++++
+
+++++++++++++++++++++++++
+
+++++++
+
+++++++
+
+++++++ ++++++
+
+++++++++++++++++++++++++
+
+Chamfer ( 𝑘 = 81 )+
+
++
+
++
+
++
+
+++
+
+++++++
+
+++++++
+
+++++++ ++++++ ++++++++++++++++++++++++
+
++
+
++
+
++
+
++
+
+++
+
+++
+
++
+
++
+
++
+
++
+
++ +
+
+++++
+
+++++++
+
+++++++++++++++++++++++++++++++
+
+++++++
+
+++
+
++++
+
++
+
+++++++
+
+++++++++++++++++++++++++++++++++++++
+
+++++++ ++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++++++++
+
+++++++++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++++++++
+
+++++++++++++++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++++++++
+
+++++++++++++++++++++++++
+
+++++++++++++
+
+++++++++++++++++++++++++ ++++++ ++++++++++++
+
+++++++
+
+++++++++++++ ++++++ ++++++ ++++++ ++++++++++++++++++
+
+++++++
+
+++++++ ++++++ ++++++ ++++++ ++++++++++++++++++++++++ Hausdorff ( 𝑘 = 81 )++++
+
++
+
++
+
+++++++
+
++
+
++++++++++++
+
+++++++
+
+++++++++++++++++++++++++
+
+++++++
+
++
+
++
+
+++++++++++
+
+++
+
+++++
+
+++++++++++++++++++
+
+++++++++++++
+
+++++++ +
+
+++
+
++++
+
+++
+
++
+
++
+
+++
+
+++++++
+
+++++++
+
+++++++++++++++++++++++++
+
+++++++
+
+++
+
+++
+
+++
+
+++++++++++++++++++ ++++++++++++ ++++++++++++
+
+++++++
+
+++++++ ++++++ ++++++ ++++++++++++++++++++++++++++++
+
+++++++++++++ ++++++ ++++++++++++ ++++++++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++ ++++++++++++++++++++++++
+
+++++++
+
+++++++++++++
+
+++++++ ++++++++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++++++++++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++++++++++++++++++++ 2-Wass. ( 𝑘 = 81 )+
+
++
+
+++++
+
+++++++
+
+++++++
+
+++++++++++++
+
+++++++
+
+++++++++++++++++++
+
++
+
++
+
++
+
++
+
+++
+
++
+
+++
+
++
+
+++
+
++
+
++
+
+++++
+
+++++++
+
+++++++
+
+++++++++++++ ++++++++++++
+
+++++++
+
++
+
+++
+
++++++++++++++++ ++++++++++++++++++
+
+++++++++++++
+
+++++++
+
+++++++ ++++++ ++++++ ++++++
+
+++++++
+
+++++++++++++++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++++++++++++++++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++++++++
+
+++++++++++++++++++++++++
+
+++++++++++++
+
+++++++ ++++++
+
+++++++++++++++++++++++++++++++
+
+++++++
+
+++++++++++++++++++
+
+++++++++++++++++++++++++++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++++++++
+
+++++++++++++++++++
+
+++++++ EMD ( 𝑘 = 81 )++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++++++++
+
+++++++++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++++++++++++++++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++++++++++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++++++++++++++
+
+++++++
+
+++++++
+
+++++++
+
+++++++++++++++++++++++++++++++
+
+++++++
+
+++++++
+
+++++++++++++
+
+++++++++++++++++++++++++
+
+++++++++++++
+
+++++++++++++++++++
+
+++++++++++++++++++++++++++++++
+
+++++++++++++++++++
+
+++++++ Adp. EMD ( 𝑘 = 81 )Figure S2: Comparison of t-SNE visualization of clustering results with cluster-centric BK-tree under different distance metrics and true numbers of clusters, with inconsistent combat unit scales across clusters 
+
+S2 Parameter Sensitivity Analysis of DenStream T N SC 
+
+Metrics on sce1 
+
+> Parameters
+
+0.02 0.01 0.01 
+
+0.00 -0.00 -0.00 
+
+0.00 -0.00 0.00 
+
+-0.46 -0.42 -0.60 
+
+T N SC 
+
+Metrics on sce1m 
+
+0.12 -0.00 -0.00 
+
+0.02 -0.00 0.00 
+
+0.01 -0.00 0.00 
+
+-0.58 -0.41 -0.37 
+
+T N SC 
+
+Metrics on sce2 
+
+0.15 0.00 0.00 
+
+-0.03 0.00 -0.00 
+
+0.07 0.00 0.00 
+
+-0.88 -0.56 -0.83 
+
+T N SC 
+
+Metrics on sce2m 
+
+-0.03 0.00 -0.00 
+
+0.04 0.00 0.00 
+
+-0.01 0.00 -0.00 
+
+-0.88 -0.60 -0.57 
+
+0.75 
+
+0.50 
+
+0.25 
+
+0.00 
+
+Figure S3: Correlation heatmap between parameters for DenStream and clustering performance metrics in different scenarios The correlation analysis in Figure S3 elucidates the distinct roles of DenStream parameters. While 𝜆 controls temporal decay and 𝛽, 𝜇 govern micro-cluster dynamics, their minimal correlation with performance metrics suggests a relatively stable distribution in the StarCraft II data stream, where temporal evolution exerts negligible impact on the cluster architecture. In contrast, the neighborhood radius 𝜖 emerges as the dominant factor, underscoring that inter-point spatial distance is the primary determinant of clustering efficacy in this context. Consequently, 𝜖 is identified as the critical parameter for optimization. For the performance comparison in Figure 7 in the main text, the secondary parameters were fixed at 𝜆 = 0.5, 𝛽 = 0.1, and 𝜇 = 1.0 to ensure a focused evaluation of the 𝜖 impact. 23 S3 Detailed Performance Data of State Stream Clustering 
+
+Tables S1 and S2 present the detailed experimental results for the cluster-centric BK-tree and the DenStream algorithm, respectively. These tables record the execution time ( 𝑇 ), the number of clusters ( 𝑁 ), and the clustering quality ( 𝑄 )across various scenarios under different clustering thresholds ( 𝜖 ). Table S1: Comparison of clustering performance metrics of the cluster-centric BK-tree with various 𝜖 across different scenarios Param. sce1 sce1m sce2 sce2m 
+
+𝜖 𝑇 𝑁 𝑄 𝑇 𝑁 𝑄 𝑇 𝑁 𝑄 𝑇 𝑁 𝑄 
+
+0.10 15.448 286 0.597 24.238 690 0.576 - - - - - -0.15 10.350 106 0.644 15.725 236 0.613 - - - - - -0.20 10.444 60 0.676 12.471 120 0.627 - - - - - -0.25 10.307 40 0.749 10.851 74 0.650 - - - - - -0.50 10.199 23 0.903 10.581 29 0.868 21.758 415 0.516 20.940 344 0.512 0.60 10.146 21 0.923 10.145 25 0.909 20.414 256 0.539 17.447 218 0.555 0.70 10.097 20 0.939 10.374 24 0.926 19.761 172 0.604 16.184 158 0.600 0.75 10.231 19 0.938 10.265 23 0.924 19.569 146 0.633 16.485 134 0.636 0.80 10.396 19 0.938 10.423 23 0.925 20.051 127 0.664 16.505 117 0.673 0.85 10.684 19 0.938 10.618 23 0.925 20.390 105 0.682 17.132 105 0.689 0.90 10.146 19 0.938 10.662 23 0.925 21.656 96 0.687 17.751 95 0.703 1.00 13.176 19 0.938 12.890 23 0.924 26.801 85 0.729 20.140 86 0.740 1.10 11.174 16 0.487 11.237 22 0.617 28.500 78 0.694 22.566 76 0.638 1.20 9.254 14 0.598 9.017 19 0.651 24.429 73 0.592 19.821 72 0.587 1.25 9.137 12 0.615 8.599 17 0.795 22.414 72 0.599 18.641 70 0.594 1.30 9.139 11 0.663 8.509 15 0.822 20.336 70 0.573 16.500 68 0.566 1.40 9.057 10 0.649 8.645 13 0.830 18.429 62 0.500 15.003 60 0.572 1.50 8.769 10 0.663 8.570 11 0.824 16.252 59 0.501 13.569 57 0.603 2.50 7.151 4 0.349 7.073 5 0.754 13.342 19 0.572 11.292 20 0.595 Table S2: Comparison of clustering performance metrics of DenStream with different 𝜖 across various scenarios Param. sce1 sce1m sce2 sce2m 
+
+𝜖 𝑇 𝑁 𝑄 𝑇 𝑁 𝑄 𝑇 𝑁 𝑄 𝑇 𝑁 𝑄 
+
+0.10 75.182 225 0.938 158.459 537 0.925 - - - - - -0.50 44.463 23 0.937 46.983 28 0.925 276.884 329 0.738 232.813 266 0.728 1.00 43.932 19 0.939 49.694 23 0.928 207.578 82 0.726 169.649 78 0.720 1.10 40.225 16 0.899 42.289 19 0.866 212.884 77 0.748 162.528 75 0.742 1.20 35.044 13 0.755 37.738 18 0.811 201.567 72 0.705 156.619 71 0.716 1.25 34.294 12 0.651 39.024 16 0.557 205.272 71 0.703 150.622 67 0.715 1.30 33.384 11 0.446 39.146 14 0.499 205.159 70 0.708 153.797 66 0.720 1.40 32.959 10 0.381 35.721 13 0.374 196.817 62 0.650 157.778 58 0.611 1.50 31.280 9 0.202 35.370 11 0.137 234.638 58 0.616 154.382 52 0.552 2.00 30.532 9 0.158 33.610 11 0.241 179.407 32 0.296 151.479 31 0.277 2.50 18.589 4 0.329 19.742 5 0.391 121.905 19 0.437 102.243 19 0.482 Taking the results of the sce1 scenario in Table S1 as a specific example, the internal efficiency logic of the cluster-centric BK-tree can be elucidated through the non-monotonic trend of 𝑇 . When the clustering threshold is at its maximum (𝜖 = 2.50 ), the minimum value of 𝑇 occurs because the large threshold allows a large amount of data to be greedily assigned to the same cluster, which also accounts for the minimum value of 𝑄 at this point. As 𝜖 decreases to 1.00 , 𝑇 
+
+reaches its first peak. The comparative data in Table S2 further underscores these findings. In contrast to the stable time consumption of the cluster-centric BK-tree, the DenStream algorithm exhibits a substantial increase in 𝑇 within complex scenarios ( sce2 
+
+and sce2m ), proving that the proposed combination of the state distance metric and the cluster-centric BK-tree structure is uniquely suited for maintaining real-time performance in massive, high-dimensional RTS data streams. 24 S4 Tactic Label Codebook 
+
+The tactic label codebook is presented in Table S3, providing a structured taxonomy for the qualitative analysis of micromanagement behaviors. This codebook categorizes tactic labels into four hierarchical dimensions: • Basic Actions (IDs 0–6): Represent explicit primitive actions in unit engagements, including greedy or threat-focused targeting, exfiltration, and deceptive actions such as feints. • Collaboration Granularity (IDs 7–9): Characterize the degree of local collaboration among units, ranging from independent operations to centralized collaboration. • Collaboration Persistence (IDs 10–11): Describe the temporal stability of the collaboration mode, identifying whether units maintain a consistent mode or undergo tactical switching. • Tactical Characteristics (IDs 12–17): Represent high-level tactical profiles, such as sustained offen-sive/defensive stances and hybrid actions. Table S3: Tactic Label Codebook 
+
+ID Tactic Label Description of the Criteria 
+
+0 a-greedy Always greedily attack the nearest or weakest targets first. 1 a-threat-focused Always strike the currently most threatening targets first. 2 a-exfiltration Planned withdrawal from enemy contact. 3 a-massing Gather units to concentrate forces at a single point to achieve local superiority. 4 a-feint Deceptive attack to draw enemy reserves away from the real main effort. 5 a-sacrificial feint A feint with the sacrifice of individual units. 6 a-inefficiency Inefficiency actions generated by distractors. 7 k-independent Units operate without local collaboration. 8 k-distributed Units conduct local collaboration based on the distribution. 9 k-centralized Units perform in a centralized manner. 10 c-sustained collaboration Maintain the same collaborative model (IDs 7-9) continuously. 11 c-switched collaboration Switch collaboration modes (IDs 7-9). 12 t-sustained attack Sustained attack (IDs 0-1). 13 t-sustained defense Sustained defense (ID 2). 14 t-sustained hybrid Sustained hybrid actions (IDs 3-5). 15 t-switched tactic Shift between distinct tactical modes (IDs 12-14). 16 t-inefficient tactic Inefficient tactic with conducting inefficiency actions (ID 6). 17 t-unknown tactic Behavior does not match any recognized pattern in the current codebook. 25 S5 Tactic Codebook 
+
+Selected examples of tactical codes and their semantic interpretations are detailed in Table S4. These codes represent the primary tactical profiles analyzed in Sec. 4.6 , encompassing various combinations of basic actions, collaboration granularities, and collaboration transitions. Specifically, the table illustrates a range of tactics including fundamental greedy or threat-focused attacks and complex coordination modes such as distributed or centralized collaboration. Furthermore, it identifies whether these patterns remain sustained or undergo tactical switching. Table S4: Some of the tactic codes and their descriptions 
+
+ID Tactic Code Description 
+
+0 0000000 000 00 000000 No obvious tactic 1 1000000 010 10 100000 Greedy attack, sustained collaboration based on the distribution 2 1000000 111 01 100000 Greedy attack, switched collaboration modes among independent, distributed and centralized mode 3 1000000 011 01 100000 Greedy attack, switched collaboration modes among distributed and centralized mode 4 1000100 111 01 000100 Greedy attack and feint, switched collaboration modes among independent, distributed and centralized mode 5 1000010 011 01 000100 Greedy attack and sacrificial feint, switched collaboration modes among distributed and centralized mode 6 1000000 110 01 100000 Greedy attack, switched collaboration modes among independent and distributed mode 7 1000000 100 10 100000 Greedy attack, without local collaboration 8 1000000 001 10 100000 Greedy attack, sustained centralized collaboration mode 9 1001000 011 01 000100 Greedy attack and massing, switched collaboration modes among distributed and centralized mode 10 1001000 001 10 000100 Greedy attack and massing, sustained centralized collaboration mode 11 1100000 111 01 100000 Greedy and threat-focused attack, switched collaboration modes among independent, distributed and centralized mode 12 1000100 011 01 000100 Greedy attack and feint, switched collaboration modes among distributed and central-ized mode 
+
+S6 Action Sequence and Tactic Pattern Analysis Based on Sankey Diagrams 
+
+Figures S4 to S7 and Figures S8 to S11 present comprehensive Sankey diagrams for action sequence and tactic patterns, respectively, across multiple clustering algorithms (Ward Agglomerative Clustering, BIRCH, GMM, 𝑘 -means) and various cluster numbers, providing extensive validation of the main findings presented in the main text. Tactical extraction is performed through rule-based multi-label annotation, which generates a large scale of tactics due to the combinatorial constitution of numerous labels. It should be noted that multiple clustering algorithms with different numbers of clusters 𝑘 were applied to avoid coincidental conclusions resulting from specific algorithms and configurations. In the Sankey diagrams, circular flows caused by merged counting of the same patterns at different temporal occurrences have been handled by adding temporal subscripts for better visualization. Therefore, the rectangular blocks in the Sankey diagrams contain temporal slices of the same pattern at different time points. Additional statistical information for clustered samples, including sample size, maximum, minimum and average fitness values, is presented in the upper right corner of each diagram. 26 Cluster 0 
+
+Cluster 1 Cluster 2 
+
+80 
+
+60 
+
+40 
+
+20 
+
+0
+
+20 
+
+40 
+
+60 
+
+> Fitness Value
+
+Cluster 0 
+
+Cluster 1 
+
+Cluster 2 
+
+Cluster 3 
+
+80 
+
+60 
+
+40 
+
+20 
+
+0
+
+20 
+
+40 
+
+60 
+
+> Fitness Value
+
+Cluster 0 
+
+Cluster 1 
+
+Cluster 2 
+
+Cluster 3 
+
+Cluster 4 
+
+80 
+
+60 
+
+40 
+
+20 
+
+0
+
+20 
+
+40 
+
+60 
+
+> Fitness Value
+
+Cluster 0 
+
+Cluster 1 
+
+Cluster 2 
+
+Cluster 3 
+
+Cluster 4 
+
+Cluster 5 
+
+80 
+
+60 
+
+40 
+
+20 
+
+0
+
+20 
+
+40 
+
+60 
+
+> Fitness Value
+
+fitness landscape unsorted win loss Figure S4: Comprehensive sankey diagram of action sequences patterns with Ward Agglomerative Clustering algorithm for clustering 27 Cluster 0 
+
+Cluster 1 
+
+Cluster 2 
+
+80 
+
+60 
+
+40 
+
+20 
+
+0
+
+20 
+
+40 
+
+60 
+
+> Fitness Value
+
+Cluster 0 
+
+Cluster 1 
+
+Cluster 2 
+
+Cluster 3 
+
+80 
+
+60 
+
+40 
+
+20 
+
+0
+
+20 
+
+40 
+
+60 
+
+> Fitness Value
+
+Cluster 0 
+
+Cluster 1 
+
+Cluster 2 
+
+Cluster 3 
+
+Cluster 4 
+
+80 
+
+60 
+
+40 
+
+20 
+
+0
+
+20 
+
+40 
+
+60 
+
+> Fitness Value
+
+Cluster 0 Cluster 1 
+
+Cluster 2 
+
+Cluster 3 
+
+Cluster 4 
+
+Cluster 5 
+
+80 
+
+60 
+
+40 
+
+20 
+
+0
+
+20 
+
+40 
+
+60 
+
+> Fitness Value
+
+fitness landscape unsorted win loss Figure S5: Comprehensive sankey diagram of action sequences patterns with birch algorithm for clustering 28 Cluster 0 
+
+Cluster 1 
+
+Cluster 2 
+
+80 
+
+60 
+
+40 
+
+20 
+
+0
+
+20 
+
+40 
+
+60 
+
+> Fitness Value
+
+Cluster 0 
+
+Cluster 1 
+
+Cluster 2 
+
+Cluster 3 
+
+80 
+
+60 
+
+40 
+
+20 
+
+0
+
+20 
+
+40 
+
+60 
+
+> Fitness Value
+
+Cluster 0 
+
+Cluster 1 
+
+Cluster 2 
+
+Cluster 3 
+
+Cluster 4 
+
+80 
+
+60 
+
+40 
+
+20 
+
+0
+
+20 
+
+40 
+
+60 
+
+> Fitness Value
+
+Cluster 0 
+
+Cluster 1 
+
+Cluster 2 
+
+Cluster 3 
+
+Cluster 4 
+
+Cluster 5 
+
+80 
+
+60 
+
+40 
+
+20 
+
+0
+
+20 
+
+40 
+
+60 
+
+> Fitness Value
+
+fitness landscape unsorted win loss Figure S6: Comprehensive sankey diagram of action sequences patterns with gmm algorithm for clustering 29 Cluster 0 
+
+Cluster 1 
+
+Cluster 2 
+
+80 
+
+60 
+
+40 
+
+20 
+
+0
+
+20 
+
+40 
+
+60 
+
+> Fitness Value
+
+Cluster 0 
+
+Cluster 1 
+
+Cluster 2 
+
+Cluster 3 
+
+80 
+
+60 
+
+40 
+
+20 
+
+0
+
+20 
+
+40 
+
+60 
+
+> Fitness Value
+
+Cluster 0 Cluster 1 
+
+Cluster 2 
+
+Cluster 3 
+
+Cluster 4 
+
+80 
+
+60 
+
+40 
+
+20 
+
+0
+
+20 
+
+40 
+
+60 
+
+> Fitness Value
+
+Cluster 0 
+
+Cluster 1 
+
+Cluster 2 
+
+Cluster 3 
+
+Cluster 4 
+
+Cluster 5 
+
+80 
+
+60 
+
+40 
+
+20 
+
+0
+
+20 
+
+40 
+
+60 
+
+> Fitness Value
+
+fitness landscape unsorted win loss Figure S7: Comprehensive sankey diagram of action sequences patterns with 𝑘 -means algorithm for clustering 30 Cluster 0 
+
+Cluster 1 Cluster 2 
+
+80 
+
+60 
+
+40 
+
+20 
+
+0
+
+20 
+
+40 
+
+60 
+
+> Fitness Value
+
+Cluster 0 
+
+Cluster 1 
+
+Cluster 2 
+
+Cluster 3 
+
+80 
+
+60 
+
+40 
+
+20 
+
+0
+
+20 
+
+40 
+
+60 
+
+> Fitness Value
+
+Cluster 0 
+
+Cluster 1 
+
+Cluster 2 
+
+Cluster 3 
+
+Cluster 4 
+
+80 
+
+60 
+
+40 
+
+20 
+
+0
+
+20 
+
+40 
+
+60 
+
+> Fitness Value
+
+Cluster 0 
+
+Cluster 1 
+
+Cluster 2 
+
+Cluster 3 
+
+Cluster 4 
+
+Cluster 5 
+
+80 
+
+60 
+
+40 
+
+20 
+
+0
+
+20 
+
+40 
+
+60 
+
+> Fitness Value
+
+fitness landscape unsorted win loss Figure S8: Comprehensive sankey diagram of tactic patterns with Ward Agglomerative Clustering algorithm for clustering 31 Cluster 0 
+
+Cluster 1 
+
+Cluster 2 
+
+80 
+
+60 
+
+40 
+
+20 
+
+0
+
+20 
+
+40 
+
+60 
+
+> Fitness Value
+
+Cluster 0 
+
+Cluster 1 
+
+Cluster 2 
+
+Cluster 3 
+
+80 
+
+60 
+
+40 
+
+20 
+
+0
+
+20 
+
+40 
+
+60 
+
+> Fitness Value
+
+Cluster 0 
+
+Cluster 1 
+
+Cluster 2 
+
+Cluster 3 
+
+Cluster 4 
+
+80 
+
+60 
+
+40 
+
+20 
+
+0
+
+20 
+
+40 
+
+60 
+
+> Fitness Value
+
+Cluster 0 Cluster 1 
+
+Cluster 2 
+
+Cluster 3 
+
+Cluster 4 
+
+Cluster 5 
+
+80 
+
+60 
+
+40 
+
+20 
+
+0
+
+20 
+
+40 
+
+60 
+
+> Fitness Value
+
+fitness landscape unsorted win loss Figure S9: Comprehensive sankey diagram of tactic patterns with birch algorithm for clustering 32 Cluster 0 
+
+Cluster 1 
+
+Cluster 2 
+
+80 
+
+60 
+
+40 
+
+20 
+
+0
+
+20 
+
+40 
+
+60 
+
+> Fitness Value
+
+Cluster 0 
+
+Cluster 1 
+
+Cluster 2 
+
+Cluster 3 
+
+80 
+
+60 
+
+40 
+
+20 
+
+0
+
+20 
+
+40 
+
+60 
+
+> Fitness Value
+
+Cluster 0 
+
+Cluster 1 
+
+Cluster 2 
+
+Cluster 3 
+
+Cluster 4 
+
+80 
+
+60 
+
+40 
+
+20 
+
+0
+
+20 
+
+40 
+
+60 
+
+> Fitness Value
+
+Cluster 0 
+
+Cluster 1 
+
+Cluster 2 
+
+Cluster 3 
+
+Cluster 4 
+
+Cluster 5 
+
+80 
+
+60 
+
+40 
+
+20 
+
+0
+
+20 
+
+40 
+
+60 
+
+> Fitness Value
+
+fitness landscape unsorted win loss Figure S10: Comprehensive sankey diagram of tactic patterns with gmm algorithm for clustering 33 Cluster 0 
+
+Cluster 1 
+
+Cluster 2 
+
+80 
+
+60 
+
+40 
+
+20 
+
+0
+
+20 
+
+40 
+
+60 
+
+> Fitness Value
+
+Cluster 0 
+
+Cluster 1 
+
+Cluster 2 
+
+Cluster 3 
+
+80 
+
+60 
+
+40 
+
+20 
+
+0
+
+20 
+
+40 
+
+60 
+
+> Fitness Value
+
+Cluster 0 Cluster 1 
+
+Cluster 2 
+
+Cluster 3 
+
+Cluster 4 
+
+80 
+
+60 
+
+40 
+
+20 
+
+0
+
+20 
+
+40 
+
+60 
+
+> Fitness Value
+
+Cluster 0 
+
+Cluster 1 
+
+Cluster 2 
+
+Cluster 3 
+
+Cluster 4 
+
+Cluster 5 
+
+80 
+
+60 
+
+40 
+
+20 
+
+0
+
+20 
+
+40 
+
+60 
+
+> Fitness Value
+
+fitness landscape unsorted win loss Figure S11: Comprehensive sankey diagram of tactic patterns with 𝑘 -means algorithm for clustering 34 S7 Tactic Analysis 80    
+
+> 60
+> 40
+> 20
+> 020 40 60
+> Mean Fitness
+> 428 T1 104 T2 547 107 T3 T3 544
+> T3 0T0 0T3 0
+> T2 0
+> T4 0T5 108
+> T0 108
+> T6 108 T7 104 T4 104 T0 544 T1 544 T0 544 T6 65 T1 64 T1 29 T1
+
+a) sce1 200    
+
+> 150
+> 100
+> 50
+> 050
+> Mean Fitness
+> 17745 19607 T9 T9 17731 T9 T9 T9 017454 19607 17752 T9 T0 0T10 0T9 0T3 0T12 0T11 35 T9 663 T9 664 T9 1682 T9 390 T0 390 T11 35 T11 35 T0
+
+b) sce2 Figure S12: Treemap of state-tactic payoff correlation The detailed tactical analysis presented in Tables S5 and S6 provides comprehensive insights into state-tactic relation-ships across different scenarios. The analysis can be summarized through four key dimensions: (1) High win rate state-tactic pairs: This dimension examines pairs demonstrating superior average outcomes. It analyzes how specific tactical approaches achieve optimal performance in particular state configurations, such as independent greedy attacks versus collaborative tactics adapting to distinct tactical requirements and battlefield conditions. (2) State-dependent tactical effectiveness: This dimension analyzes how different tactics yield significantly varying results within the same state. This phenomenon is particularly evident in opening states, where tactical selection critically determines final outcomes. (3) State characteristics overriding tactical importance: This dimension investigates circumstances where different states achieve similar results regardless of tactical selection. Such cases typically occur in states with pronounced force superiority, where even basic tactics perform effectively due to inherent advantages. (4) Disadvantaged state analysis: This dimension evaluates specific tactics that achieve low returns in certain states. It covers situations where ineffective tactics executed in balanced and disadvantaged situations, leading to negative outcomes. These detailed case studies and comparative analyses substantiate the macro-level patterns observed in the treemap visualization, providing empirical evidence for the state-dependent nature of tactical effectiveness and the critical role of opening tactics in determining final outcomes. 35 Table S5: Detailed tactical analysis of representative states in sce1 
+
+state–tactic pair state distribution analysis 
+
+104-T2 107-T3 428-T1 544-T1 547-T1 state 428 
+
+> state 104
+> state 544
+> state 107
+> state 547
+
+High win rate state-tactic pairs represent superior average out-comes when executing specific tactics in corresponding states. Tactic T1 represents independent greedy attack without collabo-ration consideration, which is applicable to states 428, 544 and 547 where the red side has clear advantages and the blue side has only one unit. In such scenarios, greedy attack is optimal and collaboration consideration has minimal impact on final ac-tions. In contrast, tactics T2 and T3 introduce collaboration, corresponding to states 104 and 107 where targets are not unique and distributions are scattered, requiring coordinated efforts to concentrate firepower. 0-T0 0-T2 0-T3 0-T4 0-T5 state 0 
+
+In specific states, different tactics yield significantly different re-sults, with the most notable being state 0 (game opening). Under initial formation conditions where both sides are evenly matched, tactic T0 representing no obvious tactic achieves zero returns. Tactic T2, representing greedy attack with local collaboration, achieves maximum return. Building on this, tactic T4 introduc-ing feint attack also achieves relatively high returns, but tactic T5 considering unit sacrifice for feint execution in unit-interleaved distributions shows insignificant returns. 104-T0 104-T2 104-T4 108-T0 108-T6 108-T7 544-T0 544-T1 544-T3 544-T6 state 104 
+
+> state 108
+> state 544
+
+In specific states, different tactics may produce similar results due more to state characteristics than tactic selection. States 104, 108, and 544 all feature clear red side superiority, where even tactic T0 without obvious tactical consideration can achieve high returns. For state 104, local collaboration needs to be considered to adapt to multiple targets, thus tactics T2 and T4 with switched collaboration modes are frequently utilized and demonstrate high returns. In contrast, states 108 and 544 have simpler distributions and more obvious advantages for the red, enabling simple or even non-coordinated tactics like T6 and T7 to perform well. 0-T0 29-T1 64-T1 65-T1 state 0  
+
+> state 64 state 65
+> state 29
+
+Specific tactics in certain states produce low returns. In state 0, ineffective tactics prevent return accumulation, confirming the necessity of opening tactics for final outcomes. However, in some situations where the red side has fallen into clear disadvantage, continuing engagement with greedy attack T1 will undoubtedly result in negative returns. 36 Table S6: Detailed tactical analysis of representative states in sce2 
+
+state–tactic pair state distribution analysis 
+
+17454-T9 17731-T9 17732-T9 17745-T9 17752-T9 19607-T9 state 19607   
+
+> state 17731 state 17732
+> state 17745 state 17752
+> state 17454
+
+Specific tactics demonstrate high win rates across different states. These states are primarily in the early combat phases. In these states, the red side has already eliminated two units at the center of the blue side through local concentration of forces and coordinated firepower tactic T9, thereby es-tablishing positional superiority. It should be noted that although states 17454 and 17752 have comparable total health values between both sides, these states still yield high overall returns due to numerical and firepower advantages of the red. 0-T0 0-T3 0-T9 0-T10 0-T11 0-T12 state 0 
+
+Different opening tactics for state 0 produce significantly different results, with this effect becoming more pronounced in the more challenging sce2 scenario. Tactic T0 with no obvious tactic achieves significant negative returns, while tactics T3, T11 and T12 are also unsuitable for this state. Tactics T9 and T10, which incorporate unit concentration, achieve positive returns, with T9 featuring switchable col-laboration modes demonstrating higher returns compared to T10 with fixed collaboration mode. 0-T9 35-T9 663-T9 664-T9 1682-T9 state 663 state 0 state 35    
+
+> state 664 state 1682
+
+Certain states feature similar unit distributions but different health value distributions, where specific tactics demon-strate high efficiency. States 0 and 663 represent balanced situations between both sides, while state 35 shows clear disadvantage for the red side, and states 664 and 1682 in-dicate slight red side advantage. Despite different or even disadvantageous situations in these states, these state-tactic pairs occupy substantial area and achieve satisfactory re-turns. This demonstrates that the local concentration of forces and coordinated firepower tactic T9 exhibits broad applicability in such scenarios. 0-T0 0-T11 35-T0 35-T11 390-T0 390-T11 state 0 state 390 state 35 
+
+Besides no obvious tactics achieving low or negative returns in several opening states, tactic T11, which considers prior-ity attacks on the most threatening targets, also demonstrates significant inefficiency. This tactic prioritizes enemy fire-power without considering unit distribution factors, making it difficult to apply in opening states. 37
