@@ -1,0 +1,54 @@
+{
+  "label": "2026-07-01",
+  "date": "2026-07-01",
+  "generated_at": "2026-07-01T20:36:01",
+  "count": 3,
+  "papers": [
+    {
+      "paper_id": "202607/01/2606.24162v1-behaviorbench-benchmarking-foundation-models-for-behavioral-science-tasks",
+      "section": "quick",
+      "title_en": "BehaviorBench: Benchmarking Foundation Models for Behavioral Science Tasks",
+      "authors": "Jin Huang, Yutong Xie, Wanli Song, Xingjian Zhang, Walter Yuan, Matthew O. Jackson, Qiaozhu Mei",
+      "date": "2026-06-23",
+      "pdf": "https://arxiv.org/pdf/2606.24162v1",
+      "score": "7.0",
+      "evidence": "行为预测和模拟的基准，与玩家建模相关",
+      "tldr": "基础模型在行为科学任务中应用广泛，但缺乏系统评估。本文提出BehaviorBench基准，评估行为预测、战略决策等四个核心能力，并开发行为基础模型Be.FM-1.5。实验发现：通用模型在个体预测和知识任务上领先，而行为基础模型在分布对齐上显著更优，Be.FM-1.5在分布指标领先且个体指标有竞争力。该工作建立了行为科学AI系统评估基准，强调了分布级评估的关键作用。",
+      "tags": "query:player-ai",
+      "abstract_en": "Foundation models have been increasingly applied to behavioral science domains such as psychology, sociology, and economics. While these models show promise in individual tasks such as survey response prediction and human-subject experiment simulation, there remains no systematic understanding of how well they perform across diverse behavioral science tasks, contexts, and populations. We introduce BehaviorBench, a comprehensive benchmark that evaluates foundation models along four core capabilities: (1) behavior prediction and simulation, (2) strategic decision-making, (3) subject-trait inference, and (4) behavioral knowledge application. Crucially, BehaviorBench evaluates model outputs at both the individual and distributional levels, capturing not only per-subject accuracy but also population-level alignment, an essential requirement for behavioral validity. Leveraging the tasks in BehaviorBench, we further develop Be.FM-1.5, extending the Be.FM family of behavioral foundation models fine-tuned on behavioral data. Our results reveal a considerable gap: proprietary general-purpose models excel at individual-level prediction and knowledge-intensive tasks, whereas behavioral foundation models, fine-tuned on behavioral data, achieve substantially stronger distributional alignment. Notably, Be.FM-1.5 leads on distributional metrics and remains competitive on individual-level metrics, suggesting that proper behavioral adaptation can close the gap. Our results highlight the importance of distributional evaluation, establish BehaviorBench as a foundation for developing and assessing behaviorally aligned AI systems, and demonstrate Be.FM-1.5's potential for a broad range of behavioral science studies. Our BehaviorBench and Be.FM-1.5 models can be accessed via https://umich-foreseer.github.io/behaviorbench/.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/01/2606.28182v1-llawco-learning-laws-of-cooperation-for-modeling-embodied-multi-agent-behavior",
+      "section": "quick",
+      "title_en": "LLawCo: Learning Laws of Cooperation for Modeling Embodied Multi-Agent Behavior",
+      "authors": "Qinhong Zhou, Chuang Gan, Anoop Cherian",
+      "date": "2026-06-26",
+      "pdf": "https://arxiv.org/pdf/2606.28182v1",
+      "score": "7.0",
+      "evidence": "基于LLM的多智能体合作行为建模",
+      "tldr": "针对具身多智能体在分散部分可观察环境中合作效率低的问题，提出LLawCo框架。智能体通过反思失败提取行为模式并生成高层次法则（如“必要交流”“等待伙伴”），经监督微调融入思维链实现自主对齐。引入PARTNR-Dialog基准，在四个LLM上平均成功率提升4.5%和6.8%。",
+      "tags": "query:player-ai",
+      "abstract_en": "Embodied agents operating in decentralized and partially observable environments have attracted growing attention in recent years. However, existing large language model (LLM)-based agents often exhibit behaviors that are misaligned with their partners or inconsistent with the environment state, leading to inefficient cooperation and poor task success. To address this challenge, we propose a novel framework, Learning Laws of Cooperation (LLawCo), that enables embodied agents to autonomously align with both their partners and task objectives. Our framework allows agents to reflect on past failures to extract misaligned behavioral patterns, which are used to derive high-level behavioral laws, such as \"Talk when necessary\" and \"Wait for partner.\" These laws are explicitly incorporated into the agents' chains of thought via supervised fine-tuning, aligning their reasoning with task requirements and the behavior of other agents. To evaluate our approach, we introduce PARTNR-Dialog, a large-scale multi-agent communicative and cooperative planning benchmark built on the PARTNR environment. Experiments on existing tasks and our new benchmark demonstrate significant improvements in cooperative efficiency and task success rates. Across four backbone LLMs, our method achieves average success rate improvements of 4.5% on the PARTNR-Dialog benchmark and 6.8% on the TDW-MAT benchmark over state-of-the-art open-source communicative agent frameworks. See the LLawCo project page for details: https://www.merl.com/research/highlights/LLawCo",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202607/01/2606.30639v1-self-evolving-world-models-for-llm-agent-planning",
+      "section": "quick",
+      "title_en": "Self-Evolving World Models for LLM Agent Planning",
+      "authors": "Xuan Zhang, Wenxuan Zhang, See-Kiong Ng, Yang Deng",
+      "date": "2026-06-29",
+      "pdf": "https://arxiv.org/pdf/2606.30639v1",
+      "score": "6.0",
+      "evidence": "面向LLM智能体规划的世界模型，可应用于游戏环境",
+      "tldr": "LLM智能体进行长程规划时依赖世界模型预测行动后果，但不可靠预测会损害决策。本文提出WorldEvolver，通过情景记忆和语义记忆在测试时自我进化世界模型，并选择性过滤低置信预测。在ALFWorld和ScienceWorld上，该方法预测准确率最高，下游任务成功率领先基线。结果表明测试时记忆修订能同时提升预测保真度和规划性能。",
+      "tags": "query:player-ai",
+      "abstract_en": "World models offer a principled way to equip long-horizon LLM agents with foresight: predictions of action consequences before execution. However, unreliable foresight can be ignored, misused, or even degrade downstream decision-making. In this paper, we introduce WorldEvolver, a self-evolving world model framework that revises its deployment-time context while keeping the downstream agent and all model parameters frozen. WorldEvolver integrates three modules: (i) Episodic Memory, which exploits real action transitions through retrieval-based simulation; (ii) Semantic Memory, which extracts persistent heuristic rules from prediction-observation mismatches; and (iii) Selective Foresight, which filters low-confidence predictions before integrating them into agent reasoning context. We evaluate WorldEvolver on ALFWorld and ScienceWorld, measuring world model prediction accuracy on Word2World and downstream agent success rate on AgentBoard. Extensive experiments show that WorldEvolver achieves the highest prediction accuracy across three backbones and leads other world model baselines on downstream agent success rate, demonstrating that test-time memory revision enhances both predictive fidelity and planning performance.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

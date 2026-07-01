@@ -1,0 +1,845 @@
+Title: BehaviorBench: Benchmarking Foundation Models for Behavioral Science Tasks
+
+URL Source: https://arxiv.org/pdf/2606.24162v1
+
+Published Time: Wed, 24 Jun 2026 00:39:37 GMT
+
+Number of Pages: 41
+
+Markdown Content:
+# BehaviorBench : Benchmarking Foundation Models for Behavioral Science Tasks 
+
+Jin Huang 1∗ Yutong Xie 1∗ Wanli Song 1 Xingjian Zhang 1
+
+Walter Yuan 2 Matthew O. Jackson 3,4 Qiaozhu Mei 11University of Michigan 2MobLab 3Stanford University 4Santa Fe Institute 
+
+> 1
+
+{huangjin,yutxie,wanlis,jimmyzxj,qmei}@umich.edu 
+
+> 2
+
+{walter.yuan}@moblab.com 
+
+> 3,4
+
+{jacksonm}@stanford.edu 
+
+## Abstract 
+
+Foundation models have been increasingly applied to behavioral science domains such as psychology, sociology, and economics. While these models show promise in individual tasks such as survey response prediction and human-subject ex-periment simulation, there remains no systematic understanding of how well they perform across diverse behavioral science tasks, contexts, and populations. We introduce BehaviorBench , a comprehensive benchmark that evaluates foun-dation models along four core capabilities: (1) behavior prediction and sim-ulation, (2) strategic decision-making, (3) subject-trait inference, and (4) be-havioral knowledge application. Crucially, BehaviorBench evaluates model outputs at both the individual and distributional levels, capturing not only per-subject accuracy but also population-level alignment, an essential requirement for behavioral validity. Leveraging the tasks in BehaviorBench , we further de-velop Be.FM-1.5 , extending the Be.FM family of behavioral foundation models fine-tuned on behavioral data. Our results reveal a considerable gap: propri-etary general-purpose models excel at individual-level prediction and knowledge-intensive tasks, whereas behavioral foundation models, fine-tuned on behavioral data, achieve substantially stronger distributional alignment. Notably, Be.FM-1.5 
+
+leads on distributional metrics and remains competitive on individual-level met-rics, suggesting that proper behavioral adaptation can close the gap. Our results highlight the importance of distributional evaluation, establish BehaviorBench 
+
+as a foundation for developing and assessing behaviorally aligned AI systems, and demonstrate Be.FM-1.5 ’s potential for a broad range of behavioral sci-ence studies. Our BehaviorBench and Be.FM-1.5 models can be accessed via 
+
+https://umich-foreseer.github.io/behaviorbench/ .
+
+## 1 Introduction 
+
+Foundation models have transformed many fields. Trained on vast and diverse data, they can adapt across tasks and are increasingly used not only for prediction, but also for reasoning, simulation, and scientific discovery [Bommasani et al., 2021, Park et al., 2023, Wang et al., 2023]. One field with particularly transformative potential is behavioral science : the science of understanding, predicting, and shaping human behaviors. Drawing on multiple disciplines, including psychology, sociology, anthropology, and economics, behavioral science provides foundations for understanding decision-making dynamics at individual, group, and societal levels [Gintis, 2014]. Its insights                                                         
+
+> ∗Equal contribution. Preprint.
+> arXiv:2606.24162v1 [cs.CL] 23 Jun 2026 025 50 75 100
+> Individual Mean Win Rate (%)
+> 0
+> 20
+> 40
+> 60
+> 80
+> 100
+> Distributional
+> Mean Win Rate (%)  BeFM 1.5-70B
+> BeFM 1.5-4B
+> Claude Opus 4.6
+> GPT-5.4
+> Gemini 3.1 Pro
+> better
+> better
+> Qwen3-4B
+> Llama3.3-70B
+> BeFM 1.5 {70B, 4B}
+> BeFM 1 {70B, 8B}
+> Centaur-70B
+> Socrates-Llama3-8B {SFT, DPO}
+> Socrates-Qwen-14B {SFT, DPO}
+> Claude {Opus, Sonnet} 4.6
+> Claude Haiku 4.5
+> GPT {5.4, 5.4-mini}
+> GPT-4.1
+> Gemini 3.1 {Pro, Flash}
+> DeepSeek V3.2 Individual Level
+> #Model Mean WR
+> 1Gemini 3.1 Pro 84.7%
+> 2Claude Opus 4.6 80.9%
+> 3Be.FM-1.5-70B 76.6%
+> 4GPT 4.1 73.2%
+> 5Claude Sonnet 4.6 71.8%
+> 6GPT 5.4 70.8%
+> 7Be.FM-1.5-4B 66.5%
+> 8GPT 5.4 mini 60.3%
+> 9Gemini 3.1 Flash 58.4%
+> 10 Llama3.3-70B 51.2%
+> 11 Claude Haiku 4.5 51.2%
+> 12 DeepSeek V3.2 50.7%
+> Distributional Level
+> #Model Mean WR
+> 1Be.FM-1.5-4B 95.3%
+> 2Be.FM-1.5-70B 86.5%
+> 3Be.FM-1-70B 77.8%
+> 4Gemini 3.1 Pro 71.9%
+> 5Centaur-70B 68.4%
+> 6Be.FM-1-8B 67.8%
+> 7GPT 4.1 61.4%
+> 8DeepSeek V3.2 54.4%
+> 9Claude Sonnet 4.6 48.0%
+> 10 GPT 5.4 48.0%
+> 11 Socrates-14B-SFT 47.4%
+> 12 Claude Opus 4.6 45.0%
+
+BehaviorBench Leaderboards   
+
+> Open-source LLMs Proprietary LLMs Behavioral foundation models
+
+Figure 1: Aggregated evaluation results of foundation models on BehaviorBench . Left: individual-vs. distributional-level performance in mean win rate (%) across 20 models. Right: Snapshots of top 12 models on the BehaviorBench leaderboards, with models ranked independently at the individual and distributional evaluation levels by mean win rate (Mean WR, %). Foundation models in leaderboards are colored by model types, with Be.FM-1.5 models highlighted in bold. inform policymaking, healthcare, education, and business strategies, underscoring the need for more advanced AI-driven approaches to behavioral analysis and intervention [Jackson et al., 2025]. Recent work has started to apply general-purpose foundation models, including commercial and open-source large language models, to behavioral science [Demszky et al., 2023, Meng, 2024, Bail, 2024]. These models show promise in improving survey research [Argyle et al., 2023, Grossmann et al., 2023], enabling automated content analysis [Wu et al., 2023, Yang and Menczer, 2023, Gilardi et al., 2023], supporting agent-based modeling [Park et al., 2023, 2024], and predicting human-subject experiment results [Hewitt et al., 2024, Lippert et al., 2024]. In parallel, researchers are also developing behavioral-science-specific foundation models by fine-tuning LLMs on behavior-related data. These behavioral foundation models have demonstrated improved performance in simulating human behavior predicting survey responses, and supporting behavioral research workflows [Xie et al., 2025b, Binz et al., 2024, Kolluri et al., 2025]. Despite this growing body of work, there still lacks a systematic understanding of how well foun-dation models perform across diverse behavioral science tasks, contexts, and populations. Existing benchmarks are often limited by a narrow task family, such as survey response prediction [Suh et al., 2025, Wang et al., 2025]. As a result, important model capabilities, such as inferring latent traits of human subjects, remain unmeasured. More critically, most benchmarks treat each human subject as an independent data point and score models using pointwise accuracy [Wang et al., 2025, Shapira et al., 2024, Duan et al., 2024, Huang et al., 2025]. This overlooks the distributional nature of human populations: behavioral science often requires models not only to predict individual outcomes, but also to preserve population- or group-level diversity and heterogeneity [Kolluri et al., 2025, Xie et al., 2025a]. To address these limitations, we introduce BehaviorBench , a comprehensive benchmark for system-atically evaluating foundation models on behavioral science tasks. We organize our evaluation around the observation that human behavior is jointly shaped by multiple factors, including the behavioral context, the subject’s traits, and underlying motivations [Xie et al., 2025b]. Formally, this can be represented as a conditional probability 
+
+p(y | x, c ; K), (1) where y denotes a behavior, x the characteristics of the human subject, c the contextual variables defining the environment or intervention, and K represents relevant behavioral knowledge. Afoundation model that excels at behavioral science tasks should support multiple types of inference within this framework. Accordingly, we evaluate models along four core capabilities: (1) behavior prediction and simulation (forward inference over y to mimic a human subject), (2) strategic decision-making (the generation of y to achieve a specified goal), (3) subject-trait inference (inverse inference over x), and (4) the application of behavioral science knowledge ( K) to research problems. Built 2on a diverse collection of datasets, BehaviorBench comprises 12 distinct tasks spanning these four capabilities. We evaluate models at both the individual and the distributional levels, so that a model’s ability to align with a population’s behavioral variation is treated as a first-class objective. Motivated by the general capabilities and distributional alignment goals in BehaviorBench , we further develop Be.FM-1.5 , extending the Be.FM [Xie et al., 2025b] family of foundation models that are specifically designed for behavioral science tasks, as a feasibility test of targeted model development. Be.FM-1.5 fine-tunes open-source LLMs on a substantially broader set of tasks, with explicit coverage of diverse capabilities, behavioral contexts, and human populations. Our evaluation reveals that current foundation models exhibit uneven strengths across behavioral science tasks: no single model family dominates the full benchmark. General-purpose proprietary LLMs excel at individual-level prediction and knowledge-intensive tasks, but they often lag behind on distributional metrics. In contrast, behavioral foundation models achieve stronger distributional alignment on average (Figure 1). Among all evaluated models, only Be.FM-1.5 and Gemini 3.1 Pro show leading performance on both distributional and individual-level metrics. Notably, Be.FM-1.5 is fine-tuned on data that is held-out from BehaviorBench . This suggests that accurate out-of-sample individual-level predictions and faithful distributional alignment can be achieved simultaneously, revealing a desirable opportunity to adapt foundation models to behavioral science. Overall, our results highlight the importance of distributional evaluation, establish BehaviorBench as a foundation for developing and assessing behaviorally aligned AI systems, as well as demonstrating Be.FM-1.5 ’s potential for a broad range of behavioral science studies. 
+
+## 2 BehaviorBench 
+
+We introduce BehaviorBench . Section 2.1 describes the underlying behavioral data for model evaluation. Section 2.2 details the tasks that fall into each of the four capability categories. Section 2.3 introduces the metrics, and Section 2.4 compares BehaviorBench with existing benchmarks. Table 1 summarizes all tasks in BehaviorBench with their evaluation-set sizes and metrics. 
+
+2.1 Data 
+
+Capturing the breadth of human behavior demands data of comparable breadth. Following Xie et al. [2025b], BehaviorBench draws on three sources of behavior data to operate the evaluation. The complete data collection and processing procedures are described in Appendix A. 1. Experimental data. Experimental records capture behavioral patterns of diverse subjects in controlled environments, offering key insights into individual and group decision-making. We consider a collection of experiments from MobLab 2, which covers a diverse population of human subjects and their play records in multiple economics games [Mei et al., 2024]. BehaviorBench 
+
+uses an evaluation subsample of 12,685 behavioral observations from 6,279 unique subjects. 2. Survey data. Survey data provide self-reported insights into personality traits, attitudes, and preferences. We use the publicly available Big Five Personality Test dataset 3 as a data source. This dataset consists of demographic information of subjects (e.g., race, age, gender), along with their answers to 50 survey questions. The answers can be aggregated into five scores, representing their personality factors. BehaviorBench includes an evaluation subsample of 6,000 responses from 1,886 unique subjects. 3. Literature data. The behavioral science literature documents existing theories and scientific findings about human behavior. We collect titles and abstracts of 104 articles from the American Economic Review journal and 140 articles from the Nature Human Behaviour journal that are published in 2025. We then follow Zhang et al. [2025] to decompose each title–abstract pair into a structured research workflow that reflects how the studies are done: context, key idea, method, outcome, and projected impact. Such data are included in BehaviorBench to evaluate foundation models’ ability in scientific reasoning and assisting behavioral science research.  
+
+> 2MobLab: https://www.moblab.com/ , retrieved on May 4, 2026.
+> 3https://www.kaggle.com/datasets/lucasgreenwell/ocean-five-factor-personality-test-responses , retrieved on May 4, 2026.
+
+32.2 Evaluation Tasks                                     
+
+> Eval. Metric Capability Task # Eval. Data Ind. Dist. Behavior prediction and simulation
+> Single-round game behavior simulation (Game Behav. Sim.) 200/game –WMulti-round game behavior prediction (Multi-Round Pred.) 500/game MAE WSingle-round game behavior prediction given observations from other games (Across-Ctx Pred.) 750/game MAE WSurvey response prediction given demographics (Demo. To Resp.) 1,000 Acc WSequential survey response prediction (Seq. Resp. Pred.) 1,000 Acc WMasked survey response prediction (Masked Resp. Pred.) 1,000 Acc W
+> Strategic decision-making
+> Strategic game play 1,000 Win (%) –
+> Subject-trait inference
+> Personality score prediction given demographics (Demo. To Pers.) 1,000 MAE WPersonality score prediction given scores from other dimen-sions (Across-Dim Pers. Pred.) 1,000 MAE WAge prediction given personality scores (Pers. To Demo.) 1,000 MAE W
+> Knowledge application
+> Scientific workflow prediction 1,084 BLEURT –Economics contest problem solving 124 Acc –
+
+Table 1: Evaluation tasks in BehaviorBench , by core capabilities. #Eval. Data : evaluation set sizes. Metrics: individual level ( Ind. ) and distributional level ( Dist. , “W” stands for Wasserstein distance). Per-task data sources and processing procedures are detailed in Appendix A. By formulating the generation of human behavior as p(y | x, c, K), BehaviorBench evaluates foundation models with four categories of behavioral tasks: (1) behavior prediction and simulation (forward inference over y), (2) strategic decision-making (the generation of y to achieve a goal), (3) subject-trait inference (inverse inference over x), and (4) the application of behavioral science knowledge ( K) for scientific reasoning. Formally, let Y denote the space of human behaviors (e.g., actions in experiments and survey responses), X the space of human subject traits (e.g., demographics and personalities), and C the space of contextual variables (e.g., experiment setup and intervention). 
+
+2.2.1 Behavior Prediction and Simulation 
+
+Predicting and simulating human behavior is at the core of behavior modeling [Wang et al., 2025, Binz et al., 2024, Kolluri et al., 2025]. Behavior prediction arises naturally at two levels: the individual level and the distributional level. At the individual level, the task is to predict the behavior of a particular subject in a given context. Formally, this can be represented as a projection 
+
+X × Y × C → Y . (2) Concretely, through a foundation model, an input (x, y ′, c ) ∈ X × Y × C is mapped to an output 
+
+y ∈ Y , where x denotes the characteristics of a particular subject, y′ is partial information about the subject’s behavior which can be empty, c is the context (e.g., experiment instructions and setup), and 
+
+y is the behavior to be predicted (e.g., a subject’s choice in the next term). At the distributional level, the target is to predict a behavior distribution across a population. To obtain a behavior distribution Y , the foundation model can run individual-level predictions over a population (X, Y ′) = {(xi ∈ X , y ′ 
+
+> i
+
+∈ Y )}Ni=1 in a context c. We then evaluate whether Y aligns with the empirical human behavior distribution. 
+
+BehaviorBench constructs evaluation of this capability from two data sources: experimental data from economic games and survey data from Big Five survey responses. 
+
+Game play simulation and prediction. Using the MobLab game-play records described in Section 2.1, we define three simulation/prediction tasks. (1) Single-round game behavior simulation. 
+
+4Given the game instructions as c, a model predicts the distribution of the population’s actions in a single (first) round, ˆp(y | c). The purpose is to measure whether a model distributionally aligns with the human population when playing a game. (2) Multi-round game behavior prediction. Given the game instructions c and a subject’s behavior in prior rounds as y′, a model predicts their action in the next round y. Different from (1), here we condition on a subject’s decision trajectory. (3) 
+
+Across-context prediction. Given a subject’s behavior in other games as y′, a model predicts the first-round behavior in a target game as y.
+
+Survey response prediction. Using the Big Five responses described in Section 2.1, we define three prediction tasks. (1) Survey response prediction given demographics. Given a subject’s demographics as x and a single survey item as c, a model predicts the subject’s response y. This task is consistent with the setting in prior works [Santurkar et al., 2023, Wang et al., 2025, Kolluri et al., 2025]. (2) 
+
+Sequential survey response prediction. Given a subject’s responses to prior items in survey order as y′,a model sequentially predicts the response y to the next item c. (3) Masked survey response prediction. 
+
+Given all 49 other responses as y′, a model predicts the response y to one masked survey item c. This task reflects the long-standing challenge of missing response prediction in survey research [Brick and Kalton, 1996, Little and Rubin, 2019]. 
+
+2.2.2 Strategic Decision-making 
+
+Section 2.2.1 concerns predicting and simulating a subject’s behavior. Here, we examine a distinct task: making strategic decisions to achieve a specified goal. In this setting, actions are taken on one’s own behalf, rather than mimicking a particular human subject. This capability is especially important as AI and LLM agents increasingly make autonomous decisions and interact with humans [Mei et al., 2024, Jackson et al., 2025]. Formally, this task requires a model to make the projection 
+
+C × Y → Y , (3) where an input (c, y others ) ∈ C × Y is mapped to an action y ∈ Y . Here c is the context (e.g., experiment instructions and setup), yothers is other subjects’ actions, and y is the decision generated to achieve the specified goal. Prior work has used economic games to measure this capability [Shapira et al., 2024, Guo et al., 2024, Huang et al., 2025, Duan et al., 2024]. However, most prior works have LLMs play against other LLMs; few have LLMs play against human players [Shapira et al., 2024]. 
+
+BehaviorBench uses human play records of the Beauty Contest game from the MobLab data source to construct an evaluation. In Beauty Contest, each player picks a number in [0 , 100] for every round (y). The winner of that round is whoever comes closest to 23 of the group average (average of y
+
+and yothers ). At the end of each round, each player is shown the group average and gets feedback on whether they won that round. This game involves opponent modeling and extensive reasoning Nagel [1995], Ho et al. [1998]. 
+
+2.2.3 Subject-trait Inference 
+
+In Section 2.2.1 and 2.2.2, we introduced tasks for predicting, simulating, and generating behavior (y) under various settings. Here, we introduce the inverse tasks for inferring subjects’ traits ( x). Characterizing individual subjects and populations is a core goal of behavioral science, supporting market segmentation [Yang and Zhai, 2022], user profiling [Rychalska et al., 2023], personalized in-terventions [Demszky et al., 2023], and policy design [Bleidorn et al., 2019]. Similar to Section 2.2.1, the task of inferring a subject’s traits can also be formulated at both individual and distributional levels. At the individual level, the task is to infer a latent characteristic of a particular subject from their observed behavior. Formally, a foundation model is tasked with the projection 
+
+Y × X × C → X . (4) Concretely, an input (y, x ′, c ) ∈ Y × X × C is mapped to an output x ∈ X , where y is the subject’s behavior under context c, x′ is partial information about the subject, and x is a latent characteristic that can be reflected by y.At the distributional level, the target is to infer a distribution of latent traits across a specific population. To obtain a distribution of inferred characteristics X, we run individual-level inferences over a population (Y, X ′) = {(yi ∈ Y , x ′ 
+
+> i
+
+∈ X )}Ni=1 in a context c. We then evaluate whether X aligns with the empirical human trait distribution. 5The Big Five dataset provides various traits about subjects, including demographic profile and per-sonality scores along five dimensions. We introduce three tasks in BehaviorBench . (1) Personality score prediction given demographics. Given a subject’s demographics as x′ (e.g., age, gender, and native language), a model predicts their score on a Big Five personality dimension as x. (2) Across-dimension personality score prediction. Given a subject’s scores on four personality dimensions as 
+
+x′, aggregated from the subject’s survey responses y, a model predicts their score on the remaining dimension as x. (3) Age prediction given personality scores. Given a subject’s five dimensional personality as x′, aggregated from survey responses, a model predicts the subject’s age as x.
+
+2.2.4 The Application of Behavioral Science Knowledge 
+
+Beyond prediction and simulation, a foundation model should be able to represent and apply behav-ioral science knowledge to support scientific reasoning and problem solving. These tasks take the form of applying knowledge K to solve the input question q, in order to get an answer a.
+
+Research workflow reasoning. Following Zhang et al. [2025], we decompose a paper’s title and abstract into five research-workflow aspects: context, key idea, method, outcome, and projected impact. We then define five generation tasks: key idea generation, method recommendation, outcome prediction, impact prediction, and title prediction. This group of tasks reflects models’ ability to assist behavioral research workflows. 
+
+Complex problem solving. To test whether the model can apply domain knowledge to unseen problems, we use multiple-choice questions from International Economics Olympiad (IEO) contests, spanning from 2018 to 2025 4. Model choices are compared with official solutions. 
+
+2.3 Metrics 
+
+For individual-level evaluation, we use: • Mean absolute error (MAE) for the prediction of numeric quantities, including game actions, trait scores, and age. We choose MAE because it preserves the ordinal structure of the response, so that predictions numerically closer to the true value are scored as better. • Accuracy for categorical predictions, including predicting survey responses and answering IEO questions, which aligns with prior works [Suh et al., 2025, Kolluri et al., 2025]. • Win rate for strategic decision-making (i.e., the Beauty Contest game), defined as the fraction of sessions in which the model’s guess lies closer to 23 of the group average than any human player’s guess in that session. • BLEURT [Sellam et al., 2020] for open-ended generation in the research workflow task, following Zhang et al. [2025]. For distribution-level evaluation, we use the Wasserstein distance (noted as W ) to compare the predicted behavior distribution against the observed human distribution. Following Suh et al. [2025], Kolluri et al. [2025], we choose W because it captures both the shape and the mean of two distributions. More details on the evaluation metrics are in Appendix B. 
+
+2.4 Comparison with Existing Benchmarks 
+
+Table 2 compares BehaviorBench with existing benchmarks for behavioral-science-related tasks. Existing benchmarks primarily target narrow task families: SocioBench [Wang et al., 2025] and SubPOP [Suh et al., 2025] evaluate behavior prediction from demographics or context, while GLEE [Shapira et al., 2024], GTBench [Duan et al., 2024], and GAMA-Bench [Huang et al., 2025] evaluate strategic decision-making in games. These benchmarks focus on behavior y; none of them evaluates the inference of subject traits x or the application of behavioral knowledge K. In contrast, BehaviorBench differs in scope and spans four capability categories of behavioral science tasks. What is important is that BehaviorBench supports evaluation at both the individual and distributional levels, enabling analysis of how well models preserve the diversity and heterogeneity of human populations rather than merely aligning with typical or average subjects. We also identify several publicly available datasets that could potentially be developed into benchmarks, including OpinionQA [Santurkar et al., 2023], Psych-101 [Binz et al., 2024], and SocSci210 [Kolluri et al.,  
+
+> 4International Economics Olympiad (IEO) official website: https://ieo-official.org/ , retrieved May 4, 2026.
+
+6Capability Predict & Sim. Behav. Strategic Decision-Making Infer Subj. Traits Apply Knowledge Eval. Level Targeted Variable y x K Indiv. Distrib.                  
+
+> BehaviorBench (Ours) ✓✓✓✓✓✓
+> SocioBench [Wang et al., 2025] ✓✓
+> SubPOP [Suh et al., 2025] ✓✓
+> GLEE [Shapira et al., 2024] ✓✓
+> GTBench [Duan et al., 2024] ✓✓
+> GAMA-Bench [Huang et al., 2025] ✓✓
+
+Table 2: Comparison of BehaviorBench with existing behavioral benchmarks. BehaviorBench is the only one evaluating all four capabilities at both individual and distributional levels. 2025]. However, these datasets likewise do not fully cover the four capability categories. More details on these benchmarks and datasets are provided in Section 6.2. 
+
+## 3 Be.FM-1.5 : Towards Advanced Behavioral Foundation Models 
+
+BehaviorBench sets a higher bar for behavioral foundation models, covering four capability cate-gories and evaluating performance at both the individual and population levels. For this reason, we further develop Be.FM-1.5 , extending the Be.FM family (the original Be.FM models are denoted 
+
+Be.FM-1 ). Be.FM-1.5 extends the training recipe by fine-tuning open-source LLMs on a substan-tially broader set of behavioral tasks, including an explicit coverage of diverse capabilities, behavioral contexts, and human populations. 
+
+3.1 Backbone Models and Fine-tuning Schema 
+
+Be.FM-1.5 comes in two sizes, each fine-tuned from a widely-used open-weight backbone: 
+
+Be.FM-1.5-4B from Qwen3-4B [Team, 2025] and Be.FM-1.5-70B from Llama-3.3-70B [Team, 2024]. We use parameter-efficient supervised fine-tuning, applying Low-Rank Adaptation (LoRA) [Hu et al., 2022] (rank 8, α = 32 ) to all linear layers via the ms-swift framework [Zhao et al., 2024]. Both backbone models are trained for one epoch on 4 ×A100 80GB GPUs with a peak learning rate of 10 −4, sequence length 2048, and effective batch size 128. The training of 
+
+Be.FM-1.5-4B and Be.FM-1.5-70B takes around 60 and 600 A100 hours respectively. 
+
+3.2 Fine-tuning Tasks and Data 
+
+Inspired by BehaviorBench , we formulate fine-tuning tasks as described in Section 2.2 and curate fine-tuning data from the three sources as described in Section 2.1. It is important to note that, though the fine-tuning shares the same task formulation with BehaviorBench , the fine-tuning data do not overlap with the BehaviorBench evaluation data. Data splitting procedures are summarized in Appendix A.2. Particularly, we instantiate 11 fine-tuning tasks by the general capabilities they target: behavior prediction and simulation, strategic decision-making, subject-trait inference, and the application of behavioral knowledge. The task mixture is deliberately broad. It exposes Be.FM-1.5 to all components in the framework of Equation 1 (i.e., behavior y, subject traits x, context c, and behavioral science knowledge K). This breadth is intended to encourage generalization across tasks, contexts, and populations, rather than specialization in any single task or dataset. Details on fine-tuning data are described in Appendix A.4. 
+
+## 4 Models Evaluated 
+
+We benchmark three types of foundation models representing different model types: (1) open-source general-purpose LLMs, (2) proprietary LLMs, and (3) behavioral foundation models that are specifically trained on behavior-related data. 
+
+Open-source LLMs. We include three groups of open-source models, each chosen for a specific comparison goal. Qwen3-4B [Team, 2025] is one of the strongest small open-weight models. Llama-7Capability Behavior Prediction & Simulation Strategic Task Game Behav. Sim. Multi-Round Pred. Across-Ctx Pred. Demo. To Resp. Seq. Resp. Pred. Masked Resp. Pred. Game Play Metric W ↓ MAE ↓ W ↓ MAE ↓ W ↓ Acc ↑ W ↓ Acc ↑ W ↓ Acc ↑ W ↓ Win Rate ↑                                                                                                                                                                                                                                                
+
+> Qwen3-4B 26.9 21.7 13.1 27.9 20.1 24.3% 1.14 37.0% 0.65 37.2% 0.66 9% Llama3.3-70B 24.2 27.0 15.3 26.4 14.9 28.4% 1.02 37.7% 0.59 43.9% 0.47 6% DeepSeek V3.2 16.9 20.9 10.1 27.5 12.3 27.2% 0.76 36.2% 0.54 40.6% 0.47 14% Claude Haiku 4.5 24.5 21.0 12.5 26.0 17.3 26.0% 0.93 40.2% 0.52 44.7% 0.43 13% Claude Sonnet 4.6 24.6 18.7 10.6 25.3 19.3 28.6% 0.86 41.8% 0.45 46.7% 0.36 17% Claude Opus 4.6 26.0 19.3 11.7 25.9 20.1 29.7% 0.86 41.8% 0.43 45.1% 0.37 15% GPT 5.4 mini 29.0 23.7 17.6 27.4 18.0 28.8% 0.91 41.7% 0.49 44.3% 0.46 10% GPT 4.1 27.5 18.1 6.9 27.1 16.3 29.2% 0.79 39.0% 0.48 46.4% 0.38 17% GPT 5.4 31.4 21.1 15.2 26.1 14.0 29.6% 0.90 42.4% 0.46 47.3% 0.38 8% Gemini 3.1 Flash 31.3 25.5 18.6 29.4 17.3 30.5% 0.82 40.5% 0.52 46.3% 0.41 14% Gemini 3.1 Pro 21.3 19.4 12.5 26.7 10.3 30.5% 0.75 42.5% 0.46 48.5% 0.36 12% Socrates-Llama3-8B-SFT 16.3 39.5 21.3 37.7 14.6 24.0% 0.55 23.5% 0.62 24.0% 0.67 2% Socrates-Llama3-8B-DPO 26.4 27.3 19.7 27.7 21.4 24.7% 0.93 25.9% 0.96 28.4% 0.76 3% Socrates-Qwen-14B-SFT 17.9 35.9 15.9 36.7 14.7 23.8% 0.69 23.8% 0.71 26.2% 0.69 2% Socrates-Qwen-14B-DPO 20.0 20.5 14.4 24.8 17.7 23.9% 1.01 35.3% 0.71 37.8% 0.56 8% Centaur-70B 16.9 23.3 11.1 29.3 13.9 24.7% 0.43 33.1% 0.48 36.1% 0.49 4% Be.FM-1-8B 8.8 34.1 12.4 35.4 5.4 21.6% 0.60 27.1% 0.59 24.4% 0.62 2% Be.FM-1-70B 8.7 32.0 8.6 34.9 7.6 22.3% 0.49 31.4% 0.46 34.1% 0.49 2% Be.FM-1.5-4B (Ours) 7.0 18.4 5.7 27.5 5.9 28.4% 0.42 39.9% 0.36 44.7% 0.34 48% Be.FM-1.5-70B (Ours) 8.9 18.0 3.5 27.8 6.5 28.6% 0.44 40.4% 0.36 44.9% 0.33 50%
+
+Table 3: Benchmarking results of behavior prediction and simulation, as well as strategic decision-making. Tasks and abbreviations are described in Table 1. Bold and underline denote the best and second best performance. 3.3-70B [Team, 2024] is a widely used open-weight backbone for downstream fine-tuning. Also, as Be.FM-1.5 is fine-tuned from these two, including them lets us assess the effect of supervised fine-tuning. For broader coverage of the open-source models, we additionally include DeepSeek V3.2 [DeepSeek-AI, 2025], a leading 671B-parameter open-source model. 
+
+Proprietary LLMs. We include three families of widely used frontier proprietary models. Within each family we include different capability tiers. For Claude, we include Claude Haiku 4.5 [Anthropic, 2025], Claude Sonnet 4.6 [Anthropic, 2026b], and Claude Opus 4.6 [Anthropic, 2026a], spanning weak to strong capability. For GPT, we include two leading reasoning models, GPT-5.4-mini [OpenAI, 2026b] and GPT-5.4 [OpenAI, 2026a], together with GPT-4.1 [OpenAI, 2025a] as the strongest non-reasoning GPT model. For Gemini, we include Gemini 3.1 Flash and Gemini 3.1 Pro [Google, 2026]. We use the default inference hyperparameters for all models. One exception is for GPT-5.4 and GPT-5.4-mini, we set the reasoning_effort parameter to high (default is none ), to ensure fair comparison with other frontier models. 
+
+Behavioral foundation models. This category includes foundation models fine-tuned on behavior-related data. In the BehaviorBench evaluation, we include three representative model families. Centaur-70B [Binz et al., 2024] is fine-tuned on a cognitive-psychology corpus, while Socrates [Kol-luri et al., 2025] is fine-tuned on social-science survey data and is evaluated in both SFT and DPO variants. Be.FM models include the original Be.FM-1 [Xie et al., 2025b] and the extended Be.FM-1.5 
+
+models (as described in Section 3). 
+
+## 5 Results and Discussion 
+
+5.1 Model Capabilities 
+
+Tables 3 and 4 report model performance across BehaviorBench tasks, grouped by capabilities. 
+
+Behavior prediction and simulation. Be.FM-1.5 models perform strongly across both economic-game and survey-based tasks. In economic games, Be.FM-1.5-4B achieves the lowest Wasserstein distance in single-round behavior simulation ( W = 7 .0), while Be.FM-1.5-70B performs best on multi-round prediction at both the individual and distributional levels (MAE = 18 .0, W = 3 .5). These gains are large relative to their backbone models (Qwen3-4B: W = 26 .9 in single-round behavior simulation; Llama-3.3-70B: MAE= 27 .0 and W = 15 .3 in multi-round prediction). In survey response prediction, frontier proprietary models retain the strongest individual-level accuracy, with Gemini 3.1 Pro excelling in demographic-to-response, sequential response, and masked response prediction. However, Be.FM-1.5 achieves the strongest distributional alignment on these survey tasks, in Wasserstein distance. Other behavioral foundation models also show distributional strengths: for example, Centaur-70B obtains W = 0 .43 on demographic-to-response prediction, close to 
+
+Be.FM-1.5 , although its individual-level accuracies are lower. 8Capability Subject-trait Inference Knowledge Application Task Demo. To Pers. Across-Dim Pers. Pred. Pers. To Demo. Sci. Workflow Pred. Econ. Contest Metric MAE ↓ W↓ MAE ↓ W↓ MAE ↓ W↓ BLEURT ↑ Acc. ↑                                                                                                                                                                                                        
+
+> Qwen3-4B 7.3 5.14 7.6 5.21 11.2 10.44 0.450 73 .9% ±1.3
+> Llama3.3-70B 6.9 5.18 8.3 5.19 9.3 7.67 0.430 65 .8% ±0.6
+> DeepSeek V3.2 7.3 5.12 7.5 4.61 10.7 7.57 0.430 74 .4% ±1.6
+> Claude Haiku 4.5 7.6 5.94 7.2 4.59 11.8 6.00 0.428 70 .0% ±2.2
+> Claude Sonnet 4.6 7.6 5.83 7.2 4.37 14.5 8.72 0.472 83 .1% ±1.3
+> Claude Opus 4.6 7.0 5.18 6.7 4.49 13.3 8.47 0.477 95 .6%±0.6
+> GPT 5.4 mini 7.2 5.53 7.4 5.02 10.9 6.13 0.454 93 .2% ±1.2
+> GPT 4.1 6.9 4.92 7.2 3.93 10.6 4.01 0.460 78 .4% ±0.8
+> GPT 5.4 7.4 5.70 7.3 4.40 10.5 4.05 0.462 95 .6%±0.6
+> Gemini 3.1 Flash 7.1 4.78 7.1 4.98 14.0 8.17 0.432 77 .6% ±1.7
+> Gemini 3.1 Pro 6.4 4.38 6.8 3.60 10.5 1.67 0.470 95 .6%±0.4
+> Socrates-Llama3-8B-SFT 13.3 10.38 12.4 9.47 12.6 4.81 0.026 0.0% ±0.0
+> Socrates-Llama3-8B-DPO 8.7 6.14 8.6 6.73 9.6 5.97 0.426 39 .7% ±4.6
+> Socrates-Qwen-14B-SFT 9.0 3.77 9.8 4.90 11.0 3.69 0.024 0.0% ±0.0
+> Socrates-Qwen-14B-DPO 8.1 6.46 9.0 6.85 10.5 7.83 0.448 70 .3% ±0.6
+> Centaur-70B 9.8 3.23 9.3 3.83 10.6 5.18 0.430 37 .7% ±2.8
+> Be.FM-1-8B 7.8 1.95 8.2 2.53 9.6 5.58 0.435 41 .8% ±3.0
+> Be.FM-1-70B 7.8 1.92 8.6 2.72 9.5 5.48 0.446 60 .5% ±1.7
+> Be.FM-1.5-4B (Ours) 7.4 1.77 7.0 1.56 9.5 4.79 0.468 53 .3% ±2.5
+> Be.FM-1.5-70B (Ours) 7.2 2.30 6.8 1.68 9.4 6.60 0.477 73 .0% ±2.4
+
+Table 4: Benchmarking results of subject-trait inference and knowledge application. Tasks and abbre-viations are described in Table 1. Bold and underline denote the best and second best performance. 
+
+Strategic decision-making. Be.FM-1.5 shows the clearest advantage in strategic decision-making. In the Beauty Contest game, Be.FM-1.5-4B and Be.FM-1.5-70B achieve win rates of 48% and 
+
+50% , respectively, far above the next-best models, Claude Sonnet 4.6 and GPT 4.1, which each reach 17% . This suggests that Be.FM-1.5 is not only good at passive prediction, but also adaptive to decision-making in interactive play with humans. By contrast, earlier behavioral models such as Centaur-70B and Socrates variants obtain substantially lower win rates, ranging from 2% to 8% .
+
+Subject-trait inference. Model performance is more mixed for subject-trait inference. Frontier and large general-purpose models remain competitive on individual-level prediction: Gemini 3.1 Pro achieves the best MAE for demographic-to-personality prediction (MAE= 6.4), Claude Opus 4.6 performs best on across-dimension personality prediction (MAE= 6.7), and Llama-3.3-70B achieves the lowest MAE for age prediction from personality scores (MAE= 9.3). At the same time, behavioral foundation models are much stronger at matching population-level trait distributions. 
+
+Be.FM-1.5-4B achieves the best distributional alignment for demographic-to-personality prediction (W = 1 .77 ) and across-dimension personality prediction ( W = 1 .56 ), substantially outperforming Gemini 3.1 Pro ( W = 4 .38 and 3.60 ). Centaur-70B and Socrates-Qwen-14B-SFT also perform competitively on distributional metrics, with W = 3 .23 and 3.77 on demographic-to-personality prediction, respectively, but they lag behind Be.FM-1.5 and often show weaker individual-level prediction. These results suggest that behavior-specialized training helps recover population-level structure, even when individual trait inference remains challenging. 
+
+Behavioral knowledge application. Frontier proprietary models retain an advantage on contest-style economic reasoning. Claude Opus 4.6, GPT 5.4, and Gemini 3.1 Pro each achieve 95 .6% 
+
+accuracy on the economics contest task, substantially higher than Be.FM-1.5-70B at 73 .0% and 
+
+Be.FM-1.5-4B at 53 .3% . This indicates that broad reasoning ability and general world knowledge remain important for abstract economic problem solving. However, Be.FM-1.5-70B performs strongly on scientific workflow prediction, matching the best BLEURT score among all models (0.477 ), while Be.FM-1.5-4B also remains competitive ( 0.468 ). In contrast, Centaur-70B and most Socrates variants perform notably worse on knowledge-intensive tasks, especially the economics contest, suggesting that models fine-tuned for behavioral prediction do not automatically acquire broader behavioral-science reasoning ability. 
+
+Overall , the results show that current foundation models exhibit uneven strengths across capabilities, and no single model family dominates all tasks. Instead, different model families excel in different parts of the benchmark: frontier proprietary LLMs are strongest on knowledge-intensive reasoning and several individual-level prediction tasks (e.g., survey response prediction and personality inference), while behavioral foundation models are generally better at behavior simulation in economic games and distributional-level behavioral alignment. 95.2 BehaviorBench Leaderboards 
+
+Beyond heterogeneous per-task metrics, we aim to derive a unified score to compare models across tasks. We reduce each task to a pairwise comparison among the models, inspired by the Holistic Evaluation of Language Models (HELM) leaderboards [Liang et al., 2022]. Concretely, we define a model’s win rate as the fraction of other models it outperforms on a given task (based on the task-specific metric), and mean win rate as the average of win rates across tasks. Win rate depends only on relative rankings, and thus can be aggregated across tasks. We report the individual-level and distributional-level mean win rates separately. We release a set of public leaderboards using this ranking methodology 5, including the mean win rate rankings at both the individual and distributional levels (top models listed in Figure 1), together with per-task win rate rankings. 
+
+5.3 Individual-level vs. Distributional-level Performance 
+
+Figure 1 presents the aggregated evaluations and model rankings at both the individual and distribu-tional levels. The leaderboards show that, among all evaluated models, only Be.FM-1.5 and Gemini 3.1 Pro achieve leading performance on both types of metrics. Many frontier proprietary models, such as Claude Opus 4.6 and GPT 4.1, exhibit strong individual-level prediction but weaker distributional alignment, suggesting that they remain limited in their ability to simulate population-level behavioral patterns. In contrast, several behavioral foundation models, including Be.FM-1 models, Centaur-70B, and Socrates-14B-SFT, achieve stronger distributional alignment than individual-level accuracy, indicating that fine-tuning on behavior-related data can help models better capture population het-erogeneity. We also observe that open-source LLMs such as Llama-3.3-70B and DeepSeek V3.2 perform relatively poorly on both metrics. Notably, Be.FM-1.5 is fine-tuned on data with no overlap with BehaviorBench , yet it leads on distributional metrics while remaining highly competitive on individual-level metrics. In particular, 
+
+Be.FM-1.5-4B and Be.FM-1.5-70B rank first and second at the distributional level, respectively. Meanwhile, Be.FM-1.5-70B ranks third at the individual level, trailing only Gemini 3.1 Pro and Claude Opus 4.6, both of which are substantially larger models. Be.FM-1.5-4B ranks seventh at the individual level, still surpassing several proprietary models, including GPT 5.4 mini, Gemini 3.1 Flash, and Claude Haiku 4.5. The strong performance of Be.FM-1.5 suggests that individual-level accuracy and faithful distributional alignment can be achieved simultaneously, while also revealing substantial room to improve foundation models for behavioral science. 
+
+5.4 Generalizability of Be.FM-1.5 
+
+A central goal of developing behavioral foundation models is to generalize across the subjects, contexts, and tasks. In this section, we examine Be.FM-1.5 ’s generalizability beyond training tasks and data. We use Be.FM-1.5 for illustration as it is trained on a subset of tasks in BehaviorBench .2 3 4 5 6 7 8+ 
+
+> Round
+> 0.40
+> 0.45
+> 0.50
+> 0.55
+> 0.60
+> 0.65
+> 0.70
+> 0.75
+> 0.80
+> F1 Macro
+> better
+> Qwen3-4B / BeFM1.5-4B
+> Llama3.3-70B / BeFM1.5-70B
+
+Figure 2: Multi-round behavior prediction accu-racy on the Push/Pull game, which is an unseen context during Be.FM-1.5 ’s training. 
+
+Generalizing to unseen subjects. 
+
+BehaviorBench contains held-out sub-jects in the training of Be.FM-1.5 , and we can examine how fine-tuning enables generalization to these unseen subjects. Both Be.FM-1.5 
+
+variants improve over their respective backbone models across all four behavioral capabilities evaluated by the benchmark, and the gains are most pronounced at the distributional level. Aggregating the per-task improvements within each capability, Be.FM-1.5-4B improves its alignment to the human distribution by 59.6% on behavior prediction & simulation and by 63.2% on subject-trait inference, while 
+
+Be.FM-1.5-70B improves by 53.7% and 45.7%. Individual-level prediction also im-proves consistently across all four capabilities,   
+
+> 5BehaviorBench leaderboards: https://umich-foreseer.github.io/behaviorbench/ .
+
+10 although by smaller margins. For example, Be.FM-1.5-4B gains +12.3% on behavior prediction & simulation, +7.2% on subject-trait inference, and +4.0% on scientific workflow prediction, and lifts the Beauty Contest win rate against human players from 9% to 48%. Be.FM-1.5-70B gains +7.6%, +4.2%, and +10.9% on the same three capabilities and lifts the win rate from 6% to 50%. Overall, this suggests that fine-tuning generalizes robustly to unseen subjects. 
+
+Generalizing to unseen contexts. The Push/Pull game is a multi-round Prisoner’s-Dilemma-like game, where in each round a player can choose to pull (defect) or push (cooperate). In this game, we evaluate whether a model can predict a human player’s next choice based on their choices in prior rounds. This game is not used in the training of Be.FM-1.5 models, thus representing an unseen context. In multi-round game behavior prediction 6, both Be.FM-1.5-70B and Be.FM-1.5-4B 
+
+show improved prediction accuracy as the round number increases, indicating that they leverage accumulated player behavior more effectively with more historical records (Figure 2). Notably, 
+
+Be.FM-1.5-70B exceeds Llama3.3-70B across all rounds, showing that behavioral fine-tuning transfers to a structurally novel context. 
+
+Generalizing to unseen tasks. The IEO contest is a task that Be.FM-1.5 has never seen during training. On this task, Be.FM-1.5-70B reaches 73.0%, which improves over its backbone model by 7%, indicating that training on behavior data helps the model generalize to knowledge-application tasks. We also note that Be.FM-1.5-4B shows the opposite pattern, dropping from 73.9% (Qwen3-4B) to 53.3%. One hypothesis for this regression is overfitting due to a smaller model size. This might lead to a loss of reasoning capability which is required in answering certain questions. As evidence of this hypothesis, we observe that Be.FM-1.5-4B has a much shorter output sequence length than Qwen3-4B, which indicates that Be.FM-1.5-4B loses the ability to generate step-by-step reasoning after fine-tuning. We present an in-depth analysis and a case study in Appendix D. 
+
+5.5 Contextual Reasoning 
+
+One limitation of BehaviorBench is that it does not include reasoning about contexts ( c in Eq. 1) as an evaluation target. This capability would include tasks such as inferring contextual factors or treatments from subject traits and outcome behaviors. We exclude such tasks because the inferred contexts are difficult to evaluate quantitatively at scale. Unlike behavior y, which can be observed, or subject traits x, which can be self-reported or measured, there could be multiple contextual factors that intertwine and lead to the outcomes. Even when treatments are documented, assessing inference accuracy remains challenging because treatments are often complex and heterogeneous across experiments. Appendix C provides a qualitative evaluation of foundation models on contextual reasoning. Developing scalable quantitative evaluations for this capability is an important direction for future work. 
+
+5.6 Prompting and Behavioral Simulation 
+
+An important consideration for behavioral simulation is the role of prompting. In the current version of 
+
+BehaviorBench , prompts are standardized within each task to ensure a controlled comparison across models. For example, models receive identical game instructions in economic games, while survey prediction tasks use prompts constructed only from available demographic information or observed responses. This design isolates differences in model capability rather than prompt engineering, but the resulting scores should be read as a lower bound on what a given model can achieve: they reflect performance under a single fixed prompt (or a fixed prompt pool), not the best performance a researcher could obtain by adapting the prompt to the task and the target population. In practice, several prompting strategies can substantially improve behavioral simulation beyond the fixed-prompt numbers reported here, and we highlight them so that practitioners can close the gap between benchmark scores and deployable performance. At the individual level, grounding the prompt in richer subject context (e.g., persona or demographic conditioning, role instructions, and in-context examples drawn from observed human responses) typically sharpens per-subject prediction [Argyle et al., 2023, Aher et al., 2023, Park et al., 2024]. At the distributional level,      
+
+> 6As in the downsampled MobLab data, the number of available sessions in later rounds is small, we evaluate Be.FM-1.5 and their backbone models with an extended evaluation set rather than BehaviorBench to examine Be.FM-1.5 ’s generalizability. This extended set contains 52,786 prediction examples from 13,991 unique play sessions.
+
+11 where the key is to vary the prompt across the simulated population rather than to query a single prompt repeatedly. Xie et al. [2025c] show that systematically varying system prompts (“behavioral codes”) steers an LLM across the full spectrum of human behaviors in classic economic games, and that the induced behavior distribution can be aligned with that of a target human population. Relatedly, modeling the prompt itself as a distribution recovers population-level heterogeneity that a fixed prompt collapses onto a single mode [Xie et al., 2025a]. Because these gains come from calibrating prompts against human data, reported results should distinguish zero-shot, fixed-prompt performance from performance obtained after such calibration, so that prompt tuning is not mistaken for an intrinsic property of the model. 
+
+## 6 Related Work 
+
+6.1 Foundation Models for Behavioral Science Tasks 
+
+General foundation models, including GPT and Llama, are increasingly being applied to behavioral science domains such as psychology, sociology, and economics [Demszky et al., 2023, Meng, 2024, Bail, 2024]. These models have shown promise in predicting survey responses [Argyle et al., 2023, Grossmann et al., 2023], enabling automated content analysis [Wu et al., 2023, Yang and Menczer, 2023, Gilardi et al., 2023], supporting agent-based modeling [Park et al., 2023, 2024], and inferring experimental results [Hewitt et al., 2024, Lippert et al., 2024]. However, recent work has also revealed important limitations in directly applying general-purpose LLMs to behavioral science tasks. For example, these models often fail to capture population variance [Bisbee et al., 2024], exhibit sensitivity or bias toward specific data formats [Dentella et al., 2023], and underrepresent certain populations [Santurkar et al., 2023]. This mismatch between the needs of behavioral science and the design of general foundation models calls for domain-specific models that better align with behavioral science principles, data, and evaluation goals. A small but growing body of work has begun to address this need. Monad [Rychalska et al., 2023], for example, learns dense user representations from streams of clicks, transactions, and other behavioral events. Centaur [Binz et al., 2024] models human responses in cognitive-psychology experiments, including tasks involving decision-making, memory, supervised learning, and Markov decision processes. Be.FM models [Xie et al., 2025b], trained on experimental, survey, and literature data, demonstrate capabilities in predicting human behavior, inferring subject characteristics, generating insights about contextual factors, and applying behavioral science knowledge to problem-solving. Socrates [Kolluri et al., 2025] adapts language models to social-science survey data. However, despite this growing body of work, we still lack a systematic understanding of how well foundation models perform across diverse behavioral science tasks, contexts, and populations. 
+
+6.2 Benchmarks for Behavioral Science Tasks 
+
+A growing line of work has developed benchmarks for evaluating how well language models can reproduce human responses in surveys and social science experiments. SubPOP [Suh et al., 2025] targets the prediction of population-response distributions for (subpopulation, survey question) pairs and shows that fine-tuning on survey data substantially improves alignment with held-out human responses. SocioBench [Wang et al., 2025] predicts a survey respondent’s closed-ended answer from their demographic profile, spanning ten sociological domains and over thirty countries. Several other datasets could also potentially be developed into benchmarks of this type, including OpinionQA [Santurkar et al., 2023], Psych-101 [Binz et al., 2024], and SocSci210 [Kolluri et al., 2025]. These benchmarks have established survey response prediction as a central task for evaluating LLMs as proxies for human respondents. However, most prior works focus primarily on this single task formulation without exploring alternative formulations, such as predicting missing survey responses. Beyond predicting responses in surveys and social science experiments, recent works also evaluate LLMs in economic and strategic settings. GTBench [Duan et al., 2024] evaluates the strategic reasoning limitations of LLMs across a suite of classic game-theoretic scenarios, and GAMA-Bench [Huang et al., 2025] embeds competing language models within multi-agent gaming environments. CHBench [Liu et al., 2025] grounds evaluation in cognitive hierarchy theory, while Economics Arena [Guo et al., 2024] benchmarks LLMs across a range of economic decision tasks. GLEE [Shapira et al., 2024] provides a unified framework and benchmark for language-based economic environments 12 such as bargaining, negotiation, and persuasion games. Most of these benchmarks have LLMs play against other LLMs or against heuristics, with no human opponents. In our work, we use human play records to construct a proxy evaluation for LLM playing against human players. 
+
+## 7 Conclusion 
+
+We introduce BehaviorBench , a comprehensive benchmark that evaluates foundation models across four core capabilities with metrics at both the individual and distributional levels. Our evaluation reveals that current foundation models exhibit uneven strengths across behavioral-science tasks, and no single model family dominates the full benchmark. Particularly, general-purpose frontier proprietary LLMs excel at individual-level prediction and knowledge-intensive tasks. In contrast, behavioral foundation models fine-tuned on behavior-related data tend to perform more strongly on distributional alignment. Among all evaluated models, only Be.FM-1.5 and Gemini 3.1 Pro achieve leading performance on both distributional and individual-level metrics. Notably, Be.FM-1.5 
+
+is fine-tuned on data with no overlap with BehaviorBench , yet leads on distributional metrics while remaining highly competitive on individual-level metrics. This suggests that individual-level accuracy and faithful distributional alignment can be achieved simultaneously, while also revealing substantial room for improving foundation models for behavioral science. More broadly, by emphasizing distributional alignment, BehaviorBench can help assess whether AI systems reflect the heterogeneity of human populations rather than overfitting to majority or average behaviors. Overall, our results highlight the importance of distributional evaluation and establish BehaviorBench 
+
+as a foundation for developing and assessing behaviorally aligned AI systems, and demonstrate 
+
+Be.FM-1.5 ’s potential for a broad range of behavioral science studies. 13 References 
+
+Gati V. Aher, Rosa I. Arriaga, and Adam Tauman Kalai. Using large language models to simulate multiple humans and replicate human subject studies. In Proceedings of the 40th International Conference on Machine Learning , Proceedings of Machine Learning Research, pages 337–371. PMLR, 2023. James Andreoni and B Douglas Bernheim. Social image and the 50–50 norm: A theoretical and experimental analysis of audience effects. Econometrica , 77(5):1607–1636, 2009. Anthropic. Introducing claude haiku 4.5. Anthropic Blog, 2025. URL https://www.anthropic. com/news/claude-haiku-4-5 . October 15, 2025. Anthropic. Introducing claude opus 4.6. Anthropic Blog, 2026a. URL https://www.anthropic. com/news/claude-opus-4-6 . February 5, 2026. Anthropic. Introducing claude sonnet 4.6. Anthropic Blog, 2026b. URL https://www.anthropic. com/news/claude-sonnet-4-6 . February 17, 2026. Lisa P Argyle, Ethan C Busby, Nancy Fulda, Joshua R Gubler, Christopher Rytting, and David Wingate. Out of one, many: Using language models to simulate human samples. Political Analysis ,31(3):337–351, 2023. Christopher A Bail. Can generative ai improve social science? Proceedings of the National Academy of Sciences , 121(21):e2314021121, 2024. Marcel Binz, Elif Akata, Matthias Bethge, Franziska Brändle, Fred Callaway, Julian Coda-Forno, Peter Dayan, Can Demircan, Maria K Eckstein, Noémi Éltet˝ o, et al. Centaur: a foundation model of human cognition. arXiv preprint arXiv:2410.20268 , 2024. James Bisbee, Joshua D Clinton, Cassy Dorff, Brenton Kenkel, and Jennifer M Larson. Synthetic replacements for human survey data? the perils of large language models. Political Analysis , 32 (4):401–416, 2024. Wiebke Bleidorn, Patrick L Hill, Mitja D Back, Jaap JA Denissen, Marie Hennecke, Christopher J Hopwood, Markus Jokela, Christian Kandler, Richard E Lucas, Maike Luhmann, et al. The policy relevance of personality traits. American psychologist , 74(9):1056, 2019. Gary E Bolton, Elena Katok, and Rami Zwick. Dictator game giving: Rules of fairness versus acts of kindness. International journal of game theory , 27(2):269–299, 1998. Rishi Bommasani, Drew A. Hudson, Ehsan Adeli, Russ B. Altman, Simran Arora, Sydney von Arx, Michael S. Bernstein, Jeannette Bohg, Antoine Bosselut, Emma Brunskill, Erik Brynjolfsson, Shyamal Buch, Dallas Card, Rodrigo Castellon, Niladri S. Chatterji, Annie S. Chen, Kathleen Creel, Jared Quincy Davis, Dorottya Demszky, Chris Donahue, Moussa Doumbouya, Esin Durmus, Stefano Ermon, John Etchemendy, Kawin Ethayarajh, Li Fei-Fei, Chelsea Finn, Trevor Gale, Lauren E. Gillespie, Karan Goel, Noah D. Goodman, Shelby Grossman, Neel Guha, Tatsunori Hashimoto, Peter Henderson, John Hewitt, Daniel E. Ho, Jenny Hong, Kyle Hsu, Jing Huang, Thomas Icard, Saahil Jain, Dan Jurafsky, Pratyusha Kalluri, Siddharth Karamcheti, Geoff Keeling, Fereshte Khani, Omar Khattab, Pang Wei Koh, Mark S. Krass, Ranjay Krishna, Rohith Kuditipudi, and et al. On the opportunities and risks of foundation models. CoRR , abs/2108.07258, 2021. URL 
+
+https://arxiv.org/abs/2108.07258 .Pablo Brañas-Garza. Promoting helping behavior with framing in dictator games. Journal of Economic Psychology , 28(4):477–486, 2007. J Michael Brick and Graham Kalton. Handling missing data in survey research. Statistical methods in medical research , 5(3):215–238, 1996. Jason Dana, Roberto A Weber, and Jason Xi Kuang. Exploiting moral wiggle room: experiments demonstrating an illusory preference for fairness. Economic Theory , 33(1):67–80, 2007. DeepSeek-AI. Deepseek-v3.2: Pushing the frontier of open large language models. CoRR ,abs/2512.02556, 2025. doi: 10.48550/ARXIV.2512.02556. URL https://doi.org/10.48550/ arXiv.2512.02556 .14 Dorottya Demszky, Diyi Yang, David S Yeager, Christopher J Bryan, Margarett Clapper, Susannah Chandhok, Johannes C Eichstaedt, Cameron Hecht, Jeremy Jamieson, Meghann Johnson, et al. Using large language models in psychology. Nature Reviews Psychology , 2(11):688–701, 2023. Vittoria Dentella, Fritz Günther, and Evelina Leivada. Systematic testing of three language models reveals low language accuracy, absence of response stability, and a yes-response bias. Proceedings of the National Academy of Sciences , 120(51):e2309583120, 2023. Jinhao Duan, Renming Zhang, James Diffenderfer, Bhavya Kailkhura, Lichao Sun, Elias Stengel-Eskin, Mohit Bansal, Tianlong Chen, and Kaidi Xu. Gtbench: Uncovering the strategic reasoning limitations of llms via game-theoretic evaluations. CoRR , abs/2402.12348, 2024. doi: 10.48550/ ARXIV.2402.12348. URL https://doi.org/10.48550/arXiv.2402.12348 .Catherine C Eckel and Philip J Grossman. Are women less selfish than men?: Evidence from dictator experiments. The economic journal , 108(448):726–735, 1998. Christoph Engel. Dictator games: A meta study. Experimental economics , 14(4):583–610, 2011. Fabrizio Gilardi, Meysam Alizadeh, and Maël Kubli. Chatgpt outperforms crowd workers for text-annotation tasks. Proceedings of the National Academy of Sciences , 120(30):e2305016120, 2023. Herbert Gintis. The bounds of reason: game theory and the unification of the behavioral sciences-revised edition . Princeton university press, 2014. Jacob K Goeree, Margaret A McConnell, Tiffany Mitchell, Tracey Tromp, and Leeat Yariv. The 1/d law of giving. American Economic Journal: Microeconomics , 2(1):183–203, 2010. Google. Gemini 3.1 pro: A smarter model for your most complex tasks. Google Blog, 2026. URL https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-3-1-pro/ . March 19, 2026. Igor Grossmann, Matthew Feinberg, Dawn C Parker, Nicholas A Christakis, Philip E Tetlock, and William A Cunningham. Ai and the transformation of social science research. Science , 380(6650): 1108–1109, 2023. Shangmin Guo, Haoran Bu, Haochuan Wang, Yi Ren, Dianbo Sui, Yuming Shang, and Siting Lu. Economics arena for large language models. CoRR , abs/2401.01735, 2024. doi: 10.48550/ARXIV. 2401.01735. URL https://doi.org/10.48550/arXiv.2401.01735 .Joseph Henrich, Robert Boyd, Samuel Bowles, Colin Camerer, Ernst Fehr, Herbert Gintis, Richard McElreath, Michael Alvard, Abigail Barr, Jean Ensminger, et al. “economic man” in cross-cultural perspective: Behavioral experiments in 15 small-scale societies. Behavioral and brain sciences , 28 (6):795–815, 2005. Luke Hewitt, Ashwini Ashokkumar, Isaias Ghezae, and Robb Willer. Predicting results of social science experiments using large language models. Preprint , 2024. Teck-Hua Ho, Colin Camerer, and Keith Weigelt. Iterated dominance and iterated best response in experimental" p-beauty contests". The American Economic Review , 88(4):947–969, 1998. Elizabeth Hoffman, Kevin McCabe, Keith Shachat, and Vernon Smith. Preferences, property rights, and anonymity in bargaining games. Games and Economic behavior , 7(3):346–380, 1994. Edward J. Hu, Yelong Shen, Phillip Wallis, Zeyuan Allen-Zhu, Yuanzhi Li, Shean Wang, Lu Wang, and Weizhu Chen. Lora: Low-rank adaptation of large language models. In The Tenth Interna-tional Conference on Learning Representations, ICLR 2022, Virtual Event, April 25-29, 2022 .OpenReview.net, 2022. URL https://openreview.net/forum?id=nZeVKeeFYf9 .Jen-tse Huang, Eric John Li, Man Ho Lam, Tian Liang, Wenxuan Wang, Youliang Yuan, Wenxiang Jiao, Xing Wang, Zhaopeng Tu, and Michael R. Lyu. Competing large language models in multi-agent gaming environments. In The Thirteenth International Conference on Learning Representations, ICLR 2025, Singapore, April 24-28, 2025 . OpenReview.net, 2025. URL https: //openreview.net/forum?id=DI4gW8viB6 .15 Matthew O. Jackson, Qiaozhu Mei, Stephanie W. Wang, Yutong Xie, Walter Yuan, Seth Benzell, Erik Brynjolfsson, Colin F. Camerer, James Evans, Brian Jabarian, Jon M. Kleinberg, Juanjuan Meng, Sendhil Mullainathan, Asuman Ozdaglar, Thomas Pfeiffer, Moshe Tennenholtz, Robb Willer, Diyi Yang, and Teng Ye. AI behavioral science. CoRR , abs/2509.13323, 2025. doi: 10.48550/ARXIV.2509.13323. URL https://doi.org/10.48550/arXiv.2509.13323 .Akaash Kolluri, Shengguang Wu, Joon Sung Park, and Michael S. Bernstein. Finetuning llms for human behavior prediction in social science experiments. In Christos Christodoulopoulos, Tanmoy Chakraborty, Carolyn Rose, and Violet Peng, editors, Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing, EMNLP 2025, Suzhou, China, November 4-9, 2025 , pages 30096–30111. Association for Computational Linguistics, 2025. doi: 10.18653/ V1/2025.EMNLP-MAIN.1530. URL https://doi.org/10.18653/v1/2025.emnlp-main. 1530 .Stephen Leider, Markus M Möbius, Tanya Rosenblat, and Quoc-Anh Do. Directed altruism and enforced reciprocity in social networks. The Quarterly Journal of Economics , 124(4):1815–1851, 2009. Percy Liang, Rishi Bommasani, Tony Lee, Dimitris Tsipras, Dilara Soylu, Michihiro Yasunaga, Yian Zhang, Deepak Narayanan, Yuhuai Wu, Ananya Kumar, Benjamin Newman, Binhang Yuan, Bobby Yan, Ce Zhang, Christian Cosgrove, Christopher D. Manning, Christopher Ré, Diana Acosta-Navas, Drew A. Hudson, Eric Zelikman, Esin Durmus, Faisal Ladhak, Frieda Rong, Hongyu Ren, Huaxiu Yao, Jue Wang, Keshav Santhanam, Laurel J. Orr, Lucia Zheng, Mert Yüksekgönül, Mirac Suzgun, Nathan Kim, Neel Guha, Niladri S. Chatterji, Omar Khattab, Peter Henderson, Qian Huang, Ryan Chi, Sang Michael Xie, Shibani Santurkar, Surya Ganguli, Tatsunori Hashimoto, Thomas Icard, Tianyi Zhang, Vishrav Chaudhary, William Wang, Xuechen Li, Yifan Mai, Yuhui Zhang, and Yuta Koreeda. Holistic evaluation of language models. CoRR , abs/2211.09110, 2022. doi: 10.48550/ARXIV.2211.09110. URL https://doi.org/10.48550/arXiv.2211.09110 .Steffen Lippert, Anna Dreber, Magnus Johannesson, Warren Tierney, Wilson Cyrus-Lai, Eric Luis Uhlmann, Thomas Pfeiffer, Emotion Expression Collaboration, et al. Can large language models help predict results from a complex behavioural science study? Royal Society Open Science , 11(9), 2024. Roderick JA Little and Donald B Rubin. Statistical analysis with missing data . John Wiley & Sons, 2019. Hongtao Liu, Zhicheng Du, Zihe Wang, and Weiran Shen. Chbench: A cognitive hierarchy benchmark for evaluating strategic reasoning capability of llms. CoRR , abs/2508.11944, 2025. doi: 10.48550/ ARXIV.2508.11944. URL https://doi.org/10.48550/arXiv.2508.11944 .Qiaozhu Mei, Yutong Xie, Walter Yuan, and Matthew O Jackson. A turing test of whether ai chatbots are behaviorally similar to humans. Proceedings of the National Academy of Sciences , 121(9): e2313925121, 2024. Juanjuan Meng. Ai emerges as the frontier in behavioral science. Proceedings of the National Academy of Sciences , 121(10):e2401336121, 2024. Rosemarie Nagel. Unraveling in guessing games: An experimental study. The American economic review , 85(5):1313–1326, 1995. OpenAI. Introducing gpt-4.1 in the api. OpenAI Blog, 2025a. URL https://openai.com/index/ gpt-4-1/ . April 14, 2025. OpenAI. Introducing gpt-5. OpenAI Blog, 2025b. URL https://openai.com/index/ introducing-gpt-5/ . August 7, 2025. OpenAI. Introducing gpt-5.4. OpenAI Blog, 2026a. URL https://openai.com/index/ introducing-gpt-5-4/ . March 5, 2026. OpenAI. Introducing gpt-5.4 mini and nano. OpenAI Blog, 2026b. URL https://openai.com/ index/introducing-gpt-5-4-mini-and-nano/ . March 5, 2026. 16 Joon Sung Park, Joseph C. O’Brien, Carrie Jun Cai, Meredith Ringel Morris, Percy Liang, and Michael S. Bernstein. Generative agents: Interactive simulacra of human behavior. In Sean Follmer, Jeff Han, Jürgen Steimle, and Nathalie Henry Riche, editors, Proceedings of the 36th Annual ACM Symposium on User Interface Software and Technology, UIST 2023, San Francisco, CA, USA, 29 October 2023- 1 November 2023 , pages 2:1–2:22. ACM, 2023. doi: 10.1145/3586183.3606763. URL https://doi.org/10.1145/3586183.3606763 .Joon Sung Park, Carolyn Q. Zou, Aaron Shaw, Benjamin Mako Hill, Carrie J. Cai, Meredith Ringel Morris, Robb Willer, Percy Liang, and Michael S. Bernstein. Generative agent simulations of 1,000 people. CoRR , abs/2411.10109, 2024. doi: 10.48550/ARXIV.2411.10109. URL 
+
+https://doi.org/10.48550/arXiv.2411.10109 .Mary Rigdon, Keiko Ishii, Motoki Watabe, and Shinobu Kitayama. Minimal social cues in the dictator game. Journal of Economic Psychology , 30(3):358–367, 2009. Barbara Rychalska, Szymon Lukasik, and Jacek Dabrowski. Synerise monad: A foundation model for behavioral event data. In Hsin-Hsi Chen, Wei-Jou (Edward) Duh, Hen-Hsen Huang, Makoto P. Kato, Josiane Mothe, and Barbara Poblete, editors, Proceedings of the 46th International ACM SIGIR Conference on Research and Development in Information Retrieval, SIGIR 2023, Taipei, Taiwan, July 23-27, 2023 , pages 3344–3348. ACM, 2023. doi: 10.1145/3539618.3591851. URL 
+
+https://doi.org/10.1145/3539618.3591851 .Shibani Santurkar, Esin Durmus, Faisal Ladhak, Cinoo Lee, Percy Liang, and Tatsunori Hashimoto. Whose opinions do language models reflect? In Andreas Krause, Emma Brunskill, Kyunghyun Cho, Barbara Engelhardt, Sivan Sabato, and Jonathan Scarlett, editors, International Conference on Machine Learning, ICML 2023, 23-29 July 2023, Honolulu, Hawaii, USA , Proceedings of Machine Learning Research, pages 29971–30004. PMLR, 2023. URL https://proceedings. mlr.press/v202/santurkar23a.html .Thibault Sellam, Dipanjan Das, and Ankur P. Parikh. BLEURT: learning robust metrics for text gener-ation. In Dan Jurafsky, Joyce Chai, Natalie Schluter, and Joel R. Tetreault, editors, Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics, ACL 2020, Online, July 5-10, 2020 , pages 7881–7892. Association for Computational Linguistics, 2020. doi: 10.18653/ V1/2020.ACL-MAIN.704. URL https://doi.org/10.18653/v1/2020.acl-main.704 .Eilam Shapira, Omer Madmon, Itamar Reinman, Samuel Joseph Amouyal, Roi Reichart, and Moshe Tennenholtz. GLEE: A unified framework and benchmark for language-based economic environments. CoRR , abs/2410.05254, 2024. doi: 10.48550/ARXIV.2410.05254. URL https: //doi.org/10.48550/arXiv.2410.05254 .Joseph Suh, Erfan Jahanparast, Suhong Moon, Minwoo Kang, and Serina Chang. Language model fine-tuning on scaled survey data for predicting distributions of public opinions. In Wanxiang Che, Joyce Nabende, Ekaterina Shutova, and Mohammad Taher Pilehvar, editors, Proceedings of the 63rd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers), ACL 2025, Vienna, Austria, July 27 - August 1, 2025 , pages 21147–21170. Association for Computational Linguistics, 2025. URL https://aclanthology.org/2025.acl-long. 1028/ .Llama Team. The llama 3 herd of models. CoRR , abs/2407.21783, 2024. doi: 10.48550/ARXIV. 2407.21783. URL https://doi.org/10.48550/arXiv.2407.21783 .Qwen Team. Qwen3 technical report. CoRR , abs/2505.09388, 2025. doi: 10.48550/ARXIV.2505. 09388. URL https://doi.org/10.48550/arXiv.2505.09388 .Hanchen Wang, Tianfan Fu, Yuanqi Du, Wenhao Gao, Kexin Huang, Ziming Liu, Payal Chandak, Shengchao Liu, Peter Van Katwyk, Andreea Deac, et al. Scientific discovery in the age of artificial intelligence. Nature , 620(7972):47–60, 2023. Jia Wang, Ziyu Zhao, Tingjuntao Ni, and Zhongyu Wei. Sociobench: Modeling human behavior in sociological surveys with large language models. In Christos Christodoulopoulos, Tanmoy Chakraborty, Carolyn Rose, and Violet Peng, editors, Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing, EMNLP 2025, Suzhou, China, November 
+
+17 4-9, 2025 , pages 26257–26289. Association for Computational Linguistics, 2025. doi: 10.18653/ V1/2025.EMNLP-MAIN.1335. URL https://doi.org/10.18653/v1/2025.emnlp-main. 1335 .Patrick Y Wu, Jonathan Nagler, Joshua A Tucker, and Solomon Messing. Large language models can be used to scale the ideologies of politicians in a zero-shot learning setting. preprint , 2023. Yutong Xie, Ruoyi Gao, and Qiaozhu Mei. Distributional alignment for social simulation with llms: A prompt mixture modeling approach. In First Workshop on Social Simulation with LLMs , 2025a. Yutong Xie, Zhuoheng Li, Xiyuan Wang, Yijun Pan, Qijia Liu, Xingzhi Cui, Kuang-Yu Lo, Ruoyi Gao, Xingjian Zhang, Jin Huang, Walter Yuan, Matthew O. Jackson, and Qiaozhu Mei. Be.fm: Open foundation models for human behavior. CoRR , abs/2505.23058, 2025b. doi: 10.48550/ ARXIV.2505.23058. URL https://doi.org/10.48550/arXiv.2505.23058 .Yutong Xie, Qiaozhu Mei, Walter Yuan, and Matthew O. Jackson. Using large language models to categorize strategic situations and decipher motivations behind human behaviors. Proceedings of the National Academy of Sciences , 122(35):e2512075122, 2025c. doi: 10.1073/pnas.2512075122. Kai-Cheng Yang and Filippo Menczer. Large language models can rate news outlet credibility. CoRR ,abs/2304.00228, 2023. doi: 10.48550/ARXIV.2304.00228. URL https://doi.org/10.48550/ arXiv.2304.00228 .Yanwu Yang and Panyu Zhai. Click-through rate prediction in online advertising: A literature review. 
+
+Information Processing & Management , 59(2):102853, 2022. Xingjian Zhang, Yutong Xie, Jin Huang, Jinge Ma, Zhaoying Pan, Qijia Liu, Ziyang Xiong, Tolga Ergen, Dongsub Shim, Honglak Lee, and Qiaozhu Mei. MASSW: A new dataset and benchmark tasks for ai-assisted scientific workflows. In Luis Chiruzzo, Alan Ritter, and Lu Wang, editors, 
+
+Findings of the Association for Computational Linguistics: NAACL 2025, Albuquerque, New Mexico, USA, April 29 - May 4, 2025 , Findings of ACL, pages 2373–2394. Association for Computational Linguistics, 2025. doi: 10.18653/V1/2025.FINDINGS-NAACL.127. URL https: //doi.org/10.18653/v1/2025.findings-naacl.127 .Yuze Zhao, Jintao Huang, Jinghan Hu, Xingjun Wang, Yunlin Mao, Daoze Zhang, Zeyinzi Jiang, Zhikai Wu, Baole Ai, Ang Wang, Wenmeng Zhou, and Yingda Chen. Swift:a scalable lightweight infrastructure for fine-tuning, 2024. URL https://arxiv.org/abs/2408.05517 .18 Appendix Contents 
+
+Appendix A. Data Details Appendix B. Metrics and Evaluation Details Appendix C. Be.FM-1.5 Can Generate Insights about Contextual Factors Appendix D. Analysis of Be.FM-1.5-4B ’s Regression on IEO Task Appendix E. Per-game Results for Behavior Prediction and Simulation Appendix F. Distributions of Model Outputs Appendix G. Prompt Templates Appendix H. Licenses for Existing Assets 19 A Data Details 
+
+A.1 Data Sources 
+
+This subsection provides a more detailed walkthrough of the data sources introduced in Section 2.1. 
+
+Experimental data. Experimental data document the behavioral patterns of varied participant groups under controlled conditions, providing crucial insights into how individuals and groups make decisions and engage socially. We utilize a collection of experiments from MobLab, a platform for behavioral science and economic games. After cleaning, this source contains 526,989 behavioral observations from 91,860 unique subjects collected over a nine-year period (2015 to 2023) [Mei et al., 2024]. The collection covers seven classic economic games across nine scenarios: Dictator, Ultimatum (Proposer and Responder), Trust (Investor and Banker), Public Goods, Bomb Risk, Beauty Contest, and Push/Pull (Prisoner’s Dilemma). 
+
+Survey data. Survey data offer self-reported information about personality traits, attitudes, and preferences. They primarily characterize subject attributes ( x in Equation 1), though they may also contain self-reported behaviors ˜y, which serve as a proxy for observed behaviors y and can be leveraged to simulate responses to surveys not yet conducted. Such responses may be elicited either without any specified context or under particular pre-defined scenarios c embedded in the survey items. We adopt the publicly available Big Five Personality Test dataset 7, which contains demographic attributes (race, age, and gender) of participants along with their single-choice responses to 50 items spanning five personality dimensions: openness, conscientiousness, extraversion, agreeableness, and neuroticism. The dataset comprises 19,630 subjects and a total of 981,500 survey responses. 
+
+Literature data. The behavioral science literature captures established theories and empirical findings on human behavior, serving as a proxy for the behavioral knowledge K in Equation 1. We gather titles and abstracts from two leading interdisciplinary venues for behavioral research: the 
+
+American Economic Review (AER) and Nature Human Behaviour (NHB). The resulting corpus consists of 6,515 AER articles spanning 1911 to 2025 and 871 NHB articles spanning 2016 to 2025. Following the approach of MASSW [Zhang et al., 2025], we summarize each title–abstract pair into a structured research workflow capturing the research context, key idea, method, outcome, and anticipated impact using GPT-5 [OpenAI, 2025b]. 
+
+Economics contest data. We also use multiple-choice questions from the International Economics Olympiad (IEO) as an evaluation-only source for economics problem solving. This source differs from the experimental and survey datasets because it does not record human behavioral variation. Instead, it evaluates whether models can represent, reason about, and apply domain-specific economic knowledge to unseen problems. 
+
+A.2 Data Splits 
+
+This subsection describes how each raw source from Section A.1 is partitioned into the Be.FM-1.5 
+
+fine-tuning set and the BehaviorBench evaluation set, and how we sample task instances from each partition. Table 5 summarizes the per-task entry counts and the split rule used. Across all sources, the partition is constructed so that no subject (or paper) appears on both the fine-tuning and evaluation side of any task. 
+
+MobLab economic games. We split unique participants (identified by a unique UserID ) 70/10/20 into train, validation, and test, so a participant’s complete history of game play remains within a single partition. The Game Behavior Sim., Multi-Round Pred., Across-Ctx Pred., and Strategic Game Play tasks are all generated from these splits. Raw game logs are first cleaned by a filtering pipeline that removes invalid game choices. 
+
+The Push/Pull game (held-out). The Push/Pull game is excluded from fine-tuning entirely. When constructing the Push/Pull evaluation, we additionally drop any subject that appears in the MobLab 
+
+> 7https://www.kaggle.com/datasets/lucasgreenwell/ocean-five-factor-personality-test-responses .
+
+20 train or validation split, so no participant the model has seen during fine-tuning contributes to this held-out evaluation. 
+
+Big Five survey. We use a 90/10 split over subjects. All Big Five tasks (Demo. to Resp., Seq. Resp. Pred., Masked Resp. Pred., Demo. to Pers., Across-Dim Pers. Pred., and Pers. to Demo.) draw their fine-tuning and evaluation instances from this single participant-level split. 
+
+Scientific workflows. We split AER and NHB papers by publication year. Papers published in 2025 form the workflow-prediction test set, and all earlier years form the fine-tuning set. This temporal cut reflects the practical use case of generalizing to newly published papers. 
+
+Economics contest (IEO). The IEO multiple-choice problems serve as an evaluation-only source and have no corresponding fine-tuning data. 
+
+Sampling and downsampling. For tasks where the natural enumeration produces far more instances than we need for either fine-tuning or evaluation, we downsample to a fixed target size. All Big Five evaluation tasks are capped at 1K examples. MobLab game tasks use random sampling per game, with a cap of 200, 500, and 750 examples per game for Game Behav. Sim., Multi-Round Pred., and Across-Ctx Pred. respectively. The Strategic Game Play evaluation set is capped at 1K examples. The final per-task counts after sampling are reported in Table 5.                                          
+
+> Capability Task # Train # Eval Train/Test Split Behavior prediction and simulation
+> Game Behav. Sim. 78.8K 200/game by subject Multi-Round Pred. 57.9K 500/game by subject Across-Ctx Pred. 44.1K 750/game by subject Demo. To Resp. 88.3K 1,000 by subject Seq. Resp. Pred. 36.0K 1,000 by subject Masked Resp. Pred. 40.0K 1,000 by subject
+> Subject-trait inference
+> Demo. To Pers. 88.3K 1,000 by subject Across-Dim Pers. Pred. 88.3K 1,000 by subject Pers. To Demo. 17.7K 1,000 by subject
+> Strategic decision-making Strategic Game Play 85.2K 1,000 by subject
+> Behavioral knowledge application
+> Sci. Workflow Pred. 24.7K 1,084 by publication year Economics Contest —124 eval only
+
+Table 5: Training and evaluation data summary for Be.FM-1.5 .
+
+A.3 Evaluation Tasks in BehaviorBench 
+
+For each evaluation task in BehaviorBench , we briefly describe the task below and provide its prompt template. 
+
+Single-round behavior simulation (Game Behav. Sim.). The model is shown the rules of a single MobLab economic game and asked for its first-round move. The game-specific instructions cover the Dictator game, the Ultimatum game (as Proposer or Responder), the Trust game (as Investor or Banker), the Public Goods game, the Bomb Risk game, the Beauty Contest game, and the Push/Pull game (Prisoner’s Dilemma) ([PROMPT]). 
+
+Multi-round behavior prediction (Multi-Round Pred.). The model is shown the game instruction together with the subject’s prior rounds in the same session, and predicts the next round’s move ([PROMPT]). 
+
+Across-context single-round prediction (Across-Ctx Pred.). The model is shown a subject’s first-round moves in several other games and asked to predict the subject’s first-round move in a target game ([PROMPT]). 21 Survey response prediction given demographics (Demo. to Resp.). The model is given a subject’s demographics and asked to predict one Big Five item of this subject on a five-point Likert scale ([PROMPT]). 
+
+Sequential survey response prediction (Seq. Resp. Pred.). The model is shown the subject’s previous answers in the original survey order (interleaved across the five dimensions) and predicts the subject’s response to the next item ([PROMPT]). 
+
+Masked survey response prediction (Masked Resp. Pred.). The model is shown 49 of a subject’s 50 Big Five item responses, grouped by dimension, and predicts the held-out item ([PROMPT]). 
+
+Personality score from demographics (Demo. to Pers.). The model is given a subject’s demo-graphics and predicts the subject’s score on one Big Five dimension ([PROMPT]). 
+
+Across-dimension personality prediction (Across-Dim Pers. Pred.). The model is given a subject’s scores on four Big Five dimensions and predicts the score on the held-out dimension ([PROMPT]). 
+
+Age prediction from personality (Pers. to Demo.). The model is given a subject’s scores on all five Big Five dimensions and predicts the subject’s age ([PROMPT]). 
+
+Strategic game play. The model plays the Beauty Contest game against human players. Given the play history and the group average from each prior round, the model picks an integer in [0 , 100] that aims to be closest to two-thirds of the next group average ([PROMPT]). 
+
+Scientific workflow prediction (Sci. Workflow Pred.). Five generation sub-tasks (idea generation, method recommendation, outcome prediction, impact prediction, and title prediction), each predicting one workflow aspect from the preceding aspects of the same paper ([PROMPT]). 
+
+Economics contest (IEO). The model selects A/B/C/D for each multiple-choice problem from the International Economics Olympiad ([PROMPT]). 
+
+A.4 Fine-tuning Data Recipe for Be.FM-1.5 
+
+We instantiate eleven fine-tuning tasks that span the three data sources of Section A.1 and cover the four capability axes of BehaviorBench . All instances are drawn from the fine-tuning partitions defined in Section A.2, so no subject or paper that appears in the BehaviorBench evaluation set ever appears in fine-tuning. The final fine-tuning mix contains 826,064 examples. Per-task counts are listed in Table 5. We describe the tasks below grouped by the BehaviorBench capability they target. 
+
+Behavior prediction and simulation. Six tasks. Three on MobLab games: single-round behavior simulation, multi-round behavior prediction, and across-context single-round prediction. Three on the Big Five survey: response prediction from demographics, sequential response prediction in survey order, and masked response prediction over the full 50-item survey. 
+
+Subject-trait inference. Three Big Five tasks: dimension-score prediction from demographics, leave-one-dimension prediction across the five dimensions, and age prediction from the five dimension scores. The dimension-score-from-demographics task is upsampled by a factor of three in the final mix (three identical copies are shuffled together with the rest). This is because preliminary experiments show that this task requires more training to improve on the validation set. 
+
+Strategic decision-making. One task: strategic Beauty Contest play. The Beauty Contest fine-tuning data uses a multi-winner expansion: when several integers tie as winners against the recorded other players in a round, each winning integer becomes a separate fine-tuning example (capped at 10 per round). 
+
+Behavioral knowledge application. One task with five sub-tasks (idea generation, method recom-mendation, outcome prediction, impact prediction, and title prediction), each predicting one workflow aspect from the preceding aspects. 22 B Metrics and Evaluation Details 
+
+Wasserstein normalization and aggregation. In tasks constructed from economic games, players’ choice ranges differ across games (e.g., in the Dictator game, a player can choose a number between 0 and 100, but for the Public Goods game, a player can choose between 0 and 20). We normalize the players’ choices into range [0 , 100] and compute W score for every game. Then we average these 
+
+W score across all games. A lower W score indicates that the predicted distributions are closer to observed human behavior distributions. For tasks constructed from survey data, the responses in the Big Five Personality Test are restricted to integers 1 to 5, so there is no need for normalization. For Demo. To Resp., Seq. Resp. Pred., and Masked Resp. Pred. tasks, we treat each survey item as a separate prediction task and report the average W score over them. For example, in the Demo. To Resp. task, there are 50 questions in the evaluation set, and we compute the W score between the model-predicted distribution and the human distribution for each question. Finally, we average across the W score from 50 questions. 
+
+Evaluation details. All models are evaluated five times on IEO due to its small size, and we report the mean and standard deviation across the five runs. The two Be.FM-1.5 models (Be.FM-1.5-70B and Be.FM-1.5-4B) are also evaluated five times on every other BehaviorBench task, with the mean reported. 
+
+## C Be.FM-1.5 Can Generate Insights about Contextual Factors 
+
+Human behavior is influenced by a wide range of contextual factors, including incentive mechanisms, social visibility, framing conditions, and demographic or interpersonal characteristics. Identifying the contextual drivers underlying observed behaviors is inherently difficult, as similar behavioral outcomes can emerge from distinct experimental settings or interventions. Formally, this can be represented as a projection 
+
+X × Y × K → C , (5) where an input (x, g (y), k ) ∈ X × Y × K is mapped to an output c ∈ C , where x denotes a subject’s traits, g(y) represents a behavioral objective or observed behavioral pattern derived from behavior y,
+
+k denotes prior behavioral knowledge, and c corresponds to a contextual variable. Evaluating a model’s contextual factor inference capability is challenging because there is no standard dataset, and relevant information is scattered across the behavioral science literature. Here we use the Dictator Game meta-study by Engel [2011] to conduct a qualitative analysis of Be.FM ’s contextual inference capability. The study organizes interventions into six categories: incentives, social control, distributive concerns, framing, social distance, and demographic factors. Given a target behavioral objective such as increasing generosity, Be.FM generates interventions aligned with the six intervention categories, including: • Incentive manipulations , such as constrained action spaces [Bolton et al., 1998], payoff uncertainty [Andreoni and Bernheim, 2009], varying stake sizes [Engel, 2011], and repeated interactions [Engel, 2011]. • Social-control manipulations , such as social-observability cues [Rigdon et al., 2009] and concealment mechanisms [Dana et al., 2007]. • Distributive-concern manipulations , such as recipient earned entitlement [Engel, 2011] and payoff multipliers [Engel, 2011]. • Framing manipulations , such as market framing [Hoffman et al., 1994], recipient-dependence cues [Brañas-Garza, 2007], and real-money interactions [Engel, 2011]. • Social-distance manipulations , such as interpersonal proximity [Leider et al., 2009] and indirect social connectedness [Goeree et al., 2010]. • Demographic and cultural manipulations , including gender differences [Eckel and Gross-man, 1998], age variation [Engel, 2011], and cross-cultural sharing norms [Henrich et al., 2005]. 23 Table 6: Generated interventions by Be.FM-1.5-4B to increase and decrease sharing behavior in the Dictator Game. Be.FM-1.5-4B correctly predicts most of the interventions in a comprehensive meta study on the Dictator Game [Engel, 2011]. Prompts are provided here. 
+
+Category Increase Sharing Decrease Sharing 
+
+Incentive “Participants receive a bonus when the amount shared is higher.” “Dictators are required to give at least 10% of the endowment.” “Dictators are required to give at least 50% of the endowment.” “Participants face constrained allocation choices instead of a fully free split.” “Participants are allowed to keep any amount without allocation restrictions.” “Dictators must pay a cost in order to transfer money to the recipient.” “Participants receive larger endowments that increase incentives for self-retention.” “The allocation rule emphasizes keeping a larger personal share of the endowment.” Social Control “Participants are told that their decisions may be reviewed by a social psychologist.” “Recipients can write a positive review about the dictator after observing the decision.” “The dictator’s allocation decision is revealed to the group.” “Allocation decisions are made in a virtual environment with reduced social presence.” “The recipient does not directly observe the dictator’s allocation decision.” “Participants make decisions anonymously without social feedback.” “The dictator’s choice is hidden before the other player is informed.” Distributive Concerns “Recipients are able to reciprocate after receiving the allocation.” “Recipients are explicitly told they can keep the received amount.” “Dictators are allowed to choose the recipient of the allocation.” “Recipients are expected to repay part of the received amount later.” “Recipients are required to repay part of the received amount later.” “The allocation is framed as belonging primarily to the dictator.” “The recipient’s payoff depends on the dictator’s retained amount.” Framing “The received amount can be used to purchase a good for the recipient.” “The dictator is paid based on the value of the purchased good.” “The allocation task is framed using self-interested or ownership-oriented language.” “Participants are encouraged to focus on maximizing their personal payoff.” Social Distance “The recipient is a previous dictator from the same group.” “The recipient is described as a close friend of the dictator.” “The recipient is described as a stranger with no social connection to the dictator.” “Participants are told they are unlikely to interact with the recipient again.” Demographic and Cultural – “The experiment is conducted in a setting where sharing is not a strong social norm.” “Recipients are described as financially independent and already employed.” 
+
+As shown in Table 6, Be.FM covers most of the interventions documented in the Engel [2011] meta-study across all six categories. The model also proposes plausible interventions beyond those summarized in the meta-analysis, such as time pressure, cognitive load, and probabilistic recipient assignment, suggesting that Be.FM can generalize beyond observed experimental configurations and support hypothesis generation for future behavioral studies. 
+
+## D Analysis of Be.FM-1.5-4B ’s Regression on IEO Task 
+
+As discussed in Section 5.4, Be.FM-1.5-4B regresses after fine-tuning on the IEO economics contest from 73.9% (Qwen3-4B) to 53.3%. One possible reason is a loss of reasoning capability on questions that require step-by-step derivation. To test this hypothesis, we split the 124 IEO questions into two sets: reasoning items and non-reasoning items, by whether Qwen3-4B’s response includes a reasoning trace with more than 10 tokens (Table 7). The two models are within 6 points on non-reasoning items (70.4% vs. 64.6%) but 53 points apart on reasoning items (81.0% vs. 27.8%). Aggregated across five evaluation runs, Qwen3-4B outputs 447 tokens per answer on average, while Be.FM-1.5-4B 
+
+averages 1.3 tokens and outputs only the final letter on every item. Supervised fine-tuning on terse behavioral targets has compressed the 4B output format and suppressed the multi-step computation its backbone uses for numerical questions. Closing the gap at 4B will require training that preserves chain-of-thought where it is needed, which we leave to future versions of Be.FM-1.5 .24 Table 7: IEO questions split by whether Qwen3-4B’s response contains a reasoning trace ( >10 tokens). The Be.FM-1.5-4B regression concentrates on questions that require multi-step reasoning. 
+
+Question Set N Qwen3-4B Be.FM-1.5-4B Gap 
+
+All 124 73.9% 53.3% −20.6% Reasoning ( >10 tok) 41 81.0% 27.8% −53.2% Non-reasoning 83 70.4% 64.6% −5.8% 
+
+Case study: wage calculation. We present an IEO question where Qwen3-4B succeeds in an-swering the question, but Be.FM-1.5-4B fails. We show the question and model outputs below (Boxes 1–3). Qwen3-4B outputs a long reasoning trace (485 tokens) and correctly solves this question with a step-by-step calculation, while Be.FM-1.5-4B directly outputs a wrong prediction. 
+
+Box 1: IEO question. 
+
+System. You are an expert in economics. Answer the following multiple-choice question by selecting the correct option(s). There may be one or more correct answers. Output the letter(s) of the correct answer(s) (e.g., A or BC). Provide only the letter(s) of your answer. 
+
+User. Currently you work for 40 hours per week at the wage rate of $20 an hour. Your free hours are defined as the number of hours not spent in work per week, which in this case is 24 hours ×7 days −40 hours = 128 
+
+hours per week. Suppose now that your wage rate has increased by 25%. If you are happy to keep your total weekly income constant, then: A. Your total number of working hours per week will fall by 25%. B. Your total number of working hours per week will be 30 hours. C. Your total number of free hours per week will increase by 25%. D. Your total number of free hours per week will increase by 6.25%. 
+
+Ground truth: D. 
+
+Box 2: Qwen3-4B output (485 tokens, parsed answer D, correct). 
+
+We are given: • Current weekly working hours: 40 hours • Current wage rate: $20/hour • Free hours = (24 hours/day × 7 days) − 40 = 168 − 40 = 128 hours per week • Wage increases by 25%, so new wage rate = $20 × 1.25 = $25/hour • You want to keep total weekly income constant Step 1: Calculate current weekly income 
+
+Current income = 40 hours × $20 = $800 
+
+Step 2: After wage increase, keep income at $800 
+
+New wage = $25/hour. So, new working hours to maintain $800 income: New hours = 800 25 = 32 hours per week 
+
+Step 3: Compare working hours 
+
+Original: 40 hours. New: 32 hours. So, working hours decrease by: 
+
+40 − 32 40 = 840 = 0 .20 = 20% 
+
+So, A is false — it says working hours fall by 25% , but it’s only 20% .
+
+Step 4: Check option B 
+
+B: “Your total number of working hours per week will be 30 hours.” We calculated it as 32 hours → False .
+
+25 Step 5: Free hours 
+
+Original free hours = 128 hours. New working hours = 32 → new free hours = 168 − 32 = 136 hours. Increase in free hours = 136 − 128 = 8 hours. Percentage increase: 
+
+8128 = 0 .0625 = 6 .25% 
+
+So, D is correct : Free hours increase by 6.25% . C says: “Free hours increase by 25% ” → false. 
+
+Final Answer: Only D is correct. 
+
+D
+
+Box 3: Be.FM-1.5-4B output (1 token, parsed answer B, incorrect). 
+
+B
+
+## E Per-game Results for Behavior Prediction and Simulation 
+
+This appendix reports the per-game results for the three economic-game tasks summarized in the main results table (Table 3): single-round game behavior simulation, multi-round behavior prediction, and across-game single-round prediction. For each task we report distributional alignment with Wasserstein distance ( W , lower is better) and individual-level prediction with mean absolute error (MAE, lower is better). The single-round simulation results appear in Table 8, the multi-round prediction results in Tables 9 and 10, and the across-game prediction results in Tables 11 and 12. 
+
+E.1 Economic Games                                                                                                                                                                                                                   
+
+> Model Dictator Proposer Responder Investor Banker Pub.Goods Bomb Beauty Contest Push/Pull Avg
+> Qwen3-4B 21.3 41.0 33.6 29.0 23.2 22.8 18.9 33.9 18.2 26.9 Llama3.3-70B 20.1 14.8 33.4 21.3 30.2 18.8 18.6 15.3 45.3 24.2 DeepSeek V3.2 13.7 8.0 7.6 27.1 18.9 22.9 17.7 18.0 18.0 16.9 Claude Haiku 4.5 18.7 6.9 28.4 25.2 29.4 22.9 17.7 26.6 44.5 24.5 Claude Sonnet 4.6 25.8 13.6 18.7 30.8 19.1 19.5 17.7 19.5 57.0 24.6 Claude Opus 4.6 25.8 13.3 23.8 33.3 19.2 23.6 17.7 20.4 57.0 26.0 GPT 5.4 mini 25.8 9.5 30.5 22.0 36.9 42.0 17.7 34.9 42.0 29.0 GPT 4.1 25.8 16.5 32.4 47.1 19.6 21.3 15.4 25.1 44.5 27.5 GPT 5.4 25.8 12.3 32.4 37.9 37.1 41.8 17.7 35.5 42.0 31.4 Gemini 3.1 Flash 25.8 12.0 14.9 57.8 22.8 53.7 17.7 22.5 54.0 31.3 Gemini 3.1 Pro 25.8 11.1 32.4 25.0 29.5 16.9 17.7 18.6 15.0 21.3 Socrates-Llama3-8B-SFT 26.6 7.3 16.1 5.5 5.6 9.0 9.6 10.2 57.0 †16.3 Socrates-Llama3-8B-DPO 25.8 12.0 18.1 33.6 22.9 25.1 17.6 25.3 57.0 26.4 Socrates-Qwen-14B-SFT 19.9 4.4 16.7 16.1 10.1 11.6 10.4 15.3 57.0 †17.9 Socrates-Qwen-14B-DPO 25.8 19.7 14.7 37.5 22.9 24.6 17.7 14.0 3.6 20.0 Centaur-70B 26.2 4.8 5.7 19.3 29.9 19.0 5.6 15.7 26.0 16.9 Be.FM-1-8B 4.5 7.4 4.6 7.9 6.4 7.2 3.1 7.4 30.8 8.8 Be.FM-1-70B 3.5 6.5 4.9 7.7 5.3 7.8 4.3 7.3 30.8 8.7 Be.FM-1.5-4B 3.7 4.0 4.5 15.7 8.1 8.7 4.1 6.2 8.6 7.0
+> Be.FM-1.5-70B 7.1 6.9 5.8 14.1 4.7 5.3 7.2 6.1 23.1 8.9
+
+Table 8: Single-round game behavior simulation: Wasserstein distance ( ↓). † The model produced no parseable Push/Pull response, so its Push/Pull W is set to the worst observed value in this column. 26 Model Dictator Investor Banker_inv50 Banker_inv100 Pub.Goods Bomb Beauty Contest Push/Pull Avg 
+
+Qwen3-4B 13.5 22.2 19.3 7.7 15.0 13.6 9.2 4.0 13.1 Llama3.3-70B 21.8 12.6 27.3 13.8 15.0 12.0 7.3 12.8 15.3 DeepSeek V3.2 14.2 6.1 18.0 11.4 5.5 12.7 9.9 3.0 10.1 Claude Haiku 4.5 13.1 12.3 27.9 12.7 9.4 17.0 7.3 0.0 12.5 Claude Sonnet 4.6 5.9 8.3 16.9 9.4 17.5 17.2 8.7 0.8 10.6 Claude Opus 4.6 8.5 9.8 19.3 9.5 9.8 17.3 8.6 10.4 11.7 GPT 5.4 mini 3.0 22.3 9.4 4.4 41.1 17.2 8.7 34.6 17.6 GPT 4.1 2.5 2.3 15.1 8.4 8.4 5.0 8.1 5.6 6.9 GPT 5.4 2.1 17.3 9.7 2.5 34.7 17.2 9.4 28.6 15.2 Gemini 3.1 Flash 8.6 27.2 19.1 9.1 7.4 16.1 10.3 50.8 18.6 Gemini 3.1 Pro 1.6 14.7 10.9 7.1 24.4 16.4 9.7 15.0 12.5 Socrates-Llama3-8B-SFT 15.6 15.8 9.1 29.3 19.6 11.3 19.0 50.8 † 21.3 Socrates-Llama3-8B-DPO 26.5 12.0 22.5 14.0 21.4 9.4 11.6 40.1 19.7 Socrates-Qwen-14B-SFT 18.5 5.5 6.9 11.5 12.8 6.8 14.0 50.8 † 15.9 Socrates-Qwen-14B-DPO 14.5 15.2 20.5 14.1 10.8 7.8 6.6 26.0 14.4 Centaur-70B 15.3 2.6 12.3 8.1 11.5 5.0 6.8 27.0 11.1 Be.FM-1-8B 5.7 5.8 3.3 22.6 4.4 7.8 12.7 36.6 12.4 Be.FM-1-70B 4.5 6.0 4.2 20.8 4.0 6.0 10.1 13.2 8.6 Be.FM-1.5-4B 1.9 3.3 9.4 4.1 4.3 3.1 3.9 15.5 5.7 Be.FM-1.5-70B 4.2 3.9 4.8 2.3 1.8 2.9 5.1 3.1 3.5 
+
+Table 9: Multi-round game behavior prediction: Wasserstein distance ( ↓). † The model produced no parseable Push/Pull response, so its Push/Pull W is set to the worst observed value in this column. 
+
+Model Dictator Investor Banker_inv50 Banker_inv100 Pub.Goods Bomb Beauty Contest Push/Pull Avg 
+
+Qwen3-4B 18.7 30.0 23.5 17.0 20.9 17.8 11.4 34.0 21.7 Llama3.3-70B 23.8 35.4 28.8 18.4 26.6 18.5 11.1 53.6 27.0 DeepSeek V3.2 20.2 25.0 24.9 16.0 22.5 17.4 11.6 29.4 20.9 Claude Haiku 4.5 16.9 24.8 29.5 17.7 20.2 17.3 10.5 31.2 21.0 Claude Sonnet 4.6 11.8 22.7 20.7 13.2 24.5 17.2 11.0 28.8 18.7 Claude Opus 4.6 13.0 22.7 22.8 13.2 21.7 17.3 11.0 32.4 19.3 GPT 5.4 mini 10.6 36.8 17.4 16.8 42.5 17.4 10.9 37.0 23.7 GPT 4.1 10.1 21.0 21.3 15.0 18.3 16.3 10.6 32.4 18.1 GPT 5.4 9.4 33.0 16.9 13.7 36.4 17.2 11.2 31.4 21.1 Gemini 3.1 Flash 14.2 36.3 24.2 14.1 26.2 17.9 11.7 59.2 25.5 Gemini 3.1 Pro 9.7 31.3 19.2 13.7 29.7 16.8 11.5 23.4 19.4 Socrates-Llama3-8B-SFT 25.9 37.6 28.1 36.9 32.1 28.1 27.7 100.0 † 39.5 Socrates-Llama3-8B-DPO 27.9 26.5 23.9 17.8 26.9 18.4 18.7 57.8 27.3 Socrates-Qwen-14B-SFT 27.9 33.0 26.1 27.7 26.5 22.5 23.7 100.0 † 35.9 Socrates-Qwen-14B-DPO 18.4 26.4 25.1 17.0 19.5 16.5 10.0 30.8 20.5 Centaur-70B 19.8 23.5 26.6 22.6 24.7 19.0 15.5 34.6 23.3 Be.FM-1-8B 24.0 41.8 27.6 34.1 35.2 26.7 24.5 59.0 34.1 Be.FM-1-70B 21.8 42.8 27.7 31.0 36.0 26.4 20.8 49.6 32.0 Be.FM-1.5-4B 11.3 21.5 20.7 14.3 18.8 17.1 11.2 32.2 18.4 Be.FM-1.5-70B 12.3 20.8 17.9 15.4 19.1 17.2 10.7 30.9 18.0 
+
+Table 10: Multi-round game behavior prediction: MAE ( ↓). † The model produced no parseable Push/Pull response, all such cases are counted as incorrect predictions. 
+
+Model Dictator Proposer Responder Investor Banker Pub.Goods Bomb Beauty Contest Push/Pull Avg 
+
+Qwen3-4B 16.3 21.7 28.4 27.1 19.7 22.0 17.7 18.3 9.5 20.1 Llama3.3-70B 14.5 9.5 10.4 20.7 12.4 16.7 16.8 14.0 18.7 14.9 DeepSeek V3.2 16.2 5.4 9.8 11.4 16.6 11.1 10.0 17.3 12.9 12.3 Claude Haiku 4.5 14.4 8.4 11.3 22.6 25.7 14.3 16.2 16.6 26.4 17.3 Claude Sonnet 4.6 9.9 9.6 12.1 26.0 14.8 14.4 17.3 19.0 50.7 19.3 Claude Opus 4.6 11.4 7.9 16.5 26.8 16.6 12.0 16.7 18.7 54.3 20.1 GPT 5.4 mini 6.5 10.4 4.4 11.3 20.1 24.2 17.4 24.0 43.3 18.0 GPT 4.1 15.4 9.4 11.0 16.6 16.0 18.4 10.3 18.3 30.9 16.3 GPT 5.4 5.9 8.4 5.2 10.4 6.0 14.9 17.4 21.1 37.2 14.0 Gemini 3.1 Flash 19.9 7.1 14.3 11.9 14.7 12.4 13.6 20.5 41.1 17.3 Gemini 3.1 Pro 5.2 7.4 8.9 9.7 8.0 7.9 13.5 16.7 15.3 10.3 Socrates-Llama3-8B-SFT 21.8 6.4 8.3 7.9 7.6 8.1 8.3 8.7 54.3 † 14.6 Socrates-Llama3-8B-DPO 23.7 7.5 5.6 23.7 21.1 26.1 9.8 28.1 46.9 21.4 Socrates-Qwen-14B-SFT 20.8 4.8 8.8 6.7 4.0 11.1 9.0 13.1 54.3 † 14.7 Socrates-Qwen-14B-DPO 20.1 3.5 11.8 31.6 19.5 21.4 17.7 15.3 18.8 17.7 Centaur-70B 21.4 2.9 7.6 11.4 14.4 17.2 5.3 19.8 24.8 13.9 Be.FM-1-8B 4.3 4.9 3.8 7.5 4.8 7.9 6.3 8.1 1.2 5.4 
+
+Be.FM-1-70B 5.3 4.4 2.3 7.0 4.1 3.9 3.4 8.8 28.8 7.6 Be.FM-1.5-4B 2.5 2.1 2.8 16.8 8.3 7.9 5.5 4.2 3.4 5.9 Be.FM-1.5-70B 6.7 2.6 3.0 14.9 4.9 5.4 5.4 5.1 10.8 6.5 
+
+Table 11: Single-round game behavior prediction given observations from other games: Wasserstein distance ( ↓). † The model produced no parseable Push/Pull response, so its Push/Pull W is set to the worst observed value in this column. 27 Model Dictator Proposer Responder Investor Banker Pub.Goods Bomb Beauty Contest Push/Pull Avg 
+
+Qwen3-4B 22.0 24.4 29.9 32.7 26.2 24.7 17.7 26.1 47.3 27.9 Llama3.3-70B 24.4 15.0 18.3 36.7 26.9 25.7 18.2 23.4 48.8 26.4 DeepSeek V3.2 24.3 13.6 16.5 40.2 24.5 30.2 21.9 23.1 52.9 27.5 Claude Haiku 4.5 21.8 14.2 15.9 35.4 29.3 25.6 18.1 22.4 51.5 26.0 Claude Sonnet 4.6 20.7 13.1 15.7 35.9 22.8 26.5 17.9 19.8 55.2 25.3 Claude Opus 4.6 19.4 12.3 19.0 35.4 24.4 27.7 18.2 20.2 56.1 25.9 GPT 5.4 mini 23.3 15.5 13.8 38.5 29.0 37.2 17.9 27.3 44.1 27.4 GPT 4.1 22.6 15.4 15.4 39.3 23.9 29.2 26.2 20.2 51.5 27.1 GPT 5.4 22.5 14.1 14.7 37.2 25.5 32.5 17.9 25.9 44.7 26.1 Gemini 3.1 Flash 24.8 14.0 20.0 45.5 23.9 37.2 21.7 24.0 53.6 29.4 Gemini 3.1 Pro 23.8 14.1 17.9 39.1 25.3 32.2 19.3 21.6 47.1 26.7 Socrates-Llama3-8B-SFT 28.7 23.4 25.5 39.6 24.8 39.6 30.8 26.8 100.0 † 37.7 Socrates-Llama3-8B-DPO 25.0 14.6 16.5 34.0 21.7 28.2 21.7 30.7 56.8 27.7 Socrates-Qwen-14B-SFT 29.7 22.8 24.3 42.2 26.4 30.1 27.8 26.6 100.0 † 36.7 Socrates-Qwen-14B-DPO 23.7 16.0 16.5 34.4 22.9 24.3 17.7 19.7 48.1 24.8 
+
+Centaur-70B 26.0 16.3 15.8 37.5 30.3 34.8 29.5 27.9 45.6 29.3 Be.FM-1-8B 24.3 19.5 20.2 44.3 28.3 38.2 26.3 27.8 89.6 35.4 Be.FM-1-70B 24.8 16.9 21.5 44.6 28.1 35.0 26.2 26.7 90.1 34.9 Be.FM-1.5-4B 22.9 13.3 14.0 44.1 28.0 30.6 23.3 21.4 50.2 27.5 Be.FM-1.5-70B 23.8 13.5 13.5 45.8 27.0 32.8 23.0 20.8 50.0 27.8 
+
+Table 12: Single-round game behavior prediction given observations from other games: MAE ( ↓). 
+
+† The model produced no parseable Push/Pull response, all such cases are counted as incorrect predictions. 
+
+## F Distributions of Model Outputs 
+
+This section visualizes the model-predicted output distribution alongside the test-set distribution. The plots cover single-round game behavior simulation (Figures 3 and 4), multi-round game behavior prediction (Figures 5 and 6), and across-game single-round prediction (Figures 7 and 8). The top row of each figure shows the test-set distribution, and the remaining rows show the per-model predicted distributions. 28 F.1 Single-round Game Behavior Simulation 
+
+Figure 3: Distribution of model outputs in single-round game behavior simulation (Part 1). 29 Figure 4: Distribution of model outputs in single-round game behavior simulation (Part 2). 30 F.2 Multi-round Game Behavior Prediction 
+
+Figure 5: Distribution of model outputs in multi-round game behavior prediction (Part 1). 31 Figure 6: Distribution of model outputs in multi-round game behavior prediction (Part 2). 32 F.3 Single-round Game Behavior Prediction Given Observations from Other Games 
+
+Figure 7: Distribution of model outputs in single-round game behavior prediction given observations from other games (Part 1). 33 Figure 8: Distribution of model outputs in single-round game behavior prediction given observations from other games (Part 2). 
+
+## G Prompt Templates 
+
+This appendix documents all prompt templates used in the experiments. For each task, we show the system prompt and user prompt template. Placeholders are shown as { variable }. Section headers within prompts (originally in Markdown) are rendered in bold .
+
+A. Economic Games — Single-round Behavior Simulation 
+
+All single-round economic game prompts share the following system prompt. 
+
+System prompt. 
+
+You are a player who is playing an economics game. 
+
+Dictator Game. 
+
+You are paired with another player. Your role is to decide how to divide $100 and the other player simply receives your choice. How would you like to divide the money? Please give only one concrete choice and highlight the amount you give to the other player in [] (such as [$x]). 
+
+Ultimatum Game — Proposer. 
+
+This is a two-player game. You are the Proposer, and the other player is the Responder. As the proposer, you propose how to divide $100 and the Responder chooses either Accept or Reject. If accepted, the two of 
+
+34 you will earn as described by the accepted proposal accordingly. If rejected, then both of you will earn $0. How much would you like to propose to give to the Responder? Please give only one concrete choice, and highlight the amount with [] (such as [$x]). 
+
+Ultimatum Game — Responder. 
+
+This is a two-player game. You are the Responder, and the other player is the Proposer. The proposer proposes how to divide $100 and you, as the Responder, choose either Accept or Reject. If accepted, the two of you will earn as described by the accepted proposal accordingly. If rejected, then both of you will earn $0. As the Responder, what is the minimal amount in the proposal that you would accept? Please give only one concrete choice, and highlight the amount with [] (such as [$x]). 
+
+Trust Game — Investor. 
+
+This is a two-player game. You are an Investor and the other player is a Banker. You have $100 to invest and you choose how much of your money to invest with the Banker. The amount you choose to invest will grow by 3x with the Banker. For example, if you invest $10, it will grow to $30 with the Banker. The Banker then decides how much of the money ($0-$30) to return to you, the Investor. How much of the $100 would you like to invest with the Banker? Please give only one concrete choice, and highlight the number with [] (such as [$x]). 
+
+Trust Game — Banker. 
+
+This is a two-player game. You are a Banker and the other player is an Investor, and the goal for each player is to earn more. The Investor chooses how much of the money (up to $100) to invest with you. The amount the Investor invests will generate a 2x return with you (the current value of investment becomes 3x). To settle the investment, as the Banker, you get to decide how much of this total amount to return to the Investor and the rest will be kept as your profit. For example, you can choose to return $0 (therefore the investor will lose their investment), or you can return the entire 3x (initial investment + 2x profit) to the investor, or you can return any amount in between. Now, if the investor has invested $50 with you and the current value became $150, how much of the $150 would you like to return to the Investor? Please give only one concrete choice, and highlight the number with [] (such as [$x]). 
+
+Public Goods Game. 
+
+In this public good game, you and 3 others will choose how much to contribute towards a water cleaning project. Each of you gets $20 per round to contribute between $0 and $20. The project has a 50% return rate. Your payoff relies on both your and others’ contributions. Everyone benefits from the group’s total contribution. Your payoff in each round equals the amount you didn’t contribute (endowment - contribution) plus everyone’s benefit (total contributions * 50% return rate). Here are two examples to calculate your payoff. Example one: You contributed $12; total group contributions were $20 Your Payoff = ($20-$12) + $20*50% = $18 Example two: You contributed $12; total group contributions were $30 Your Payoff = ($20-$12) + $30*50% = $23 We will play a total of 3 rounds, in the first round, how much of the $20 would you like to contribute? Please give a concrete number and highlight it with [] (e.g., [x]). 
+
+Bomb Risk Game. 
+
+There are 100 boxes, and one bomb has been randomly placed in 1 of 100 boxes. You can choose to open 0-100 boxes at the same time. If none of the boxes you open has the bomb, you earn points that are equal to the number of boxes you open. If one of the boxes you open has the bomb, you earn zero points. How many boxes would you open? Please give one concrete number and highlight it with [] (such as [x]). 
+
+Beauty Contest (Guessing) Game. 
+
+This is a number-guessing game where you will play with { num_players } other players. Each player chooses an integer between 0 and 100 which is hidden from other players. The player who chooses a number that is closest to 2/3 of the average wins the game. For example, if the average of the guesses is 60 
+
+35 and if you guess 40, i.e. 2/3 of 60, you win the game. What number would you like to guess? Please give a concrete number and highlight it with [] (e.g., [x]). 
+
+Push/Pull (Prisoner’s Dilemma) Game. 
+
+You’re paired with another player, each having a $400 ‘Push’ card and a $300 ‘Pull’ card. Your payoff depends on both players’ card choices. Here are the scenarios: • Both play ‘Push’: Each earns $400 • You play ‘Push’, the other player plays ‘Pull’: You earn $0, the other player earns $700 • You play ‘Pull’, the other player plays ‘Push’: You earn $700, the other player earns $0 • Both play ‘Pull’: Each earns $300 In 5 total rounds, which card would you play in the first round? Please give a concrete choice and highlight it with [] (i.e., [Push] or [Pull]). 
+
+Instruction suffix: 
+
+Important: Answer with [Push] or [Pull], not a number. 
+
+B. Economic Games — Multi-Round Behavior Prediction 
+
+The system prompt is the same as in Section A. Multi-round prompts predict a player’s next action given their play history. The general user prompt template is: 
+
+General template. 
+
+{game_instruction }
+
+Play History 
+
+In this session, you have already played { num_rounds } round(s). Here is the play history: {history }
+
+Your Choice 
+
+Now in Round { next_round }, what would you choose? Please give only one concrete choice and highlight the number with [] (such as [$x]). Here { game_instruction } is the single-round prompt from Section A and { history } consists of per-round lines in one of the following formats. 
+
+History line formats. 
+
+Without other players (Dictator, Bomb): 
+
+- Round { round_num }. Your choice: [{ your_action }]. 
+
+With one other player — singular (Trust): 
+
+- Round { round_num }. Your choice: [{ your_action }], the other player’s choice: [{ others_action }]. 
+
+With multiple other players — plural (Public Goods): 
+
+- Round { round_num }. Your choice: [{ your_action }], the other players’ choices: [{ others_action }]. 
+
+Beauty Contest (custom): 
+
+- Round { round_num }. Your choice: [{ your_action }], the group average is [{ group_avg }], and 2/3 of that is [{ target }]. { round_outcome }
+
+Trust Banker — variable investment. In multi-round Trust Banker prompts, the investment amount varies per round. The game rules (same as Section A) are followed by the play history and a round-specific question: Now in this round, the investor has invested ${ investment } with you and the current value became ${ total }. How much of the ${ total } would you like to return to the Investor? Please give only one concrete choice and highlight the number with [] (such as [$x]). 
+
+36 Beauty Contest — multi-round. The guessing game uses simplified rules (without the round count) and a modified question: Now you will play the game again (Round { next_round }). What number would you like to guess? Please give a concrete number and highlight it with [] (e.g., [x]). 
+
+Push/Pull — multi-round. The Push/Pull game uses [Push]/[Pull] choices instead of numeric val-ues: Which card would you play in Round { next_round }? Please give a concrete choice and highlight it with [] (i.e., [Push] or [Pull]). Respond with only [Push] or [Pull]. Do not explain. 
+
+C. Economic Games — Across-context Single-round Prediction 
+
+The system prompt is the same as in Section A. Given a player’s history from other games, the model predicts their choice in a new target game. 
+
+User prompt template. 
+
+Play History 
+
+You have played the following economics games before. {history_section }
+
+Your Choice 
+
+Now you are playing a new game with the game instruction below: {target_instruction }Each entry in { history_section } is formatted as: {index }. { game_name }- Game instruction: { instruction }- Your choice: [{ choice }] The { target_instruction } is the single-round prompt from Section A for the target game. 
+
+D. Big Five Personality Survey Task 1: Personality Score from Demographics. 
+
+System: You are an expert in psychology. Given a person’s demographics, your task is to predict this person’s BigFive dimensionality scores. 
+
+User: Demographics 
+
+{demographics }
+
+BigFive Dimensionality Scores 
+
+Each dimensionality score ranges from 10 to 50, with 10 indicating the lowest score in that dimension and 50 indicating the highest score. 
+
+Output Format 
+
+Based on this person’s demographics, please estimate this person’s personality score in the *{ dimen-sion_name }* dimension. Please output a single number in the range from 10 to 50, highlighted in [] (e.g., [x]). {demographics } is formatted as: “A { age }-year-old { gender } from { country }. { hand }-handed. The race is { race }. The native language is { engnat }.” { dimension_name } is one of: Extraversion, Neuroticism, Agreeableness, Conscientiousness, Openness. 
+
+Task 2: Survey Response Prediction Given Demographics. 
+
+37 System: You are a { age }-year-old { gender } from { country }. You are { hand }-handed. Your race is { race }. Your native language is { engnat }. 
+
+User: The following item was rated on a five-point scale where 1=Disagree, 2=Partially Disagree, 3=Neutral, 4=Partially Agree, 5=Agree. Please select how this statement describes you and highlight your answer in [](such as [1],[2],[3],[4],or [5]): { question } Only output your answer in brackets. 
+
+Task 3: Age Prediction from Personality. 
+
+System: You are an expert in psychology. Given a person’s BigFive personality test dimensionality scores, your task is to predict this person’s age. 
+
+User: BigFive Dimensionality Scores 
+
+Each dimensionality score ranges from 10 to 50, with 10 indicating the lowest score in that dimension and 50 indicating the highest score. • Openness: { O_score }• Conscientiousness: { C_score }• Extraversion: { E_score }• Agreeableness: { A_score }• Neuroticism: { N_score }
+
+Output Format 
+
+Please predict this person’s age. Please output a single number indicating the age highlighted with [] (e.g., [x]). Only output your answer in brackets. 
+
+Task 4: Sequential Survey Response Prediction. 
+
+System: You are an expert in psychology. Given a subject’s previous answers in a Big Five personality test (in the order they answered them), your task is to predict this subject’s answer to the next question. 
+
+User: Subject’s Previous Answers 
+
+The following items were rated on a five point scale where 1=Disagree, 2=Slightly Disagree, 3=Neutral, 4=Slightly Agree, 5=Agree. {previous_answers }
+
+The Next Question 
+
+{next_question }
+
+Output Format 
+
+Please predict the subject’s answer to the next question and highlight your prediction in [](such as [1],[2],[3],[4],or [5]). Only output your answer in brackets. Items are numbered by original survey position (1–50); no item codes are shown. 
+
+Task 5: Masked Survey Response Prediction. 
+
+System: You are an expert in psychology. Given a subject’s answers to 9 questions measuring the same Big Five personality dimension, your task is to predict this subject’s answer to the remaining question in that dimension. 
+
+User: Subject’s Answers ({ dimension_name } Dimension) 
+
+The following items were rated on a five point scale where 1=Disagree, 2=Slightly Disagree, 3=Neutral, 4=Slightly Agree, 5=Agree. {context_answers }
+
+The Remaining Question 
+
+{target_question }
+
+38 Output Format 
+
+Please predict the subject’s answer to the remaining question and highlight your prediction in [](such as [1],[2],[3],[4],or [5]). Only output your answer in brackets. {context_answers } lists 9 items numbered 1–9 (no item codes). 
+
+Task 6: Across-Dimension Personality Prediction. 
+
+System: You are an expert in psychology. Given a person’s BigFive personality test scores in four dimensions, your task is to predict the score in the remaining dimension. 
+
+User: BigFive Dimensionality Scores 
+
+Each dimensionality score ranges from 10 to 50, with 10 indicating the lowest score in that dimension and 50 indicating the highest score. {dimension_scores }
+
+Output Format 
+
+Based on the four dimension scores above, please predict this person’s score in the *{ target_name }* dimension. Please output a single number in the range from 10 to 50, highlighted in [] (e.g., [x]). Only output your answer in brackets. {dimension_scores } lists 4 of the 5 dimensions (Openness, Conscientiousness, Extraversion, Agreeableness, Neuroticism) with their scores. 
+
+E. Scientific Workflow Prediction System prompt. 
+
+You are an expert in research tasked with generating detailed prompts for various aspects of academic research papers. Each task involves creating a specific type of prompt based on the provided information. Here are the definitions of each part you will work with: • Context: The status quo of related literature or reality which motivated this study. This could normally be a problem, a research question, or a research gap that has not been successfully addressed by previous work. This is anything that happened before this study. • Key Idea: The main intellectual merit of this paper, often in comparison to the context. This could normally be a novel idea or solution proposed in this paper that distinguishes it from what’s already done in literature. This is proposed in this study. • Method: The specific research method that investigates and validates the key idea. This could be an experimental setup, a theoretical framework, or other necessary methodology to implement and/or evaluate the key idea. This is performed in this study. • Outcome: The factual statement about the study output. This could be the experiment results and any other measurable outcome that has occurred. It marks whether the key hypothesis is testified or not. This is produced in this study. • Projected Impact: The author-anticipated impact of the work on the field, and potential further research identified by the author that may improve or extend this study. This is anything being anticipated but has not happened yet. 
+
+Task user prompt templates. The five workflow prediction tasks use the following user prompt templates: 
+
+1. Idea Generation: 
+
+Given the context: ‘{ context }’, generate one key idea that could advance this area of study. Output only the key idea without explanation. 
+
+2. Method Recommendation: 
+
+Given the context: ‘{ context }’ and the key idea: ‘{ key_idea }’, recommend one method to validate this idea. Output only the method without explanation. 
+
+3. Outcome Prediction: 
+
+Based on the context: ‘{ context }’, the key idea: ‘{ key_idea }’, and the method: ‘{ method }’, predict the outcome of this research. Output only the outcome without explanation. 
+
+39 4. Impact Prediction: 
+
+Based on the context: ‘{ context }’, the key idea: ‘{ key_idea }’, the method: ‘{ method }’, and the outcome: ‘{ outcome }’, suggest the projected impact for this research. Output only the impact without explanation. 
+
+5. Title Prediction: 
+
+Given the context: ‘{ context }’, the key idea: ‘{ key_idea }’, the method: ‘{ method }’, the outcome: ‘{ out-come }’, and the projected impact: ‘{ projected_impact }’, predict the title of this research paper. Output only the title without explanation. 
+
+F. IEO Economics Contest 
+
+System: You are an expert in economics. Answer the following multiple-choice question by selecting the correct option (A, B, C, or D). Provide only the letter of your answer. 
+
+User: {question }A. { option_A }B. { option_B }C. { option_C }D. { option_D }
+
+G. Contextual Factor Inference — Dictator Game System prompt. 
+
+You are an expert in behavioral economics. 
+
+User prompt template. 
+
+Given the observation of an experiment on the Dictator game, your task is to infer what experiment designs could lead to the observed treatment effect. In the Dictator game, given an endowment of money, one player (the dictator) chooses how much of the money to keep and how much to give to a second player. In an economic experiment of the Dictator game, we observed the subject behaviors – the proportion of money to share – { direction } compared to the standard game design. Please list possible experiment designs that could lead to this treatment effect. Please rank output experiment designs by confidence. {direction } is one of: increased , decreased .
+
+## H Licenses for Existing Assets 
+
+BehaviorBench is constructed from the publicly available data sources described in Section A.1. We summarize the licensing and terms-of-use status of each below. 
+
+MobLab economic-games data. The MobLab game logs we use are released by Mei et al. [2024] via the public repository https://github.com/yutxie/ChatGPT-Behavioral under the MIT License. 
+
+Big Five Personality Test. The Big Five responses are obtained from the publicly avail-able Kaggle dataset https://www.kaggle.com/datasets/lucasgreenwell/ocean-five-factor-personality-test-responses , which mirrors data distributed by the Open-Source Psychometrics Project ( https://openpsychometrics.org/_rawdata/ ). The dataset is released under the Database Contents License (DbCL) v1.0 ( https://opendatacommons.org/licenses/ dbcl/1-0/ ). 
+
+Scientific articles (AER, NHB). We use only the titles and abstracts of articles published in the American Economic Review (American Economic Association) and Nature Human Behaviour 
+
+(Springer Nature). All articles are properly cited, and titles and abstracts are used for non-commercial research purposes consistent with standard fair-use practice for bibliographic data. 40 International Economics Olympiad. Past IEO multiple-choice problems are publicly distributed for educational use ( https://ieo-official.org/ ). We use them only for non-commercial re-search evaluation. 41
