@@ -1,0 +1,446 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-02T20:56:55.649163+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 4,
+    "deep_cap": 6,
+    "deep_selected": 4,
+    "quick_candidates": 6,
+    "quick_skim_target": 11,
+    "quick_selected": 6
+  },
+  "deep_dive": [
+    {
+      "id": "2607.00190v1",
+      "source": "arxiv",
+      "title": "Play Like Champions: Counterfactual Feedback Generation in Latent Space",
+      "abstract": "Recent advances in reinforcement learning have produced superhuman agents across a wide range of competitive games. As a byproduct, researchers have begun studying how these agents play, extracting behavioral representations, analyzing decision structure, and modeling the latent geometry of expert performance. However, this growing body of work has overwhelmingly focused on defeating human players rather than providing feedback, leaving a critical gap in creating model solutions to improve human players. Unlike chess and Go, where AI has become integral to player training, real-time strategy (RTS) games lack principled frameworks for translating expert knowledge into actionable feedback. We introduce Latent Maps of Performance, a framework for counterfactual path generation. We focus on StarCraft~II data to model player improvement as an algorithmic recourse within a learned representation space. As inspiration for our work, we have looked at the championship model used in sports science. We trained a Guided Variational Autoencoder model on 23,305 professional tournament replays, enabling counterfactual traversal between losing and winning gameplay profiles. To fulfill our goal, we have devised and verified four traversal strategies on out-of-distribution (OOD) data randomly sampled from a dataset of amateur replays, namely linear interpolation, iterative optimal transport, density-regularized gradient ascent, and neural flow matching, each designed to generate multi-step improvement trajectories that remain grounded in observed expert behavior while moving a player's profile toward winning configurations. Feedback is extracted at multiple granularities to support players at different stages of improvement. Finally, we conclude that there is a trade-off between the path-finding methods we employ and hope that future research will focus on developing model solutions for human improvement.",
+      "authors": [
+        "Andrzej Białecki",
+        "Adam Mastalerz",
+        "Han Zhou"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-06-30T21:15:34+00:00",
+      "link": "https://arxiv.org/pdf/2607.00190v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "player modeling and counterfactual feedback for RTS games",
+      "llm_evidence_cn": "实时策略游戏中的玩家建模与反事实反馈",
+      "llm_evidence": "实时策略游戏中的玩家建模与反事实反馈",
+      "canonical_evidence": "实时策略游戏中的玩家建模与反事实反馈",
+      "llm_tldr_en": "Proposes Latent Maps of Performance to model expert player behavior and generate counterfactual feedback for improving human players in RTS games.",
+      "llm_tldr_cn": "该论文针对实时策略游戏中缺乏将AI智能体行为转化为人类玩家可操作反馈的框架问题，提出了Latent Maps of Performance方法。该方法在潜在空间中建模专家级AI玩家的行为表征和决策结构，并自动生成反事实反馈。实验表明该框架能有效提升人类玩家的表现。这项工作弥合了AI游戏研究从击败玩家到协助玩家的关键空白。",
+      "llm_tldr": "该论文针对实时策略游戏中缺乏将AI智能体行为转化为人类玩家可操作反馈的框架问题，提出了Latent Maps of Performance方法。该方法在潜在空间中建模专家级AI玩家的行为表征和决策结构，并自动生成反事实反馈。实验表明该框架能有效提升人类玩家的表现。这项工作弥合了AI游戏研究从击败玩家到协助玩家的关键空白。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "virtual game player modeling",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.00642v1",
+      "source": "arxiv",
+      "title": "Coachable agents for interactive gameplay",
+      "abstract": "Reinforcement learning has proven to be a valuable tool in the creation of advanced AI and robotic systems, contributing to everything from game playing to robotics to foundation models. Through trial-and-error, these AI systems typically learn one, near-optimal behavior to solve their tasks. However, there are many use cases in which one would like to assert some level of control, preferably in real time, over how the task is solved. We refer to these modifications of a core task as styles. We combine universal value function approximators (UVFAs) with carefully selected training scenarios, learning algorithms, and data augmentation to create a framework for coaching agents that exhibit styles in complex domains. We demonstrate the framework's application in the AAA video games Horizon Forbidden West and Gran Turismo, and in an open-source humanoid test domain. Despite the different nature of the domains -- car racing, stylized game combat, and humanoid walking -- each agent shows strong coherence to the style requests while still satisfying the main task in its domain. Importantly, the techniques outlined in this paper allow an end user to choose the final behavior at run time, giving them flexible control over the final executed performance.",
+      "authors": [
+        "Roberto Capobianco",
+        "Harm van Seijen",
+        "Nolan D. Bard",
+        "Neil Burch",
+        "Fatima Davelouis",
+        "Josh Davidson",
+        "Alisa Devlic",
+        "Yunshu Du",
+        "Ishan Durugkar",
+        "Siddhant Gangapurwala",
+        "Daniel Hernandez",
+        "G. Zacharias Holland",
+        "Sahil Jain",
+        "Kenta Kawamoto",
+        "Raksha Kumaraswamy",
+        "Patrick MacAlpine",
+        "Dustin R. Morrill",
+        "Declan Oller",
+        "Francesco Riccio",
+        "Akanksha Saran",
+        "Craig Sherstan",
+        "Kaushik Subramanian",
+        "Thomas J. Walsh",
+        "Samuel Barrett",
+        "Kizza N. Frisbee",
+        "Mady Govil",
+        "Johannes Günther",
+        "Varun R. Kompella",
+        "James A. MacGlashan",
+        "Maxwell Svetlik",
+        "Michael D. Thomure",
+        "Jaden B. Travnik",
+        "Kevin Waugh",
+        "Elahe Aghapour",
+        "Florian Fuchs",
+        "Andreanne Lemay",
+        "Shruti Mishra",
+        "Takuma Seno",
+        "Peter Stone",
+        "Michael Spranger",
+        "Peter R. Wurman"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-07-01T08:57:25+00:00",
+      "link": "https://arxiv.org/pdf/2607.00642v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "coachable agents for interactive gameplay using RL and UVFAs",
+      "llm_evidence_cn": "使用强化学习和通用值函数逼近的可教练游戏智能体",
+      "llm_evidence": "使用强化学习和通用值函数逼近的可教练游戏智能体",
+      "canonical_evidence": "使用强化学习和通用值函数逼近的可教练游戏智能体",
+      "llm_tldr_en": "Presents a framework for coaching RL agents in video games, combining UVFAs with data augmentation to enable real-time style control in AAA games.",
+      "llm_tldr_cn": "该论文针对强化学习智能体通常只能学习单一最优行为且无法在线控制行为风格的问题，提出结合通用值函数逼近器、精心选择的训练场景、学习算法和数据增强的教练框架，使智能体在复杂领域（如AAA视频游戏）中能够实时展现多种风格。实验证明了该框架在游戏中的应用效果，为玩家行为定制和AI游戏代理训练提供了新途径。",
+      "llm_tldr": "该论文针对强化学习智能体通常只能学习单一最优行为且无法在线控制行为风格的问题，提出结合通用值函数逼近器、精心选择的训练场景、学习算法和数据增强的教练框架，使智能体在复杂领域（如AAA视频游戏）中能够实时展现多种风格。实验证明了该框架在游戏中的应用效果，为玩家行为定制和AI游戏代理训练提供了新途径。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2606.31038v1",
+      "source": "arxiv",
+      "title": "LLM-Driven Personalities for Decision Making in Emergency Simulations",
+      "abstract": "For virtual humans to appear believable, they must exhibit agency and spatial awareness while interacting with their environment in ways that reflect competence and intelligence. At the core of these capabilities lies effective decision-making, which strongly shapes agent behavior. With the rapid advancement of artificial intelligence, Large Language Models (LLMs) have increasingly been explored as a mechanism to support such decision-making processes. In this work, we investigate the use of LLMs to drive decision-making in virtual humans within a simulated evacuation scenario, incorporating OCEAN personality traits into agent representations. Our goal is to evaluate how personality, expressed through language-based prompts, influences both individual behaviors and collective simulation outcomes. Our results demonstrate that LLM-driven personality profiles significantly impact agents' decisions, leading to distinct behavioral patterns across different traits. These findings suggest that heterogeneous crowds composed of LLM-guided agents can enhance the realism and variability of simulated environments, offering a flexible alternative to traditional rule-based approaches.",
+      "authors": [
+        "Stefano Calzolari",
+        "Rubens Montanha",
+        "Gabriel Schneider",
+        "Gustavo Wide",
+        "Paulo Knob",
+        "Francesco Strada",
+        "Andrea Bottino",
+        "Soraia Raupp Musse"
+      ],
+      "primary_category": "cs.GR",
+      "categories": [
+        "cs.GR",
+        "cs.AI"
+      ],
+      "published": "2026-06-30T02:15:22+00:00",
+      "link": "https://arxiv.org/pdf/2606.31038v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "LLM-driven decision making with personality traits for virtual agents",
+      "llm_evidence_cn": "使用人格特质驱动虚拟代理决策的LLM方法",
+      "llm_evidence": "使用人格特质驱动虚拟代理决策的LLM方法",
+      "canonical_evidence": "使用人格特质驱动虚拟代理决策的LLM方法",
+      "llm_tldr_en": "Uses LLMs with OCEAN personality traits to drive decision-making in virtual humans for emergency simulations, relevant to player behavior modeling.",
+      "llm_tldr_cn": "该论文针对虚拟人类在紧急疏散模拟中的决策问题，提出利用大型语言模型（LLM）结合OCEAN人格特质来驱动个性化行为。方法上通过语言提示注入人格参数，影响个体决策。实验评估了人格对行为的影响，为虚拟玩家建模和个性模拟提供了可迁移的技术路径。",
+      "llm_tldr": "该论文针对虚拟人类在紧急疏散模拟中的决策问题，提出利用大型语言模型（LLM）结合OCEAN人格特质来驱动个性化行为。方法上通过语言提示注入人格参数，影响个体决策。实验评估了人格对行为的影响，为虚拟玩家建模和个性模拟提供了可迁移的技术路径。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "player behavior simulation techniques",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.00527v1",
+      "source": "arxiv",
+      "title": "AI Native Games: A Survey and Roadmap",
+      "abstract": "Generative AI now enables games to produce dialogue, quests, characters, images, and worlds at runtime. Yet generation alone does not make a game AI-native, nor does it guarantee playability. This paper defines AI-native games by whether runtime generative AI is constitutive of the core loop: if the AI component were removed or trivially replaced, the central form of play would collapse or become fundamentally different. This counterfactual criterion separates AI-native games from AI-augmented games, boundary artifacts, chatbots, tavern-style role-play, procedural content generation, and AI-assisted production. Using this definition, we screen candidate artifacts and analyze 53 publicly available AI-native games and prototypes. We introduce a dual-axis G/N taxonomy: the G-axis captures player-facing game type, while the N-axis captures the dominant AI mechanic that makes generative AI indispensable to play. The corpus is concentrated around language-forward designs, especially narrative adventure, epistemic interaction, and generative narrative, while categories such as semantic adjudication, multi-agent simulation, generative construction, and relationship/companion play remain less represented. We argue that the central design problem is organizing semantic openness into stable gameplay. AI-native design depends on mechanical invariants: goals, rules, state, feedback, pacing, and player agency that make open-ended AI outputs interpretable and consequential. We conclude with a roadmap for controllable generation, AI-as-mechanic design, multimodal and multi-agent systems, inference economics, evaluation, safety, and regulation.",
+      "authors": [
+        "Zhiyue Xu",
+        "Fandi Meng",
+        "Kaijie Xu",
+        "Clark Verbrugge",
+        "Simon Lucas",
+        "Jian Zhao"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-07-01T07:16:11+00:00",
+      "link": "https://arxiv.org/pdf/2607.00527v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "survey and taxonomy of AI-native games, defining role of generative AI in game core loops, highly relevant to AI in games",
+      "llm_evidence_cn": "关于AI原生游戏的综述和分类，定义生成式AI在游戏核心循环中的作用，高度相关于游戏人工智能",
+      "llm_evidence": "关于AI原生游戏的综述和分类，定义生成式AI在游戏核心循环中的作用，高度相关于游戏人工智能",
+      "canonical_evidence": "关于AI原生游戏的综述和分类，定义生成式AI在游戏核心循环中的作用，高度相关于游戏人工智能",
+      "llm_tldr_en": "Defines AI-native games by whether runtime generative AI is constitutive of the core loop, distinguishing from augmented games. Surveys 53 AI-native games and prototypes, proposes dual-axis G/N taxonomy. Directly relevant to AI in games.",
+      "llm_tldr_cn": "当前生成式AI赋予游戏运行时内容生成能力，但何为AI原生游戏尚无共识。本文提出反事实判别标准：若移除AI组件核心玩法会崩塌。基于此分析53款AI原生游戏及原型，提出双轴G/N分类体系（生成轴与原生轴）。该工作为游戏AI研究提供了清晰概念框架，对AI代理游戏游玩和玩家行为模拟有基础指导意义。",
+      "llm_tldr": "当前生成式AI赋予游戏运行时内容生成能力，但何为AI原生游戏尚无共识。本文提出反事实判别标准：若移除AI组件核心玩法会崩塌。基于此分析53款AI原生游戏及原型，提出双轴G/N分类体系（生成轴与原生轴）。该工作为游戏AI研究提供了清晰概念框架，对AI代理游戏游玩和玩家行为模拟有基础指导意义。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "artificial intelligence in games",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.28805v2",
+      "source": "arxiv",
+      "title": "Physics Models for Sim-to-Real Transfer in Professional-Level Robot Table Tennis",
+      "abstract": "At competitive speeds and spins, a table tennis ball follows complex, counterintuitive trajectories that a robot must track and precisely counter within fractions of a second. Training a reinforcement learning policy capable of these skills is prohibitively expensive and dangerous in the real world, making high-fidelity simulation essential. Transferability of such policies, however, critically depends on how faithfully the simulation captures real-world dynamics - a requirement made even more stringent by the adversarial nature of the game, where any modeling inaccuracy becomes an exploitable weakness for the opponent. Prior state-of-the-art in robot table tennis generally focuses on a limited range of velocities and spins and fails to capture the richness of ball behaviors encountered in professional-level play. In this work, we present physics models for aerodynamic ball flight, ball-table contact, and ball-racket contact. that accurately capture the ball behavior over a vast range of speeds and spins relevant to the game. Specifically, we model drag and Magnus force coefficients as functions of Reynolds number and spin ratio in the aerodynamics equations. For the table contact model we model effects of ball buckling on the coefficient of restitution and incorporate residuals into the instantaneous point-contact models. For the racket contact model, we introduce a residual neural network component to complement coefficients related to normal and tangential coefficients of restitution as well as torsional spin damping. Evaluated on an unprecedentedly large dataset of competitive matches (277 games), the proposed models significantly reduces prediction errors (e.g., 59% median landing-position error reduction). The resulting models were used to train the RL policies for the first real-world robot table tennis AI agent capable of competing against professional players.",
+      "authors": [
+        "Christian Conti",
+        "Bilan Yang",
+        "Alexander Sigrist",
+        "Lorenzo Miele",
+        "Yamen Saraiji",
+        "Peter Dürr",
+        "Naoya Takahashi"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-06-27T08:18:49+00:00",
+      "link": "https://arxiv.org/pdf/2606.28805v2",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "AI agent playing table tennis in simulation with sim-to-real transfer",
+      "llm_evidence_cn": "模拟环境中AI代理打乒乓球并实现模拟到现实迁移",
+      "llm_evidence": "模拟环境中AI代理打乒乓球并实现模拟到现实迁移",
+      "canonical_evidence": "模拟环境中AI代理打乒乓球并实现模拟到现实迁移",
+      "llm_tldr_en": "Develops physics models for sim-to-real transfer in robot table tennis, training RL policies in simulation to play the game professionally.",
+      "llm_tldr_cn": "该论文针对机器人乒乓球中专业级速度和旋转下的复杂轨迹跟踪问题，提出高保真物理模拟与强化学习策略训练方法。通过模拟训练RL策略并优化物理模型以实现向真实世界的迁移。实验表明该方法能应对高速旋转球，在对抗性游戏中表现优异。相关工作为AI游戏代理训练提供了范例。",
+      "llm_tldr": "该论文针对机器人乒乓球中专业级速度和旋转下的复杂轨迹跟踪问题，提出高保真物理模拟与强化学习策略训练方法。通过模拟训练RL策略并优化物理模型以实现向真实世界的迁移。实验表明该方法能应对高速旋转球，在对抗性游戏中表现优异。相关工作为AI游戏代理训练提供了范例。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.29212v1",
+      "source": "arxiv",
+      "title": "A Cognition-Emotion-Personality Framework for Modeling Human-Like Awareness and Behavior in Emergency Evacuations",
+      "abstract": "Agent-based evacuation simulations are widely used to study crowd behavior during emergencies, but many models rely on assumptions such as perfect event awareness, complete exit knowledge, and fully rational decision-making. This paper presents an extended evacuation framework that integrates cognitive, emotional, social, and personality-related mechanisms into a unified model of human behavior under uncertainty. The framework incorporates a dynamic event-awareness mechanism based on a continuous Event Certainty Level, a memory-based representation of exit knowledge subject to acquisition, forgetting, and recall, a continuous fear model in which panic emerges as a high-intensity state, and an OCEAN-based personality representation. Neuroticism is explicitly integrated into the emotional model, influencing fear generation, escalation, social contagion, and recovery. Behavioral heterogeneity is further captured through individualized decision thresholds that affect responses to perceived risk. The framework is evaluated through simulation experiments examining the effects of spatial familiarity, memory robustness, decision sensitivity, emotional dynamics, and personality variation. Results show that cognitive, emotional, and personality-driven processes substantially influence evacuation dynamics, reducing evacuation efficiency and generating realistic crowd phenomena such as delays, confusion, injuries, and socially influenced behaviors. The proposed framework provides a more realistic representation of human behavior in emergency evacuations and supports systematic investigation of the interactions between cognition, emotion, personality, and crowd dynamics.",
+      "authors": [
+        "Zoi Lygizou",
+        "Michalis Zervas",
+        "Helena G. Theodoropoulou",
+        "Vasilis Zafeiropoulos",
+        "Dimitris Kalles",
+        "Chairi Kiourt"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-28T05:39:15+00:00",
+      "link": "https://arxiv.org/pdf/2606.29212v1",
+      "tags": [
+        "keyword:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Agent-based modeling with cognition, emotion, and personality for human behavior simulation",
+      "llm_evidence_cn": "基于代理的建模，融合认知、情感和人格模拟人类行为",
+      "llm_evidence": "基于代理的建模，融合认知、情感和人格模拟人类行为",
+      "canonical_evidence": "基于代理的建模，融合认知、情感和人格模拟人类行为",
+      "llm_tldr_en": "Integrates cognition, emotion, and personality into agent-based evacuation simulations, relevant to player behavior simulation techniques.",
+      "llm_tldr_cn": "该论文针对紧急疏散模拟中代理模型缺乏人性化认知和情感的问题，提出一个整合认知、情感、社交和人格机制的框架。方法包括动态事件感知、记忆模型和恐惧模型，并融入OCEAN人格。实验显示该框架能产生更真实的行为模式。其行为模拟技术可迁移至游戏玩家建模。",
+      "llm_tldr": "该论文针对紧急疏散模拟中代理模型缺乏人性化认知和情感的问题，提出一个整合认知、情感、社交和人格机制的框架。方法包括动态事件感知、记忆模型和恐惧模型，并融入OCEAN人格。实验显示该框架能产生更真实的行为模式。其行为模拟技术可迁移至游戏玩家建模。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "player behavior simulation techniques",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2606.29012v1",
+      "source": "arxiv",
+      "title": "The Game Changer Problem: Controlling Equilibria with Discrete Rewards",
+      "abstract": "We introduce the game changer problem, where an external designer modifies a game's reward matrix to make a target pure action profile the unique equilibrium, subject to the constraint that all entries of the reward matrix come from a finite set. We give simple feasibility characterizations for two-player zero-sum games and general-sum games, and the discrete reward structure yields exact optimality and enables efficient dynamic programming algorithms, providing a sharper alternative to prior continuous reward redesign formulations based on linear programming.",
+      "authors": [
+        "Brandon Han",
+        "Young Wu",
+        "Shiyun Cheng",
+        "Xiaojin Zhu"
+      ],
+      "primary_category": "cs.GT",
+      "categories": [
+        "cs.GT"
+      ],
+      "published": "2026-06-27T17:17:54+00:00",
+      "link": "https://arxiv.org/pdf/2606.29012v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Game reward design for equilibrium control",
+      "llm_evidence_cn": "游戏奖励设计用于均衡控制",
+      "llm_evidence": "游戏奖励设计用于均衡控制",
+      "canonical_evidence": "游戏奖励设计用于均衡控制",
+      "llm_tldr_en": "Introduces the game changer problem: modifying a game's reward matrix with discrete values to make a target equilibrium unique, with efficient algorithms.",
+      "llm_tldr_cn": "该论文提出游戏改变者问题，研究如何通过修改游戏的离散奖励矩阵，使得特定动作组合成为唯一的纳什均衡。作者给出了二人零和与一般和博弈的可行性条件，并设计高效动态规划算法。该工作为游戏奖励设计提供了理论工具，有助于理解AI在游戏中如何通过奖励操控玩家行为。",
+      "llm_tldr": "该论文提出游戏改变者问题，研究如何通过修改游戏的离散奖励矩阵，使得特定动作组合成为唯一的纳什均衡。作者给出了二人零和与一般和博弈的可行性条件，并设计高效动态规划算法。该工作为游戏奖励设计提供了理论工具，有助于理解AI在游戏中如何通过奖励操控玩家行为。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "artificial intelligence in games",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2606.29315v1",
+      "source": "arxiv",
+      "title": "Hierarchical Experimentalist Agents",
+      "abstract": "Large language models (LLMs) are increasingly used to take actions in the real world and support human decision-making, yet most agents rely on parametric knowledge, fixed post-training data, retrieval, or search. This paradigm breaks down in novel domains and for sophisticated queries that cannot be answered from prior knowledge alone. Knowing the laws of physics, for instance, does not by itself enable LLMs to answer queries or complete long-horizon tasks in a complex physical system. To address this, we introduce Hierarchical Experimentalist Agents (HExA), an in-context self-improvement framework to learn from active experimentation. HExA iteratively designs and refines query-relevant experiments, learns a reusable library of composable skills from experience, and integrates experimental evidence to answer queries or take actions. HExA is training-free, compatible with any black-box model, and does not require external supervision, oracles, or offline data. To evaluate active experimentation, we introduce Interphyre, a tool-calling benchmark built on the PHYRE 2D procedural physics environment, where agents propose interventions and test hypotheses through simulation APIs. Experiments show that current LLM agents struggle in these settings, especially on the hardest levels of Interphyre. Claude Sonnet 4.6 achieves only 2% success, while HExA improves the same model to up to 77% success. HExA also improves open-weight models and outperforms agentic baselines such as ReAct and Reflexion. Moreover, using only skills learned from easier levels and transferred without active experimentation, HExA achieves 44% success, demonstrating the reusability and generalization of its learned skills. Overall, HExA shows that learning through active experimentation can help agents discover useful knowledge, acquire reusable skills, and make efficient progress on novel long-horizon tasks.",
+      "authors": [
+        "Abhranil Chandra",
+        "Sankaran Vaidyanathan",
+        "Utsav Dhanuka",
+        "Varun Gandhi",
+        "Scott Niekum"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-06-28T10:21:55+00:00",
+      "link": "https://arxiv.org/pdf/2606.29315v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "LLM agent learning via active experimentation",
+      "llm_evidence_cn": "LLM代理通过主动实验学习",
+      "llm_evidence": "LLM代理通过主动实验学习",
+      "canonical_evidence": "LLM代理通过主动实验学习",
+      "llm_tldr_en": "HExA framework enables LLM agents to learn from active experimentation, building reusable skill libraries for novel tasks.",
+      "llm_tldr_cn": "LLM代理在新颖领域无法仅依靠参数知识完成任务。本文提出层次化实验者代理（HExA），通过迭代设计实验、学习可复用技能库并整合实验经验来提升。在需要主动探索的复杂任务中，HExA超越了依赖先验知识的方法。该框架可推广至游戏环境中的代理自我提升。",
+      "llm_tldr": "LLM代理在新颖领域无法仅依靠参数知识完成任务。本文提出层次化实验者代理（HExA），通过迭代设计实验、学习可复用技能库并整合实验经验来提升。在需要主动探索的复杂任务中，HExA超越了依赖先验知识的方法。该框架可推广至游戏环境中的代理自我提升。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.00483v1",
+      "source": "arxiv",
+      "title": "VLM-AR3L: Vision-Language Models for Absolute and Relative Rewards in Reinforcement Learning",
+      "abstract": "Designing effective reward functions remains a major challenge in reinforcement learning (RL), particularly in open-ended environments where task goals are abstract and difficult to quantify. In this work, we present VLM-AR3L, a framework that leverages Vision-Language Models (VLMs) to provide both absolute and relative rewards for RL. VLM-AR3L interprets an agent's visual observations in the context of a natural language task goal, and learns both absolute and relative rewards from VLM-generated preference labels. The absolute reward model predicts scalar evaluations for individual states, while the relative reward model compares consecutive observations to infer progress or regression toward the task goal. Their integration combines the stability of state-based evaluation with the robustness of comparative supervision. We evaluate VLM-AR3L across benchmarks spanning classic control, manipulation, and open-world embodied tasks, with a particular focus on Minecraft given its visual complexity and long-horizon decision-making requirements. Experimental results show that VLM-AR3L consistently outperforms prior VLM-based reward learning methods.",
+      "authors": [
+        "Kuan-Chen Chen",
+        "Winston Chen",
+        "Wei-Fang Sun",
+        "Min-Chun Hu"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-07-01T06:11:59+00:00",
+      "link": "https://arxiv.org/pdf/2607.00483v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "VLM-based reward design for RL agents applicable to game environments",
+      "llm_evidence_cn": "基于VLM的强化学习奖励设计方法可应用于游戏环境中的AI代理训练",
+      "llm_evidence": "基于VLM的强化学习奖励设计方法可应用于游戏环境中的AI代理训练",
+      "canonical_evidence": "基于VLM的强化学习奖励设计方法可应用于游戏环境中的AI代理训练",
+      "llm_tldr_en": "Presents VLM-AR3L, a framework using Vision-Language Models to generate absolute and relative rewards for RL agents, enabling training in open-ended game-like environments.",
+      "llm_tldr_cn": "该论文针对开放环境中强化学习奖励函数设计难的问题，提出了VLM-AR3L框架。它利用视觉-语言模型（VLM）根据自然语言目标为智能体提供绝对和相对奖励。奖励模型从VLM生成的偏好标签中学习，结合两种奖励信号指导策略优化。实验表明该方法能有效训练智能体完成复杂任务，为游戏AI的训练提供了通用方法。",
+      "llm_tldr": "该论文针对开放环境中强化学习奖励函数设计难的问题，提出了VLM-AR3L框架。它利用视觉-语言模型（VLM）根据自然语言目标为智能体提供绝对和相对奖励。奖励模型从VLM生成的偏好标签中学习，结合两种奖励信号指导策略优化。实验表明该方法能有效训练智能体完成复杂任务，为游戏AI的训练提供了通用方法。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2607.00392v1",
+      "source": "arxiv",
+      "title": "Learning Generalizable Skill Policy with Data-Efficient Unsupervised RL",
+      "abstract": "Unsupervised Reinforcement Learning (URL) aims to pre-train scalable, skill-conditioned policies without extrinsic rewards, serving as a foundation for downstream control tasks. Despite recent progress, we argue that current off-policy URL methods are limited by two critical, overlooked bottlenecks: (1) non-stationary skill semantics and (2) brittle generalization. To address these challenges, we propose GenDa (Generalizable Data-efficient Agent), a unified framework for robust unsupervised reinforcement learning. First, we introduce a skill relabeling mechanism to mitigate non-stationarity and significantly improve data efficiency for pre-training. Second, we propose a Complementary Information Bottleneck (CIB), encouraging the learned skill policy to focus on ego-centric features and become robust to distribution shifts for downstream tasks. Through various experiments, we demonstrate that GenDa significantly enhances the scalability of URL with superior generalizability and data efficiency. Our code and videos are available at https://ihatebroccoli.github.io/official-GenDa.",
+      "authors": [
+        "Jongchan Park",
+        "Seungjun Oh",
+        "Seungho Baek",
+        "Yusung Kim"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-07-01T03:34:29+00:00",
+      "link": "https://arxiv.org/pdf/2607.00392v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "unsupervised RL for agent skill pre-training",
+      "llm_evidence_cn": "无监督RL预训练代理技能",
+      "llm_evidence": "无监督RL预训练代理技能",
+      "canonical_evidence": "无监督RL预训练代理技能",
+      "llm_tldr_en": "GenDa framework for unsupervised RL pre-trains skill policies with improved data efficiency and generalization, applicable to game agent training.",
+      "llm_tldr_cn": "当前无监督强化学习方法存在技能语义不稳定和泛化脆弱问题。本文提出GenDa框架，引入技能重标记机制缓解非平稳性，以及互补信息瓶颈（CIB）增强泛化。实验表明GenDa在数据效率和下游任务迁移上优于先前方法。该方法可有效预训练游戏AI代理的技能策略。",
+      "llm_tldr": "当前无监督强化学习方法存在技能语义不稳定和泛化脆弱问题。本文提出GenDa框架，引入技能重标记机制缓解非平稳性，以及互补信息瓶颈（CIB）增强泛化。实验表明GenDa在数据效率和下游任务迁移上优于先前方法。该方法可有效预训练游戏AI代理的技能策略。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

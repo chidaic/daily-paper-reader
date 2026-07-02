@@ -1,0 +1,771 @@
+Title: Play Like Champions: Counterfactual Feedback Generation in Latent Space
+
+URL Source: https://arxiv.org/pdf/2607.00190v1
+
+Published Time: Thu, 02 Jul 2026 00:10:42 GMT
+
+Number of Pages: 19
+
+Markdown Content:
+# PLAY LIKE CHAMPIONS : C OUNTERFACTUAL FEEDBACK 
+
+# GENERATION IN LATENT SPACE 
+
+A P REPRINT 
+
+Andrzej Białecki ∗ ,1 , Adam Mastalerz ∗ ,2 , Han Zhou ∗ ,3 1Warsaw University of Technology 
+
+> 2
+
+Silesian University of Technology 
+
+> 3
+
+University of British Columbia 
+
+## ABSTRACT 
+
+Recent advances in reinforcement learning have produced superhuman agents across a wide range of competitive games. As a byproduct, researchers have begun studying how these agents play, extracting behavioral representations, analyzing decision structure, and modeling the latent geometry of expert performance. However, this growing body of work has overwhelmingly focused on defeating human players rather than providing feedback, leaving a critical gap in creating model solutions to improve human players. Unlike chess and Go, where AI has become integral to player training, real-time strategy (RTS) games lack principled frameworks for translating expert knowledge into actionable feedback. We introduce Latent Maps of Performance, a framework for counterfactual path generation. We focus on StarCraft II data to model player improvement as an algorithmic recourse within a learned representation space. As inspiration for our work, we have looked at the championship model used in sports science. We trained a Guided Variational Autoencoder model on 23,305 professional tournament replays, with macro-economic gameplay structure conditioned on match outcome, enabling counterfactual traversal between losing and winning gameplay profiles. To fulfill our goal, we have devised and verified four traversal strategies on out-of-distribution (OOD) data randomly sampled from a dataset of amateur replays, namely linear interpolation, iterative optimal transport, density-regularized gradient ascent, and neural flow matching, each designed to generate multi-step improvement trajectories that remain grounded in observed expert behavior while moving a player’s profile toward winning configurations. Feedback is extracted at multiple granularities to support players at different stages of improvement. Finally, we conclude that there is a trade-off between the path-finding methods we employ and hope that future research will focus on developing model solutions for human improvement. 
+
+Keywords generative artificial intelligence · latent space traversal · optimal transport · variational autoencoder · esports 
+
+## 1 Introduction 
+
+Mastering real-time strategy (RTS) games such as StarCraft II has long stood as a grand challenge for artificial intelligence, one only partially addressed by recent advances in reinforcement learning (RL) [ 1, 2]. The difficulty stems from the cognitive demands these games place on their players: precise control of units, careful management of economies, and continuous decision-making in adversarial settings where even momentary lapses can prove decisive. Success thus hinges on the interplay of multitasking, strategic foresight, and rapid reaction [ 3], making RTS an especially rich testbed for studying intelligent behavior. These high-frequency interactions make RTS games especially well-suited for large-scale behavioral study through open-source replay parsers and direct game-engine access [ 4 , 5]. A growing body of work leverages data to surface game information for player decision support, both through digital interfaces and physical prototypes [ 6 ]. In StarCraft II, community tools such as sc2replaystats [ 7] and replayman [ 8] have emerged to support replay analysis, alongside real-time dashboards that contextualize gameplay for spectators and post-match review [ 9]. Strategic summaries and encounter-level analysis are highly valued by players across genres [ 10 ]. Game 
+
+> *
+
+contact (in-order): andrzej.bialecki94@gmail.com , adam.mastalerz@polsl.pl , hzhou30@student.ubc.ca 
+
+> arXiv:2607.00190v1 [cs.LG] 30 Jun 2026
+
+Play Like Champions: Counterfactual Feedback Generation in Latent Space A P REPRINT 
+
+state retrieval by similarity to estimate win probabilities on demand is a possibility [ 11 ]. In parallel, AI methods have become deeply embedded in game research and development, powering procedural content generation [ 12 ], voice-driven agents that deepen immersion [ 13 ], human-like behavior modeling [ 14 ], and automated quality assurance [ 15 ]. However, most existing analysis tools remain oriented toward broadcast and streaming audiences rather than the players themselves [16]. This player-facing gap is not unique to gaming. In robotics, efficient simulators have driven dramatic break-throughs [ 17 , 18 ], producing systems that now rival or exceed human performance in domains as varied as drone racing [ 19 , 20 ], badminton [ 21 , 22 ], and table tennis [ 23 ]. Such interdisciplinary efforts are increasingly recognized as accelerators of research progress [ 24 ]. However, despite agents and robotic systems consistently surpassing average human ability, few of these works offer mechanisms to translate the resulting expertise back to human practitioners seeking to improve. The skill translation problem is well understood in the sport sciences, where the championship model describes how athletes shorten the path to performance gains by adopting the training methods, techniques, and tactics of successful peers [ 25 , 26 ]. In domains where the competitive space is naturally digitized, this dynamic increasingly extends to AI. In chess, AI has reshaped human learning by serving as a scalable training partner. Analyses show that elite human play has steadily improved across the engine era [ 27 –29 ]. AlphaZero’s games further illustrate how superhuman agents can surface novel strategic ideas for human study [ 30 ]. Similar patterns have emerged in Go following the rise of superhuman agents [31, 32]. RTS games share the same computational substrate, but, to our knowledge, no comparable bridge exists between agent expertise, representational learning, and human improvement. In this work, we introduce a latent-space feedback system that learns compressed representations of quantitative gameplay features from StarCraft II replays and provides manifold-aware improvement guidance to players. Our contribution is a framework for training representational models that recover counterfactual improvement trajectories and reconstruct them back into the original feature space. Given a well-trained model, points sampled along an “improvement trajectory” in latent space can be decoded and compared with the player’s input vector, yielding immediate feedback on which gameplay features need to change to improve performance, as determined by the model. Our work builds directly on “SC2EGSet”, rather than asking “ who will win ”, we ask “ what the player should do differently ”. 
+
+## 2 Related Work 
+
+Our work sits at the intersection of four research threads: StarCraft II as a machine learning domain; variational autoencoders and disentangled representation learning; latent space traversal; and counterfactual explanations as actionable feedback. We discuss each in turn and position our contribution relative to prior art. 
+
+StarCraft II as a Machine Learning Domain: StarCraft II has become a canonical benchmark for sequential decision-making under partial observability. Vinyals et al. [33] demonstrated that a combination of imitation learning, multi-agent self-play, and a latent conditioning variable for strategy style can produce grandmaster-level play, establishing that large-scale replay data contains rich, learnable structure. However, AlphaStar is an autonomous agent; it optimizes for winning, not for explaining to human players how to improve. On the other hand, the simplistic nature of benchmarks geared primarily towards multi-agent solutions does not fit well in the context of providing feedback to players [ 34 , 35 ]. Work on modeling player skill from replays predates AlphaStar. Avontuur et al. [36] showed that even simple classifiers trained on APM and economy features can predict a player’s league with meaningful accuracy. Subsequent work demonstrated that macro-level economic measures, such as the Spending Quotient introduced by Bowman et al. [37] ,are among the strongest predictors of both skill and match outcomes. 
+
+Variational Autoencoders and Disentangled Representations: Naturally, the Variational Autoencoder (VAE) [ 38 ]acts as the backbone for our work. By learning a probabilistic encoder and decoder jointly with a Kullback-Leibler (KL) divergence regulariser, the VAE produces a smooth, continuous latent space from which new samples can be reconstructed. As an extension, Higgins et al. [39] introduced β-VAE, and addressed the interpretability by up-weighting the KL term. The β factor was applied to force the model to trade reconstruction fidelity for statistical independence between latent dimensions. Guided VAE addresses this in a direct manner Ding et al. [40] . It attaches a supervised classifier to designated latent dimensions, and uses an adversarial excitation-inhibition mechanism to concentrate the target factor in that dimension while preventing it from leaking into the remaining dimensions. Schrum et al. [41] presented “SAIL”, which learns persistent skill embeddings from naturalistic behavioral data using expert-novice basis blending and counterfactual subskill swaps applied to motor tasks such as driving and baseball batting. We draw inspiration and intuition from these works. 
+
+Latent Space Traversal: Generating semantically meaningful paths through a learned latent space is a non-trivial problem. Naive linear interpolation between two latent codes can pass through low-density regions of the prior, leading to decoded samples that lie outside the data manifold. Korkmaz et al. [42] formalize this distribution mismatch and show that optimal transport (OT) maps can correct linear trajectories so that all intermediate points remain consistent 2Play Like Champions: Counterfactual Feedback Generation in Latent Space A P REPRINT 
+
+with the prior distribution while minimally deviating from a straight line. Song et al. [43] propose a more general framework that models latent structures as learned dynamic potential landscapes, deriving traversal trajectories as the gradient flow of a partial differential equation (PDE)-based potential field. Yeh et al. [44] take a related approach in the explainability domain with partial focus on StarCraft II by leveraging a fixed “SC2 Assault” scenario. They generate counterfactuals from a jointly trained generative latent space where the traversal is guided toward a target outcome during decoding. 
+
+Counterfactual Explanations as Actionable Feedback: Counterfactual explanations answer the question: “ what is the minimal change to the input that would change the model’s prediction? ” In a performance-improvement context, this is equivalent to algorithmic recourse. Providing a ranked list of feature changes that move a player from their current state to a more desirable one. Crupi et al. [45] proposed “CEILS”, generating counterfactuals as interventions in the latent space of a trained VAE [ 45 ]. Work beyond passive explanation towards actionable coaching was shown by Bae et al. [46] , leveraging counterfactual explanations in racing scenarios with language-based guidance. Pegios et al. [47] extend latent-space counterfactual generation by equipping the VAE latent space with a Riemannian metric pulled back through both the decoder and the classifier. 
+
+## 3 Material and Methods 
+
+Replay Preprocessing and Feature Extraction: To fulfill our goal of providing feedback based on learned rep-resentations, we have decided to use a dataset consisting of professional StarCraft II games named “SC2EGSet” [ 4]licensed under CC-BY 4.0. Please refer to Appendix A for a simplified game description. At the time our work was prepared, the dataset consisted of 23,476 files containing game-state information sourced from 71 “replaypacks”. Before training, each replay is converted into a tensor containing information about both players. For every player, we extract a 196-dimensional feature vector R196 . Selected features primarily include economical game progression statistics that inform various aspects of the game. Additionally, for more expressive modeling insights, we split the array of player statistics into three windows, each spanning one-third of the total game duration. These features are named as “early”, “middle”, and “late game” windows ( 3 · 39 features). Tracker statistics averaged within each window. Finally, we include the final economy state ( 39 features) and the economy difference features ( 39 features), computed as late-game economy minus early-game economy. Besides the economy, we include a scalar value, “supply capped percent”, denoting the percentage of the game duration during which the player was unable to build additional units due to insufficient in-game infrastructure. The final replay tensor has shape R2×196 , where the first dimension corresponds to the player. The label used for disentanglement is the match result from player 0’s perspective, represented as a binary outcome y ∈ 0, 1, where y = 1 indicates that player 0 won. Prior to training, all features are standardized using per-feature z-score normalization. The normalization statistics (mean and standard deviation) are computed exclusively on the training set and subsequently applied to the validation and test sets, preventing any data leakage. A small epsilon (ϵ = 10 −8) is added to each standard deviation to avoid division by zero for constant features. The initial split between training, validation, and test sets was random (80%/10%/10%). Replays with missing player statistics, player information, or undecided/draw outcomes were skipped. Finally, to assure that the training, and validation sets were indeed (80%/10%), the missing samples were taken out of the test set without replacement. After excluding samples, the splits consisted of the following numbers of samples in the training set ( ntraining = 18780 ), the validation set ( nvalidation = 2347 ), and the test set ( ntest = 2178 ). To confirm the efficacy of our method on out-of-distribution (OOD) data, we have randomly sampled an additional ( nood = 2178 ) samples from an unreleased dataset of players who submitted their replays to the sc2replaystats [ 7] in 2016-2020. Access to all of the pre-processed data and code is available. For more information please see Appendix G. 
+
+Modelling To ensure the possibility of transitioning between learned latent space representations and reconstruction of the player features, we have decided to use a model adapted from the original Guided VAE [ 40 ] architecture. We guide the latent space separation by the game outcome. Therefore, a part of the latent representation is encouraged to contain information about features that are significant for predicting winning or losing outcomes. The structure of our model consists of a symmetrical encoder-decoder multilayer perceptron (MLP) network with ReLU activations, with an additional supervised classifier attached to the latent space. In our modified Guided VAE [ 40 ], a selected number of dimensions are set to be supervised. An adversarial classifier is trained on the remaining latent dimensions, excluding the supervised dimensions. In training, the supervised classifier receives concatenated supervised latent dimensions of both players, [z(0) 1 : k|z(1) 1 : k], and is trained to predict y directly. At inference-time, when generating improvement paths for the player in seat 1, the input order is swapped, and the output probability is complemented, so that the score always represents the win probability of the player whose path is being improved. Please refer to Appendix B for more implementation details. We use AdamW optimizers [ 48 , 49 ], implemented in PyTorch. The first updates the VAE and its guided classifier jointly. The second trains an auxiliary adversarial classifier on the non-guided (free) latent dimensions. The third updates the VAE parameters adversarially, penalising the encoder for producing free-dimension representations that are predictive of match outcome. Validation is monitored using the VAE loss, and early stopping is 3Play Like Champions: Counterfactual Feedback Generation in Latent Space A P REPRINT 
+
+used to avoid overfitting. We conducted a hyperparameter search to find the best-performing model, see Appendix D. All of the experiments were run on consumer hardware, see Appendix C. 
+
+Latent Space Traversal and Feedback Generation: After training, a replay is encoded into a latent vector. We construct a path from the current game state to a winning region in the supervised dimensions of the latent space. Each point interpolated along the path in the latent space can be reconstructed back to the feature space, where the difference between the current feature values and the reconstructed feature values informs the player about the improvement “trajectory”. We compute feedback in three ways. First, we measure the raw change from the start of the path to the end. Second, we compute a minimum viable change that stops at the first waypoint where the predicted win probability crosses 0.5, if such a crossing exists. Third, we compute a win-probability-weighted change, where each step’s feature change is weighted by the corresponding increase in predicted win probability; steps where win probability decreases contribute zero weight. The final output is a ranked list of feature changes. These changes act as rough suggestions, and should be interpreted as model-generated hypotheses. Example generated feedback reports are available in Appendix F. 
+
+## 4 Standardized Path Representation 
+
+To ensure compatibility with downstream generation and visualization tasks, the output of the path charting pipeline is strictly standardized, regardless of the specific employed strategy. The generated path P is defined as an ordered sequence of n discrete waypoints in the d-dimensional latent space. This sequence is structured as a matrix P ∈ Rn×d,where each row pj ∈ Rd corresponds to a specific waypoint along as seen in Equation 1. 
+
+P =
+
+
+
+— p0 —— p1 —... ... ...— pn−1 —
+
+ =
+
+
+
+— zstart —...— zend —
+
+ (1) By definition across all strategies, the first waypoint p0 corresponds exactly to the initial latent vector zstart . The final waypoint pn−1 corresponds to the terminal state of the strategy, denoted generally as zend (which may represent a predefined target ztarget , a successfully converged optimization state, or the integrated endpoint of a velocity field). Traversal methods have their own set of tunable parameters fully described in Appendix D. 
+
+4.1 Linear Strategy 
+
+The linear strategy serves as the foundational baseline for counterfactual generation. It implements a simple Linear Interpolation (LERP) to navigate the high-dimensional latent space, constructing a straight-line trajectory between the initial losing latent vector and a specified winning target. Target Selection Strategies: Because the "winning" state is represented by a distribution of points rather than a single vector, the algorithm first collapses the winning latents Zwin = {w1, . . . , wM } into a single target vector ztarget ∈ Rd using one of two selectable methods. Centroid Strategy ( method="centroid" ): The target is defined globally as the unweighted mean position (centroid) of all known winning latent vectors. This provides a robust, generalized direction toward the center of the winning class, see Equation 2. Nearest Neighbors Strategy ( method="nearest" ): To preserve local manifold structure and find the "closest" way to win, the target is derived locally. It calculates the mean of only the k winning latents that are closest to the starting sample zstart (where k is defined by k_neighbours ), see Equation 3. 
+
+ztarget = 1
+
+M
+
+> M
+
+X
+
+> i=1
+
+wi (2) ztarget = 1
+
+k
+
+X
+
+> w∈k-NN (zstart ,Zwin )
+
+w (3) 
+
+Linear Interpolation (LERP) Formula: Once the target ztarget is established, the path is generated as a sequence of n waypoints {p0, p1, . . . , pn−1}. The interpolation coefficient αj is defined by an evenly spaced linear progression from 0.0 to 1.0, see Equation 4. Each intermediate point pj along the trajectory is calculated using a convex combination of the start and target vectors, moving progressively closer to the target as α increases, see Equation 5. This straight-line interpolation assumes a globally Euclidean latent space, transitioning semantic features at a constant velocity without explicit regard for the underlying data density. 
+
+αj = jn − 1 , for j ∈ { 0, 1, . . . , n − 1} (4) pj = (1 − αj )zstart + αj ztarget (5) 
+
+4.2 Iterative Optimal Transport Strategy 
+
+The iterative optimal transport (OT) strategy simulates a vector field flow toward the winning distribution. Instead of interpolating toward a single static target (such as a centroid), the algorithm dynamically recalculates a local barycentric target at each step by finding the optimal mass transport plan between the current position and the target distribution. 4Play Like Champions: Counterfactual Feedback Generation in Latent Space A P REPRINT 
+
+Distance Matrix and Transport Plan: At each step t, the current latent position z(t) is treated as a point mass with weight a = 1 . The set of N winning latents Zwin = {w1, . . . , wN } is treated as a uniform target distribution with weights b = 1 
+
+> N
+
+1. First, the squared Euclidean distance matrix M(t) ∈ R1×N is computed. To prevent numerical underflow during exponentiation in the regularized transport step, the distance matrix is normalized by its maximum value as seen in Equation 6. Next, the optimal transport plan T(t) is computed. If entropic regularization λ > 0
+
+(ot_reg ) is provided, the mathematically stable log-domain Sinkhorn algorithm is utilized as seen in Equation 7, where H(T) is the entropy of the coupling matrix. If λ = 0 , the exact Earth Mover’s Distance (EMD) is computed. 
+
+Local Barycentric Target: The resulting transport plan T(t) dictates the optimal distribution of mass from the current position to the winning points. These transport weights are normalized to form a localized probability distribution as seen in Equation 8. The local target z(t) 
+
+> target
+
+is then defined as the barycenter (weighted average) of the winning points, pulled specifically according to the optimal transport plan presented as Equation 9. Euler Step (Vector Flow): Rather than jumping directly to the target, the algorithm treats the vector (z(t) 
+
+> target
+
+− z(t)) as a local velocity field. It takes a small Euler step of size η (step_size ) toward the local barycenter, as seen in Equation 10. This process is repeated iteratively to trace a smooth trajectory. Because the transport plan dynamically updates at each spatial step, the resulting path closely mimics a continuous vector flow into the densest regions of the winning distribution. 
+
+M (t) 
+
+> i
+
+= ∥z(t) − wi∥2
+
+max j ∥z(t) − wj ∥2 + ϵ (6) T(t) = arg min 
+
+> T∈Π( a,b)
+
+⟨T, M(t)⟩ − λH (T) (7) 
+
+τi = T (t)
+
+> i
+
+PNj=1 T (t) 
+
+> j
+
++ ϵ (8) z(t) 
+
+> target
+
+=
+
+> N
+
+X
+
+> i=1
+
+τiwi (9) 
+
+z(t+1) = z(t) + η
+
+
+
+z(t) 
+
+> target
+
+− z(t)
+
+(10) 
+
+4.3 Gradient Ascent Strategy 
+
+In the context of a Guided VAE, the gradient ascent strategy actively searches for a counterfactual path. Starting from a starting latent representation, the goal is to discover the minimal feature changes required to transition into a winning state. To ensure the generated counterfactuals remain realistic and do not exploit adversarial blind spots in the classifier, the trajectory is explicitly regularized by the data manifold. Objective Formulation: The optimization seeks to iteratively adjust the latent vector z to maximize an opponent-aware classification score S(z) (e.g., the logit of winning against a specific opponent zopp ), constrained by a manifold density penalty D(z). The density is modeled using a fully differentiable Gaussian Kernel Density Estimate (KDE) evaluated over the reference dataset of known winning latents Zwin = {w1, . . . , wN } with bandwidth h, as seen in Equation 11. The total combined gradient at step t merges the direction that increases the likelihood of winning with the direction that points toward denser, realistic regions of the latent space, as shown in Equation 12, where λ represents the weighting of the density prior (density_weight ). Momentum-Based Optimization Update: To traverse the disentangled latent space smoothly and avoid local minima, the latent vector is updated using gradient ascent with momentum. Let α be the learning rate and β be the momentum factor. The velocity v and position z are updated as seen in Equation 13, and Equation 14. 
+
+Convergence and Resampling: This iterative process continues until the predicted probability of the winning class exceeds a specified convergence_threshold τ as in Equation 15. Because the number of optimization steps T
+
+required to reach this threshold is variable, the resulting sequence {z(0) , z(1) , . . . , z(T )} is evenly resampled to extract exactly n waypoints. This final trajectory is then output as the standardized path matrix P ∈ Rn×d, representing a smooth, realistic counterfactual feature transition. 
+
+D(z) = log 
+
+> N
+
+X
+
+> i=1
+
+exp 
+
+
+
+− 12h2 ∥z − wi∥2
+
+
+
+(11) g(t) 
+
+> total
+
+= ∇zS(z(t)) + λ∇zD(z(t)) (12) 
+
+v(t+1) = βv(t) + αg(t) 
+
+> total
+
+(13) z(t+1) = z(t) + v(t+1) (14) 
+
+P (win | z(t), zopp ) ≥ τ (15) 
+
+4.4 Neural Flow Strategy 
+
+The neural flow strategy utilizes continuous normalizing flows via an Optimal Transport (OT) Flow Matching framework. Rather than relying on simple geometric interpolations or local gradient steps, this approach trains a neural network to learn a global velocity field. This field models the continuous optimal transport of probability mass from the "losing" to the "winning" latent distribution. Velocity Field Training and OT Pairing: A Multi-Layer Perceptron (MLP) acts 5Play Like Champions: Counterfactual Feedback Generation in Latent Space A P REPRINT 
+
+as a time-conditioned velocity field vθ (z, t ), parameterized by weights θ. During training, mini-batches of losing latents Z0 and winning latents Z1 are extracted. To ensure the network learns the most efficient, non-crossing paths between these distributions, the samples are dynamically paired using exact Earth Mover’s Distance (EMD) based on squared Euclidean distance. For each z0, an optimal z1,paired is identified. At a uniformly sampled time t ∈ [0 , 1] , the intermediate state is defined by linear interpolation as shown in Equation 16. The network is then trained to predict the constant-velocity vector between paired samples by minimizing the Mean Squared Error (MSE), as shown in Equation 17. Trajectory Integration (Euler Method): To generate a counterfactual path during inference, a starting (losing) latent zstart is integrated through the learned velocity field from t = 0 to tmax = 1 .0. Using a discrete number of integration steps Nsteps , the time increment is ∆t = 1.0 
+
+> Nsteps
+
+. The latent position is updated iteratively using the Euler method seen in Equation 18, where the initial condition is z(0) = zstart . This produces a smooth flow along the learned data manifold. Classifier Guidance (Optional): To explicitly steer the trajectory toward regions with a higher probability of winning against a specific opponent, optional classifier guidance can be injected into the Euler integration. At each step, the gradient of the probability score S(z) is computed. To ensure the guidance scale remains a consistent fraction of the flow step size, regardless of the raw gradient’s magnitude, the gradient is normalized to a unit vector. The position is updated as shown in Equation 19, where γ (guidance_scale ) dictates how strongly the path is pulled toward the classifier’s optimal regions, and ϵ prevents division by zero. 
+
+zt = (1 − t)z0 + tz1,paired (16) L(θ) = Et, z0,z1
+
+h
+
+∥vθ (zt, t ) − (z1,paired − z0)∥22
+
+i
+
+(17) 
+
+z(t+1) = z(t) +vθ (z(t), t )∆ t (18) z(t+1) = z(t) + ∆ t
+
+
+
+vθ (z(t), t ) + γ ∇zS(z(t))
+
+∥∇ zS(z(t))∥2 + ϵ
+
+
+
+(19) 
+
+## 5 Experiments 
+
+Model Performance: To evaluate the quality of the trained Guided VAE, we assess both its reconstruction capabilities and the effectiveness of the latent space separation. The model’s performance on the held-out test set is summarized using several key metrics as seen in Table 1. Table 1: GuidedVAE Test-Set Evaluation 
+
+Metric SC2EGSet OOD Data 
+
+VAE 
+
+MSE (original scale) 430095.6 519342.7 MSE (normalised scale) 0.5830 1.6619 KL Divergence 7.3601 7.6009 
+
+Classifier 
+
+Accuracy (%) 98.76 97.11 ROC-AUC 0.9991 0.9926 F1 Score 0.9881 0.9714 Brier Score 0.0090 0.0229 Evaluation of the GuidedVAE demonstrates strong generative and reconstruction fidelity, with the MSE and KL divergence confirming accurate game-state reconstruction from a well-regularised latent space. Furthermore, evaluation of the predictive guidance imposed on the first latent dimension—measured via test accuracy, ROC-AUC, and Brier score—indicates robust classification performance and highly calibrated win probabilities. Overall, the model successfully balances precise feature reconstruction with meaningful latent disentanglement, establishing a reliable foundation for generating counterfactual improvement trajectories. Conterfactual Paths: To evaluate the performance of the final model against our main goal of latent space traversal generating counterfactual “improvement trajectory”, we conduct a comparative assessment of all path generation strategies in Table 2. Where the success rate is the fraction of samples for which the path reaches P (win ) ≥ 0.5 at any waypoint along the path. Crossover α is the position along the path at which P (win ) first crosses 0.5, where α = 0 is the start and α = 1 is the end. Reported only for successful runs, ∆P(win) is the absolute gain in predicted win probability from path start to path end, i.e. 
+
+P (win )end − P (win )start ., AUC is the area under the P (win ) curve over α ∈ [0 , 1] . Monotonicity is the fraction of consecutive waypoint pairs for which P (win ) is non-decreasing. A value of 1.0 means P (win ) increases or stays flat at every step. Lower values indicate oscillation or regression along the path. Finally, the nearest-win distance is the Euclidean distance in the supervised latent subspace between the path endpoint and the closest winning latent vector in the training set. While Gradient Ascent achieves a nominally perfect success rate ( 1.000 ), further inspection 6Play Like Champions: Counterfactual Feedback Generation in Latent Space A P REPRINT 
+
+of the secondary metrics suggests this performance is largely driven by adversarial off-manifold drift. Compared to geometrically grounded strategies such as Optimal Transport, Gradient Ascent tends to explore low-density regions of the latent space. This is directly evidenced by a heavily inflated maximum latent norm ( max ∥z∥ = 3 .95 ± 1.74 ,compared to just 2.03 ± 0.58 for Optimal Transport) and a severely degraded path KDE density ( −4.63 ± 1.40 vs. 
+
+−2.80 ± 0.50 ). Furthermore, its significantly reduced monotonicity ( 0.727 ± 0.227 vs. 0.998 ± 0.041 ) and higher nearest-win distance ( 0.15 ± 0.12 vs. 0.06 ± 0.04 ) indicate erratic, unconstrained traversal rather than smooth semantic interpolation. Consequently, the representations generated by this strategy are likely to exploit classifier blind spots and warrant much closer examination, see Appendix E. We hypothesize that these failure modes could be addressed in future work by imposing stricter regularization constraints to firmly anchor the trajectory to the learned data prior. Table 2: Cross-Dataset Comparison of Path-Charting Strategies 
+
+Method Metric SC2EGSet OOD Data ∆ Dataset Linear (centroid) Success rate 0.834 0.715 -0.118 Crossover α 0.659 ± 0.202 0.704 ± 0.236 +0.045 
+
+∆P(win) 0.813 ± 0.320 0.681 ± 0.399 -0.132 AUC 0.310 ± 0.221 0.234 ± 0.236 -0.076 Monotonicity 0.997 ± 0.041 0.977 ± 0.093 -0.020 Nearest-win dist. 0.06 ± 0.04 0.05 ± 0.03 -0.006 Linear (k-NN) Success rate 0.845 0.543 -0.303 Crossover α 0.688 ± 0.190 0.700 ± 0.250 +0.012 
+
+∆P(win) 0.824 ± 0.310 0.510 ± 0.443 -0.314 AUC 0.290 ± 0.206 0.182 ± 0.234 -0.108 Monotonicity 0.998 ± 0.027 0.966 ± 0.128 -0.032 Nearest-win dist. 0.05 ± 0.05 0.06 ± 0.04 +0.005 Optimal Transport Success rate 0.837 0.720 -0.117 Crossover α 0.120 ± 0.065 0.140 ± 0.084 +0.020 
+
+∆P(win) 0.819 ± 0.315 0.682 ± 0.397 -0.137 AUC 0.752 ± 0.301 0.629 ± 0.364 -0.123 Monotonicity 0.998 ± 0.041 0.995 ± 0.059 -0.003 Nearest-win dist. 0.06 ± 0.04 0.05 ± 0.03 -0.005 Neural Flow Success rate 0.931 0.731 -0.200 Crossover α 0.524 ± 0.230 0.494 ± 0.279 -0.030 
+
+∆P(win) 0.915 ± 0.241 0.701 ± 0.427 -0.213 AUC 0.468 ± 0.253 0.390 ± 0.332 -0.078 Monotonicity 0.999 ± 0.013 0.996 ± 0.025 -0.002 Nearest-win dist. 0.18 ± 0.16 0.20 ± 0.19 +0.024 Gradient Ascent Success rate 1.000 0.998 -0.002 Crossover α 0.486 ± 0.367 0.513 ± 0.337 +0.027 
+
+∆P(win) 0.986 ± 0.076 0.969 ± 0.139 -0.017 AUC 0.545 ± 0.355 0.517 ± 0.321 -0.029 Monotonicity 0.727 ± 0.227 0.749 ± 0.209 +0.021 Nearest-win dist. 0.15 ± 0.12 0.15 ± 0.14 +0.005 The experimental results reveal several key insights regarding the trade-offs between path reliability and quality: (1) Reliability and Success Rates: Gradient Ascent emerges as the strategy maintaining a near-perfect success rate on both the SC2EGSet (1.000) and OOD Data (0.998). In contrast, the Linear (k-NN) baseline exhibits significant fragility under distributional shift, with success rates dropping by over 30% ( ∆ = −0.302 ). (2) Path Efficiency and Crossover: Optimal Transport (OT) demonstrates superior efficiency in trajectory charting. As shown by the 
+
+Crossover α (0.120 ± 0.065 ), OT-generated paths transition to a winning state much earlier than Linear methods (α ≈ 0.65 ). Furthermore, OT achieves the highest AUC (0.752 ± 0.301 ), suggesting it identifies more direct routes through the latent space. (3) The Success-Monotonicity Trade-off : A clear divergence exists between raw success and path smoothness. While Gradient Ascent is the most successful, it records the lowest Monotonicity (0.727 ± 0.227 ), indicating more erratic trajectories. Conversely, Neural Flow and Optimal Transport maintain near-perfect monotonicity (> 0.99 ) even on OOD data, providing highly stable and interpretable transitions. The substantial variance in ∆P (win )
+
+across the linear baselines further suggests that simple interpolation is insufficient to capture the model’s complex 7Play Like Champions: Counterfactual Feedback Generation in Latent Space A P REPRINT 
+
+decision boundaries. In contrast, neural and transport-based methods provide more consistent counterfactual evidence, with a mean P (win ) along the counterfactual path shown in Fig. 1, and directly showcase some of the aforementioned trade-offs on OOD data. Further model interpretability is covered in Appendix E. 0.0 0.2 0.4 0.6 0.8 1.0  
+
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> 0.8
+> 1.0
+> P(win)
+> P(win) along path mean across samples
+> P(win)=0.5
+> Linear (centroid)
+> Linear (k-NN)
+> Optimal Transport
+> Neural Flow
+> Gradient Ascent
+
+Figure 1: Mean OOD data P (win ) performance of generated paths progress in the latent space. 
+
+## 6 Limitations and Future Research 
+
+Limitations: Despite the promising results, our approach has several limitations that should be acknowledged. First, we train our model on a dataset of games spanning multiple years. We do not explicitly account for the game updates. Additionally, we do not encode the players’ in-game race information in any way. By design, our model is incapable of providing feedback directed towards specific in-game actions and environment configurations. The model feedback is additionally constrained by the dataset choice; tournament gameplay samples can be seen as a very specific subset of all of the games. Our model does not directly convey a more granular approach of jumping between leagues when leveraging its feedback. Finally, the model and method parameters were not verified with human participants, and aside from expert input from known professional players, we were unable to set up a human-in-the-loop type of experiment. 
+
+Future Research: We hope that by extending research efforts in representational learning geared towards providing feedback, we can inspire others to prepare end-to-end feedback generation. Automating ways to improve humans based on deep generative solutions and other computational means. In the future, we wish to address most of the concerns raised above. Moving towards optimizing human performance jointly with actions against an environment sounds incredibly exciting, with the potential to uncover environment configurations that promote positive training or learning outcomes. Given the recent advancements and rapid adoption of AI systems, creating models that provide data-driven, actionable feedback is crucial. 
+
+## 7 Conclusion and Summary 
+
+We have demonstrated the computational feasibility and the potential for developing many practical solutions for providing feedback based on learned representations. Additionally, simplistic methods, while appealing, have drawbacks that become more evident when dealing with a more advanced nonlinear model. Finally, we have accomplished our goal of bridging the gap between representational learning and generating feedback by extracting actionable, counterfactual improvement trajectories from the latent space, effectively shifting the analytical paradigm from predicting game outcomes to providing players with tangible guidance on what they should do differently. Based on our ongoing discussions with esports professionals, our solution is proving to be a real asset for future feedback systems. 8Play Like Champions: Counterfactual Feedback Generation in Latent Space A P REPRINT 
+
+## References 
+
+[1] O. Vinyals, T. Ewalds, S. Bartunov, P. Georgiev, A. S. Vezhnevets, M. Yeo, A. Makhzani, H. Küttler, J. Agapiou, J. Schrittwieser, J. Quan, S. Gaffney, S. Petersen, K. Simonyan, T. Schaul, H. van Hasselt, D. Silver, T. Lillicrap, K. Calderone, P. Keet, A. Brunasso, D. Lawrence, A. Ekermo, J. Repp, and R. Tsing, “Starcraft ii: A new challenge for reinforcement learning,” 2017. [Online]. Available: https://arxiv.org/abs/1708.04782 (Cited on page: 1). [2] M. Mathieu, S. Ozair, S. Srinivasan, C. Gulcehre, S. Zhang, R. Jiang, T. L. Paine, R. Powell, K. ˙ Zołna, J. Schrittwieser, D. Choi, P. Georgiev, D. Toyama, A. Huang, R. Ring, I. Babuschkin, T. Ewalds, M. Bordbar, S. Henderson, S. G. Colmenarejo, A. van den Oord, W. M. Czarnecki, N. de Freitas, and O. Vinyals, “Alphastar unplugged: Large-scale offline reinforcement learning,” 2023. [Online]. Available: https://arxiv.org/abs/2308.03526 (Cited on page: 1). [3] J. J. Thompson, M. R. Blair, L. Chen, and A. J. Henrey, “Video game telemetry as a critical tool in the study of complex skill learning,” PLOS ONE , vol. 8, no. 9, pp. 1–12, 09 2013. [Online]. Available: https://doi.org/10.1371/journal.pone.0075129 (Cited on page: 1). [4] A. Białecki, N. Jakubowska, P. Dobrowolski, P. Białecki, L. Krupi´ nski, A. Szczap, R. Białecki, and J. Gajewski, “Sc2egset: Starcraft ii esport replay and game-state dataset,” Scientific Data , vol. 10, no. 1, p. 600, Sep 2023. [Online]. Available: https://doi.org/10.1038/s41597-023-02510-7 (Cited on pages: 1, 3). [5] B. Ferenczi, R. Newbury, M. Burke, and T. Drummond, “Carefully structured compression: Efficiently managing starcraft ii data,” 2024. [Online]. Available: https://arxiv.org/abs/2410.08659 (Cited on page: 1). [6] F. Rijnders, G. Wallner, and R. Bernhaupt, “Live feedback for training through real-time data visualizations: A study with league of legends,” Proc. ACM Hum.-Comput. Interact. , vol. 6, no. CHI PLAY, oct 2022. [Online]. Available: https://doi.org/10.1145/3549506 (Cited on page: 1). [7] A. Martin, “sc2replaystats,” https://sc2replaystats.com/, 2012, acessed: 2026.04.28. (Cited on pages: 1, 3). [8] B. Dibbell, “REPLAYMAN — SC2 Replay Analysis & Management – replayman.com,” https://replayman.com/, 2026, [Accessed 28-04-2026]. (Cited on page: 1). [9] S. Charleer, K. Gerling, F. Gutiérrez, H. Cauwenbergh, B. Luycx, and K. Verbert, “Real-time dashboards to support esports spectating,” in Proceedings of the 2018 Annual Symposium on Computer-Human Interaction in Play , ser. CHI PLAY ’18. New York, NY, USA: Association for Computing Machinery, 2018, pp. 59–71. [Online]. Available: https://doi.org/10.1145/3242671.3242680 (Cited on page: 1). [10] G. Wallner and S. Kriglstein, “Visualizations for retrospective analysis of battles in team-based combat games: A user study,” in Proceedings of the 2016 Annual Symposium on Computer-Human Interaction in Play , ser. CHI PLAY ’16. New York, NY, USA: Association for Computing Machinery, 2016, pp. 22–32. [Online]. Available: https://doi.org/10.1145/2967934.2968093 (Cited on page: 1). [11] P. Xenopoulos, J. a. Rulff, and C. Silva, “ggviz: Accelerating large-scale esports game analysis,” Proc. ACM Hum.-Comput. Interact. , vol. 6, no. CHI PLAY, oct 2022. [Online]. Available: https://doi.org/10.1145/3549501 (Cited on page: 2). [12] N. Shaker, J. Togelius, and M. J. Nelson, Procedural Content Generation in Games . Springer International Publishing, 2016. [Online]. Available: http://dx.doi.org/10.1007/978-3-319-42716-4 (Cited on page: 2). [13] W. Wei, S. Yang, Q. Zhou, R. Liu, X. Zhang, Y. Yuan, Y. Jiang, Y. Luo, H. Wang, T. Wang, P. Jin, W. Liu, Z. Zhao, X. Jin, and E. S. Liu, “F.a.c.u.l.: Language-based interaction with ai companions in gaming,” 2025. [Online]. Available: https://arxiv.org/abs/2511.13112 (Cited on page: 2). [14] A. Sestini, J. Bergdahl, J.-P. Barrette-LaPierre, F. Fuchs, B. Chen, M. Jones, and L. Gisslén, “Human-like goalkeeping in a realistic football simulation: a sample-efficient reinforcement learning approach,” 2025. [Online]. Available: https://arxiv.org/abs/2510.23216 (Cited on page: 2). [15] R. Tufano, S. Scalabrino, L. Pascarella, E. Aghajani, R. Oliveto, and G. Bavota, “Using reinforcement learning for load testing of video games,” in Proceedings of the 44th International Conference on Software Engineering ,ser. ICSE ’22. New York, NY, USA: Association for Computing Machinery, 2022, pp. 2303–2314. [Online]. Available: https://doi.org/10.1145/3510003.3510625 (Cited on page: 2). [16] A. V. Kokkinakis, S. Demediuk, I. Nölle, O. Olarewaju, S. Patra, J. Robertson, P. York, A. P. Pedrassoli Chitayat, A. Coates, D. Slawson, P. Hughes, N. Hardie, B. Kirman, J. Hook, A. Drachen, M. F. Ursu, and F. Block, “Dax: Data-driven audience experiences in esports,” in Proceedings of the 2020 ACM International Conference on Interactive Media Experiences , ser. IMX ’20. New York, NY, USA: Association for Computing Machinery, 2020, pp. 94–105. [Online]. Available: https://doi.org/10.1145/3391614.3393659 (Cited on page: 2). 9Play Like Champions: Counterfactual Feedback Generation in Latent Space A P REPRINT 
+
+[17] The Newton Contributors, “Newton: GPU-accelerated physics simulation for robotics and simulation research,” apr 2025. [Online]. Available: https://github.com/newton-physics/newton (Cited on page: 2). [18] M. Mittal, P. Roth, J. Tigue, A. Richard, O. Zhang, P. Du, A. Serrano-Muñoz, X. Yao, R. Zurbrügg, N. Rudin, L. Wawrzyniak, M. Rakhsha, A. Denzler, E. Heiden, A. Borovicka, O. Ahmed, I. Akinola, A. Anwar, M. T. Carlson, J. Y. Feng, A. Garg, R. Gasoto, L. Gulich, Y. Guo, M. Gussert, A. Hansen, M. Kulkarni, C. Li, W. Liu, V. Makoviychuk, G. Malczyk, H. Mazhar, M. Moghani, A. Murali, M. Noseworthy, A. Poddubny, N. Ratliff, W. Rehberg, C. Schwarke, R. Singh, J. L. Smith, B. Tang, R. Thaker, M. Trepte, K. Van Wyk, F. Yu, A. Millane, V. Ramasamy, R. Steiner, S. Subramanian, C. Volk, C. Chen, N. Jawale, A. V. Kuruttukulam, M. A. Lin, A. Mandlekar, K. Patzwaldt, J. Welsh, J.-F. Lafleche, N. Moënne-Loccoz, S. Park, R. Stepinski, D. Van Gelder, C. Amevor, J. Carius, J. Chang, A. He Chen, P. d. H. Ciechomski, G. Daviet, M. Mohajerani, J. von Muralt, V. Reutskyy, M. Sauter, S. Schirm, E. L. Shi, P. Terdiman, K. Vilella, T. Widmer, G. Yeoman, T. Chen, S. Grizan, C. Li, L. Li, C. Smith, R. Wiltz, K. Alexis, Y. Chang, L. J. Fan, F. Farshidian, A. Handa, S. Huang, M. Hutter, Y. Narang, S. Pouya, S. Sheng, Y. Zhu, M. Macklin, A. Moravanszky, P. Reist, Y. Guo, D. Hoeller, and G. State, “Isaac Lab - A GPU-Accelerated Simulation Framework for Multi-Modal Robot Learning,” arXiv preprint arXiv:2511.04831 , 2025. [Online]. Available: https://arxiv.org/abs/2511.04831 (Cited on page: 2). [19] E. Kaufmann, L. Bauersfeld, A. Loquercio, M. Müller, V. Koltun, and D. Scaramuzza, “Champion-level drone racing using deep reinforcement learning,” Nature , vol. 620, no. 7976, pp. 982–987, Aug 2023. [Online]. Available: https://doi.org/10.1038/s41586-023-06419-4 (Cited on page: 2). [20] L. Lamberti, E. Cereda, G. Abbate, L. Bellone, V. J. K. Morinigo, M. Barci´ s, A. Barci´ s, A. Giusti, F. Conti, and D. Palossi, “A sim-to-real deep learning-based framework for autonomous nano-drone racing,” IEEE Robotics and Automation Letters , vol. 9, no. 2, pp. 1899–1906, 2024. (Cited on page: 2). [21] Y. Ma, A. Cramariuc, F. Farshidian, and M. Hutter, “Learning coordinated badminton skills for legged manipulators,” Science Robotics , vol. 10, no. 102, may 2025. [Online]. Available: http://dx.doi.org/10.1126/scirobotics.adu3922 (Cited on page: 2). [22] C. Liu, L. Jiang, Y. Wang, K. Yao, J. Fu, and X. Ren, “Humanoid whole-body badminton via multi-stage reinforcement learning,” 2026. [Online]. Available: https://arxiv.org/abs/2511.11218 (Cited on page: 2). [23] P. Dürr, M. El Gheche, G. J. Maeda, N. Mukai, N. Takahashi, S. Heusser, H. Sahloul, Y. Saraiji, P. Adodin, Y. Bi, S. Blakeman, C. Conti, D. Fuentes Hitos, Y. Hu, F. Khadivar, R. Kreiser, L. Martinez, F. Schilling, R. Tapiador Morales, G. Torrente, M. Ynocente Castro, L. Abecassis, A. Giammarino, Y.-T. Huang, Y. Nagel, A. Scotti, A. Sigrist, T. Silva, E. Walther, J. Wong, B. Yang, A. Aydin, D. Grover, A. Saha, V. Cavinato, T. Kakinuma, T. Kunori, V. Monferrato, S. Richter, S. Charalambous, S. Guist, M. A. Kuhlmann-Jorgensen, L. Miele, A. Politis, M. Scardecchia, H. Kitano, P. R. Wurman, P. Stone, and M. Spranger, “Outplaying elite table tennis players with an autonomous robot,” Nature , vol. 652, no. 8111, pp. 886–891, Apr 2026. [Online]. Available: https://doi.org/10.1038/s41586-026-10338-5 (Cited on page: 2). [24] I. Leite, W. Ahlberg, A. Pereira, A. Sestini, L. Gisslén, and K. Tollmar, “A call for deeper collaboration between robotics and game development,” in 2025 IEEE Conference on Games (CoG) , 2025, pp. 1–8. (Cited on page: 2). [25] D. J. Hancock, A. M. Rymal, and D. M. Ste-Marie, “A triadic comparison of the use of observational learning amongst team sport athletes, coaches, and officials,” Psychology of Sport and Exercise , vol. 12, no. 3, pp. 236–241, 2011. [Online]. Available: https://doi.org/10.1016/j.psychsport.2010.11.002 (Cited on page: 2). [26] H. Soza´ nski, J. Sadowski, and J. Czerwi´ nski, Podstawy Teorii i Technologii Treningu Sportowego . Akademia Wychowania Fizycznego Józefa Piłsudskiego Filia w Białej Podlaskiej, 2015, vol. 2. (Cited on page: 2). [27] R. McIlroy-Young, S. Sen, J. Kleinberg, and A. Anderson, “Aligning superhuman ai with human behavior: Chess as a model system,” in Proceedings of the 26th ACM SIGKDD International Conference on Knowledge Discovery & Data Mining , ser. KDD ’20. New York, NY, USA: Association for Computing Machinery, 2020, pp. 1677–1687. [Online]. Available: https://doi.org/10.1145/3394486.3403219 (Cited on page: 2). [28] F. Gaessler and H. Piezunka, “Training with ai: Evidence from chess computers,” Strategic Management Journal ,vol. 44, no. 11, pp. 2724–2750, 2023. [Online]. Available: https://doi.org/10.1002/smj.3512 No citations. [29] M. Bilali´ c, M. Graf, and N. Vaci, “Computers and chess masters: The role of ai in transforming elite human performance,” British Journal of Psychology , vol. 117, no. 2, pp. 585–609, 2026. [Online]. Available: https://doi.org/10.1111/bjop.12750 (Cited on page: 2). [30] M. Sadler and N. Regan, Game Changer: AlphaZero’s Groundbreaking Chess Strategies and the Promise of AI .Alkmaar, Netherlands: New In Chess, 2019. (Cited on page: 2). [31] J. Kang, J. S. Yoon, and B. Lee, “How ai-based training affected the performance of professional go players,” in 
+
+Proceedings of the 2022 CHI Conference on Human Factors in Computing Systems , ser. CHI ’22. New York, NY, 10 Play Like Champions: Counterfactual Feedback Generation in Latent Space A P REPRINT 
+
+USA: Association for Computing Machinery, 2022. [Online]. Available: https://doi.org/10.1145/3491102.3517540 (Cited on page: 2). [32] M. Shin, J. Kim, and M. Kim, “Human learning from artificial intelligence: Evidence from human go players’ decisions after alphago,” in CogSci 2021 - The 43rd Annual Meeting of the Cognitive Science Society , 07 2021. [Online]. Available: https://doi.org/10.5281/zenodo.5095146 (Cited on page: 2). [33] O. Vinyals, I. Babuschkin, W. M. Czarnecki, M. Mathieu, A. Dudzik, J. Chung, D. H. Choi, R. Powell, T. Ewalds, P. Georgiev et al. , “Grandmaster level in StarCraft II using multi-agent reinforcement learning,” Nature , vol. 575, no. 7782, pp. 350–354, 2019. (Cited on page: 2). [34] M. Samvelyan, T. Rashid, C. S. de Witt, G. Farquhar, N. Nardelli, T. G. J. Rudner, C.-M. Hung, P. H. S. Torr, J. Foerster, and S. Whiteson, “The starcraft multi-agent challenge,” 2019. [Online]. Available: https://arxiv.org/abs/1902.04043 (Cited on page: 2). [35] B. Ellis, J. Cook, S. Moalla, M. Samvelyan, M. Sun, A. Mahajan, J. N. Foerster, and S. Whiteson, “Smacv2: An improved benchmark for cooperative multi-agent reinforcement learning,” 2023. [Online]. Available: https://arxiv.org/abs/2212.07489 (Cited on page: 2). [36] T. Avontuur, P. Spronck, and M. van Zaanen, “Player skill modeling in StarCraft II,” in Proceedings of the AAAI Conference on Artificial Intelligence and Interactive Digital Entertainment , vol. 9, no. 1, 2013, pp. 2–8. (Cited on page: 2). [37] S. Bowman, D. Lux, R. Vidal, and A. Drachen, “StarCraft winner prediction,” in Proceedings of the 16th International Conference on the Foundations of Digital Games , 2021. (Cited on page: 2). [38] D. P. Kingma and M. Welling, “Auto-encoding variational bayes,” 2022. [Online]. Available: https: //arxiv.org/abs/1312.6114 (Cited on page: 2). [39] I. Higgins, L. Matthey, A. Pal, C. P. Burgess, X. Glorot, M. M. Botvinick, S. Mohamed, and A. Lerchner, “β-VAE: Learning basic visual concepts with a constrained variational framework,” in Proceedings of the 5th International Conference on Learning Representations , Toulon, France, 2017. [Online]. Available: https://openreview.net/forum?id=Sy2fzU9gl (Cited on page: 2). [40] Z. Ding, Y. Xu, W. Xu, G. Parmar, Y. Yang, M. Welling, and Z. Tu, “Guided variational autoencoder for disentanglement learning,” in 2020 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) ,2020, pp. 7917–7926. (Cited on pages: 2, 3, 3). [41] M. L. Schrum, S. Srivatsa, D. E. Gopinath, G. Rosman, and T. L. Chen, “Disentangled skill representations for predictive human modeling,” in ICLR 2026 Conference Withdrawn Submission , 2025, withdrawn from ICLR 2026. [Online]. Available: https://openreview.net/forum?id=rwvTTjcuHv (Cited on page: 2). [42] E. Korkmaz, O. Anil Koyejo, and P. Smyth, “Optimal transport maps for distribution preserving operations on latent spaces of generative models,” in ICLR Workshop on Deep Generative Models for Highly Structured Data ,2018. [Online]. Available: https://openreview.net/forum?id=BklCusRct7 (Cited on page: 2). [43] Y. Song, A. Keller, N. Sebe, and M. Welling, “Latent traversals in generative models as potential flows,” in 
+
+Proceedings of the 40th International Conference on Machine Learning , ser. ICML’23. JMLR.org, 2023. (Cited on page: 3). [44] E. Yeh, P. Sequeira, J. Hostetler, and M. Gervasio, “Outcome-guided counterfactuals from a jointly trained generative latent space,” in Explainable Artificial Intelligence (xAI 2023) , ser. Communications in Computer and Information Science. Springer, 2023, pp. 449–469. [Online]. Available: https://arxiv.org/abs/2207.07710 (Cited on page: 3). [45] R. Crupi, A. Castelnovo, D. Regoli, and B. S. M. Gonzalez, “Counterfactual explanations as interventions in latent space,” Data Mining and Knowledge Discovery , vol. 38, pp. 2733–2769, 2022. (Cited on page: 3, 3). [46] J. Bae, H. Nam, K. Ryu, J. Lee, J. Kim, H. Chun, J. Han, and J. Choi, “Data-driven driver training via counterfactual and language-based guidance in racing scenarios,” IEEE Access , vol. 13, pp. 170 181–170 199, 2025. (Cited on page: 3). [47] P. Pegios, A. Feragen, A. A. Hansen, and G. Arvanitidis, “Counterfactual explanations via Riemannian latent space traversal,” arXiv preprint arXiv:2411.02259 , 2024. [Online]. Available: https://arxiv.org/abs/2411.02259 (Cited on page: 3). [48] D. P. Kingma and J. Ba, “Adam: A method for stochastic optimization,” 2017. [Online]. Available: https://arxiv.org/abs/1412.6980 (Cited on page: 3). [49] I. Loshchilov and F. Hutter, “Decoupled weight decay regularization,” in International Conference on Learning Representations , 2019. [Online]. Available: https://openreview.net/forum?id=Bkg6RiCqY7 (Cited on page: 3). 11 Play Like Champions: Counterfactual Feedback Generation in Latent Space A P REPRINT 
+
+## A StarCraft II Game Description 
+
+Before diving deeper it is important to state the rules governing StarCraft II competitive gameplay. The game contains three main “races” of choice for the players. Each race is differentiated by unit mechanics therefore forcing certain playstyles. In most cases the game is played in the format of player versus player (PvP), one versus one (1 vs 1). The ultimate goal for competitors is to destroy all of the opponents’ structures, or to force their counterpart to resign. In many cases tournaments have varying stages, such as the initial group stage, and a subsequent knockout bracket stage. Depending on the tournament format in most cases the group stages are played out as best of one (Bo1), best of two (Bo2), or best of three (Bo3) matches. Finally, the knockout bracket features Bo3, best of five (Bo5), and best of seven (Bo7) matches. 
+
+## B Model Details 
+
+Training Objective: The VAE is trained with the standard reconstruction and KL divergence objective. The reconstruction term is mean squared error between the original feature vector and the decoded feature vector. The KL term regularizes the posterior distribution toward a unit Gaussian prior. The VAE loss is shown in Equation 20 where 
+
+LMSE is the summed mean squared error between the input feature vector and its reconstruction, and LKL regularizes the approximate posterior toward a unit Gaussian prior. To guide the latent space, we add a binary cross-entropy loss on the prediction produced from the first latent dimension. The main Guided VAE update is seen on Equation 21, where 
+
+λcls controls the strength of supervision and encourages outcome-relevant information to be concentrated in the guided latent dimension. 
+
+LVAE = LMSE + LKL , (20) Lmain = LVAE + λcls LBCE , (21) Aside from the typical structure of a Guided VAE model we clamp the log variance output of the encoder to the interval [−20 , 2] before the reparameterization step. This hard bound constrains the effective standard deviation to the range [≈ 4.5 × 10 −5, ≈ 2.7] , preventing two sources of numerical instability: a near-zero variance, which causes the KL divergence term in the evidence lower bound (ELBO) to diverge and produces exploding gradients; and an excessively large variance, which overwhelms the mean and injects too much noise into the decoder input, destabilizing reconstruction. These dimensions are used to predict the game outcome. The point of this is to force at least one direction of the latent space to be directly related to winning and losing. 
+
+## C Hardware 
+
+C.1 Hardware and Computational Requirements 
+
+All experiments were conducted on a high-performance workstation using consumer-grade hardware. The specific configuration of the system components is detailed in Table 3. Table 3: Hardware specifications used for all experimental runs and hyperparameter sweeps. 
+
+Component Specification 
+
+CPU AMD Ryzen 9 9950X (16-Core, 32-Thread) GPU NVIDIA GeForce RTX 5090 Memory (RAM) 128 GB DDR5 The model architectures and optimization strategies were designed for high efficiency. Consequently, the majority of individual experimental runs, including those within the Guided-VAE hyperparameter sweep and path generation evaluations, were completed in under 5 minutes. 
+
+## D Hyperparameter Search 
+
+D.1 Guided-VAE Hyperparameter Search D.1.1 Search Space 
+
+The search space for the Guided-VAE is defined by a set of hierarchical constraints to ensure a valid bottleneck architecture. Let W = {w0, w 1, . . . , w m} denote the set of available layer widths in ascending order. Architecture Constraints The encoder configuration is sampled via two primary parameters: the number of layers n ∈ { 2, 3, 4} and a categorical start width wstart ∈ W . To guarantee that the resulting hidden dimensions Henc are strictly decreasing, we 12 Play Like Champions: Counterfactual Feedback Generation in Latent Space A P REPRINT 
+
+calculate the actual starting index i as: 
+
+i = max( n − 1, index (wstart )) (22) The sequence of hidden dimensions is then defined as: 
+
+Henc = {wi−j }n−1 
+
+> j=0
+
+(23) The latent dimensionality nz is coupled to the final encoder width hlast ∈ Henc through a fraction fz ∈{0.25 , 0.5, 1.0}, constrained by a minimum floor: 
+
+nz = max(8 , ⌊hlast · fz ⌋) (24) Optimization Parameters The remaining parameters are sampled according to the following distributions: • Learning Rates: ηvae , η cls ∼ LogUniform (10 −5, 10 −3)
+
+• Weight Decays: λvae , λ cls ∼ LogUniform (10 −6, 10 −3)
+
+• Classification Weight: α ∼ LogUniform (1 , 250) 
+
+• Supervised Dimensions: ns ∈ { 1, 2, 4}
+
+D.1.2 Hyperparameter Run Configuration 
+
+To find the best hyperparameters for our training, we ran the search using Ray (https://www.ray.io/) and Optuna (https://optuna.org/). Upon execution, we have decided on 150 total runs. The objective function, OHP O , is defined as a weighted scalar sum of validation metrics logged during the training of the Guided VAE model. Formally, the minimization objective is expressed as: 
+
+min  
+
+> θ
+
+OHP O = X
+
+> i∈M
+
+wi · L i(θ) (25) where M denotes the set of validation metrics, Li is the value of the i-th metric, and wi is the user-defined weight for that metric. In the configuration utilized for this sweep, the objective was set to equally weight the reconstruction and classification components: 
+
+OHP O = wvae Lval_vae + wcls Lval_cls (26) Given our configuration parameters wvae = 0 .5 and wcls = 0 .5, the final objective function simplifies to: 
+
+OHP O = 0 .5( Lval_vae ) + 0 .5( Lval_cls ) (27) 
+
+D.1.3 Guided VAE Final Hyperparameters 
+
+Table 4 contains the model we have selected for a best performing model. Table 4: Final hyperparameter values for the Guided-VAE model discovered via the Ray/Optuna optimization sweep. 
+
+Category Hyperparameter Value Architecture Input Dimension 196 
+
+Encoder Hidden Dimensions ( Henc ) [32 , 16] 
+
+Latent Dimensionality ( nz ) 16 
+
+Supervised Dimensions ( ns) 4
+
+Optimization VAE Learning Rate ( ηvae ) 1.7725 × 10 −4
+
+VAE Weight Decay ( λvae ) 1.3597 × 10 −5
+
+Classifier Learning Rate ( ηcls ) 4.1398 × 10 −4
+
+Classifier Weight Decay ( λcls ) 4.5500 × 10 −6
+
+Classification Weight ( α) 1.2824 
+
+D.2 Path Generation Strategies: Hyperparameter Search D.2.1 Search Space 
+
+The search space for the latent space traversal is structured hierarchically, where the subset of active hyperparameters is conditioned on the chosen strategy S.13 Play Like Champions: Counterfactual Feedback Generation in Latent Space A P REPRINT 
+
+Linear Strategy The linear interpolation strategy relies on neighborhood density constraints: • Nearest Neighbors ( kneighbors ): knb ∼ DiscreteUniform (3 , 15) 
+
+• Opponent Constraints ( kopponents ): kopp ∼ DiscreteUniform (10 , 200) 
+
+Gradient Ascent Strategy This strategy utilizes a density-based optimization approach with fixed steps T = 2000 
+
+and a convergence threshold τ = 0 .95 :• Learning Rate ( η): η ∼ LogUniform (10 −4, 0.1) 
+
+• Momentum ( μ): μ ∼ Uniform (0 .0, 0.95) 
+
+• Density Weight ( wρ): wρ ∼ Uniform (0 .0, 1.0) 
+
+• KDE Bandwidth ( h): h ∼ Uniform (0 .1, 2.0) 
+
+Optimal Transport Strategy The optimal transport strategy balances regularization and geometric constraints: • Regularization ( ϵ): ϵ ∼ LogUniform (0 .01 , 0.5) 
+
+• Step Size ( γ): γ ∼ Uniform (0 .05 , 0.5) 
+
+• Opponent Constraints ( kopponents ): kopp ∼ DiscreteUniform (10 , 200) 
+
+Neural Flow Strategy The neural flow strategy utilizes a fixed guidance scale for its transformation: • Guidance Scale ( s): s = 1 .0 (fixed) 
+
+D.2.2 Hyperparameter Run Configuration 
+
+The optimization of hyperparameters for the latent space traversal strategies was performed using the Optuna framework. For each of the strategy we executed N = 100 independent trials. In each trial, the performance was evaluated by generating nsamples = 1000 latent paths. Unlike the model training phase, the objective for path charting is a maximization task. The objective function J is defined as the mean performance of a specified evaluation metric M: AUC across all generated samples: 
+
+max  
+
+> ϕ
+
+J (ϕ) = Es∼S (ϕ)[M(s)] (28) where ϕ represents the set of strategy-specific hyperparameters sampled from the search space, and S(ϕ) denotes the distribution of paths generated under those parameters. 
+
+D.2.3 Path Generation Strategies: Final Hyperparameters 
+
+Table 5 contains the specific hyperparameters used for the final runs of our path generation strategies. Table 5: Hyperparameters used for the evaluated methods. Continuous values discovered via hyperparameter optimization are rounded to four decimal places. 
+
+Method Hyperparameter Value Neural Flow Guidance Scale 1.0
+
+Gradient Ascent Steps 2000 
+
+Learning Rate (lr) 0.0330 
+
+Momentum 0.8815 
+
+Density Weight 0.8444 
+
+KDE Bandwidth 0.6516 
+
+Convergence Threshold 0.95 
+
+Linear Centroid k Neighbours 14 
+
+k Opponents 74 
+
+Linear Nearest k Neighbours 10 
+
+k Opponents 11 
+
+Optimal Transport Regularization (reg) 0.0887 
+
+Step Size 0.4999 
+
+k Opponents 64 
+
+14 Play Like Champions: Counterfactual Feedback Generation in Latent Space A P REPRINT 
+
+Table 6: Cross-Dataset Comparison of Path-Charting Strategies with all of the computed metrics. 
+
+Method Metric SC2EGSet OOD Data ∆ Dataset Linear (centroid) Success rate 0.834 0.715 -0.118 Crossover α 0.659 ± 0.202 0.704 ± 0.236 +0.045 
+
+∆P(win) 0.813 ± 0.320 0.681 ± 0.399 -0.132 AUC 0.310 ± 0.221 0.234 ± 0.236 -0.076 Monotonicity 0.997 ± 0.041 0.977 ± 0.093 -0.020 Nearest-win dist. 0.06 ± 0.04 0.05 ± 0.03 -0.006 KDE density shift 1.51 ± 1.11 1.74 ± 1.48 +0.230 Path KDE density -3.12 ± 0.74 -3.21 ± 0.81 -0.096 Cycle error 0.218 ± 0.096 0.239 ± 0.096 +0.021 Max ∥z∥ 2.02 ± 0.58 1.93 ± 0.51 -0.092 Linear (k-NN) Success rate 0.845 0.543 -0.303 Crossover α 0.688 ± 0.190 0.700 ± 0.250 +0.012 
+
+∆P(win) 0.824 ± 0.310 0.510 ± 0.443 -0.314 AUC 0.290 ± 0.206 0.182 ± 0.234 -0.108 Monotonicity 0.998 ± 0.027 0.966 ± 0.128 -0.032 Nearest-win dist. 0.05 ± 0.05 0.06 ± 0.04 +0.005 KDE density shift 1.43 ± 1.06 1.59 ± 1.40 +0.162 Path KDE density -3.16 ± 0.82 -3.35 ± 0.94 -0.197 Cycle error 0.206 ± 0.087 0.235 ± 0.095 +0.029 Max ∥z∥ 2.05 ± 0.63 1.87 ± 0.56 -0.180 Optimal Transport Success rate 0.837 0.720 -0.117 Crossover α 0.120 ± 0.065 0.140 ± 0.084 +0.020 
+
+∆P(win) 0.819 ± 0.315 0.682 ± 0.397 -0.137 AUC 0.752 ± 0.301 0.629 ± 0.364 -0.123 Monotonicity 0.998 ± 0.041 0.995 ± 0.059 -0.003 Nearest-win dist. 0.06 ± 0.04 0.05 ± 0.03 -0.005 KDE density shift 1.50 ± 1.11 1.74 ± 1.48 +0.239 Path KDE density -2.80 ± 0.50 -2.74 ± 0.40 +0.060 Cycle error 0.242 ± 0.094 0.237 ± 0.113 -0.005 Max ∥z∥ 2.03 ± 0.58 1.93 ± 0.51 -0.103 Neural Flow Success rate 0.931 0.731 -0.200 Crossover α 0.524 ± 0.230 0.494 ± 0.279 -0.030 
+
+∆P(win) 0.915 ± 0.241 0.701 ± 0.427 -0.213 AUC 0.468 ± 0.253 0.390 ± 0.332 -0.078 Monotonicity 0.999 ± 0.013 0.996 ± 0.025 -0.002 Nearest-win dist. 0.18 ± 0.16 0.20 ± 0.19 +0.024 KDE density shift 0.52 ± 1.78 0.79 ± 1.49 +0.270 Path KDE density -3.43 ± 1.11 -3.62 ± 1.37 -0.192 Cycle error 0.294 ± 0.143 0.311 ± 0.151 +0.016 Max ∥z∥ 2.54 ± 0.81 2.26 ± 0.61 -0.285 Gradient Ascent Success rate 1.000 0.998 -0.002 Crossover α 0.486 ± 0.367 0.513 ± 0.337 +0.027 
+
+∆P(win) 0.986 ± 0.076 0.969 ± 0.139 -0.017 AUC 0.545 ± 0.355 0.517 ± 0.321 -0.029 Monotonicity 0.727 ± 0.227 0.749 ± 0.209 +0.021 Nearest-win dist. 0.15 ± 0.12 0.15 ± 0.14 +0.005 KDE density shift 0.63 ± 1.40 0.78 ± 1.46 +0.152 Path KDE density -4.63 ± 1.40 -4.20 ± 1.25 +0.430 Cycle error 0.406 ± 0.184 0.410 ± 0.178 +0.004 Max ∥z∥ 3.95 ± 1.74 3.91 ± 1.56 -0.039 15 Play Like Champions: Counterfactual Feedback Generation in Latent Space A P REPRINT 
+
+## E Additional Results 
+
+E.1 Model Interpretability 
+
+To verify that the Guided VAE’s outcome classifier grounds its predictions in strategically meaningful features, we analyze its decision process using SHapley Additive exPlanations (SHAP) as shown in Fig. 2 and Fig. 3. SHAP values provide a unified measure of feature importance by attributing the log-odds of the predicted outcome to the individual input features. The mean absolute SHAP values highlight the top global contributors to the win-probability prediction, confirming that the model relies on core economic and macroscopic indicators rather than spurious correlations. Furthermore, the SHAP beeswarm plot reveals the distribution of these impacts across the test. It visualizes both the magnitude and the direction of the feature effects, illustrating how higher or lower values of specific features correlate with the predicted likelihood of winning. This transparency is crucial, as it ensures that the counterfactual paths generated by traversing the latent space correspond to interpretable, domain-consistent shifts in player behavior. 0.00 0.01 0.02 0.03 0.04 0.05 0.06 0.07 
+
+Mean |SHAP value| 
+
+foodMade 
+
+mineralsUsedCurrentEconomy 
+
+mineralsKilledEconomy 
+
+mineralsUsedActiveForces 
+
+mineralsUsedCurrentArmy 
+
+vespeneKilledArmy 
+
+mineralsKilledArmy 
+
+foodUsed 
+
+P(win) SHAP Top-8 Features (both players) 
+
+Group / Player 
+
+> early
+> mid
+> late
+> final
+> econDelta
+> meta
+> Player 0 (subject)
+> Player 1 (opponent)
+
+Figure 2: Mean absolute SHAP values for the top-8 input features of the GuidedVAE win-probability classifier P (win ).2 1 0 1 2                                                
+
+> Feature value
+> 0.3
+> 0.2
+> 0.1
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> SHAP
+> final_foodUsed
+> 101234567
+> Feature value
+> 0.3
+> 0.2
+> 0.1
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> 0.4
+> 0.5
+> SHAP
+> final_mineralsKilledArmy
+> 101234567
+> Feature value
+> 0.2
+> 0.0
+> 0.2
+> 0.4
+> 0.6
+> SHAP
+> final_vespeneKilledArmy
+> 2101234
+> Feature value
+> 0.2
+> 0.1
+> 0.0
+> 0.1
+> 0.2
+> SHAP
+> final_mineralsUsedCurrentArmy
+> 101234
+> Feature value
+> 0.2
+> 0.1
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> SHAP
+> final_mineralsUsedActiveForces
+> 101234567
+> Feature value
+> 0.2
+> 0.1
+> 0.0
+> 0.1
+> 0.2
+> 0.3
+> SHAP
+> final_mineralsKilledEconomy
+> 2101234
+> Feature value
+> 0.2
+> 0.1
+> 0.0
+> 0.1
+> 0.2
+> SHAP
+> final_mineralsUsedCurrentEconomy
+> 21012345
+> Feature value
+> 0.10
+> 0.05
+> 0.00
+> 0.05
+> 0.10
+> 0.15
+> SHAP
+> late_foodMade
+
+SHAP vs. Feature Value P(win) 
+
+Figure 3: SHAP dependence plots for the top-8 features by mean |SHAP | for P (win ).
+
+## F Example Feedback Reports 
+
+Fig. 4 and Fig. 5 are examples of the output, informing the user about the counteractual latent space path, and which parameters they should focus on. 16 Play Like Champions: Counterfactual Feedback Generation in Latent Space A P REPRINT 5.0 2.5 0.0 2.5 5.0 7.5 10.0 12.5 15.0 
+
+UMAP1 
+
+2
+
+0
+
+2
+
+4
+
+6
+
+8
+
+10 
+
+> UMAP2
+> Blue = loss density | Red = win density
+
+Latent space (UMAP) + improvement path 
+
+Waypoints 
+
+Start (loss) 
+
+Target (win) 
+
+0.0 0.2 0.4 0.6 0.8 1.0 
+
+Path progress (0=start, 1=end) 
+
+0.0 
+
+0.2 
+
+0.4 
+
+0.6 
+
+0.8 
+
+1.0 
+
+> P(win)
+
+Win probability along path 
+
+Loss zone 
+
+Win zone 
+
+Decision boundary 
+
+Latent Space Counterfactual Improvement Path 
+
+Figure 4: UMAP latent space projection with the counterfactual path shown. 17 Play Like Champions: Counterfactual Feedback Generation in Latent Space A P REPRINT 2000 1000 0 1000 2000 3000 4000 
+
+Delta 
+
+final_mineralsKilledArmy 
+
+final_mineralsUsedCurrentArmy 
+
+final_mineralsUsedActiveForces 
+
+final_vespeneKilledArmy 
+
+final_mineralsUsedCurrentEconomy 
+
+final_vespeneUsedCurrentArmy 
+
+final_vespeneUsedActiveForces 
+
+late_mineralsUsedCurrentEconomy 
+
+final_mineralsLostEconomy 
+
+final_mineralsUsedCurrentTechnology 
+
+Full path (start -> end) 
+
+2000 1000 0 1000 2000 3000 4000 
+
+Delta 
+
+final_mineralsKilledArmy 
+
+final_mineralsUsedCurrentArmy 
+
+final_mineralsUsedActiveForces 
+
+final_vespeneKilledArmy 
+
+final_mineralsUsedCurrentEconomy 
+
+final_vespeneUsedCurrentArmy 
+
+final_vespeneUsedActiveForces 
+
+late_mineralsUsedCurrentEconomy 
+
+final_mineralsLostEconomy 
+
+final_mineralsUsedCurrentTechnology 
+
+Minimum viable (waypoint 18/19 (P(win)=0.681)) 
+
+100 50 0 50 100 150 200 
+
+Delta 
+
+final_mineralsKilledArmy 
+
+final_mineralsUsedActiveForces 
+
+final_mineralsUsedCurrentArmy 
+
+final_vespeneKilledArmy 
+
+final_mineralsUsedCurrentEconomy 
+
+final_vespeneUsedActiveForces 
+
+final_vespeneUsedCurrentArmy 
+
+final_mineralsUsedCurrentTechnology 
+
+final_mineralsLostEconomy 
+
+late_mineralsCurrent 
+
+P(win)-gain weighted 
+
+# Three-Signal Feedback Report 
+
+Figure 5: Feedback report with three distinct user interpretable signals. 18 Play Like Champions: Counterfactual Feedback Generation in Latent Space A P REPRINT 
+
+## G Data and Code Repositories 
+
+Anonymized version of our code and the pre-processed tensor data, as well as the model checkpoint are available at: https://anonymous.4open.science/r/SC2_LatentTrainer-1E5B/. The original data repository is: https://huggingface.co/datasets/Kaszanas/SC2EGSet 19
