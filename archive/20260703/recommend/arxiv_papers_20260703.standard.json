@@ -1,0 +1,303 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-07-03T20:50:37.494719+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 4,
+    "deep_cap": 6,
+    "deep_selected": 4,
+    "quick_candidates": 3,
+    "quick_skim_target": 11,
+    "quick_selected": 3
+  },
+  "deep_dive": [
+    {
+      "id": "2606.29932v2",
+      "source": "arxiv",
+      "title": "SAGA: Scene-Aware, Goal-Evolving Agents for Long-Horizon CivRealm Strategy Planning",
+      "abstract": "Long-horizon strategic planning in complex strategy games demands concurrent reasoning across multiple decision domains under imperfect information and sparse reward. Existing LLM-based agents suffer from three systematic failures: scene blindness from raw tile coordinates, context overflow and domain coupling from monolithic state dumps, and shallow cross-game learning that treats each episode in isolation. We present SAGA, an LLM multi-agent framework with three mechanisms each directly targeting one class of failure: (i) a Map-Semantic Scene Graph that encodes typed spatial relations among game entities into per-unit natural-language context, resolving spatial blindness without global token inflation; (ii) a Tool-Augmented Planner that pulls fine-grained domain state on demand and dispatches per-domain directives to dedicated specialist controllers, eliminating context overflow, domain coupling, and mechanical constraint violations; and (iii) a Dual-Horizon Feedback Loop that combines periodic within-game goal generation with structured cross-game causal post-mortem, enabling principled strategic evolution without manual reward engineering. Evaluated on FreeCiv, SAGA attains the highest mean civilization score -- the environment's sole sparse objective reward -- with lower variance than the two strongest baselines, and is the only method that significantly surpasses every baseline on infrastructure construction, the resource axis most readily sacrificed under multi-objective conflict. It outscores the two strongest baselines in most head-to-head games while cutting output tokens (the dominant decoding cost) by 27%. Equipped with the cross-game evolution module, SAGA reaches the highest end-of-chain score across five successive episodes. Ablation studies confirm that each architectural component contributes independently to this advantage.",
+      "authors": [
+        "Tianyu Jin",
+        "Shuo Chen",
+        "Yida Wang",
+        "Liuyu Xiang",
+        "Yingzhuo Liu",
+        "Zhiyao Jiang",
+        "Yexin Li",
+        "Zhaofeng He"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-29T08:07:35+00:00",
+      "link": "https://arxiv.org/pdf/2606.29932v2",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "LLM multi-agent framework for strategy game planning",
+      "llm_evidence_cn": "用于策略游戏规划的LLM多代理框架",
+      "llm_evidence": "用于策略游戏规划的LLM多代理框架",
+      "canonical_evidence": "用于策略游戏规划的LLM多代理框架",
+      "llm_tldr_en": "SAGA framework addresses scene blindness, context overflow, and shallow learning in LLM agents for strategy games using map-semantic scene graph and tool-augmented planner.",
+      "llm_tldr_cn": "该论文针对LLM代理在复杂策略游戏中的场景盲视、上下文溢出和跨游戏学习浅薄等问题，提出了SAGA多代理框架。包含地图语义场景图编码空间关系、工具增强规划器解耦领域、以及跨游戏记忆模块。在CivRealm环境中实验表明，SAGA显著提升了长期战略规划的成功率，是AI代理玩游戏的直接应用。",
+      "llm_tldr": "该论文针对LLM代理在复杂策略游戏中的场景盲视、上下文溢出和跨游戏学习浅薄等问题，提出了SAGA多代理框架。包含地图语义场景图编码空间关系、工具增强规划器解耦领域、以及跨游戏记忆模块。在CivRealm环境中实验表明，SAGA显著提升了长期战略规划的成功率，是AI代理玩游戏的直接应用。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.01498v1",
+      "source": "arxiv",
+      "title": "Towards Learning Representations of Policies in Two-Player Zero-Sum Imperfect-Information Games",
+      "abstract": "We investigate the problem of learning useful policy representations (embeddings) in two-player zero-sum imperfect-information games. We make three contributions: First, we introduce methods of creating datasets of policies for a given game. Second, we propose methods to learn policy representations. Third, we introduce downstream tasks to evaluate the effectiveness of such representations.   We evaluate each dataset method, embedding method, and downstream task on Kuhn and Leduc Poker. Although our methods are very basic, we demonstrate that useful behavioral representations are present in the learned embeddings. To our knowledge, this work is among the first to systematically compare self-supervised learning techniques for learning policy representations in games. Our code is available at https://github.com/VitamintK/ssl-project for others to extend.",
+      "authors": [
+        "Kevin Wang",
+        "Kevin Yang",
+        "Arjun Prakash",
+        "Amy Greenwald"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.GT"
+      ],
+      "published": "2026-07-01T21:56:51+00:00",
+      "link": "https://arxiv.org/pdf/2607.01498v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "policy representation learning in two-player zero-sum games",
+      "llm_evidence_cn": "两人零和博弈中的策略表示学习",
+      "llm_evidence": "两人零和博弈中的策略表示学习",
+      "canonical_evidence": "两人零和博弈中的策略表示学习",
+      "llm_tldr_en": "Investigates learning policy embeddings in imperfect-information games (Kuhn and Leduc Poker), demonstrating useful behavioral representations via self-supervised learning.",
+      "llm_tldr_cn": "该论文研究在不完美信息博弈中学习策略表示（嵌入）的问题。针对Kuhn扑克和Leduc扑克，提出了策略数据集创建、表示学习方法和下游评测任务。实验表明，即使使用基础方法，也能从学到的嵌入中提取有用的行为表征，为游戏AI中的策略分析和迁移学习提供了新思路。",
+      "llm_tldr": "该论文研究在不完美信息博弈中学习策略表示（嵌入）的问题。针对Kuhn扑克和Leduc扑克，提出了策略数据集创建、表示学习方法和下游评测任务。实验表明，即使使用基础方法，也能从学到的嵌入中提取有用的行为表征，为游戏AI中的策略分析和迁移学习提供了新思路。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.02255v1",
+      "source": "arxiv",
+      "title": "AgenticSTS: A Bounded-Memory Testbed for Long-Horizon LLM Agents",
+      "abstract": "Memory for a long-horizon LLM agent is a contract about what each future decision is allowed to see. The simplest contract appends past observations, tool calls, and reflections to every prompt, which makes prior context easy to access but also turns it into a jumbled mixture in which the effect of any single memory component is hard to isolate. We introduce and instrument an alternative bounded contract: every decision is made from a fresh user message assembled by typed retrieval, with no raw cross-decision transcript appended. The prompt thus stays bounded across runs of any length, and any single layer can be ablated in isolation. We instantiate the contract in Slay the Spire 2, a closed-rule stochastic deck-building game whose runs require hundreds of tactical and strategic decisions. A public online benchmark of frontier LLMs on the same game reports zero wins at the lowest difficulty across five configurations, and the developer-reported human win rate at the same difficulty is 16%; the task is hard but not saturated. Within our harness, a fixed-A0 ablation shows the largest observed difference when triggered strategic skills are enabled: the no-store baseline wins 3/10 games and adding the skill layer 6/10. At this sample size the comparison is directional rather than statistically decisive (Fisher exact p\\approx0.37); a cross-backbone probe and public accumulating-context baselines are reported as operational comparisons rather than controlled tests of the contract variable itself. We release a reproducible testbed: 298 completed trajectories with condition tags, frozen memory/skill snapshots, prompt records, and analysis scripts -- an agent design and a validated, reusable methodology for studying how explicit memory layers shape long-horizon LLM-agent decisions.",
+      "authors": [
+        "Xiangchen Cheng",
+        "Yunwei Jiang",
+        "Jianwen Sun",
+        "Zizhen Li",
+        "Chuanhao Li",
+        "Xiangcheng Cao",
+        "Yihao Liu",
+        "Fanrui Zhang",
+        "Li Jin",
+        "Kaipeng Zhang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-07-02T14:44:32+00:00",
+      "link": "https://arxiv.org/pdf/2607.02255v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Bounded-memory testbed for LLM agents in Slay the Spire 2 game",
+      "llm_evidence_cn": "在Slay the Spire 2游戏中为LLM智能体设计的有界记忆测试平台",
+      "llm_evidence": "在Slay the Spire 2游戏中为LLM智能体设计的有界记忆测试平台",
+      "canonical_evidence": "在Slay the Spire 2游戏中为LLM智能体设计的有界记忆测试平台",
+      "llm_tldr_en": "AgenticSTS introduces a bounded-memory contract for long-horizon LLM agents, instantiated in the deck-building game Slay the Spire 2 to isolate memory effects.",
+      "llm_tldr_cn": "该论文提出AgenticSTS，一种有界记忆测试平台，用于评估长周期LLM智能体在Slay the Spire 2游戏中的性能。通过类型化检索保持提示长度有界，使得每一层记忆可独立消融分析，为游戏环境中AI智能体的记忆设计提供了新方法。实验表明该框架能有效隔离不同记忆组件的影响，有助于优化智能体的长期决策能力。",
+      "llm_tldr": "该论文提出AgenticSTS，一种有界记忆测试平台，用于评估长周期LLM智能体在Slay the Spire 2游戏中的性能。通过类型化检索保持提示长度有界，使得每一层记忆可独立消融分析，为游戏环境中AI智能体的记忆设计提供了新方法。实验表明该框架能有效隔离不同记忆组件的影响，有助于优化智能体的长期决策能力。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2607.02440v1",
+      "source": "arxiv",
+      "title": "EvoPolicyGym: Evaluating Autonomous Policy Evolution in Interactive Environments",
+      "abstract": "Autonomous agents are increasingly expected to improve executable policies through feedback, yet existing evaluations often collapse this process into a final score or confound it with open-ended software-engineering progress. We introduce Autonomous Policy Evolution, a controlled evaluation setting in which a harness-model agent repeatedly edits an executable policy system under a fixed interaction budget. We instantiate this setting in EvoPolicyGym, a benchmark built from compact interactive RL environments that evaluates how agents iteratively improve explored policies. On the EvoPolicyGym suite, GPT-5.5 achieves the strongest aggregate rank score and top-two performance on all 16 environments. Beyond leaderboard results, EvoPolicyGym also provides trajectory-level diagnostics that distinguish how agents allocate budget, convert feedback into parametric tuning. These analyses show that strong autonomous policy evolution depends not only on isolated task wins, but on discovering task-appropriate mechanisms and refining policies under bounded feedback.",
+      "authors": [
+        "Zhilin Wang",
+        "Han Song",
+        "Runzhe Zhan",
+        "Jusen Du",
+        "Jiacheng Chen",
+        "Tianle Li",
+        "Qingyu Yin",
+        "Yulun Wu",
+        "Zhennan Shen",
+        "Tong Zhu",
+        "Yanshu Li",
+        "Guanjie Chen",
+        "Derek F. Wong",
+        "Yafu Li",
+        "Yu Cheng",
+        "Yang Yang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-07-02T17:10:13+00:00",
+      "link": "https://arxiv.org/pdf/2607.02440v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "benchmark for agents iteratively improving policies in interactive RL environments",
+      "llm_evidence_cn": "代理在交互RL环境中迭代改进策略的基准",
+      "llm_evidence": "代理在交互RL环境中迭代改进策略的基准",
+      "canonical_evidence": "代理在交互RL环境中迭代改进策略的基准",
+      "llm_tldr_en": "Introduces controlled evaluation for autonomous policy evolution in compact RL environments, with GPT-5.5 top.",
+      "llm_tldr_cn": "自主代理需要能从反馈中改进策略，但以往评估方法混杂。本文提出自主策略进化设定，并构建EvoPolicyGym基准，包含16个紧凑交互RL环境。在该基准上，GPT-5.5在综合排名上最强，在所有环境上均取得前两名。该基准为评估代理策略进化能力提供了标准平台。",
+      "llm_tldr": "自主代理需要能从反馈中改进策略，但以往评估方法混杂。本文提出自主策略进化设定，并构建EvoPolicyGym基准，包含16个紧凑交互RL环境。在该基准上，GPT-5.5在综合排名上最强，在所有环境上均取得前两名。该基准为评估代理策略进化能力提供了标准平台。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2606.27814v1",
+      "source": "arxiv",
+      "title": "ATOD: Annealed Turn-aware On-policy Distillation for Multi-turn Autonomous Agents",
+      "abstract": "Training small language-model agents for long-horizon interactive tasks requires both fast imitation and reward-driven improvement. On-policy distillation (OPD) provides dense teacher guidance and typically improves rapidly in the early stage, but its gains saturate once the student approaches the teacher, limiting the final performance ceiling. Reinforcement learning (RL) directly optimizes environment rewards and encourages exploratory improvement toward a higher reward-defined ceiling, but sparse and delayed feedback makes early-stage learning much less efficient than OPD. In this paper, we propose ATOD (Annealed Turn-aware On-policy Distillation), a hybrid online distillation algorithm that explicitly exploits this complementarity. (1) ATOD uses an annealed OPD-RL schedule: OPD dominates early training to approach teacher-level behavior, while RL is gradually strengthened to drive reward-based exploration. (2) ATOD introduces Turn-level Disagreement-Uncertainty Reweighting (T-DUR), which softly amplifies high-utility turns and improves dense supervision in long trajectories. Experiments on ALFWorld, WebShop, and Search-QA show that ATOD consistently outperforms competing post-training baselines: across the three student sizes, ATOD improves average success rate by 3.03 points over OPD and 23.62 points over GRPO, while surpassing the corresponding teacher models by 2.16 points.",
+      "authors": [
+        "Qitai Tan",
+        "Zefang Zong",
+        "Yang Li",
+        "Peng Chen"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-06-26T07:56:32+00:00",
+      "link": "https://arxiv.org/pdf/2606.27814v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "on-policy distillation and RL hybrid for training autonomous agents",
+      "llm_evidence_cn": "在线策略蒸馏与强化学习混合训练自主代理",
+      "llm_evidence": "在线策略蒸馏与强化学习混合训练自主代理",
+      "canonical_evidence": "在线策略蒸馏与强化学习混合训练自主代理",
+      "llm_tldr_en": "ATOD hybridizes on-policy distillation and RL to improve multi-turn agent training, using turn-aware annealing to transition from imitation to reward optimization.",
+      "llm_tldr_cn": "该论文针对小语言模型代理在多轮交互任务中训练效率与最终性能的矛盾，提出了ATOD混合算法。它利用在线策略蒸馏的早期快速提升和强化学习的探索性改进，通过回合感知退火策略平滑过渡。实验表明ATOD在多个任务上优于纯蒸馏或纯RL方法，可用于游戏环境中代理的训练。",
+      "llm_tldr": "该论文针对小语言模型代理在多轮交互任务中训练效率与最终性能的矛盾，提出了ATOD混合算法。它利用在线策略蒸馏的早期快速提升和强化学习的探索性改进，通过回合感知退火策略平滑过渡。实验表明ATOD在多个任务上优于纯蒸馏或纯RL方法，可用于游戏环境中代理的训练。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.00155v1",
+      "source": "arxiv",
+      "title": "A Contextual-Bandit Oversight Game with Two-Sided Informational Asymmetry",
+      "abstract": "We study runtime human oversight of an AI agent when private information runs in both directions: the human privately knows her reward function, while the AI privately knows the quality of the action it proposes. This is the kind of asymmetry that arises naturally when an autonomous robot or software agent has inspected a situation its human supervisor cannot directly assess. Building on Cooperative Inverse Reinforcement Learning (CIRL) and the Oversight Game, we introduce a contextual-bandit team game with two-sided asymmetric information and a play/ask/trust/oversee interface. The bandit structure removes physical state transitions and thereby yields exact one-shot characterizations that would remain conjectural in the full POMDP setting, though the common belief remains a dynamically controlled state across rounds. We give two one-shot characterizations, a team optimum and a behaviorally natural myopic rule, whose gap is a slab of avoidable harm: a region in which the AI privately knows the proposed action is harmful and shutdown would help, yet a myopic human, trusting her prior, declines to oversee. We show this gap is the price of non-credible oversight communication, and give a partial analysis of how it resolves dynamically over repeated rounds through passive learning and active signaling with a one-period-lagged oversight response.",
+      "authors": [
+        "Yunjin Tong"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.GT"
+      ],
+      "published": "2026-06-30T20:30:01+00:00",
+      "link": "https://arxiv.org/pdf/2607.00155v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "contextual-bandit game for AI agent oversight with asymmetric information",
+      "llm_evidence_cn": "基于情境赌博机的AI Agent监督博弈，具有不对称信息",
+      "llm_evidence": "基于情境赌博机的AI Agent监督博弈，具有不对称信息",
+      "canonical_evidence": "基于情境赌博机的AI Agent监督博弈，具有不对称信息",
+      "llm_tldr_en": "Introduces a contextual-bandit team game with two-sided information asymmetry for human oversight of AI agents, building on CIRL.",
+      "llm_tldr_cn": "该论文研究人类对AI Agent的运行时监督问题，提出了一个具有双向信息不对称的情境赌博机团队博弈模型。基于合作逆强化学习（CIRL）和监督博弈，引入play/ask/trust/oversee接口。去除物理状态转移后，模型可得到精确的单轮表征，为理解人机交互中的信任与监督提供了理论工具。",
+      "llm_tldr": "该论文研究人类对AI Agent的运行时监督问题，提出了一个具有双向信息不对称的情境赌博机团队博弈模型。基于合作逆强化学习（CIRL）和监督博弈，引入play/ask/trust/oversee接口。去除物理状态转移后，模型可得到精确的单轮表征，为理解人机交互中的信任与监督提供了理论工具。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "artificial intelligence in games",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2607.01531v1",
+      "source": "arxiv",
+      "title": "OPINE-World: Programmatic World Modeling with Ontology-error-Prioritized Interactive Exploration",
+      "abstract": "Learning how an environment behaves from interaction is central to building agents that adapt to unfamiliar tasks. World models learned with deep networks are flexible but data-hungry and transfer poorly beyond their training distribution. Program-synthesized world models, written as source code by LLMs and refined through counterexample-guided inductive synthesis (CEGIS), are instead data-efficient and reusable, yet they have been demonstrated mainly on structured-state worlds with a given object vocabulary, and a single program search does not scale to pixel-rendered environments whose object structure must be hypothesized flexibly. We introduce OPINE-World, an LLM agent that learns an object-centric programmatic world model online from interaction. OPINE-World couples two cooperating agents in a loop of hypothesis and test, one acting in the environment and one synthesizing the model in code with replay verification and model-based planning, and it steers exploration with a Bayesian measure of object-type adequacy we call ontology error. We evaluate OPINE-World on ARC-AGI-3, a benchmark for skill-acquisition efficiency in which the object vocabulary, the goal, and the action semantics are withheld. OPINE-World solves 20 of 25 games without per-game training and reaches an action-efficiency score of 78.4 against the human baseline.",
+      "authors": [
+        "David Courtis",
+        "Wenhao Li",
+        "Scott Sanner"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-07-01T23:04:47+00:00",
+      "link": "https://arxiv.org/pdf/2607.01531v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "world modeling for AI agent training in environments",
+      "llm_evidence_cn": "用于AI代理环境训练的世界模型",
+      "llm_evidence": "用于AI代理环境训练的世界模型",
+      "canonical_evidence": "用于AI代理环境训练的世界模型",
+      "llm_tldr_en": "Introduces OPINE-World, an LLM agent that learns object-centric programmatic world models via ontology-error-prioritized exploration, enabling data-efficient and reusable world models for agent training.",
+      "llm_tldr_cn": "针对深度网络世界模型数据需求大、迁移性差的问题，提出OPINE-World框架，利用LLM代理通过本体错误优先的交互探索学习对象中心的程序化世界模型。该模型用程序代码表示，数据高效且可复用。实验表明其在像素渲染环境中能有效学习结构并能泛化。该方法为AI代理在游戏等环境中的训练提供了新的途径。",
+      "llm_tldr": "针对深度网络世界模型数据需求大、迁移性差的问题，提出OPINE-World框架，利用LLM代理通过本体错误优先的交互探索学习对象中心的程序化世界模型。该模型用程序代码表示，数据高效且可复用。实验表明其在像素渲染环境中能有效学习结构并能泛化。该方法为AI代理在游戏等环境中的训练提供了新的途径。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
