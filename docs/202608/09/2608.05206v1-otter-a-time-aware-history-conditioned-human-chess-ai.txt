@@ -1,0 +1,481 @@
+Title: Otter: A Time-Aware, History-Conditioned Human Chess AI
+
+URL Source: https://arxiv.org/pdf/2608.05206v1
+
+Published Time: Fri, 07 Aug 2026 00:01:53 GMT
+
+Number of Pages: 14
+
+Markdown Content:
+# Otter: A Time-Aware, History-Conditioned Human Chess AI 
+
+Tarun Kumar S 
+
+Peargent Labs Bangalore, India 
+
+tarun.peargentlabs@gmail.com 
+
+Abstract 
+
+Forecasting human chess moves, not just engine-optimal ones, lies at the intersection of cognitive modeling and machine learning. Maia and Maia 2 showed that neural networks can replicate human playing styles [1; 2], but Maia 2 treats each po-sition independently, overlooking the sequential nature of games and the effect of time pressure on decision-making. We present Otter, a 15.3M-parameter human chess AI that extends the Maia 2 paradigm with two additions: (1) a move history encoder that conditions predictions on the last 20 moves, cap-turing opening preferences, positional drift, and intra-game behavioral tendencies; and (2) a time control module that modulates predictions based on clock pressure. Otter is trained on 6.1 billion positions from 117 million Lichess rapid games for over 30 days on a single T4 GPU. Otter achieves 55.23% top-1 and 90.95% top-5 accuracy, surpassing Maia 2 with far fewer param-eters. Across 11 Elo brackets (< 1100 to ≥ 2000) ,accuracy peaks at 57.38% in the 1900–1999 inter-val. Treating chess as a time-aware, sequential ac-tivity yields predictions closer to human play than position-only baselines, all with a smaller model. Our code, trained models, and complete training logs are publicly released. 
+
+1. Introduction 
+
+Chess engines like Stockfish [3] and [4] find objec-tively optimal moves far beyond human capability. However, optimal play and human play differ fun-damentally. Predicting the moves people actually make, accounting for habit, momentum, fatigue, and pressure, is a more impactful problem, with ap-plications in personalized coaching, human-like AI opponents, cheat detection, and decision-making research under uncertainty. Neural networks have proven effective at im-itating human chess behavior. Maia introduced Elo-specific models trained on human games [1], outperforming weakened engines at predicting hu-man moves. Maia 2 unified this into a single model with skill-coherent conditioning [2], improving ac-curacy by nearly two percentage points. Both es-tablished that human move prediction is fundamen-tally a behavioral modeling problem. Yet Maia 2 treats every position as an indepen-dent event, assuming the current board is a suf-ficient statistic for the next move. This Markov assumption [5] is mathematically convenient but behaviorally wrong. Players carry momentum: a player who just blundered thinks differently from one slowly building an advantage. A player deep in prepared theory reacts differently from one in un-familiar territory. Momentum, in-game tendencies, and positional drift all influence decisions, and a position-only model is blind to all of them [6]. Time is the second missing dimension. Under clock pressure, blunder rates spike, players favor forcing tactical continuations over complex posi-tional plans, and decision-making transforms fun-damentally [7; 8]. Yet existing models treat every position as if played with infinite time. We present Otter, 1 a human chess AI that models play as an evolving, time-sensitive process. Otter extends skill conditioning with two components: a move history encoder (processing the last 20 moves via a Transformer encoder and cross-attention) and a time control module (encoding game format and remaining clock time) to jointly modulate predic-tions. Both components are combined into a single con-ditioning signal accessible to every layer, enabling the entire model to depend on the full behavioral context. Despite having only 15.3M parameters, Otter achieves state-of-the-art human move pre-   
+
+> 1Code and models: https://github.com/ PeargentLabs/otter-chess .Training report: wandb.ai/peargent-ai-labs/Otter. arXiv:2608.05206v1 [cs.AI] 5 Aug 2026
+
+diction accuracy, not through scale, but through modeling the human context behind each move. 
+
+Our key contributions are: 
+
+• A move history encoder using a Transformer to condition move predictions on the last 20 moves via cross-attention with board features, fused with skill and time conditioning, yield-ing a +5.24pp top-1 accuracy gain over a position-only baseline and showing that the Markov assumption is the primary bottleneck in position-only human chess models. • A time control module combining game for-mat and clock pressure as conditioning sig-nals, adding +2.38pp beyond history alone. This improvement holds across all 11 Elo brackets, including the lowest where clock management is least deliberate, indicating that time pressure broadly influences human move selection. • An ablation study showing both contributions are additive and consistent across all 11 Elo ranges, with a total improvement of +7.62pp over the position-only baseline, achieved with-out requiring a larger model. 
+
+2. Related Work 
+
+Human Move Prediction. Early human move pre-diction relied on modifying superhuman chess en-gines to play at a weaker level. This approach failed because engine-based weakening changes only objective playing strength without aligning with the human training distribution, meaning engine-generated moves do not predict human choices well. McIlroy-Young et al. overcame this by developing Maia [1], training nine separate models via super-vised learning on human games across specific Elo brackets (1100–1900) based on the AlphaZero [9] architecture. Tang et al. unified this in Maia 2 [2] using categorical skill embeddings for both players combined through skill-aware attention, proving that a single model can continuously adapt its style across the entire Elo spectrum. However, Maia 2 treats every position as an independent event. It assumes the current board is a sufficient statistic for prediction, lacking any mechanism to represent how decision quality, game momentum, or clock pressure changes throughout a game. Subsequent work demonstrated that individual decision-making styles are detectable from move sequences [6] and that per-player behavior models can be learned from game data [10], motivating the use of move history as a behavioral signal. 
+
+Time Pressure in Human Chess. Empirical studies show that time pressure degrades human decision-making, spikes blunder rates, and shifts players toward forcing tactical continuations over complex positional plans. Sunde et al. [7] analyze move-by-move quality and decision times across 80,000+ positions from 1,600 games, demonstrat-ing that faster decisions yield poorer performance, consistent with sequential information acquisition under clock depletion. Carow and Witzig [8] show that professional players under temporal stress fa-vor risk-averse moves, while showing strategic loss aversion (greater risk-taking) when playing from a disadvantageous position. Leong et al. [11] show that experts adapt to temporal constraints using chunk-memory activation [12], displaying distinct brain functional connectivity under stress. These cognitive dynamics vary across time controls (e.g., blitz pattern recognition vs. classical deep calcula-tion) and shift dynamically within a single game as the clock runs down, making remaining clock time a critical predictor of human error. 
+
+Sequence Modeling in Games. Superhuman game-playing AIs use sequence information to track state and optimize play [13]. AlphaZero represents board state as spatial planes repeated over an 8-step history to identify repetitions and en passant legality [9], a design also used by Chess-former [14]. Sequence-based models have also applied language modeling directly to move histo-ries: Toshniwal et al. [15] track pieces via trans-former sequences and show that full history atten-tion is critical for predicting legal moves. Addi-tionally, Ruoss et al. [16] show transformers can plan without explicit search, and Zhong et al. [17] use skill-specific n-grams to prove preceding move sequences carry predictive signal. However, these models use history to estimate objective board state or predict moves as a purely static context signal, failing to capture how a player’s decision trajectory (such as the rise and fall in quality, momentum, and clock usage) affects their next move. 
+
+3. Architecture 
+
+Otter is a 15.3 million-parameter neural network which simultaneously predicts move choice, game outcome, and move metadata from a chess position. The model takes six inputs, passes them through two parallel encoding streams, creates a unified conditioning vector, combines everything with a e4  ...         
+
+> Nf3 ...
+> d3 ...
+> ...
+> O-O
+> 1
+> 2
+> 3
+> e6
+> d5
+> Nf6
+> ...
+> O-O 9
+> Active Elo
+> Opponent Elo
+> Time Control
+> Clock Times
+> [f1, f2]
+> Board Tensor
+> [B, 18, 8, 8]
+> Move History
+> [B, 20]
+> Queries ...
+> Board Stream
+> (CNN Stem + 4 ResBlocks)
+> 64 Board Tokens
+> (256d)
+> History Stream
+> (Transformer Encoder) Keys / Values ...
+> 20 History Tokens
+> (256d)
+> Pooled History Summary (256d)
+> Embedding Lookup ...
+> Embedding Features
+> (320d) Conditioning Vector
+> (640d) Concatenate
+> ...
+> Clock
+> MLP Clock Features
+> (64d)
+> 4x Self-Attention
+> Blocks
+> Projected Cond. Vector
+> Cross-Attention
+> Queries: 64 board tokens (256d) + Cond. Vector
+> Key/Values: 20 History Tokens (256d)
+> Project to Queries
+> (in each block)
+> Global Average Pool
+> Policy Head
+> (4208d) Value Head
+> (1d) Auxiliary Head
+> (141d)
+
+Figure 1: Overview of the Otter design. Our complete architecture encompasses four main stages: dual-stream encoding of the board state via a CNN and move sequences via a transformer; conditioning vector assembly by integrating Elo ratings, time controls, and clock characteristics with the pooled history; attention-based fusion of board and history representations with the conditioning vector projected directly into the queries; and joint multi-task prediction across policy, value, and auxiliary heads. 
+
+cross-attention block and four self-attention blocks, and generates three outputs from a shared pooled representation. Figure 1 provides an overview of the complete pipeline. 
+
+3.1. Inputs 
+
+The model receives six inputs per position, summa-rized in Table 1: board tensor of shape [B, 18, 8, 8], a sequence of the last K=20 moves as vocab-ulary indices, a boolean padding mask, the active player’s Elo bucket, the opponent’s Elo bucket, a time control bucket, and two clock features repre-senting remaining clock fractions. The board tensor contains 18 binary channels, detailed in Table 2: 12 for piece occupancy (6 piece types × 2 colors, always from the active player’s perspective with the board mirrored for black), 4 for castling rights, 1 for the en-passant target square, and 1 indicating the active player’s color. The vocabulary of moves consists of 4,208 legal UCI representations plus a padding token at index 0. Elo ratings are bucketed into 11 categories: bucket 0 covers <1100, buckets 1–9 cover 100-point intervals from 1100 to 2000, and bucket 10 covers ≥ 2000 . Time control is bucketed into 5 standard rapid formats. All moves in the history sequence are represented from the active player’s perspective: the board is mirrored vertically and move squares flipped, ensuring consistent represen-tation regardless of color. 
+
+Table 1: Input summary of Otter. The table outlines the six inputs processed by the model, including their shapes, dimensions, and semantic definitions. 
+
+Input Feature Shape Type / Range Description 
+
+Board Tensor [B, 18 , 8, 8] Binary ( float32 ) 18 planes encoding piece positions, castling rights, en pas-sant, and active POV. Move History [B, 20] Integer ( int64 in [0 , 4208] ) Sequence of the last K = 20 moves as vocabulary indices (0 for padding). Active Elo [B] Integer ( int64 in [0 , 10] ) Bucketed Elo rating of the active player ( < 1100 to ≥
+
+2000 ). Opponent Elo [B] Integer ( int64 in [0 , 10] ) Bucketed Elo rating of the opponent ( < 1100 to ≥ 2000 ). Time Control [B] Integer ( int64 in [0 , 4] ) Bucketed game time control format (bullet, blitz, rapid, classical, other). Clock Times [B, 2] Float ( float32 in [0 , 1] ) Remaining clock fractions for both the active player and the opponent. Table 2: Board tensor channel layout. Detailed breakdown of the 18 binary channels comprising the input board representation. All piece positions are encoded from the active player’s canonical perspective.                   
+
+> Channel Index Description Value Details
+> Channels 0–5 Active Pieces Binary planes: Pawn (0), Knight (1), Bishop (2), Rook (3), Queen (4), King (5). Channels 6–11 Opponent Pieces Binary planes: Pawn (6), Knight (7), Bishop (8), Rook (9), Queen (10), King (11). Channel 12 Active K-Castling All-ones plane if active player has kingside castling rights, all-zeros otherwise. Channel 13 Active Q-Castling All-ones plane if active player has queenside castling rights, all-zeros otherwise. Channel 14 Opponent K-Castling All-ones plane if opponent has kingside castling rights, all-zeros otherwise. Channel 15 Opponent Q-Castling All-ones plane if opponent has queenside castling rights, all-zeros otherwise. Channel 16 En Passant Square One-hot square plane with 1.0 at the en passant target square, all-zeros otherwise. Channel 17 Side to Move All-ones plane if original active player is White, all-zeros plane if Black.
+
+3.2. Board Stream 
+
+The board stream encodes the 18 × 8 × 8 binary tensor into a sequence of 64 spatial tokens of di-mension 256. The input passes through a CNN stem of three convolutional layers ( 18 → 64 →
+
+128 → 256 channels, 3 × 3 kernels, padding 1), each followed by batch normalization [18] and ReLU, with Dropout2d after the first two layers. Four residual blocks [19] follow, each containing two 256 × 256 convolutional layers with batch nor-malization, ReLU, and a skip connection. The resulting 8 × 8 × 256 feature map is flat-tened and transposed into 64 board tokens of di-mension 256. Factored 2D positional embeddings are added: separate rank and file embedding tables (each 8 × 256 ) are maintained, and each token’s positional embedding is the sum of its rank and file embeddings, giving the model explicit spatial awareness beyond what convolutions alone pro-vide. 
+
+3.3. History Stream 
+
+Unlike AlphaZero’s fixed 8-step positional look-back [9], this encoder is trained to detect behavioral patterns from the move sequence itself, capturing what each player is doing rather than only the board state. The history stream, illustrated in Figure 2, con-verts the last K=20 moves into two outputs: a token-level sequence for cross-attention with the board, and a single pooled summary vector for the conditioning signal. Each move is mapped to an embedding via a lookup table of 4,209 entries (4,208 legal UCI moves plus one padding token at index 0, whose embedding is always zero). Learned positional embeddings are added, and the sequence is pro-cessed by a 2-layer Transformer encoder with 4 at-tention heads [20] (dimension 32 each) and feedfor-Move History IDs [B, 20]
+(20 Move Tokens)           
+
+> 12345678910
+
+......  18  19  20  
+
+> Token Embedding Table
+> (4209 x 128)
+> Positional Embedding
+> (1 x 20 x 128)
+
+# +  
+
+> 2x Transformer Encoder Layers
+> (d_model=128, heads=4)
+> Linear Projection
+> (128 256) Masked Mean Pool
+
+... 1 2 3 4 19  20   
+
+> History Tokens [B, 20, 256]
+> (To Cross-Attention) Pooled History Summary [B, 256]
+> (To Conditioning Vector)
+> Linear Projection
+> (128 256)
+
+Figure 2: Internal flow of the Move History Stream. 
+
+The move history is embedded, processed by a 2-layer Transformer, and split into token-level representations for cross-attention and a masked mean-pooled summary for the conditioning vector. 
+
+ward dimension 256. Padding positions are masked throughout. The encoder output is mapped through two sepa-rate linear projections. The first projects each token from 128 to 256 dimensions, producing token-level representations for cross-attention. The second performs masked mean pooling over non-padding positions and projects the pooled 128 dimensions to 256, yielding a single summary vector of the game so far. This dual projection allows history to influence the model at two granularities: glob-ally through the conditioning vector ("how has this game gone overall?") and locally through cross-attention, where individual board squares attend to specific past moves. 
+
+3.4. Conditioning Vector and Clock Pressure Encoding 
+
+A 640-dimensional conditioning vector is assem-bled from five components: active player Elo em-bedding (128-d, from Embedding(11, 128) ), op-ponent Elo embedding (128-d), time control em-bedding (64-d, from Embedding(5, 64) ), a clock feature vector (64-d), and the pooled history sum-mary (256-d). The time control bucket and clock features serve distinct roles: the bucket identifies the game format (structural constraints), while clock features cap-ture the pressure at this specific moment. Together they provide temporal context at both the game and move level. 
+
+Clock Pressure Encoding. Human move selec-tion depends not only on the time control format but also on the remaining clock time at the moment of decision. Otter represents the clock state as two normalized scalars: 
+
+f1 = tremaining 
+
+tbase 
+
+f2 = tincrement 
+
+tbase 
+
+(1) Dividing by the base time standardizes time pres-sure across formats: a player with half their clock remaining ( f1 = 0 .5) experiences comparable rel-ative pressure whether playing a 10-minute or 15-minute game. The increment fraction f2 captures structural time relief: a player with 30 seconds re-maining ( f1 ≈ 0.05 ) and no increment ( f2 = 0 )faces immediate time hazard, whereas the same player with a 5-second increment ( f2 ≈ 0.008 ) has a guaranteed baseline of thinking time per move. These two scalars are passed into a two-layer MLP: 
+
+clock = MLP([ f1, f 2]) (2) where MLP is a feedforward network structured as Linear(2 → 64) → ReLU → Linear(64 →
+
+64) → ReLU , producing a 64-dimensional clock representation concatenated into the conditioning vector alongside the Elo and history embeddings. The complete conditioning vector is passed iden-tically to every attention block in the fusion stage, simultaneously encoding player identity, opponent identity, time format, clock pressure, and game tra-jectory, making it the primary source of behavioral context throughout the model. 
+
+3.5. Fusion 
+
+The fusion stage integrates board and history to-kens under the unified conditioning signal through a cross-attention block followed by four self-attention blocks. Conditioning Vector
+(640d)  
+
+> Board Tokens
+> (Q) (64 x 256) History Keys
+> (K) (20 x 256)
+
+# +
+
+> History Values
+> (V) (20 x 256)
+> Linear Projection
+> (Wc) (640  256)  Conditioned Queries
+> (Q*) (64 x 256)
+> Cross-Attention
+> Attention Weights
+> (64 x 20)
+> Scaled Dot-Product
+> Attention
+
+X
+
+> Attention Output
+> (64 x 256)
+
+# + Residual 1
+(Add)   
+
+> Feed-Forward network (FFN)
+> 256 512 256
+> (64 x 256)
+
+# + Residual 2
+(Add) 
+
+> Updated Board Tokens
+> (64 x 256)
+
+Figure 3: Conditioned attention mechanism. The 640-dimensional conditioning vector is projected via a learned linear layer WC and added to the board token queries to produce conditioned queries Q∗ = Q+cond ·
+
+WC . The conditioned queries attend to history tokens via cross-attention, followed by a feedforward network, with residual connections and pre-layer normalization throughout. The same mechanism is reused in the four subsequent self-attention blocks. 
+
+Design Rationale: Query-Based vs. Normalization-Based Conditioning. In vi-sion and diffusion models, adaptive layer normalization (AdaLN-Zero) [21] is standard for conditioning. However, in game-playing agents like Maia 2 [2], injecting conditioning directly into attention queries has proven more effective. Queries dictate which board features the attention mechanism prioritizes, so injecting context there enables adaptive focus based on player style. We extend this to dynamic, multi-modal game context: Otter projects a composite conditioning vector (skill, time control, clock pressure, move history) into the query space of each attention head, enabling the attention mechanism to dynamically re-weight board features based on who is playing and the immediate temporal pressure. In the cross-attention block, the 64 board tokens attend to the K=20 history tokens. Board tokens produce the queries; history tokens produce the keys and values. The conditioning vector is folded into the queries via a learned linear projection, as depicted in Figure 3: 
+
+Q∗ = Q + cond · WC (3) where Q is the board-token query matrix, cond is the conditioning vector, WC is the learned pro-jection into query space, and Q∗ is the conditioned query. This allows the model to ask, for every board square, which aspects of game history are most relevant, with player identity and time pressure shaping the answer. A feedforward layer (256 →
+
+512 → 256) with GELU activation follows [22], with residual connections and pre-layer normaliza-tion throughout. Four self-attention blocks continue with the same conditioned-query technique: the condition-ing vector is projected and added to queries in each block, so the model refines spatial relations among all 64 squares while remaining aware of skill, time pressure, and game history. Each block uses 8 heads of size 32 and a feedforward network 
+
+(256 → 1024 → 256) with GELU and residual connections. After these blocks, global average pooling merges the 64 tokens into a single 256-dimensional vector for the output heads. Crucially, the conditioning vector is injected into every at-tention block (cross-attention plus all four self-attention blocks), ensuring time awareness impacts spatial reasoning at every stage. 
+
+3.6. Output Heads 
+
+Three heads independently map the 256-dimensional pooled representation. The policy head outputs a distribution over 4,208 legal moves via a two-layer MLP (256 → 1024 → 4,208) with ReLU and dropout [23]; illegal moves are masked to −∞ before softmax. The value head estimates the game result via a mini-MLP (256 → 64 → 1) 
+
+with Tanh output, yielding a scalar in [−1, +1] .The auxiliary head predicts 141 binary move properties (moving piece type (6), captured piece type (6), check flag (1), from-square (64), to-square (64)) via a two-layer MLP (256 → 512 → 141) 
+
+with Sigmoid activation. Table 3 summarizes the parameter allocation across all components.                                 
+
+> Table 3: Architecture summary (15.3M parameters).
+> Component Details Params
+> Board Stream
+> CNN Stem 18 →64 →128 →256
+> Res. Blocks ×4, 256 →256
+> Pos. Embed Rank + File 5.11M
+> History Stream
+> Embedding 4209 ×128
+> Transformer ×2, 4 heads Projections 128 →256 each 0.87M
+> Conditioning (640d)
+> Elo Emb(11, 128) ×2Time / Clock Emb(5, 64) + Clock MLP 0.01M
+> Fusion
+> Cross-Attn ×1, 8 heads 0.69M Self-Attn ×4, 8 heads 3.81M
+> Output Heads
+> Policy 256 →1024 →4208 4.58M Value 256 →64 →10.02M Auxiliary 256 →512 →141 0.20M
+> Total 15.3M
+
+4. Training 
+
+We describe the training methodology, preprocess-ing pipeline, and optimization schedule used to train Otter’s parameters. The model is trained via supervised learning on 117 million Lichess rapid games (6.1 billion positions), using mixed preci-sion on a single T4 GPU to jointly predict players’ next moves, expected game outcome, and auxil-iary move properties. Complete training settings and data pipelines are described in the following subsections. 4.1. Dataset 
+
+Otter is trained exclusively on rated rapid games from the Lichess 2024 public database [24]. Lichess provides complete game records in PGN format with move-level clock times, time con-trols, and player ratings. Per Lichess’s formula 
+
+(base seconds + 40 × increment ), this corresponds to estimated game durations of 8–25 minutes. The dataset is predominantly 10+0 games ( ∼75% ), fol-lowed by 10+5 and 15+10. Bullet and blitz games are excluded because their extreme time pressure produces fundamentally different move selection behavior; classical games are excluded due to their scarcity on Lichess. The final dataset comprises 117 million games and approximately 6.1 billion positions; Table 4 summarizes the training, vali-dation, and test splits. Games with missing clock data, incomplete move records, or players outside the supported Elo range are filtered out. We report the rating-bracket matchup distribution of the fi-nal training dataset in Table 5. Because we flip Black’s moves to play as the active player, the matchup statistics between any two rating brackets are symmetric; we therefore combine these sym-metric counts and suppress the redundant upper half of the table. The diagonal dominance of the table reflects Lichess’s rating-balanced pairing sys-tem. 
+
+4.2. Preprocessing 
+
+Each game is converted into per-position training examples. For every position, we extract: the 18-channel board tensor, the last K=20 moves as vo-cabulary indices, active and opponent Elo buckets, the time control category, and remaining clock frac-tions for both players. The board tensor is always constructed from the active player’s perspective (mirrored for black). Move history is canonical-ized in the same frame, with squares flipped for black moves. Sequences shorter than 20 moves are padded with the PAD token (index 0), accompa-nied by a boolean mask excluding padding from attention. Legal move masks are precomputed per position. 
+
+4.3. Loss Function 
+
+The three output heads are trained jointly: 
+
+L = Lpolicy + 0 .25 · L value + 0 .5 · L aux (4) The policy loss Lpolicy is cross-entropy between the predicted move distribution and the actual hu-man move. The value loss Lvalue is MSE between predicted and actual game outcomes ( +1 win, 0
+
+draw, −1 loss). The auxiliary loss Laux is binary cross-entropy on the 141 move-property predic-tions. 
+
+Table 4: Dataset statistics. Summary of the training, validation, and test datasets extracted from Lichess. 
+
+Split Source Period Format Total Games Total Positions 
+
+Training Lichess 2024 Rapid ( 8+0 to 15+10 ) 117M ∼6.1B Validation Lichess Jan 2025 Rapid ( 8+0 to 15+10 ) —a 204,800 Test (Ablation / Exp) Lichess Feb 2025 Rapid ( 8+0 to 15+10 ) —b 1,100,000  
+
+> a
+
+Streamed deterministically with a fixed seed during training (100 steps of batch size 2,048).  
+
+> b
+
+The test set consists of a fixed, balanced subset of positions sampled from February 2025 games. 
+
+Table 5: 2024 training set Elo matchup distribution. Number of games per rating-pair bracket. The upper triangle is suppressed by symmetry because Black’s moves are flipped to play as the active player (White). Total training games: 117,235,902.                                                                                                                                     
+
+> Black White Elo Bracket
+> <1100 1100–1199 1200–1299 1300–1399 1400–1499 1500–1599 1600–1699 1700–1799 1800–1899 1900–1999 ≥2000
+> <1100 14,284,462 ——————————
+> 1100–1199 3,069,295 4,186,924 —————————
+> 1200–1299 268,631 3,149,303 5,318,190 ————————
+> 1300–1399 85,625 213,561 3,503,137 6,334,001 ———————
+> 1400–1499 52,366 55,034 212,655 3,689,289 7,038,315 ——————
+> 1500–1599 59,921 73,672 160,208 408,664 4,121,176 7,887,600 —————
+> 1600–1699 21,161 23,112 44,843 84,696 237,567 4,138,328 7,711,141 ————
+> 1700–1799 17,422 9,650 26,426 47,391 82,293 340,431 4,002,956 7,192,832 ———
+> 1800–1899 12,571 9,288 8,053 19,728 40,398 99,160 257,911 3,748,788 5,994,453 ——
+> 1900–1999 13,412 7,107 7,231 9,620 21,455 49,979 64,228 277,227 3,233,845 4,348,356 —
+> ≥2000 24,227 11,688 12,348 15,656 22,554 47,074 56,123 87,873 328,711 2,719,330 7,535,230
+
+The policy head carries full weight ( 1.0) as the primary target. The value head ( 0.25 ) serves as a regularizer encouraging game-state awareness. The auxiliary head ( 0.5) provides structured su-pervision grounding the policy representation in concrete move semantics. In practice, Lvalue does not decrease significantly. Predicting game outcomes from single mid-game positions in human rapid chess is inherently high-entropy due to blunders and time pressure. The value head is retained as an auxiliary regularizer but is not reported as a key metric. Lpolicy converges steadily, with residual variance reflecting natural stochasticity in human move choice rather than training failure. 
+
+4.4. Optimizer and Schedule 
+
+We optimize Otter using the AdamW opti-mizer [25] with a base learning rate of 10 −4 and weight decay of 10 −5. To stabilize the initial train-ing phase and prevent early divergence in the Trans-former’s cross-attention layers, we employ a lin-ear learning rate warmup over the first 10% of the optimization budget (the first 300,000 steps). Fol-lowing warmup, a cosine annealing schedule [26] decays the learning rate to a minimum of 10 −6
+
+at 3,000,000 steps. Gradients are clipped to a maximum L2 norm of 1.0. Mixed-precision train-ing [27] (PyTorch AMP with GradScaler [28]) is used to accelerate throughput and manage memory on the NVIDIA T4 GPU. 
+
+Table 6: Training configuration. Summary of hyperpa-rameters, optimization settings, and compute resources.                           
+
+> Hyperparameter / Setting Value
+> Optimizer AdamW Base Learning Rate 1×10 −4
+> Final Learning Rate 1×10 −6
+> Learning Rate Schedule Cosine annealing ( 10% linear warmup) Weight Decay 1×10 −5
+> Gradient Clipping Max L2norm 1.0
+> Batch Size 2048
+> Training Steps 3,000 ,000
+> Total Positions Seen ∼6.1B Precision Mixed (FP16 AMP with GradScaler) Hardware 1×NVIDIA T4 GPU Training Wall Time ∼30 days
+
+4.5. Hardware and Training Time 
+
+Training ran on a single NVIDIA T4 GPU for approximately 30 days: 3 million steps at batch size 2048, processing ∼6.1 billion positions total. No distributed training or gradient accumulation was used. The T4’s 16 GB VRAM accommodated this batch size under mixed precision. The com-plete training configuration, optimization parame-ters, and hardware details are summarized in Ta-ble 6. 
+
+5. Experiments and Results 
+
+We present a series of empirical evaluations and key results to assess Otter’s ability to model human chess decisions. We evaluate the model’s accuracy across various skill levels, compare it directly to the state-of-the-art Maia 2 baseline, and conduct ablation studies to isolate the impact of history and temporal features. Additionally, we analyze the model’s sensitivity to history window length and game phases. Our findings demonstrate that incor-porating behavioral move history and time pressure context yields consistent, universal improvements in move prediction accuracy across all rating brack-ets, outperforming the position-only baseline while using a smaller parameter footprint. 
+
+5.1. Evaluation Methodology 
+
+All models are evaluated on data outside the 2024 training period to prevent temporal leakage. Jan-uary 2025 Lichess rapid games serve as the valida-tion set during training (full model: 55.57% top-1 at convergence). Final evaluation uses an unseen test set of 1,100,000 positions from February 2025 Lichess rapid games, equally divided among 11 Elo brackets (100,000 per bracket). 
+
+Top-1 accuracy is the fraction of positions where the model’s highest-probability prediction matches the human move. Top-5 accuracy is the fraction where the human move falls within the five highest-probability predictions. Illegal moves are always masked to −∞ before softmax. All three ablation variants (base, history only, full) are evaluated on identical test positions. Maia 2 com-parisons use publicly reported figures from [2]. 
+
+5.2. Comparison Against Maia 2 
+
+Otter is compared to Maia 2, the state-of-the-art position-only human chess model as of Febru-ary 2026 [2], a unified skill-conditioned model trained on 9.1 billion positions from 169 million games. The comparison assesses how much be-havioral context improves over the best existing position-only method. Specifically, Maia 2 reports a macro-averaged move prediction accuracy of 53.25%, achieving 51.72% for Skilled players (up to 1600 Elo), 54.15% for Advanced players (1600–2000 Elo), and 53.87% for Master players (2000 + Elo). Otter achieves consistent improvements across all corre-sponding cohorts: 54.66% ( +2.94 pp) for Skilled, 56.32% ( +2.17 pp) for Advanced, and 57.09% (+3.22 pp) for Master players. The Base model (position-only) achieves 47.61%, which is 5.64 pp below Maia 2’s 53.25%, confirming that architectural differences alone do not explain the improvement. As summarized in Table 7, the full model at 55.23% surpasses Maia 2 by +1.98 pp despite using ∼31% less training data and 34% fewer parameters. This improvement is entirely attributable to behavioral context, as the ablation study confirms. Note that this comparison is not fully controlled for training data distribution. 
+
+Table 7: Main comparison against Maia 2. We com-pare parameter size, training database scale, and overall human move prediction accuracy.               
+
+> Model Params Train Games Top-1 Acc. Top-5 Acc.
+> Maia 2 a23.3M 169M 53 .25% —
+> Otter (Ours) 15.3M 117M 55 .23 %90 .95 %
+> a
+
+Maia 2 numbers are cited directly from Tang et al. [2]. 
+
+5.3. Per-Bracket Analysis 
+
+Otter is analyzed across all 11 Elo brackets to ver-ify that accuracy improvements are uniformly dis-tributed rather than concentrated at specific rating levels. Figure 4 shows per-bracket top-1 and top-5 accuracy for all three variants; Table 8 provides the full numerical breakdown. Full model’s top-1 accuracy correlates positively with the Elo, rising from 49.48% ( <1100) to 57.38% (1900–1999), with a slight drop to 56.80% (≥2000). This pattern holds across all of the three <1100 1100 1199 
+
+> 1200 1299
+> 1300 1399
+> 1400 1499
+> 1500 1599
+> 1600 1699
+> 1700 1799
+> 1800 1899
+> 1900 1999
+> 2000+ 40 45 50 55 60
+> Accuracy (%)
+> 57.38%
+> Top-1 Accuracy by Elo Bracket
+> Base History Only Full Model
+> <1100 1100 1199
+> 1200 1299
+> 1300 1399
+> 1400 1499
+> 1500 1599
+> 1600 1699
+> 1700 1799
+> 1800 1899
+> 1900 1999
+> 2000+ 80 82 84 86 88 90 92 94
+> Accuracy (%)
+> 92.85%
+> Top-5 Accuracy by Elo Bracket
+> Base Full Model
+
+Figure 4: Per-bracket accuracy across ablation vari-ants. Top-1 accuracy (top) for all three variants and top-5 accuracy (bottom) for Base and Full model across all 11 Elo brackets. Peak top-1 of 57.38% and top-5 of 92.85% are both achieved in the 1900–1999 bracket. Table 8: Per-bracket move prediction accuracy. Top-1 and top-5 accuracy for the Base, History-only, and Full model variants across all 11 Elo brackets. ∆ Hist and ∆ Full denote percentage point improvements over the Base model. The Overall row is the macro-average across all 1,100,000 test positions. 
+
+Elo Bracket n Base Top-1 Hist. Top-1 Full Top-1 ∆ Hist ∆ Full Base Top-5 Full Top-5 
+
+<1100 100,000 42.26% 47.42% 49.48% +5.16 pp +7.22 pp 82.01% 86.08% 1100–1199 100,000 45.58% 50.98% 53.54% +5.40 pp +7.96 pp 85.45% 89.67% 1200–1299 100,000 46.95% 52.24% 54.61% +5.29 pp +7.66 pp 86.41% 90.28% 1300–1399 100,000 47.72% 52.85% 55.19% +5.13 pp +7.47 pp 87.07% 90.75% 1400–1499 100,000 47.85% 52.87% 55.29% +5.02 pp +7.44 pp 87.14% 90.98% 1500–1599 100,000 47.60% 52.97% 55.39% +5.37 pp +7.79 pp 87.36% 91.04% 1600–1699 100,000 48.84% 54.05% 56.59% +5.21 pp +7.75 pp 88.06% 91.94% 1700–1799 100,000 48.69% 53.90% 56.46% +5.21 pp +7.77 pp 88.50% 92.11% 1800–1899 100,000 49.16% 54.48% 56.85% +5.32 pp +7.69 pp 88.75% 92.25% 1900–1999 100,000 49.68% 54.94% 57.38% +5.26 pp +7.70 pp 89.36% 92.85% 
+
+≥2000 100,000 49.35% 54.61% 56.80% +5.26 pp +7.45 pp 89.01% 92.49% 
+
+Overall 1,100,000 47.61% 52.85% 55.23% +5.24 pp +7.62 pp 87.19% 90.95% variants and is consistent with stronger players mak-ing more contextually predictable moves given suf-ficient behavioral context. The improvement from adding history and time is remarkably uniform across Elo, ranging from 
+
++7.22 pp ( <1100) to +7.96 pp (1100–1199), with no bracket falling below +7 pp. Top-5 accuracy ranges from 86.08% ( <1100) to 92.85% (1900– 1999), with the base-to-full deltas of +3.48 pp to 
+
++4.22 pp, confirming that the full model’s probabil-ity distributions are better calibrated across all skill levels. 
+
+5.4. Ablation Study 
+
+To isolate the contribution of each component, three Otter variants are evaluated on the same 1,100,000-position test set: • Base (no history, no time): board tensor + skill conditioning only, equivalent to a position-only model with Otter’s architecture. • History only : base + move history encoder and cross-attention, no time module. • History and time (full model): all compo-nents active. The ablation reveals three key insights: 
+
+Insight 1: The Markov assumption is the pri-mary bottleneck [5]. Adding move history alone yields +5.24 pp overall, from 47.61% to 52.85%. The history-only model (52.85%) approaches Maia-2’s 53.25% [2] despite 34% fewer parameters and less training data. The position-only assumption, not model capacity or data volume, is the main limitation. 
+
+Insight 2: Time control is a separate, additive signal. Adding the time module on top of history yields an extra +2.38 pp (52.85% → 55.23%), ob-served across all brackets, from +2.06 pp ( <1100) to +2.54 pp (1600–1699). That the effect holds even at the lowest Elo levels, where clock man-agement is least deliberate, suggests time pressure broadly influences human move selection. 
+
+Insight 3: Both contributions are additive and universal. The combined +7.62 pp improvement appears in all 11 brackets with no exceptions (min-imum +7.22 pp). No bracket shows degradation from adding either component. This rules out gains being attributable to particular game subsets and supports the view that sequential context and time pressure are fundamental features of human chess decision-making. 
+
+5.5. Accuracy by Game Phase 
+
+Positions are divided into three phases: opening (ply 0–29), middlegame (ply 30–79), and endgame (ply 80+). Figure 5 compares the Base and Full models across all three phases. • Opening : base 43.98%, full 52.48% (+8.50 pp, n=480 ,870 ). Even a few moves of history reveal a player’s repertoire and style preferences. Notably, this advantage is even more pronounced in the first five moves of the game (ply 0–9, n=167 ,519 ), where the full model outperforms the base model by +12 .63 pp (52.09% vs. 39.46%, top-5: 90.74% vs. 86.34%). This demonstrates that the history encoder can identify style prefer-ences and opening repertoires even from ex-tremely short, heavily padded sequences. • Middlegame : base 49.33%, full 55.84% (+6.51 pp, n=475 ,653 ). Improvement is gen-uine but smaller due to positional diversity. • Endgame : base 54.03%, full 62.46% (+8.43 pp, n=143 ,477 ). Endgame positions are highly path-dependent, and the history en-coder captures the chain of events the base model cannot see. Opening (ply 0 29)   
+
+> Middlegame (ply 30 79)
+> Endgame (ply 80+) 35 40 45 50 55 60 65 70
+> Top-1 Accuracy (%)
+> 44.0 49.3 54.0 52.5 55.8 62.5
+> +8.50 pp
+> +6.51 pp
+> +8.43 pp
+> n=481k n=476k n=143k
+> Base Full Model
+
+Figure 5: Move prediction accuracy by game phase. 
+
+Comparison of the position-only Base model and the Full model across openings (ply 0–29), middlegames (ply 30–79), and endgames (ply 80+). Absolute percent-age point improvements are annotated above each pair. The sample size n represents the total number of test board positions evaluated in each respective phase. 
+
+5.6. History Window Size Sensitivity 
+
+To justify K=20 , the full model is evaluated with inference-time history truncation at K=5 , K=10 ,and K=20 , with all other components held con-stant. Oldest tokens are replaced with zeros to simulate shorter windows. Results show diminishing returns (Figure 6): 
+
+K=5 reaches 54.03%, K=10 reaches 54.95%, and 
+
+K=20 reaches 55.23%. Relative to the no-history baseline (47.61%), K=5 already retains 84% of the total history advantage ( +6.42 pp out of +7.62 pp). The gain from K=5 to K=10 is +0.92 pp, and from K=10 to K=20 only +0.28 pp, showing clear saturation at K=20 .0(Base) 5 10 20 (Full)   
+
+> History Window Size ( K)
+> 44 46 48 50 52 54 56 58
+> Top-1 Accuracy (%)
+> 47.61% 54.03% 54.95% 55.23%
+> Top-1 Top-5 85 86 87 88 89 90 91 92 93
+> Top-5 Accuracy (%)
+> 87.19% 90.28% 90.81% 90.95%
+
+Figure 6: History window size sensitivity. Top-1 accu-racy as a function of the history window size K. K = 0 
+
+represents the no-history Base model baseline (47.61%, plotted as a dashed line). Performance rises steeply at 
+
+K = 5 and flattens out towards the chosen configuration of K = 20 .
+
+5.7. Training Dynamics 
+
+We analyze the training progression of Otter over the 3.0M steps of optimization, shown in Figure 7. The auxiliary loss converges smoothly, confirm-ing the model learns move-property prediction as a stable secondary task. Policy loss converges steadily with expected noise; human move choice is inherently stochastic, imposing a floor on achiev-able loss, and the observed variance is normal. The value loss remains flat and noisy, which is unsur-prising: predicting game outcomes from single po-sitions in human rapid chess is high-entropy due to blunders and time pressure. The value head is re-tained as a regularizer but not reported as a metric. Validation accuracy (January 2025, stabilizing at 55.57% top-1) tracks training accuracy closely throughout, with no divergence even after 30 days, confirming no overfitting. All reported evaluation numbers are from the February 2025 test set. 
+
+5.8. Error Analysis 
+
+Otter’s errors are consistent with the nature of hu-man chess behavior, revealing inherent limits of behavioral context modeling. When the top-1 prediction misses, the predicted move is typically a reasonable alternative, not an arbitrary choice. The large top-1/top-5 gap in lower Elo brackets reflects less consolidated open-ing knowledge and more variable move choice. The 86.08% top-5 accuracy in the <1100 bracket shows the model correctly identifies the plausible move set even when the specific choice is unpredictable. Blunders are systematically underpredicted. Ot-ter is trained to predict modal human behavior at each Elo level, so it favors sensible moves even when the player actually makes a major error. This is intrinsic to supervised learning on human games: blunders are low-frequency events that receive lit-tle weight in the loss function. A model predicting the most common human move will always under-represent the distribution’s tail. This is a known 0.0 0.5 1.0 1.5 2.0 2.5 3.0             
+
+> Steps (Millions)
+> 0.0 0.5 1.0 1.5 2.0 2.5 3.0
+> Loss Value Training & Validation Losses
+> Policy Loss Value Loss Aux Loss Val Total Loss
+> 0.0 0.5 1.0 1.5 2.0 2.5 3.0
+> Steps (Millions)
+> 20 40 60 80
+> Accuracy (%)
+> 55.58% 91.28%
+> Training & Validation Accuracies
+> Train Top-1 Val Top-1 Val Top-5
+> 0.0 0.5 1.0 1.5 2.0 2.5 3.0
+> Steps (Millions)
+> 0.00000 0.00002 0.00004 0.00006 0.00008 0.00010
+> Learning Rate Learning Rate Schedule
+> Learning Rate
+
+Figure 7: Training dynamics and convergence curves across 3.0M optimization steps. Panel 1 plots the policy, auxiliary, and value training losses (solid lines) alongside the validation total loss (dashed line). Panel 2 compares the training top-1 move prediction accuracy with validation top-1 (solid) and top-5 (dashed) accuracies evaluated on the January 2025 validation set, with final values annotated. Panel 3 shows the learning rate schedule, detailing the initial 10% linear warmup (steps 0–300k) followed by cosine annealing decay to 10 −6. The validation metrics closely track training metrics throughout the run, confirming stable regularization and the absence of overfitting. limitation shared by all prior human chess models. The slight accuracy decline in the ≥2000 bracket relative to 1900–1999 (57.38% → 56.80%) reflects the heterogeneity of the ≥2000 cohort, which spans club players to titled players with diverse opening preparation and stylistic preferences. 
+
+Acknowledgments 
+
+The authors sincerely thank Microsoft for provid-ing Azure compute credits and access to GPU re-sources. This support enabled the training of the models, extensive experimentation, and the devel-opment of the research presented in this paper. The authors also express their gratitude to Lichess for generously making large-scale chess data publicly available. Their commitment to open data has been invaluable in enabling this research. References 
+
+[1] Reid McIlroy-Young, Siddhartha Sen, Jon Kleinberg, and Ashton Anderson. Aligning superhuman ai with human behavior: Chess as a model system. In Pro-ceedings of the 26th ACM SIGKDD International Conference on Knowledge Discovery & Data Mining (KDD) , KDD ’20, pages 1677–1687. ACM, August 2020. [2] Zhenwei Tang, Difan Jiao, Reid McIlroy-Young, Jon Kleinberg, Siddhartha Sen, and Ashton Anderson. Maia-2: A unified model for human-ai alignment in chess. In Advances in Neural Information Processing Systems (NeurIPS) , 2024. [3] The Stockfish developers. Stockfish: A strong open source chess engine. https://stockfishchess. org , 2024. [4] The LCZero Authors. Leela chess zero. https: //lczero.org/ , 2024. [5] Michael L. Littman. Markov games as a frame-work for multi-agent reinforcement learning. In William W. Cohen and Haym Hirsh, editors, Ma-chine Learning Proceedings 1994 , pages 157–163. Morgan Kaufmann, San Francisco (CA), 1994. [6] Reid McIlroy-Young, Russell Wang, Siddhartha Sen, Jon Kleinberg, and Ashton Anderson. Detecting indi-vidual decision-making style: Exploring behavioral stylometry in chess. In M. Ranzato, A. Beygelzimer, Y. Dauphin, P. S. Liang, and J. Wortman Vaughan, editors, Advances in Neural Information Processing Systems , volume 34, pages 24482–24497. Curran As-sociates, Inc., 2021. [7] Uwe Sunde, Dainis Zegners, and Anthony Strittmat-ter. Speed, quality, and the optimal timing of com-plex decisions: Field evidence. arXiv preprint arXiv:2201.10808 , 2022. [8] Johannes Carow and Niklas M. Witzig. Time pressure and strategic risk-taking in professional chess. Journal of Economic Behavior & Organi-zation , 238:107218, 2025. [9] David Silver, Thomas Hubert, Julian Schrittwieser, Ioannis Antonoglou, Matthew Lai, Arthur Guez, Marc Lanctot, Laurent Sifre, Dharshan Kumaran, Thore Graepel, Timothy Lillicrap, Karen Simonyan, and Demis Hassabis. A general reinforcement learn-ing algorithm that masters chess, shogi, and go through self-play. Science , 362(6419):1140–1144, 2018. [10] Reid McIlroy-Young, Russell Wang, Siddhartha Sen, Jon Kleinberg, and Ashton Anderson. Learn-ing models of individual behavior in chess. In Pro-ceedings of the 28th ACM SIGKDD Conference on Knowledge Discovery and Data Mining , KDD ’22, pages 1253–1263. ACM, August 2022. [11] Chantat Leong, Yuwen Lin, Juan Zhang, and Zhen Yuan. How time pressure modulates individual differ-ences in the functional connectivity of chunk memory in chess games. Neuroscience , 552:39–46, 2024. [12] William G. Chase and Herbert A. Simon. Percep-tion in chess. Cognitive Psychology , 4(1):55–81, 1973. [13] Johannes Czech, Moritz Willig, Alena Beyer, Kris-tian Kersting, and Johannes Fürnkranz. Learning to play the chess variant crazyhouse above world cham-pion level with deep neural networks and human data. 
+
+Frontiers in Artificial Intelligence , 3, April 2020. [14] Daniel Monroe and Philip A. Chalmers. Master-ing chess with a transformer model. arXiv preprint arXiv:2409.12272 , 2024. [15] Shubham Toshniwal, Sam Wiseman, Karen Livescu, and Kevin Gimpel. Chess as a testbed for language model state tracking. In Proceedings of the AAAI Conference on Artificial Intelligence , volume 36, pages 11385–11393, 2022. [16] Anian Ruoss, Grégoire Delétang, Sourabh Meda-pati, Jordi Grau-Moya, Li Kevin Wenliang, Elliot Catt, John Reid, Cannada A. Lewis, Joel Veness, and Tim Genewein. Amortized planning with large-scale transformers: A case study on chess. In A. Glober-son, L. Mackey, D. Belgrave, A. Fan, U. Paquet, J. Tomczak, and C. Zhang, editors, Advances in Neural Information Processing Systems , volume 37, pages 65765–65790. Curran Associates, Inc., 2024. [17] Daren Zhong, Dingcheng Huang, and Clayton Greenberg. Predicting human chess moves: An ai assisted analysis of chess games using skill-group specific n-gram language models. arXiv preprint arXiv:2512.01880 , 2025. [18] Sergey Ioffe and Christian Szegedy. Batch nor-malization: Accelerating deep network training by reducing internal covariate shift. In Francis Bach and David Blei, editors, Proceedings of the 32nd Interna-tional Conference on Machine Learning , volume 37 of Proceedings of Machine Learning Research , pages 448–456, Lille, France, 07–09 Jul 2015. PMLR. [19] Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun. Deep residual learning for image recog-nition. In Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR) ,June 2016. [20] Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Lukasz Kaiser, and Illia Polosukhin. Attention is all you need. In Advances in Neural Information Processing Systems , 2017. [21] William Peebles and Saining Xie. Scalable diffu-sion models with transformers. In Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV) , 2023. [22] Dan Hendrycks and Kevin Gimpel. Gaus-sian error linear units (gelus). arXiv preprint arXiv:1606.08415 , 2016. [23] Nitish Srivastava, Geoffrey Hinton, Alex Krizhevsky, Ilya Sutskever, and Ruslan Salakhut-dinov. Dropout: A simple way to prevent neural networks from overfitting. Journal of Machine Learning Research , 15(56):1929–1958, 2014. [24] Lichess.org. Lichess open database. https:// database.lichess.org , 2024. [25] Ilya Loshchilov and Frank Hutter. Decoupled weight decay regularization. In International Confer-ence on Learning Representations , 2019. [26] Ilya Loshchilov and Frank Hutter. SGDR: Stochas-tic gradient descent with warm restarts. In Inter-national Conference on Learning Representations ,2017. [27] Paulius Micikevicius, Sharan Narang, Jonah Al-ben, Gregory Diamos, Erich Elsen, David Garcia, Boris Ginsburg, Michael Houston, Oleksii Kuchaiev, Ganesh Venkatesh, and Hao Wu. Mixed precision training. In International Conference on Learning Representations , 2018. [28] Adam Paszke, Sam Gross, Francisco Massa, Adam Lerer, James Bradbury, Gregory Chanan, Trevor Killeen, Zeming Lin, Natalia Gimelshein, Luca Antiga, Alban Desmaison, Andreas Kopf, Edward Yang, Zachary DeVito, Martin Raison, Alykhan Te-jani, Sasank Chilamkurthy, Benoit Steiner, Lu Fang, Junjie Bai, and Soumith Chintala. Pytorch: An im-perative style, high-performance deep learning li-brary. In H. Wallach, H. Larochelle, A. Beygelzimer, F. d’Alché Buc, E. Fox, and R. Garnett, editors, Ad-vances in Neural Information Processing Systems ,volume 32, pages 8024–8035. Curran Associates, Inc., 2019.

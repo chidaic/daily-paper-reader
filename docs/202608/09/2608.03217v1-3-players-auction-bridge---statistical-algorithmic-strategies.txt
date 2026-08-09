@@ -1,0 +1,213 @@
+Title: 3 Players Auction Bridge - Statistical Algorithmic Strategies
+
+URL Source: https://arxiv.org/pdf/2608.03217v1
+
+Published Time: Wed, 05 Aug 2026 00:36:59 GMT
+
+Number of Pages: 7
+
+Markdown Content:
+# 3 Players Auction Bridge - Statistical Algorithmic Strategies 
+
+Sourish Sarkar 1[0009 −0002 −1887 −0007] , Aritrabha Majumdar 2[0009 −0003 −9149 −0729] , and Moutushi Chatterjee 3[0000 −0003 −4848 −1627]  
+
+> 1
+
+Indian Statistical Institute, Hyderabad sourish.sarkar13@gmail.com  
+
+> 2
+
+Indian Statistical Institute, Bangalore bmat2311@isibang.ac.in  
+
+> 3
+
+Indian Statistical Institute, Bangalore tushi.stats@gmail.com 
+
+Abstract. Three-player auction bridge is an updated version of the worldwide-recognized auction bridge card game. Dynamic partners and opponents are the key factors in this game. This dynamic property reduces the bias and increases the authenticity of this game. The article provides insight on statistical learning and insight for a three-player auction bridge game. An exact algorithm for various scenarios is developed along with the corresponding winning strategies to explore different game plannings and the computational intelligence involved. Based on the algorithm, we simulate data and define the probabilistic values to win a certain game. 
+
+Keywords: Auction Bridge· Bidding Strategy· Computational Intelligence· Multiplayer Game· Planning· Statistical Analysis and Learning 
+
+## 1 Introduction 
+
+The three-player auction bridge is an advanced version of the traditional auction bridge. In this game, the bidding section point table differs from that of the conventional auction bridge, as dis-cussed in Sarkar et al. [4]. The unique aspect of this variant is that opponents and partners are dynamic, ensuring that there is no bias. Whitehead [5] was among the first to document principles and game rules for auction bridge. Delooze and Downey [2] discussed the complexity of the auction bridge game as a multi-player game and proposed a neural network-based self-organizing map for bidding the so-called ’No Trump hand’ effectively. Chen et al. [1] used a long-short-term memory-based model for automatic bridge bidding. Although auction bridge games are traditionally played by two players, recently Sarkar et al. [4] recommended a novel gaming strategy for auction bridge that can accommodate three players at a time. This has considerable potential in expediting knockout tournaments of auction bridge, as well as adaptation in an online platform. After the bidding phase, gameplay proceeds similarly to traditional Auction Bridge; however, the strategies used are different, prioritizing a high-risk, high-reward policy. The order of calling in this game is as follows: 
+
+♣ (Clubs ), ♢ (Diamonds ), ♡ (Hearts ), ♠ (Spades ), No Trump ,
+
+Bidding starts from 1 Clubs and ends with 7 No Trump. Rotational bidding is allowed, similar to traditional bridge. However, in this game, three players bid among themselves, and the fourth hand automatically joins the winning bidder as their partner. In comparison, the remaining two players join the opposing team. In this manner, each game’s bidding phase dynamically decides the partners and opponents. arXiv:2608.03217v1 [cs.GT] 4 Aug 2026 2 S.Sarkar et al. 
+
+All points and rules used in this game were collected from the Sarkar et al. [4]. Sarkar et al. [4] discussed various types of game strategies such as defensive approach , attacking approach , defeat-seeking approach , and bluff approach . We calculated the probability of winning any hand with calls of 1, 2, and 3 no trump, considering only the presence of high face cards in the hand (specifically in the sequence: Ace, King, Queen, Jack, 10). However, it was observed that having all high face cards is not always necessary to win a no-trump game. The computed probabilities to win 1, 2, and 3 no trump were 14 × 10 −5, 3.6 × 10 −5,and 0.5 × 10 −5, respectively, which are very low. In contrast, if a player uses the low card first strategy when not all high cards are present in the bidder’s hand and uses the high card first strategy when all high cards are present, as proposed in the previous paper, the probability of winning increases by a factor of one thousand. In this paper, we discuss the algorithm for calling no trump. Unlike previous approaches that depend on exact cards, the proposed method relies on a set of defined rules. We establish these rules for no-trump calls and use strategies such as low card first and high card first based on the cards in hand, ensuring that the player can win the game almost certainly. It is important to note that although this algorithm identifies highly favorable bidding and winning situations as it is based upon the presence of cards in the hand of a bidder, the probability that it would allow a player to bid 1NT (and other NT calls) has a fairly low probability, which has been checked empirically via the simulations. The necessary files for the simulations are available at [3] Furthermore, complexity analysis is provided, demonstrating that dynamic programming is not required for this problem, and an enumerative approach is sufficient to determine the optimal call. Simulated data is presented to support and illustrate the improved results. The rest of the article is arranged as follows. Section 2 discusses the no-trump strategy as a part of a three-player auction bridge game. Section 3 discusses the action of taking a risk by bidding winner with a partner’s hand. Finally, the article concludes in Section 4 with a consolidated remark on the proposed gaming strategies for three-player auction bridge. 
+
+## 2 No Trump Strategy 
+
+In the Auction Bridge card game, the trump strategy plays a big role. As we discussed the point table and rules in the introduction section, if a player chooses No Trump instead of any fixed trump, then the player will earn more points. But, in three-player auction bridge, it’s a very tough decision to decide on no trump instead of fixed trump because one player didn’t call anything. If a certain color of cards is present in a hand, then the player should focus on fixed trump. If a player wants to call no trump, there are 2 cases: 
+
+– The player’s hand is good, but the player should depend on the partner’s hand. 
+
+– The player is fully confident in his hand to win the game; there is no dependency on the partner’s hand. 
+
+2.1 Algorithm for no trump call 
+
+A player completed 1, 2, or 3 no-trump calls without depending on the partner’s hand. As per the previous paper, the probabilities of winning 1NT, 2NT, and 3NT are approximately 14 × 10 −5,
+
+3.6 × 10 −5, and 0.5 × 10 −5, respectively. 3 Players Auction Bridge - Statistical Algorithmic Strategies 3
+
+In this paper, we introduce an exact algorithm that helps a defensive player call no trump and win the game almost surely. Here P stands for the number of tricks to be won according to the bid, and K = 13 −P , i.e the number of lost tricks the bidder can afford. Check 1 for further clarification. In the simulation code present in [3], the call_count variable is the representative of the variable 
+
+P .        
+
+> Table 1. Number of No Trump Calls Depends on K and P NT K P167258349
+
+This algorithm can be divided into three parts. Initially, create a 13 × 4 ( m × n) dataframe and put 1 if the card exists in the player’s hand, otherwise 0. So, a total of 13 ones and 39 zeros exist in that dataframe. A K Q J 10 9 8 7 6 5 4 3 2Clubs Diamonds Hearts Spades 
+
+– Step 1: Check for each of the 4 rows, from left to right, how many 0s exist before the first 1. If the first one is 1, then the number of zeros before the first 1 is 0. If no one is present, then the output should be 13. Furthermore, add how many 1s are present in each of the 4 cases. 
+
+– Step 2: Calculate the sum of zeros before the first 1; if it is less than or equal to 6, then we go ahead to the next step. 
+
+– Step 3: Check the total number of 1s in each row is greater than or equal to zero before the first 1. If this condition is satisfied for every 4 rows, then go ahead; otherwise, do not. 
+
+– Step 4: If both the previous conditions are satisfied, then we go ahead to the next step in the nested previous condition. Take a new variable (count of one) initialized at 4, and the sum of zeros is already known. Initialize a new variable (remaining zeros), which is equal to ( K-sum of zeros). Now from the leftmost 1 of the first row, move to the next 1 and count the zeros between. If the count is greater than the remaining zeros, don’t do anything; just go ahead. If the count is less than or equal to remaining zeros, add count 1 with a count of one, and subtract that many zeros from remaining zeros while the loop condition remaining zeros is greater than or equal to 0. Now traverse all 4 rows. And finally, check if the count of one is greater than or equal to P or not. If yes, then print YES , otherwise print NO .The probabilities of winning 1 No Trump, 2 No Trump, and 3 No Trump are approximately 0.06, 0.03, and 0.0085, respectively. 4 S.Sarkar et al. 
+
+Algorithm 1 No Trump algorithm 
+
+1: Input: Standard 52-card deck 2: Output: Decision to proceed based on conditions 3: Initialize: suits ← [Clubs, Diamonds, Hearts, Spades], ranks ← [Ace, King, Queen, Jack, 10,. . . , 2] 4: deck ← all (suit, rank) pairs 5: hand ← randomly select 13 unique cards from deck 
+
+6: Initialize the dataframe df with suits as rows, and ranks as columns, with all entries = 0. 7: for each (suit, rank) in hand do 
+
+8: df [suit, rank ] ← 1
+
+9: end for 
+
+10: for each row in df do 
+
+11: count _ones ← number of 1s in the row 12: if count _ones == 0 then 
+
+13: zeros _bef ore _f irst _one ← 13 
+
+14: else 
+
+15: zeros _bef ore _f irst _one ← index of the first 1 16: end if 
+
+17: Store zeros _bef ore _f irst _one and count _ones in df 
+
+18: end for 
+
+19: total _zeros _bef ore _f irst _1 ← sum of all zeros _bef ore _f irst _one across suits 20: if total _zeros _bef ore _f irst _1 ≤ K then 
+
+21: ▷ Condition A passed 22: condition _B_passed ← True if for all rows, count _ones > zeros _bef ore _f irst _one 
+
+23: if condition _B_passed then 
+
+24: Initialize count _of _one ← 4
+
+25: Initialize remaining _zeros ← K − total _zeros _bef ore _f irst _1
+
+26: for each suit in suits do 
+
+27: indices _of _ones ← indices of 1s in row 28: for i = 0 to len (indices _of _ones ) − 2 do 
+
+29: zeros _between ← indices _of _ones [i + 1] − indices _of _ones [i] − 1
+
+30: if zeros _between ≤ remaining _zeros then 
+
+31: count _of _one ← count _of _one + 1 
+
+32: remaining _zeros ← remaining _zeros − zeros _between 
+
+33: end if 
+
+34: if remaining _zeros < 0 then 
+
+35: break 
+
+36: end if 
+
+37: end for 
+
+38: if remaining _zeros < 0 then 
+
+39: break 
+
+40: end if 
+
+41: end for 
+
+42: if count _of _one ≥ P then 
+
+43: return Yes, final condition satisfied. Go ahead. 44: else 
+
+45: return No, final condition failed. 46: end if 
+
+47: else 
+
+48: return Condition B failed. Do not proceed. 49: end if 
+
+50: else 
+
+51: return Condition A failed. Do not proceed. 52: end if 3 Players Auction Bridge - Statistical Algorithmic Strategies 5
+
+Table 2. Complexity Analysis of No Trump Algorithm 
+
+Step Description Time Complexity 
+
+1 Deck creation (m suits × n ranks) O(mn )
+
+2 Random sampling of 13 cards O(1) 
+
+3 data frame initialization O(mn )
+
+4 Updating the dataframe with hand cards O(1) 
+
+5 Analyzing each row O(mn )
+
+6 Summing zeros_before_first_1 O(n)
+
+7 Condition B check O(n)
+
+8 Final nested loops (suits × indices_of_ones) O(nm )
+
+Total O(mn )
+
+Table 3. Simulation Results for 1NT, 2NT, and 3NT (100,000 Simulations Each) 
+
+Simulation for 1NT - 100,000 Simulation for 2NT - 100,000 Simulation for 3NT - 100,000 
+
+Sim no Yes No Sim no Yes No Sim no Yes No 1 5955 94045 1 3228 96772 1 875 99125 2 5992 94008 2 3174 96826 2 844 99156 3 5849 94151 3 3186 96814 3 850 99150 1NT 2NT 3NT NT Level 020000 40000 60000 80000 100000 Average Count 
+
+> Average Simulation Results for NT Levels (3 Simulations)
+> Yes No
+
+Fig. 1. Average simulation results for 1NT, 2NT, and 3NT over 3 simulations each. 
+
+The algorithm essentially tracks the total number of missing high cards by the ‘total number of zeroes before the first one’ and also calculates the number of tricks that can be obtained by the bidder based on the cards available in hand. Thus, it determines the success of a NO Trump call. 6 S.Sarkar et al. 
+
+A 1NT opening is relatively common because it is used to describe a balanced hand within a narrow high-card-point range (typically 15-17 HCP in modern systems). In contrast, a 3NT opening is a preemptive or highly specialized call, usually requiring a much stronger hand with sufficient stoppers in all suits and a high likelihood of making nine tricks without exploring a major-suit or slam contract. Such hands occur far less frequently than the balanced hands suitable for a 1NT opening. Consequently, 3NT openings are significantly rarer than 1NT openings. This is also evident from the results of the simulations performed. 
+
+## 3 Simulation Methodology 
+
+The proposed no-trump bidding algorithm was implemented in Python using the pandas and random 
+
+libraries. To evaluate its performance, a Monte Carlo simulation framework was employed. For each simulation, a standard 52-card deck was generated, and a 13-card bridge hand was sampled uniformly at random without replacement to represent the hand of the bidder. The rest of the code is based upon the algorithm mentioned before. 
+
+## 4 Bidding Winner with Partner’s Hand 
+
+After bidding, the winning bidder automatically chooses the 4th hand as a partner. A defensive strategist winning bidder doesn’t depend on the partner’s hand to win the game. But most of the time, bidders take some risk and depend on the partner’s hand. The winning bidder knows 26 cards after bidding, and winning the opportunity is highly increased after starting the game.           
+
+> Table 4. No Trump Results: Single Hands vs. Partners
+> No Trump Single Hand With Partner Percentage
+> 16005 79991 0.075 23259 73633 0.044 3814 63276 0.013
+
+## 5 Conclusion 
+
+The three-player auction bridge variant introduces dynamic partnerships and a unique bidding structure, significantly enriching strategic complexity. Through rigorous algorithmic development and simulation, this study demonstrates that a deterministic, rule-based approach to no-trump calls can drastically improve success rates—outperforming earlier probabilistic heuristics by several orders of magnitude. Although the defensive strategy guarantees safe play, the simulations reveal that attacking and bluff strategies, particularly when optimized through algorithmic insight, of-ten yield superior results. Our findings underscore that in this dynamic environment, calculated risks—especially when supported by intelligent evaluation of hand strength and partner poten-tial—can lead to consistently better outcomes.Moreover, there exists another interesting strategy, a 
+
+defeat-seeking strategy, and that has been mentioned in [4]. This particular algorithm works better 3 Players Auction Bridge - Statistical Algorithmic Strategies 7Single Hand With Partner 010000 20000 30000 40000 50000 60000 70000 80000 Count 
+
+Box Plot of Counts by Hand Type 
+
+Fig. 2. Box Plot of Counts by Hand Type (Single Hand vs. With Partner) 
+
+than any machine learning approach used for no trump calls with significantly less time complex-ity. This study lays the groundwork for future enhancements in algorithmic bidding and adaptive game strategies in multiplayer card games. Moreover, it is interesting to note that the algorithm calls 1 NT in four out of five games successfully if full information about both of the hands of a team is available. Later, our plan is to modify this so that calls can be given even with the partial information obtained from the calls given by the partner. 
+
+## References 
+
+1. Chen, W.C., Lin, Z.Y., Chou, H.H.: Automatic bridge bidding model based on lstm and deep re-inforcement learning. In: 2024 International Computer Symposium (ICS). pp. 35–40 (Oct 2024). https://doi.org/10.1109/ICS64339.2024.00015 2. DeLooze, L., Downey, J.: Bridge bidding with imperfect information. In: Proceedings of the 2007 IEEE Symposium on Computational Intelligence and Games, CIG 2007. pp. 368 – 373 (05 2007). https://doi.org/10.1109/CIG.2007.368122 3. Sarkar, S., Majumdar, A.: Auction bridge algorithm. https://github.com/sourish-isi/Auction-Bridge-Algorithm (2025) 4. Sarkar, S., Majumdar, A., Chatterjee, M.: A new three-players auction bridge with dynamic op-ponents and team members. https://ssrn.com/abstract=5265725 (May 2025), available at SSRN: https://ssrn.com/abstract=5265725 or http://dx.doi.org/10.2139/ssrn.5265725 5. Whitehead, W.C.: Auction Bridge Summary: The Principles of Bidding and Play for Beginners and Advanced Students of Auction Bridge. Frederick A. Stokes Company, New York (1930)

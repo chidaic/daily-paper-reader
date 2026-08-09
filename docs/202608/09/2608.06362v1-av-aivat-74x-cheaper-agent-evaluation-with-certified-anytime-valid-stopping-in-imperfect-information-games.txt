@@ -1,0 +1,1576 @@
+Title: AV-AIVAT: 74x Cheaper Agent Evaluation with Certified Anytime-Valid Stopping in Imperfect-Information Games
+
+URL Source: https://arxiv.org/pdf/2608.06362v1
+
+Published Time: Fri, 07 Aug 2026 01:19:27 GMT
+
+Number of Pages: 35
+
+Markdown Content:
+# AV-AIVAT: 74 × Cheaper Agent Evaluation with Certified Anytime-Valid Stopping in Imperfect-Information Games 
+
+Boning Li ∗ Yu Chen † Longbo Huang ‡
+
+August 7, 2026 
+
+Abstract 
+
+Deciding which of two agents is stronger means playing games until skill outweighs luck, and every game costs money, model inference, or expert time. Since the number of games needed is unknown, fixed-budget evaluations either keep paying after the result is settled or stop before the agents can be told apart, while naive optional stopping with an ordinary confidence interval invalidates the stated level. We make such an evaluation stop as soon as its evidence suffices, with the guarantee intact. The Action-Informed Value Assessment Tool (AIVAT) reduces variance in imperfect-information games through conditional mean-zero corrections, by a median 54 × across 15 LLM agent configurations spanning 71,439 paired Heads-Up No-Limit Hold’em (HUNL) hands, but does not say when to stop. We combine AIVAT with continuously monitored Confidence Sequences (CSs) into anytime-valid AIVAT (AV-AIVAT), whose online value model learns only from past games so that no game scores its own correction. At the nominal 95% level and a target precision of ±1 Big Blind (BB), raw outcomes need a median 74 × as many hands as AIVAT-corrected outcomes to stop under the Asymptotic CS (AsympCS). Exact finite-sample certification uses the Empirical-Bernstein CS (EB-CS), which needs an independently justified bound on corrected payoffs. We establish such a bound structurally for Leduc hold’em and characterize a width floor set by the CS’s bet cap and that bound, which governs how much of a variance gain becomes earlier stopping; the descriptive HUNL EB-CS runs show a median 1 .37 ×
+
+stopping-time ratio. AV-AIVAT turns variance reduction into efficient, auditable early stopping while separating asymptotic screening from exact certification, so an evaluation can stop the moment its evidence suffices and hand a third party everything needed to recheck the verdict at that very stopping time. 
+
+# 1 Introduction 
+
+Interactive agent evaluation is often both costly and noisy. PokerSkill, a framework for deploying LLM agents in complete poker games, spends $0.07– $0.30 of inference per hand [38]. Human matches are no cheaper: Libratus played 120,000 hands against professionals over 20 days for a 
+
+$200,000 prize pool, winning by 147 mbb/hand at 99 .98% significance [10]. The hand count was fixed when the match was designed, so the full schedule was played and paid for however early the margin became decisive. Because the number of games needed is rarely known in advance, the usual response is a fixed budget, which either overruns the evidence or ends before a useful conclusion is 
+
+> ∗
+
+IIIS, Tsinghua University. Email: li-bn22@mails.tsinghua.edu.cn .
+
+> †
+
+IIIS, Tsinghua University. 
+
+> ‡
+
+IIIS, Tsinghua University. Email: longbohuang@tsinghua.edu.cn . Corresponding author. 
+
+1arXiv:2608.06362v1 [cs.GT] 6 Aug 2026 possible. Watching an ordinary fixed-sample interval instead and stopping at the first favorable look invalidates nominal coverage and inflates false positives. The problem is therefore to stop when the evidence is sufficient while preserving a stated statistical guarantee. Imperfect-information games (IIGs) provide a demanding setting for sequential agent evaluation: outcomes have high variance, interactions may be costly, and information available to an evaluator changes within each game. Poker milestones from solved limit hold’em to superhuman multiplayer play were all declared from such a stream [4, 10, 12, 41]. The action-informed value assessment tool (AIVAT) conditionally reduces outcome variance using zero-mean corrections derived from a value function [16]. Confidence sequences (CSs) solve a complementary problem: they retain their stated guarantee under continuous monitoring and optional stopping [22, 23]. Classical AIVAT freezes its value function, while a CS on raw outcomes can still require many costly interactions. We combine them into anytime-valid AIVAT (AV-AIVAT), a general statistical interface for evaluating agents in IIGs. AV-AIVAT raises three practical questions. Can the value model improve during evaluation without letting the current game influence its own correction? When does lower variance actually reduce the number of games needed? What must be released so that others can verify an early-stopping claim? 
+
+First, online learning is valid under a pre-action conditional-kernel interface. At each correction node, the evaluator must know the action’s conditional kernel given the information available immediately before that action, and any decision to enable the correction must already be fixed at that time. The value function vt may use games 1: t−1, but not game t. These conditions keep the outgoing action and the later trajectory from selecting their own correction, preserving the conditional mean-zero law while the value model sharpens as the evaluation proceeds. Under additional variance-adaptive width and sublinear variance-regret assumptions, the online learner has no asymptotic delay relative to a deterministic oracle-width benchmark (Theorem 2), and across two mismatched controlled profiles it recovers 77–79% of the frozen-to-oracle variance gap. The two confidence sequences build on this interface with different additional requirements, so the paper states their guarantees separately. The EB-CS attains exact finite-sample validity once a data-independent almost-sure bound on the corrected payoff is supplied (Proposition 1), and we derive and exhaustively check such a bound in Leduc. The asymptotic CS (AsympCS) instead needs limiting variance conditions (Proposition 2); a locked replication-level split measures its observed finite-horizon exclusion rate. 
+
+Second, a width floor governs how much variance reduction becomes earlier stopping. 
+
+Our heads-up no-limit hold’em (HUNL) corpus contains 71,439 paired hands from 15 PokerSkill/LLM-agent configurations in fixed-opponent multi-hand runs [38, 42], with both per-hand raw and AIVAT-corrected payoffs supplied by the evaluation platform. AIVAT reduces variance by a median 54 ×. At α = 0 .05, for a half-width of one big blind (BB), paired replay yields a median raw-to-AIVAT stopping-time ratio of 74 under AsympCS, compared with 1.37 under the descriptive EB-CS execution. The difference has a clean explanation: in the bet-capped EB-CS, the declared payoff bound imposes a deterministic width floor 4 B log(2 /α )/t (Lemma 1), so once that floor binds, precision is set by the bound rather than by observed variance, and the resulting three-regime expression is an order-level design guide. 
+
+Third, a fast evaluation claim can still be rechecked by others. Rechecking requires the corrected outcomes through the reported stopping time, together with the stopping rule, target, confidence level, declared bound, and CS settings; these released objects suffice to reconstruct the claim. The same time-uniform property makes continuous monitoring safe: in a rolling-leaderboard simulation, monitoring an ordinary fixed-sample interval and stopping at the first favorable look yields 61% false positives under the null, whereas recomputing the CS at that reported stopping 2time overturns essentially all such claims. When AsympCS continues under its own stopping rule, it later detects the injected 0.1 and 0.2 BB effects in 81% and 100% of entries by 5,000 hands. 
+
+Contributions. Our contributions are: 
+
+• We introduce AV-AIVAT, a predictable AIVAT interface that exposes the conditional action kernel and fixes correction enablement before the action is observed. Past-only value updates preserve the correction’s conditional mean-zero property, while separate validity statements distinguish the exact bounded EB-CS certificate from the efficient asymptotic CS. 
+
+• We establish how a bet-capped EB-CS converts variance reduction into earlier stopping. A deterministic width floor induced by the declared payoff bound yields a three-regime, order-level design guide, while the variance-regret result shows when a past-only online value learner approaches the stopping efficiency of an oracle value function. 
+
+• We propose a release protocol that makes an early-stopping claim directly reconstructible. Publishing the corrected prefix together with the stopping rule and index, first-look and censoring metadata, declared bound, and locked CS settings lets a third party recompute the reported intervals at the exact stopping time without requiring the raw payoff stream. 
+
+# 2 Related Work 
+
+Our work lies at the intersection of costly interactive evaluation, variance reduction, and anytime-valid inference. The relevant methods solve different parts of the problem: benchmark protocols define the stream, control variates make it less noisy, and sequential inference determines what can be concluded under continuous monitoring. Our contribution concerns the interface among these components rather than a replacement for any one of them. 
+
+Costly interactive evaluation. Unlike static benchmark scoring, interactive evaluation con-sumes resources with every additional game. This is explicit for LLM agents: PokerSkill reports approximately $0.07– $0.30 of model inference per heads-up no-limit hold’em (HUNL) hand, making statistical sample efficiency a direct determinant of cost and latency [38]. Human comparisons like-wise require sustained expert participation. DeepStack played 44,852 games against 33 professionals [41]; Libratus used a 20-day, 120,000-hand match with a $200,000 prize pool [10]; and Pluribus used 10,000-hand protocols with participation and performance incentives [12]. These fixed-scale evaluations established landmark results, but their budgets do not supply a statistically valid rule for terminating a future evaluation as soon as sufficient evidence accumulates. 
+
+LLM agents and poker benchmarks. PokerBench evaluates poker reasoning and decisions in curated situations [51], while the GTO Wizard Benchmark evaluates agents through gameplay against a strong common opponent [42]. PokerSkill instantiates LLMs as agents in complete HUNL play without training or solver calls at deployment [38]. These efforts address what to evaluate and how to generate strategically meaningful interactions. We ask a complementary question: given the costly payoff stream produced by such a protocol, how can an evaluator reduce its noise, monitor it continuously, stop, and release enough evidence for the stopping claim to be checked? 3What the evaluated stream compares. The agents whose payoffs an evaluator observes are typically produced by CFR and its descendants [31, 46, 53], accelerated by discounting [11], warm starting [7], and regret-based pruning [5, 8], with function approximation replacing tabular regrets at scale [14, 15, 20, 39]. Their strength depends on abstraction quality [27, 34, 36, 48] and on real-time refinement of the subgame actually reached [9, 13, 21, 30, 40]. Where a game is small enough, best-response computation inside the abstraction gives an exact quality measure [26]; at HUNL scale [25] that option is unavailable, and competition-grade agents [6, 24] are ranked by played hands instead. The same holds beyond poker, where variance-reduced self-play evaluation is used in other large imperfect-information card games [50]. Our contribution concerns the statistics of that ranking stream, not the solvers that generate it. 
+
+Variance reduction for game and agent evaluation. Poker evaluation has a long history of reducing outcome noise. Prior approaches include duplicate designs and optimal low-variance unbiased estimators [52], DIVAT [2, 28], learned value functions [49], strategy-informed importance sampling [3], and baseline control variates [17]. AIVAT combines action- and chance-informed corrections to reduce variance while preserving the target expectation under its randomization assumptions [16]. It made shorter human-scale DeepStack comparisons statistically informative [41], and related baseline control variates accelerate Monte Carlo game solving [18, 44]. A complementary route leaves the estimator algebra untouched and instead correlates the sampling itself: correlated chance sampling replaces i.i.d. chance draws in Monte Carlo CFR with a persistent low-discrepancy stream per chance node [37]. Both lines reduce the noise of a solving process; our target is the noise of the evaluation stream that compares finished agents. These methods principally improve an estimator within a specified evaluation design. They do not, by themselves, validate stopping after repeated inspection, nor do they state how a value function may be updated from an adaptively growing evaluation stream. Our predictable interface fills this gap: the value for hand t may use earlier hands, while the resulting correction must remain conditionally mean-zero under known randomization and must not depend on hand t. Exact bounded-CS validity then also requires a genuine almost-sure bound on the corrected outcome, which the game structure supplies for Leduc (Section 6.2). 
+
+Confidence sequences and anytime-valid inference. Confidence sequences arise from time-uniform concentration [23], betting constructions [22], time-uniform CLT theory and asymptotic confidence sequences [47], and the broader connection between e-values, betting, and game-theoretic statistics [43]. Their defining advantage over repeatedly viewed fixed-sample intervals is compatibility with continuous monitoring and optional stopping under the assumptions of the chosen construction. Inside imperfect-information games, the same machinery has been used to decide when an observed opponent tendency is established firmly enough to exploit, gating restricted responses on a confidence sequence over pooled action frequencies and committing only strategies whose exploitation certificate lies within a declared budget [33]. There the sequential interval licenses an action against an opponent; here it licenses a verdict about which of two agents is stronger. The two constructions we use sit at opposite ends of this literature. A bounded betting-based CS gives exact finite-sample, time-uniform validity when the stream has a constant conditional mean, the bets are predictable, and the declared almost-sure bound is valid. A time-uniform CLT approximation instead tracks the realized variance directly, and its guarantee is asymptotic: here the AsympCS relies on a conditional Lindeberg condition and a nondegenerate limiting averaged conditional variance. We therefore use the AsympCS as the efficient primary interval and the bounded EB-CS as the form that supplies a finite-sample certificate once an independent bound 4is available, and we report finite-run coverage frequencies as the empirical evidence beside those guarantees. Our stopping-cost analysis is specific to the construction. For the predictable EB-CS whose bets are capped at 1 /2, the declared bound induces a deterministic half-width floor proportional to B/t ,so a variance gain becomes a finite-target stopping gain only when that bound is tight relative to 
+
+σ2/ε . This is what motivates the order-level design proxy of Section 5.2. 
+
+Sources and provenance of online values. Modern game-playing systems routinely obtain values from learned or precomputed components. DeepStack uses neural continuation values, and Libratus uses a precomputed blueprint during real-time subgame solving [10, 41]. EVPA uses previously trained expected-value networks for online pruning and abstraction [32], while Parallel CFR batches neural leaf evaluation in a real-time CPU–GPU pipeline [35]. Student of Games learns such values jointly for perfect- and imperfect-information play [45]. These systems concern value use in decision making or solving. For evaluation, the central issue is temporal provenance: which observations were available when each correction value was produced. Recording that provenance makes the no-current-hand restriction checkable and distinguishes a legitimately updated value model from post hoc rescoring. 
+
+Selective stopping and reproducibility. Poker evaluation is statistically fragile [1, 19], and per-game costs create an incentive to inspect results early, but economic motivation does not make selective stopping valid. Our release model targets one evidentiary task: reproducing a stopping claim from the corrected outcomes through the claimed stopping time and the complete stopping metadata, including the bound and its provenance. This fixes the minimum release needed to recheck a claim. A separate line of work studies whether the correction generator follows its declared construction: post hoc AIVAT value-function tuning can induce spurious significance [29]. Such estimator-integrity checks complement the stopping-claim reconstruction studied here. 
+
+# 3 Preliminaries 
+
+3.1 Sequential agent evaluation 
+
+An evaluator observes independent hands played by a fixed agent against a fixed opponent profile. Let Ft−1 contain the complete trajectories of hands 1: t − 1, all evaluator training and model-selection randomness revealed before hand t, and all side information used to choose the current correction. We assume this enlarged filtration does not reveal the current hand’s random actions. Hand t
+
+produces the evaluated agent’s raw payoff Xt ∈ [−BX , B X ], where BX is a declared structural bound, and 
+
+E[Xt | F t−1] = μ. 
+
+Under the fixed-agent, fixed-opponent setup the raw hands are i.i.d.; we write σ2 
+
+> X
+
+= Var( Xt). The target is a confidence interval for the unknown expected payoff μ with half-width at most 
+
+ε. A fixed-sample interval does not license repeatedly inspecting the interval and stopping at a data-dependent time. We therefore use confidence sequences. A (1 − α) confidence sequence (CS) is an adapted sequence CI t = [ bμt ± wt] satisfying 
+
+P(∀t ≥ 1 : μ ∈ CI t) ≥ 1 − α. (1) This time-uniform event licenses optional stopping and continuation [23, 43]. For target precision ε,define the first crossing 
+
+τ (ε) := inf {t : wt ≤ ε}. (2) 53.2 AIVAT corrections 
+
+A correction at a node replaces the realized continuation value by its average over the known action kernel, so two things must hold: the kernel is known, and the decision to correct at that node is made before the action there is seen. The notation below states both. Let Hc be a fixed finite set of eligible chance and evaluated-agent decision nodes. For hand t
+
+and h ∈ Hc, let G− 
+
+> t,h
+
+denote the sigma-field immediately before the action at h; it contains Ft−1, the within-hand history through reaching h, and the evaluated agent’s internal state already revealed in that history. Let St,h ∈ { 0, 1} be an optional enablement indicator measurable with respect to G−
+
+> t,h
+
+.The known kernel pt,h must satisfy 
+
+P(At,h = a | G −
+
+> t,h
+
+) = pt,h (a) a.s. for every enabled node and action. Thus enablement cannot depend on the realized outgoing action or later information. If It,h indicates that h is reached, define 
+
+Yt = Xt + Ct,Ct = X
+
+> h∈Hc
+
+St,h It,h 
+
+X
+
+> a
+
+pt,h (a)vt(h·a) − vt(h·At,h )
+
+!
+
+. (3) AIVAT uses known action distributions only; unknown opponent decision nodes are not correction points. Accurate continuation values can make Ct cancel much of the chance and evaluated-agent action variation in Xt [16, 49]. Section 5.1 shows that vt need not be frozen before evaluation: predictability is the relevant validity condition. 
+
+3.3 The two confidence sequences 
+
+Two constructions run side by side throughout the paper. The first is exact at every look and pays for that exactness through the range it declares; the second adapts to the realized variance and is valid asymptotically. AV-AIVAT reports both. The exact certificate is the predictable plug-in empirical-Bernstein CS (EB-CS) studied here. For a stream declared to lie in [ −B, B ], rescale Zt = ( Yt +B)/(2 B) ∈ [0 , 1]. Let emt−1 = (1 /2+ P 
+
+> s<t
+
+Zs)/t 
+
+be the predictable regularized plug-in mean, which is Ft−1-measurable, and choose predictable bets 
+
+λt ∈ [0 , 1/2]. With 
+
+vEB  
+
+> t
+
+= 4( Zt − emt−1)2, ψE (λ) = − log(1 − λ) − λ
+
+4 ,
+
+and log 2 
+
+> α
+
+= log(2 /α ), the unit-scale interval is centered at the bet-weighted mean with the stated half-width, 
+
+bmEB ,[0 ,1]  
+
+> t
+
+=
+
+P 
+
+> s≤t
+
+λsZs
+
+P 
+
+> s≤t
+
+λs
+
+, wEB ,[0 ,1]  
+
+> t
+
+= log 2 
+
+> α
+
++ P 
+
+> s≤t
+
+vEB  
+
+> s
+
+ψE (λs)
+
+P 
+
+> s≤t
+
+λs
+
+, (4) intersected with [0 , 1]; when the denominator is zero the full interval [0 , 1] is used. The payoff-scale interval applies the affine map m 7 → 2Bm − B, so its center is 2 B bmEB ,[0 ,1]  
+
+> t
+
+− B
+
+and its half-width is 2 B w EB ,[0 ,1]  
+
+> t
+
+. For bounded observations with constant conditional mean and predictable bets, this is exactly the predictable plug-in empirical-Bernstein confidence sequence [22], which is time-uniform at level 1 − α. The bet cap λt ≤ 1/2 is part of this construction, and Section 5.2 shows it is what turns the declared range into a width floor. 6Our practical primary interval is the asymptotic CS (AsympCS) [47]. With running mean 
+
+bμt = t−1 P 
+
+> s≤t
+
+Ys, sample variance bσ2 
+
+> t
+
+= ( t − 1) −1 P
+
+> s≤t
+
+(Ys − bμt)2, and a fixed tuning parameter 
+
+ρ > 0, it is centered at bμt with half-width 
+
+wA 
+
+> t
+
+= bσt
+
+vuut 2( tρ 2 + 1) 
+
+t2ρ2 log 
+
+ptρ 2 + 1 
+
+α
+
+!
+
+. (5) This is the standardized parameterization used in our implementation, in which ρ tunes the standardized process. Its guarantee is asymptotic in the sense of Waudby-Smith et al. [47]: under the martingale-difference regularity stated in Proposition 2, its endpoints are almost surely asymptotically equivalent to those of an exact confidence sequence. 
+
+# 4 The AV-AIVAT Protocol 
+
+Algorithm 1 states the full procedure. AV-AIVAT assigns a distinct role to each component: the CS makes continuous monitoring valid, the predictable AIVAT interface permits past-only value updates, and AIVAT reduces the payoff variance that can otherwise make anytime poker evaluation impractical. Three design choices are backed by the theory of Section 5. First , the AsympCS is the primary interval and the EB-CS a conservative certificate: by Theorem 1 the EB-CS pays its cap-induced floor in the B ≫ σ regime, while the AsympCS follows the variance-ratio deterministic width benchmark asymptotically under its stated regularity conditions. Reporting both makes the trade-off explicit, and Section 5.1 fixes which of the two EB-CS modes a given declared bound licenses. AsympCS tuning is selected once on a separate replication-level calibration split and frozen before evaluation, which rules out post hoc retuning. Second , the value function may be refit online, on the very data being evaluated, at any predictable schedule (Proposition 1); Theorem 2 bounds the efficiency cost relative to an oracle value function by the value-learner’s variance regret. This turns AIVAT’s most awkward practical requirement, a good v before any data exist, into a warm start. Third , claim rechecking needs only the corrected prefix and stop metadata: another evaluator recomputes both CSs at the claimant’s stopping time (Section 7), and a paired log may optionally be released so a reader can inspect the raw stream. Section 8 gives the full release protocol. At hand t, the evaluator fixes vt using only information in Ft−1, plays and observes the hand, computes Yt by (3), updates both confidence sequences, and may then use the new hand to construct 
+
+vt+1 . At any data-dependent stop, the evaluator reports both intervals, the corrected prefix Y1: t, the stopping rule and index, the declared corrected-stream bound BY , and all interval settings. A paired (Xt, Y t) log may optionally be released so a reader can inspect the raw stream; it is not required to recompute a claim from the corrected prefix. AV-AIVAT separates three statements. The EB-CS is the exact bounded-stream certificate. The AsympCS is the practical asymptotic interval under its stated regularity conditions. Online refitting is valid only when every training, tuning, and model-selection choice affecting hand t is 
+
+Ft−1-measurable; hand t may update vt+1 , never vt.
+
+# 5 Theory 
+
+Three results support the protocol. The first licenses the predictable plug-in interface, the second characterizes which confidence sequence to report at a given target precision, and the third bounds 7Algorithm 1 AV-AIVAT: anytime-valid variance-reduced evaluation 
+
+Require: level α, first eligible look b, locked CS settings, initial value function v1; independently justified BY for exact EB-CS mode  
+
+> 1:
+
+for t = 1 , 2, . . . (stop at any eligible time) do  
+
+> 2:
+
+before each correction action, record its conditional kernel pt,h and choose St,h without observing that action  
+
+> 3:
+
+play hand t; observe payoff Xt and trajectory ωt 
+
+> 4:
+
+Yt ← Xt + P 
+
+> h∈Hc
+
+St,h It,h 
+
+ P  
+
+> a
+
+pt,h (a)vt(h·a) − vt(h·At,h ) 
+
+> 5:
+
+at t ≥ b, update locked AsympCS (5) on Y1: t {asymptotic screen } 
+
+> 6:
+
+if BY is independently justified, update EB-CS (4) {exact certificate } 
+
+> 7:
+
+optionally refit vt+1 on data through hand t {vt already fixed hand t} 
+
+> 8:
+
+end for Ensure: report both applicable intervals at the data-dependent stopping time; publish Y1: t, first-look/censoring metadata, kernel and enablement provenance, and optionally paired ( Xt, Y t)diagnostics what online value learning costs relative to an oracle. Proofs are in Appendices A–C. Throughout, the evaluator declares a payoff bound used by both streams and log 2 
+
+> α
+
+abbreviates log(2 /α ). 
+
+5.1 Validity: Predictable Value Functions Suffice 
+
+The classical AIVAT analysis freezes its value function before the evaluation sample is observed. In a sequential analysis, the weaker condition needed for the correction argument is that the value function used on the current hand is fixed before that hand is observed. 
+
+Proposition 1 (Exact validity under predictable value functions) . Let Ft = σ(hands 1: t) and suppose that each vt is Ft−1-measurable with ∥vt∥∞ ≤ V . At every correction node h, assume that ph
+
+is the conditional action kernel: given Ft−1, the full history through reaching h, and any evaluated-agent internal state included in that history, the realized action has law ph. Assume E[Xt | F t−1] = μ
+
+and that at most K correction points occur on a hand. For Yt defined by (3) :1. E[Ct | F t−1] = 0 , and therefore E[Yt | F t−1] = μ;2. |Yt| ≤ BX + 2 KV =: BY ;3. the EB-CS (4) , rescaled using BY , satisfies (1) exactly. 
+
+Proposition 2 (Asymptotic validity of the AsympCS) . Assume the conditions of Proposition 1 and let Vt = P 
+
+> s≤t
+
+Var( Ys | F s−1). If Vt → ∞ almost surely, the sample variance is relatively consistent (t bσ2 
+
+> t
+
+/V t → 1 a.s.), t−1Vt converges to a finite nonzero limit, and the martingale differences satisfy the conditional Lindeberg condition, then the AsympCS (5) is an asymptotic confidence sequence in the sense of Waudby-Smith et al. [47]. 
+
+Proof mechanism. Let Hc be the fixed finite set of chance and evaluated-agent correction nodes in one hand. The random trajectory sum can be written 
+
+Ct = X
+
+> h∈Hc
+
+1{h reached in hand t} (Ea∼ph [vt(h·a)] − vt(h·ah)) . (6) 8Conditioning on Ft−1 fixes vt. Conditional also on reaching h, the realized action ah has the known law ph, so the parenthesized term has conditional mean zero. The reach event is determined before the action at h; multiplying by its indicator and summing the finite node set therefore gives 
+
+E[Ct | F t−1] = 0. This argument does not require the opponent’s strategy because opponent nodes are excluded from Hc.Each correction summand has absolute value at most 2 V , proving the stated bound. After rescaling by BY , the stream is bounded in [0 , 1] and has a constant conditional mean. These are exactly the inputs used by the published predictable plug-in EB-CS theorem. For intuition, a predictable capital factor 1 + λt(Zt − μZ ) has conditional expectation one at the true μZ ; the full EB-CS claim relies on the cited e-process theorem rather than on an identification with this simpler factor. Proposition 2 rests on a different set of hypotheses, the martingale-difference Lindeberg and averaged conditional-variance conditions, which is why the two streams carry separate guarantees throughout the paper. Appendix A gives both proofs in full. The interface these propositions license is an aggressive one: the value function may be refit after every observed hand, provided every consequence for hand t is measurable with respect to 
+
+Ft−1. That measurability requirement is what makes the refitting safe, since it keeps hand t out of its own correction, out of any post hoc choice among corrections, and out of the choice of the declared bound BY . Fitting the value function on the same observations to which its corrections are applied is precisely the nonpredictable failure mode excluded here [29]. 
+
+5.2 Which Confidence Sequence? A Stopping-Time Characterization 
+
+We next isolate why a large variance reduction need not produce a comparable stopping-time reduction for the particular EB-CS in (4). Throughout this section, log 2 
+
+> α
+
+= log(2 /α ). 
+
+Lemma 1 (Bet-cap width floor) . For every data realization and every predictable bet sequence 
+
+λs ∈ [0 , 1/2] , the payoff-scale EB-CS on a stream declared in [−B, B ] satisfies 
+
+wEB  
+
+> t
+
+≥ 4B log 2
+
+> α
+
+t .
+
+Mechanism. All terms in the numerator of (4) are nonnegative, while P 
+
+> s≤t
+
+λs ≤ t/ 2. Thus the unit-scale half-width is at least 2 log 2 
+
+> α
+
+/t ; mapping a unit-scale width back to a range of length 2 B
+
+gives the claim. This is a deterministic, variance-independent floor for this capped-bet construction. 
+
+Theorem 1 (Stopping-time characterization for the studied EB-CS) . Fix α ∈ (0 , 1/2) and an i.i.d. stream supported on [−B, B ] with constant variance σ2 > 0.1. For every predictable bet sequence, 
+
+τEB (ε) ≥ 4B log 2
+
+> α
+
+ε .
+
+2. For every δ ∈ (0 , 1) and every ε below a threshold depending on the distribution and δ, there is a constant bet λε, depending on (ε, σ, B ), such that, with probability at least 1 − δ,
+
+τEB (ε) ≤ 8 max 
+
+( B log 2
+
+> α
+
+ε , σ2 log 2
+
+> α
+
+ε2
+
+)
+
+.
+
+93. If ε ≤ σ/ (2 √3) and a := √σ2 + 4 ε2 ≤ B, there are two i.i.d. laws on the common support 
+
+{− a, a }, both with variance σ2 and with means ±2ε, such that every valid CS stopping at half-width ε satisfies, for at least one law, 
+
+E[τ (ε)] ≥ (1 − 2α) log((1 − α)/α )(2 ε/a ) log(( a + 2 ε)/(a − 2ε)) .
+
+For fixed α < 1/2, this is Ω( σ2 log(1 /α )/ε 2).
+
+Proof mechanisms. Part 1 is Lemma 1. For Part 2, work on [0 , 1] and use ψE (λ) ≤ λ2/4. With a constant bet and Vt = P 
+
+> s≤t
+
+vEB  
+
+> s
+
+,
+
+wEB ,[0 ,1]  
+
+> t
+
+≤ log 2
+
+> α
+
+λt + λV t
+
+4t .
+
+Bounded i.i.d. concentration yields Vt ≤ 8tσ 2 
+
+> Z
+
+eventually and uniformly with the required probability. The oracle choice λ = min {1/2, ε Z /(4 σ2 
+
+> Z
+
+)} then separates the range-controlled 1 /ε regime from the variance-controlled 1 /ε 2 regime. This is an existence result for a distribution-aware constant bet, not a guarantee for every adaptive betting rule. For Part 3, tilt a common Rademacher support {− a, a } to means ±2ε. A width-ε confidence interval covering the positive mean has positive center, while one covering the negative mean has negative center. Time-uniform coverage therefore induces a sequential test with both errors at most 
+
+α. Its information per sample is exactly (2 ε/a ) log(( a + 2 ε)/(a − 2ε)), giving the stated expected lower bound. Full details are in Appendix B. 
+
+Remark 1 (The design proxy) . The deterministic floor, oracle-bet high-probability upper bound, and common-support expected lower-bound family motivate the design proxy max {BX , σ 2 
+
+> X
+
+/ε }
+
+max {BY , σ 2 
+
+> Y
+
+/ε } . (7) It captures the order of magnitude at stake for a design choice rather than a pathwise, expected, or distribution-wise stopping-time equivalence. If BX = BY = B and 0 < σ 2 
+
+> Y
+
+≤ σ2 
+
+> X
+
+, elementary case analysis rewrites this proxy as clip 
+
+ σ2
+
+> X
+
+Bε , 1, σ2
+
+> X
+
+σ2
+
+> Y
+
+
+
+, (8) which reads off three regimes: range-limited, neutral, and variance-limited. If AIVAT corrections require BY > B X , the general expression (7) applies. 
+
+Proposition 3 (Deterministic AsympCS width benchmark) . Write the AsympCS half-width (5) 
+
+as wA 
+
+> t
+
+= bσt g(t), where g(t) = 
+
+q
+
+2( tρ 2 + 1) t−2ρ−2 log( ptρ 2 + 1 /α ) depends only on t, ρ, α and is independent of the stream. For each fixed σ > 0, define the deterministic asymptotic width benchmark 
+
+tε(σ) := inf {t ≥ t0 : σg (t) ≤ ε},
+
+where t0 is any deterministic index after which g is decreasing. Then tε(σ) → ∞ as ε → 0, and for two positive scales σX ≥ σY ,
+
+tε(σX )
+
+tε(σY ) = σ2
+
+> X
+
+σ2
+
+> Y
+
+Lε,
+
+where Lε is the ratio of the corresponding slowly varying logarithmic factors. In particular, this deterministic benchmark has the usual variance-ratio scaling up to that logarithmic correction. 
+
+10 The benchmark here is the solution of a deterministic asymptotic width equation, which is the object the AV-AIVAT design turns on: AsympCS serves as the efficient primary interval because its width tracks the realized variance, and the studied EB-CS serves as the exact finite-sample certificate whose speed is set by the declared range and bet cap. How much of a variance gain that certificate can convert into earlier stopping is then a question about how tight the declared bound is, which Section 6.2 answers for a game whose structure supplies an analytic one. 
+
+5.3 Online Value Functions: a Variance-Regret Bound 
+
+Proposition 1 establishes that predictable online value functions preserve the relevant conditional mean. We now state the efficiency counterpart: how much a value function learned during the evaluation costs relative to one that was right from the start. The statement is made against an explicit asymptotic width model, which the AsympCS satisfies. Let σ2 
+
+> s
+
+:= Var( Ys | F s−1), where the conditional variance depends on vs. Let v⋆ be a comparator value function with per-hand variance σ2 
+
+> ⋆
+
+> 0, and define σ2 
+
+> t
+
+= t−1 P 
+
+> s≤t
+
+σ2 
+
+> s
+
+.
+
+Assumption 1 (Variance-adaptive width) . Uniformly over deterministic u ∈ [1 , 2] , as t → ∞ ,
+
+w2 
+
+> ⌊ut ⌋
+
+= σ2
+
+> ⌊ut ⌋
+
+g⌊ut ⌋
+
+⌊ut ⌋ (1 + oP(1)) , g⌊ut ⌋
+
+gt
+
+→ 1
+
+uniformly, where the remainder is understood as sup u∈[1 ,2] | · | P
+
+−→ 0 and gt > 0 is deterministic and slowly varying. The deterministic oracle asymptotic benchmark τ ⋆(ε) is defined as the asymptotic solution of 
+
+ε2 = σ2 
+
+> ⋆
+
+gt
+
+t . (9) 
+
+For AsympCS, gt retains its logarithmic factor. 
+
+In words, the squared half-width tracks the average conditional variance accumulated so far, divided by the number of hands and inflated by the slowly varying factor gt; the benchmark τ ⋆(ε)is the horizon at which that expression reaches ε2 when every hand is scored by the comparator 
+
+v⋆. It is therefore a deterministic quantity fixed by σ2 
+
+> ⋆
+
+, gt, and ε, and plays the same role here that the deterministic width benchmark tε(σ) of Proposition 3 plays for a fixed variance scale, with the running average σ2 
+
+> t
+
+in place of a constant σ2. In the notation of Section 5.2 the two factors are the same object, gt = t g (t)2, written per-hand here because the assumption is stated for the squared half-width. 
+
+Theorem 2 (Variance regret gives a one-sided no-delay guarantee) . Under Assumption 1, suppose 
+
+X
+
+> s≤t
+
+(σ2 
+
+> s
+
+− σ2 
+
+> ⋆
+
+) ≤ Rt,
+
+where Rt is a deterministic, nonnegative, nondecreasing sequence with Rt = o(t). Then, as ε → 0,with probability tending to one, 
+
+τ (ε) ≤ τ ⋆(ε)
+
+
+
+1 + 2R2τ ⋆(ε)
+
+σ2 
+
+> ⋆
+
+τ ⋆(ε) + o(1) 
+
+
+
+. (10) 11 Proof mechanism. Write τ ⋆ = τ ⋆(ε) and δ = 2 R2τ ⋆ /(σ2 
+
+> ⋆
+
+τ ⋆). Sublinear regret makes δ ≤ 1eventually. At the deterministic candidate time tδ = ⌈(1 + δ)τ ⋆⌉ ≤ 2τ ⋆, monotonicity of Rt gives 
+
+σ2 
+
+> tδ
+
+≤ σ2
+
+> ⋆
+
+
+
+1 + δ
+
+2(1 + δ)
+
+
+
+.
+
+Combining this inequality with (9), the uniform width expansion, and slow variation of gt yields 
+
+w2
+
+> tδ
+
+ε2 ≤ 2 + 3 δ
+
+2(1 + δ)2 (1 + oP(1)) .
+
+The deterministic factor lies below one by at least δ/ 8 for δ ∈ (0 , 1]. A vanishing enlargement handles the case in which δ is smaller than the stochastic remainder, proving (10). Appendix C supplies the complete argument. The next lemma connects value-function approximation to variance regret. 
+
+Lemma 2 (Value-function perturbation) . If ∥v − v⋆∥∞ ≤ ∆, then pathwise 
+
+|Yt(v) − Yt(v⋆)| ≤ 2K∆,
+
+and therefore 
+
+σ2(v) − σ2 
+
+> ⋆
+
+≤ 4Kσ ⋆∆ + 4 K2∆2.
+
+The pathwise statement follows by subtracting the two AIVAT corrections: each of at most K
+
+summands changes by at most 2∆. The variance statement then follows from the triangle inequality in conditional L2.
+
+Corollary 1 (Polynomial value learning has asymptotically vanishing delay) . If ∥vt − v⋆∥∞ ≤ ct −β
+
+for some β ∈ (0 , 1] , then one may take 
+
+Rt = O Kσ ⋆c S β (t) + K2c2S2β (t) , Sq(t) := X
+
+> s≤t
+
+s−q = o(t),
+
+and hence, with probability tending to one, 
+
+τ (ε) ≤ τ ⋆(ε)(1 + o(1)) .
+
+The guarantee is one-sided, which is the direction an evaluator needs: it caps any asymptotic delay relative to the deterministic oracle width benchmark, so a value learner whose variance regret is sublinear reaches a target precision at the oracle’s own asymptotic horizon, and it does so while the exact EB-CS validity of Section 5.1 continues to hold. Learning during the run therefore costs nothing asymptotically, and the cost at finite horizons is what Section 6.3 measures. Appendix C records what a matching lower bound would additionally require. 
+
+Remark 2 (Rarely visited information sets) . The exponent β of Corollary 1 is governed by the 
+
+least-visited information set rather than by the number of hands. For a Laplace-smoothed opponent frequency model, ∥vt − v⋆∥∞ ≍ plog t/N min (t) with Nmin (t) the minimum visit count. Reach probabilities in Leduc span two orders of magnitude, so Nmin (t) ≪ t and the effective β is small. The residual finite-horizon gap to oracle in Section 6.3 is what this predicts. 12 Quantity (15 HUNL runs; median [range]) Value Variance ratio σ2              
+
+> X/σ 2
+> Y54 .4×[24 .2, 86 .0] AsympCS stop ratio, ±1 BB 74 .17 ×[54 .53, 97 .62] EB-CS stop ratio, ±1 BB ( n= 14) †1.365 ×[1 .235, 1 .556] Raw AsympCS, ±0.5 BB 15/15 censored AIVAT AsympCS, ±0.5 BB (hands) 56.5 [42.5, 71]
+
+Table 1: P0 stopping and variance summaries. Each stopping entry first takes the median over 200 reshufflings within a run and then summarizes run-level values. The EB-CS ratio has 14 evaluable runs; the other rows use all 15. †The HUNL EB-CS row declares B = 200 BB, which the 200 BB stacks bound structurally on the raw stream but not on the corrected one, so the ratio is a descriptive replay of the boundary. 
+
+# 6 Experiments 
+
+We evaluate AV-AIVAT on three sources. P0 is a HUNL evaluation corpus containing 15 Poker-Skill/LLM agent configurations and paired per-hand raw/AIVAT outcomes from fixed-opponent multi-hand runs. Requiring both fields leaves 4,028–5,000 hands per run and 71,439 total. E1 and E2 use Leduc hold’em, where exact full-tree evaluation supplies ground truth. A2 uses the HUNL payoff pool for a simulated rolling leaderboard that monitors continuously and stops at the first favorable look. All analyses use nominal α = 0 .05; experiment-specific seeds and AsympCS settings are recorded in the appendix. E1 and E2 followed a frozen internal protocol; P0 used an approved fixed-seed gate without an independently timestamped preregistration; A2 and the later sensitivity checks are labeled accordingly. 
+
+Targeted implementation regression test. With an oracle value function and corrections at every node in the controlled Leduc laboratory, AIVAT must telescope to Yt ≡ μ hand by hand. The targeted regression test satisfies max t |Yt − μ| = 9 .1 × 10 −16 over 200 hands. This test guards the implementation of the telescoping identity. 
+
+6.1 HUNL evaluation 
+
+AIVAT sharply reduces empirical variance. Across the 15 runs, the median raw to AIVAT variance ratio is 54 .4× (range 24 .2–86 .0×). At a ±1 BB target, the median ratio of raw to AIVAT AsympCS stopping times is 74 .17 × (range 54 .53–97 .62 ×), whereas the corresponding EB-CS ratio is 1 .365 ×
+
+(range 1 .235–1 .556 ×) over 14 evaluable runs; one run’s raw stream failed to cross in most reshufflings. A stopping-time ratio is a nonlinear path statistic and need not equal the variance ratio. At the tighter ±0.5 BB target, all 15 raw AsympCS streams are censored at their available run horizons (4,028–5,000 hands). The AIVAT AsympCS median stopping time, computed within each run over its 200 reshufflings and then summarized across the 15 run-level medians, is 56.5 hands, with range 42.5–71. 
+
+Bound provenance and finite-horizon calibration. P0 declares B = 200 BB for all 15 logs. On the raw stream this value is structural rather than data-chosen: the evaluation seats 200 BB stacks and forbids rebuys, so a single hand transfers at most one effective stack and |Xt| ≤ 200 BB holds almost surely. The corpus is consistent with that ceiling, attaining it exactly and never exceeding it. The corrected stream has no matching analytic ceiling here, because an AIVAT correction accumulates over transitions and scales with the value estimates rather than with the 13 0 20 40 60 80 Raw / AIVAT          
+
+> R1 R2 R3 R4 R5 R6 R7 R8 R9 R10 R11 R12 R13 R14 R15
+> Evaluation run (ordered by variance ratio)  Variance ratio
+> Archived run
+> 020 40 60 80 100 Raw / AIVAT
+> AsympCS stop ratio, ±1 BB
+> Archived run
+> 1.2 1.3 1.4 1.5 1.6 Raw / AIVAT
+> EB-CS stop ratio, ±1 BB
+> Archived run Ratio censored
+> Run-level heterogeneity in the 15 archived HUNL evaluations
+
+Figure 1: Run-level heterogeneity in the 15 HUNL evaluations. Each point is one configuration. Dashed lines mark cross-run medians, and the cross in the EB panel denotes the one ratio censored because the raw stream failed to cross in most reshufflings. stack, so exact certification of the AIVAT arm would require a separate almost-sure argument, which is what the Leduc structural certificate supplies in Section 6.2. The reported EB-CS stopping ratio therefore pairs an exact raw boundary with a descriptive corrected one. The AsympCS false-positive summary reported by P0 is 7.1067%, the unweighted mean of 30 condition-level rates, namely raw and AIVAT for each of 15 runs with 1,000 resamples per condition; the AIVAT-only mean is 12.43%. The corresponding EB-CS summary is 0.01%, which is small but not zero, so the two boundaries separate on this corpus exactly as the width floor predicts. Removing any one run and recomputing the medians moves the variance ratio only within [51 .1, 55 .9] and the two stopping ratios within [73 .3, 74 .7] and [1 .359 , 1.371], so no single configuration drives the contrast (Appendix E). 
+
+6.2 Leduc ground-truth experiments 
+
+The hero is CFR + after 2,000 iterations and the opponent is CFR + after 20 iterations. Exact evaluation gives μ = −0.0047697 chips per hand. E1 uses 400 replications of 4,000 hands. The empirical standard deviations are 3.96 (raw) and 1.39 (AIVAT), a variance ratio of 8 .08 ×. Median AsympCS stopping ratios are 5 .29 × at ±0.5 chips and 7 .91 × at ±0.2; at ±0.1, every raw stream is censored while AIVAT stops at median 1,789 hands. A frozen structural rerun makes the E1 EB-CS coverage claim exact. Standard Leduc has 
+
+|X| ≤ 13 and |v| ≤ 13; corrected deal, chance, and hero transitions telescope, leaving at most four opponent transitions, so |Y | ≤ 117. The complete legal tree verifies the transition counts and the telescoping identity, and Appendix D gives the derivation. Across 400 replications, EB-CS excludes the exact mean in 2 raw and 0 AIVAT streams; AsympCS rates are 3.75% and 2.25%. Exactness here comes from the theorem together with the structural bound, and these counts are the finite-horizon Monte Carlo evidence beside it. The same structural bound lets us read off the price of exactness. Under BY = 117, empirical-to-floor ratios are 1.0019 and 1.0074 at t = 1000 and 4000; the loose B′ = 200 comparison gives 1.0006 and 1.0025. The certificate runs within about 1% of the deterministic floor its declared range 14 10 2 10 3
+
+## hands t     
+
+> 10 −1
+> 10 0
+> 10 1
+> 10 2
+> EB-CS half-width (chips)
+> EB-CS, loose bound B0= 200 floor 4 B0log(2/ α)/ t
+> EB-CS, B= 22 (descriptive) floor 4 Blog(2/ α)/ t
+> full-run anchors ( R= 400)
+
+Figure 2: EB-CS width curves on Leduc under different declared bounds. The loose B′ = 200 curve nearly equals its deterministic floor 4 B′ log(2 /α )/t ; the sample-derived B = 22 curve is descriptive. The analytic BY = 117 floor anchors are reported in the text.                       
+
+> raw frozen predictable oracle Std. (chips) 3.97 1.80 1.49 1.40
+> τ(±0.5) 607 164.5 156 118.5
+> τ(±0.2) 3759.5 754 649 473
+> τ(±0.1) cens. 3078 2280 1786
+
+Table 2: E2 median AsympCS stopping times on paired simulated hands. induces, which is why the floor formula, and not the variance ratio, predicts how fast an exact interval can be. The earlier sample-derived corrected bound 22 and its descriptive execution are recorded in Appendix D. 
+
+6.3 Controlled comparison of predictable online values 
+
+E2 compares raw, frozen, predictable, and oracle arms on the same 100 sets of 8,192 simulated hands. The predictable arm refits a Laplace-smoothed opponent action-frequency model at doubling epochs using past hands only, which isolates the learning mechanism under specified opponent-model mismatches. The primary profile gives the aggregate summary in Table 2; at ±0.1, predictable stops 25.9% earlier than frozen while oracle remains faster. A three-profile extension clarifies the boundary. In a matched-uniform control, frozen and oracle are identical and no oracle gap is identifiable. In two opponent-model mismatch profiles, predictable learning recovers 78.6% and 77.1% of the 15 32 64 128 256 512 1024 2048 4096 8192 
+
+## hands (epoch end)    
+
+> 23510 16
+> per-epoch variance (chips 2)
+> raw payoff AIVAT, frozen ̂ v
+> AIVAT, predictable online ̂ vt
+> AIVAT, oracle vσ
+
+Figure 3: E2 per-epoch variance under the controlled construction. Predictable past-only learning moves toward the oracle over the observed horizon, while the frozen and raw baselines remain flat. frozen-to-oracle variance gap. At ±0.1, predictable medians are 2240.5 and 2608 hands, versus 3039 and 4337.5 for frozen and 1744 and 1425.5 for oracle; raw streams are fully right-censored. These finite-horizon results quantify partial adaptation under both tested mismatches. 
+
+Held-out AsympCS calibration. A separate protocol uses 400 calibration and 400 evaluation replications with disjoint seeds. The 18-candidate grid varies internal α, topt , and burn-in, then freezes a single candidate before generating evaluation data. Held-out exclusion counts are raw 8/400, frozen 5/400, predictable 7/400, and oracle 5/400. The largest four-arm Bonferroni-adjusted one-sided Clopper–Pearson upper bound is 4.21%, so the registered empirical gate passes. 
+
+# 7 Continuous Monitoring and Time-Uniform Validity 
+
+AV-AIVAT (Section 4) lets an evaluator recompute a CS on the exact corrected prefix behind a published early-stopping claim and check it at the reported stopping time . This needs the corrected prefix and stop metadata, but no new games. The simulation below exercises that recheck: it measures how often an ordinary fixed-sample interval manufactures significance under continuous monitoring, and whether the two prespecified sequential boundaries retain the claim at the selected prefix. 
+
+7.1 Optional stopping under continuous monitoring 
+
+We form a zero-effect pool by centering the AIVAT payoffs within each of the 15 HUNL runs and concatenating the resulting 71,439 values. Each of 2,000 simulated leaderboard entries samples 5,000 16 A2 H0 quantity Result Fixed-CI claims at first favorable look 1,227/2,000 (61.35%) Median claimed stop 59 hands EB-CS contains zero at selected stop 1,227/1,227 AsympCS contains zero at selected stop 1,226/1,227 Standalone EB-CS detection by 5,000 0/2,000 Standalone AsympCS detection by 5,000 208/2,000 
+
+Table 3: A2 continuous-monitoring simulation under a constructed zero-effect pool. Continuous monitoring of a fixed-sample interval yields a 61% false-positive rate; checking either CS on the selected prefix keeps zero inside the interval and so screens the claim out. The EB entries declare per-entry observed bounds, so they replay the boundary descriptively. hands with replacement. A monitor inspects a naive fixed-sample 95% interval after every hand from t = 30 and stops at the first exclusion of zero. We then recompute EB-CS and AsympCS on the same selected prefix and check the interval at that stopping time. Stopping at the first favorable look claims a nonzero effect in 1,227 of 2,000 entries (61.35%), with median stopping time 59 hands among claims, even though the true effect is zero by construction. Checking a time-uniform interval on that same selected prefix screens those claims out: EB-CS contains zero at all 1,227 selected stops, and AsympCS at 1,226 of them (99.9185%). Run as standalone monitors over the full 5,000 hands, EB-CS has observed false-positive rate 0% and AsympCS 10.4%. Each simulated entry declares its own B as the ceiling of that entry’s observed maximum absolute payoff, so the EB column replays the exact boundary descriptively on the resampled pool, and the AsympCS column is the asymptotic screen whose finite-horizon calibration is visible in its standalone rate. What the comparison isolates is the effect of prefix selection, which is common to both columns. 
+
+Genuine effects are still recovered. Adding constant shifts of 0.05, 0.1, and 0.2 BB per hand gives claim rates of 86.6%, 97.4%, and 100% at the first favorable look. Confirmation at that same selected stop remains 0% for the descriptive EB analysis and 0.23%, 1.44%, and 7.0% for AsympCS. In contrast, when AsympCS continues as its own monitor, it detects the 0.1 effect in 81.2% of entries with median stopping time 960.5 and the 0.2 effect in 100% with median 173. The distinction matters: rejecting an unsupported early claim is not the same as denying the underlying effect, which can be detected after additional hands by a sequential monitor. 
+
+# 8 Release Protocol 
+
+An AV-AIVAT claim is auditable only if its statistical inputs and stopping decision can be recon-structed. We therefore recommend releasing one record per evaluated hand together with immutable run-level metadata. 
+
+Required outcome stream. For each hand, release its sequential index, the corrected payoff Yt,units, and an identifier linking the record to one evaluation run. Release the raw payoff Xt when available. The corrected prefix is sufficient to recompute a CS; releasing paired ( Xt, Y t) additionally lets a reader inspect the raw stream. Missing or invalid rows must be marked rather than silently renumbered, and the rule that maps platform records to analyzed records must be stated. 17 0.05 0.10 0.20 Injected effect (BB per hand) 0.0 0.2 0.4 0.6 0.8 1.0 Fraction of 500 entries 
+
+> Early selected claims versus honest sequential detection
+> Fixed CI claims AsympCS confirms at claim time AsympCS detects by 5,000 EB-CS detects by 5,000
+
+Figure 4: Injected-effect experiment. A first-crossing fixed CI often claims success before a sequential boundary crosses. Continuing AsympCS under its own stopping rule detects the larger injected effects by 5,000 hands. 
+
+Correction provenance. Identify the correction algorithm, the known action distributions used at correction nodes, and the value-function artifact or training procedure. For online values, record update epochs and enough state to verify that vt was fixed before observing hand t. If a value function is frozen, report what data trained it and confirm that evaluation hands were not used to fit it. 
+
+Inference specification. Release the confidence-sequence implementation and version, confidence level, burn-in, target half-width, rescaling convention, bet cap, censoring rule, and all numerical constants. A bounded exact-coverage claim must include an independently justified almost-sure bound for the corrected payoff. Rules of the game supply such bounds directly, through a maximum per-hand contribution or a seated stack that no hand can exceed. A bound chosen instead from the analyzed observations, including an observed maximum rounded upward, must be labeled data-dependent and the resulting EB analysis descriptive rather than exact. Approximate AsympCS results must be labeled asymptotic and accompanied by finite-horizon calibration where available. 
+
+Stopping metadata. Release the declared stopping rule, target quantity, first eligible look, reported stopping index ˆ t, whether the run was censored, and the exact prefix used for the claim. If analysis occurred after a fixed horizon rather than online, say so. An auditor should be able to recompute the interval at ˆ t without collecting new data or guessing which rows were included. 
+
+Experimental provenance. Release random seeds, sample sizes, configuration identifiers, code commit or archive hash, and machine-readable result files. Distinguish preregistered, internally frozen, exploratory, and post hoc analyses. Deviations must be recorded next to the affected claim. In this study that includes E1’s change from the registered raw-payoff bound B = 13 to the observed-joint-maximum-based B = 22, as well as the observed-bound choices in P0, E2 coverage, and A2. 18 Minimal recheck procedure. Given the released prefix, another evaluator (i) verifies ordering and row selection; (ii) reconstructs the stated correction and predictability assumptions where artifacts permit; (iii) recomputes the declared interval at every eligible look and at ˆ t; and (iv) checks an independently justified corrected-payoff bound if exact EB validity is claimed. This reconstructs the stopping claim. Detecting faults or adversarial changes in the correction generator is a complementary estimator-audit task. 
+
+# 9 Discussion 
+
+Within the operating scope of Appendix G, the two AV-AIVAT streams divide the labor cleanly. The AsympCS is the working instrument: P0’s median variance factor of 54 .4 becomes a median 74 ×
+
+reduction in the hands needed to reach ±1 BB, and its finite-horizon exclusion rates at nominal 5% are 7.1067% averaged over the 30 P0 raw/AIVAT run-stream conditions and 10.4% under continuous monitoring through 5,000 hands in A2. These rates are the calibration evidence for an asymptotic screen, and the held-out gate of Section 6.3 was frozen in advance so that the evidence is prospective rather than selected after the fact. The EB-CS is the certificate, and what it certifies depends on where the declared bound comes from. The structural Leduc rerun declares the analytic BY = 117 and therefore instantiates the exact-validity theorem directly. The remaining executions declare bounds derived from observed maxima, so their EB-CS coverage summaries replay an execution descriptively; Appendix D records the provenance of each declared bound alongside the corresponding result. Separating these two modes is what lets one paper report an exact certificate and a practical screen without conflating them. For practice, the stopping ratio matters because hands are expensive. At the $0.07– $0.30 per evaluated hand reported for LLM agents in full poker games, a 74 × reduction in the hands required for a target precision turns a budget question into a routine one, and the reduction costs nothing in auditability: the corrected prefix together with stop metadata is enough for a third party to recheck the interval at the claimant’s own stopping time, which is exactly the recheck A2 performs against an invalid naive monitor. The width floor identifies the sharpest open problem. A bet cap forces wEB  
+
+> t
+
+≥ 4B log(2 /α )/t ,so an exact interval converts a variance gain into earlier stopping only when the declared bound is tight relative to σ2/ε . Leduc shows this is achievable: the analytic certificate follows from the telescoping structure of the game tree, and the resulting EB-CS runs within about 1% of its floor at both measured horizons. An analytic corrected-payoff bound for HUNL, or a confidence sequence whose range dependence adapts to the realized payoff scale, would extend exact certification to the setting where evaluation is most expensive. Appendix H collects the further directions this opens. 
+
+# 10 Conclusion 
+
+Past-only value functions preserve the mean-zero correction law under the required action kernel and pre-action enablement, so the value model may keep learning while an evaluation runs instead of being frozen before it starts. The AsympCS turns the resulting variance reduction into much earlier stopping, and the EB-CS certifies a stopping claim exactly once a corrected-payoff bound is established independently of the evaluation sample, as the game structure permits in Leduc. A bet-capped exact interval pays a width floor set by that declared bound, which is what decides how much of a variance gain becomes earlier stopping. Releasing the corrected prefix, stop metadata, 19 and bound provenance makes the resulting claim recomputable at the claimant’s own stopping time. AV-AIVAT therefore specifies adaptation, stopping, and bound provenance together. 
+
+# References 
+
+[1] Noga Alon. Poker, chance and skill. Unpublished Manuscript , pages 1–17, 2007. [2] Darse Billings and Morgan Kan. A tool for the direct assessment of poker decisions. ICGA Journal , 29(3):119–142, 2006. [3] Michael Bowling, Michael Johanson, Neil Burch, and Duane Szafron. Strategy evaluation in extensive games with importance sampling. In Proceedings of the 25th international conference on Machine learning , pages 72–79, 2008. [4] Michael Bowling, Neil Burch, Michael Johanson, and Oskari Tammelin. Heads-up limit hold’em poker is solved. Science , 347(6218):145–149, 2015. [5] Noam Brown and Tuomas Sandholm. Regret-based pruning in extensive-form games. Advances in neural information processing systems , 28, 2015. [6] Noam Brown and Tuomas Sandholm. Baby tartanian8: Winning agent from the 2016 annual computer poker competition. In IJcAI , pages 4238–4239, 2016. [7] Noam Brown and Tuomas Sandholm. Strategy-based warm starting for regret minimization in games. In Proceedings of the AAAI Conference on Artificial Intelligence , volume 30, 2016. [8] Noam Brown and Tuomas Sandholm. Reduced space and faster convergence in imperfect-information games via pruning. In International conference on machine learning , pages 596–604. PMLR, 2017. [9] Noam Brown and Tuomas Sandholm. Safe and nested subgame solving for imperfect-information games. Advances in neural information processing systems , 30, 2017. [10] Noam Brown and Tuomas Sandholm. Superhuman ai for heads-up no-limit poker: Libratus beats top professionals. Science , 359(6374):418–424, 2018. [11] Noam Brown and Tuomas Sandholm. Solving imperfect-information games via discounted regret minimization. In Proceedings of the AAAI Conference on Artificial Intelligence , volume 33, pages 1829–1836, 2019. [12] Noam Brown and Tuomas Sandholm. Superhuman ai for multiplayer poker. Science , 365(6456): 885–890, 2019. [13] Noam Brown, Tuomas Sandholm, and Brandon Amos. Depth-limited solving for imperfect-information games. Advances in neural information processing systems , 31, 2018. [14] Noam Brown, Adam Lerer, Sam Gross, and Tuomas Sandholm. Deep counterfactual regret minimization. In International conference on machine learning , pages 793–802. PMLR, 2019. [15] Noam Brown, Anton Bakhtin, Adam Lerer, and Qucheng Gong. Combining deep reinforcement learning and search for imperfect-information games. Advances in neural information processing systems , 33:17057–17069, 2020. 20 [16] Neil Burch, Martin Schmid, Matej Moravcik, Dustin Morill, and Michael Bowling. Aivat: A new variance reduction technique for agent evaluation in imperfect information games. In 
+
+Proceedings of the AAAI Conference on Artificial Intelligence , volume 32, 2018. [17] Joshua Davidson, Christopher Archibald, and Michael Bowling. Baseline: practical control variates for agent evaluation in zero-sum domains. In AAMAS , volume 13, pages 1005–1012, 2013. [18] Trevor Davis, Martin Schmid, and Michael Bowling. Low-variance and zero-variance baselines for extensive-form games. In International Conference on Machine Learning , pages 2392–2401. PMLR, 2020. [19] Michael A DeDonno and Douglas K Detterman. Poker is a skill. Gaming Law Review , 12(1): 31–36, 2008. [20] Haobo Fu, Weiming Liu, Shuang Wu, Yijia Wang, Tao Yang, Kai Li, Junliang Xing, Bin Li, Bo Ma, Qiang Fu, et al. Actor-critic policy optimization in a large-scale imperfect-information game. In International conference on learning representations , 2021. [21] Sam Ganzfried and Tuomas Sandholm. Endgame solving in large imperfect-information games. In Proceedings of the 2015 International Conference on Autonomous Agents and Multiagent Systems , pages 37–45, 2015. [22] Peter Gr¨ unwald. Proposer of the vote of thanks to waudy-smith and ramdas and contribution to the discussion of ‘estimating means of bounded random variables by betting’. Journal of the Royal Statistical Society Series B: Statistical Methodology , 86(1):28–30, 2024. [23] Steven R Howard, Aaditya Ramdas, Jon McAuliffe, and Jasjeet Sekhon. Time-uniform, nonparametric, nonasymptotic confidence sequences. The Annals of Statistics , 49(2):1055–1080, 2021. [24] Eric Jackson. Slumbot nl: Solving large games with counterfactual regret minimization using sampling and distributed processing. In AAAI Workshop on Computer Poker and Incomplete Information , 2013. [25] Michael Johanson. Measuring the size of large no-limit poker games. arXiv preprint arXiv:1302.7008 , 2013. [26] Michael Johanson, Kevin Waugh, Michael Bowling, and Martin Zinkevich. Accelerating best response calculation in large extensive games. In IJCAI , volume 11, pages 258–265, 2011. [27] Michael Johanson, Neil Burch, Richard Valenzano, and Michael Bowling. Evaluating state-space abstractions in extensive-form games. In Proceedings of the 2013 international conference on Autonomous agents and multi-agent systems , pages 271–278, 2013. [28] Morgan Hugh Kan. Postgame analysis of poker decisions. 2007. [29] Juho Kim and Tuomas Sandholm. Heuristic pathologies and further variance reduction via uncertainty propagation in the aivat family of techniques. arXiv preprint arXiv:2605.14261 ,2026. [30] Vojtˇ ech Kovaˇ r´ ık, Dominik Seitz, Viliam Lis` y, Jan Rudolf, Shuo Sun, and Karel Ha. Value func-tions for depth-limited solving in zero-sum imperfect-information games. Artificial Intelligence ,314:103805, 2023. 21 [31] Marc Lanctot, Kevin Waugh, Martin Zinkevich, and Michael Bowling. Monte carlo sampling for regret minimization in extensive games. Advances in neural information processing systems ,22, 2009. [32] Boning Li and Longbo Huang. Efficient online pruning and abstraction for imperfect information extensive-form games. In The Thirteenth International Conference on Learning Representations ,2025. [33] Boning Li and Longbo Huang. Agents that certify their own exploits: Confidence-scheduled restricted responses for safe opponent exploitation, 2026. URL https://arxiv.org/abs/2607. 28520. [34] Boning Li and Longbo Huang. Effective, efficient, and general information abstraction for imperfect-information extensive-form games. arXiv preprint arXiv:2605.10900 , 2026. [35] Boning Li and Longbo Huang. Real-time parallel counterfactual regret minimization. arXiv preprint arXiv:2605.19928 , 2026. [36] Boning Li, Zhixuan Fang, and Longbo Huang. Rl-cfr: improving action abstraction for imperfect information extensive-form games with reinforcement learning. In Proceedings of the 41st International Conference on Machine Learning , pages 27752–27770, 2024. [37] Boning Li, Yu Chen, and Longbo Huang. Correlated chance sampling for monte carlo counter-factual regret minimization, 2026. URL https://arxiv.org/abs/2607.27035. [38] Boning Li, Baoxiang Wang, and Longbo Huang. Pokerskill: Llms can play expert-level poker without training or solvers. arXiv preprint arXiv:2605.30094 , 2026. [39] Stephen Marcus McAleer, Gabriele Farina, Marc Lanctot, and Tuomas Sandholm. Escher: Eschewing importance sampling in games by computing a history value function to estimate regret. In The Eleventh International Conference on Learning Representations .[40] Matej Moravcik, Martin Schmid, Karel Ha, Milan Hladik, and Stephen Gaukrodger. Refining subgames in large imperfect information games. In Proceedings of the AAAI Conference on Artificial Intelligence , volume 30, 2016. [41] Matej Moravˇ c´ ık, Martin Schmid, Neil Burch, Viliam Lis` y, Dustin Morrill, Nolan Bard, Trevor Davis, Kevin Waugh, Michael Johanson, and Michael Bowling. Deepstack: Expert-level artificial intelligence in heads-up no-limit poker. Science , 356(6337):508–513, 2017. [42] Marc-Antoine Provost, Nejc Ilenic, Christopher Solinas, and Philippe Beardsell. Gto wizard benchmark. arXiv preprint arXiv:2603.23660 , 2026. [43] Aaditya Ramdas, Peter Gr¨ unwald, Vladimir Vovk, and Glenn Shafer. Game-theoretic statistics and safe anytime-valid inference. Statistical Science , 38(4):576–601, 2023. [44] Martin Schmid, Neil Burch, Marc Lanctot, Matej Moravcik, Rudolf Kadlec, and Michael Bowling. Variance reduction in monte carlo counterfactual regret minimization (vr-mccfr) for extensive form games using baselines. In Proceedings of the AAAI Conference on Artificial Intelligence , volume 33, pages 2157–2164, 2019. 22 [45] Martin Schmid, Matej Moravˇ c´ ık, Neil Burch, Rudolf Kadlec, Josh Davidson, Kevin Waugh, Nolan Bard, Finbarr Timbers, Marc Lanctot, G Zacharias Holland, et al. Student of games: A unified learning algorithm for both perfect and imperfect information games. Science Advances ,9(46):eadg3256, 2023. [46] Oskari Tammelin. Solving large imperfect information games using cfr+. arXiv preprint arXiv:1407.5042 , 2014. [47] Ian Waudby-Smith, David Arbour, Ritwik Sinha, Edward Kennedy, and Aaditya Ramdas. Time-uniform central limit theory and asymptotic confidence sequences. The Annals of Statistics , 52 (6), 2024. [48] Kevin Waugh, David Schnizlein, Michael H Bowling, and Duane Szafron. Abstraction pathologies in extensive games. AAMAS (2) , 2009:781–8, 2009. [49] Martha White and Michael H Bowling. Learning a value analysis tool for agent evaluation. In 
+
+IJCAI , pages 1976–1981, 2009. [50] Daochen Zha, Jingru Xie, Wenye Ma, Sheng Zhang, Xiangru Lian, Xia Hu, and Ji Liu. Douzero: Mastering doudizhu with self-play deep reinforcement learning. In international conference on machine learning , pages 12333–12344. PMLR, 2021. [51] Richard Zhuang, Akshat Gupta, Richard Yang, Aniket Rahane, Zhengyu Li, and Gopala Anumanchipalli. Pokerbench: Training large language models to become professional poker players. In Proceedings of the AAAI Conference on Artificial Intelligence , volume 39, pages 26175–26182, 2025. [52] Martin Zinkevich, Michael Bowling, Nolan Bard, Morgan Kan, and Darse Billings. Optimal unbiased estimators for evaluating agent performance. In Proceedings of the National Conference on Artificial Intelligence , volume 21, page 573. Menlo Park, CA; Cambridge, MA; London; AAAI Press; MIT Press; 1999, 2006. [53] Martin Zinkevich, Michael Johanson, Michael Bowling, and Carmelo Piccione. Regret mini-mization in games with incomplete information. Advances in neural information processing systems , 20, 2007. 
+
+# A Proofs of Predictable Validity 
+
+We prove Propositions 1 and 2. Fix the finite game tree for one hand. For h ∈ Hc let It,h =
+
+1{h reached } be the reach indicator, At,h the realized action, and St,h the enablement indicator. Let 
+
+G− 
+
+> t,h
+
+be the sigma-field immediately before the action at h; it contains Ft−1 and the within-hand history through reaching h. Then (3) equals the fixed-node sum 
+
+Ct = X
+
+> h∈Hc
+
+St,h It,h 
+
+X
+
+> a
+
+pt,h (a)vt(h·a) − vt(h·At,h )
+
+!
+
+. (11) Writing the correction over a fixed finite set avoids conditioning on the random set of visited correction points. 23 A.1 Conditional mean 
+
+Fix h ∈ Hc. The factors St,h , It,h , vt, and the kernel pt,h are all G−
+
+> t,h
+
+-measurable: vt is Ft−1-measurable, and the reach and enablement events are determined before the action at h. By the conditional-kernel hypothesis, given G− 
+
+> t,h
+
+the realized action At,h has law pt,h , so 
+
+E
+
+h
+
+vt(h·At,h ) | G −
+
+> t,h
+
+i
+
+= X
+
+> a
+
+pt,h (a) vt(h·a).
+
+Hence each node term has G−
+
+> t,h
+
+-conditional mean zero. Taking E[ · | F t−1] and using the tower property ( Ft−1 ⊆ G −
+
+> t,h
+
+) makes each summand’s Ft−1-conditional mean zero, without conditioning on a possibly null reach event. Summing the finite set Hc in (11) gives E[Ct | F t−1] = 0. Since 
+
+E[Xt | F t−1] = μ by hypothesis, 
+
+E[Yt | F t−1] = μ. 
+
+The unknown opponent strategy can affect whether a correction node is reached, but not the known action law at such a node. This is why no correction is made at an unknown opponent decision node. 
+
+A.2 Boundedness 
+
+For every reached correction node, 
+
+|Ea∼ph [vt(h·a)] − vt(h·ah)| ≤ 2∥vt∥∞ ≤ 2V. 
+
+At most K correction nodes occur on a realized trajectory, so |Ct| ≤ 2KV . Combining this with 
+
+|Xt| ≤ BX gives 
+
+|Yt| ≤ BX + 2 KV = BY .
+
+A.3 Exact EB-CS validity 
+
+Rescale Zt = ( Yt + BY )/(2 BY ) ∈ [0 , 1] and define μZ = ( μ + BY )/(2 BY ). The preceding conditional-mean calculation gives E[Zt | F t−1] = μZ .For intuition, for any predictable λt ∈ [0 , 1/2], 
+
+M + 
+
+> t
+
+(μZ ) = Y
+
+> s≤t
+
+ 1 + λs(Zs − μZ )
+
+is a nonnegative unit-initialized martingale because 
+
+E[M + 
+
+> t
+
+(μZ ) | F t−1] = M +
+
+> t−1
+
+(μZ ) (1 + λtE[Zt − μZ | F t−1]) = M +
+
+> t−1
+
+(μZ ).
+
+The analogous process with the minus sign is also a nonnegative martingale. This calculation identifies the role of predictability and the constant conditional mean. The exact interval in (4) is the predictable plug-in empirical-Bernstein construction [22]. Its published e-process theorem applies to bounded adapted observations with constant conditional mean and predictable bets. The preceding parts establish those hypotheses. Inverting that e-process therefore yields 
+
+P
+
+
+
+∀t ≥ 1 : μZ ∈ CI EB ,[0 ,1] 
+
+> t
+
+
+
+≥ 1 − α. 
+
+The affine map from [0 , 1] back to [ −BY , B Y ] preserves coverage, proving (1) for the corrected payoff mean and completing the proof of Proposition 1. The empirical-Bernstein boundary comes from the published e-process result; the simpler capital process above is explanatory and is not used to derive (4). 24 A.4 Asymptotic AsympCS validity 
+
+The process Dt = Yt − μ is an adapted martingale-difference sequence with |Dt| ≤ 2BY . Write 
+
+σ2 
+
+> t
+
+= Var( Yt | F t−1) and Vt = P 
+
+> s≤t
+
+σ2 
+
+> s
+
+. We discharge, in turn, the hypotheses of the martingale asymptotic confidence sequence of Waudby-Smith et al. [47]. First, t−1Vt → σ2 
+
+> ∞
+
+∈ (0 , ∞) and the monotonicity of Vt give Vt → ∞ almost surely. Second, since |Dt| ≤ 2BY , for any fixed κ ∈ (0 , 1) the truncation level V κt eventually exceeds (2 BY )2, so the conditional Lindeberg tail terms vanish for all large t and their series converges almost surely. Third, the relative-consistency requirement t bσ2 
+
+> t
+
+/V t → 1 a.s. follows from the martingale strong law: with 
+
+Qt = P 
+
+> s≤t
+
+D2 
+
+> s
+
+and St = P 
+
+> s≤t
+
+Ds, the bounded-increment martingale Qt − Vt has conditional second moment O(Vt), so ( Qt − Vt)/V t → 0 a.s., and S2 
+
+> t
+
+/(tV t) → 0 a.s.; since t bσ2 
+
+> t
+
+/V t = Qt/V t − S2 
+
+> t
+
+/(tV t), the ratio tends to one. Boundedness alone does not imply the positive limiting variance, which is why it is assumed. Under these three conditions the cited result supplies the asymptotic guarantee for (5) in its stated sense, completing the proof of Proposition 2. 
+
+# B Proofs for the Stopping-Cost Results 
+
+B.1 Proof of Lemma 1 
+
+Since vEB  
+
+> s
+
+≥ 0 and ψE (λs) ≥ 0, Equation (4) gives 
+
+wEB ,[0 ,1]  
+
+> t
+
+≥ log 2
+
+> α
+
+P 
+
+> s≤t
+
+λs
+
+≥ log 2
+
+> α
+
+t/ 2 = 2 log 2
+
+> α
+
+t .
+
+Mapping a unit-scale half-width back to [ −B, B ] multiplies it by 2 B. Therefore wEB  
+
+> t
+
+≥ 4B log 2 
+
+> α
+
+/t 
+
+pointwise for every realization and predictable bet sequence. 
+
+B.2 Proof of Theorem 1 
+
+Part 1. If wEB  
+
+> t
+
+≤ ε, Lemma 1 forces t ≥ 4B log 2 
+
+> α
+
+/ε .
+
+Part 2: rescaling and the boundary. Work on [0 , 1] with 
+
+εZ = ε
+
+2B , σ2 
+
+> Z
+
+= σ2
+
+4B2 .
+
+For λ ∈ (0 , 1/2], 
+
+− log(1 − λ) − λ = X
+
+> k≥2
+
+λk
+
+k
+
+≤ λ2
+
+2
+
+X
+
+> j≥0
+
+λj = λ2
+
+2(1 − λ) ≤ λ2.
+
+Hence ψE (λ) ≤ λ2/4. For a constant bet λ and Vt = P 
+
+> s≤t
+
+vEB  
+
+> s
+
+,
+
+wEB ,[0 ,1]  
+
+> t
+
+≤ log 2
+
+> α
+
+λt + λ
+
+4
+
+Vt
+
+t . (12) 25 Part 2: controlling the empirical-variance proxy. Because Zs ∈ [0 , 1], vEB  
+
+> s
+
+= 4( Zs − bμs−1)2 ∈
+
+[0 , 4], and 
+
+E[vEB  
+
+> s
+
+| F s−1] = 4  σ2 
+
+> Z
+
++ ( bμs−1 − μZ )2 . (13) For the bounded i.i.d. stream, sample-mean concentration and a union bound over time imply that, for every δ ∈ (0 , 1), with probability at least 1 − δ/ 2 there is a deterministic t1 = t1(δ, σ Z ) such that 
+
+X
+
+> s≤t
+
+E[vEB  
+
+> s
+
+| F s−1] ≤ 6tσ 2 
+
+> Z
+
+for all t ≥ t1.
+
+The process obtained by subtracting the predictable sum in (13) from Vt is a martingale with increments in [ −4, 4]. A time-uniform Hoeffding bound [23] implies, on an event of probability at least 1 − δ/ 2, 
+
+Vt ≤ X
+
+> s≤t
+
+E[vEB  
+
+> s
+
+| F s−1] + cpt log(log t/δ )simultaneously in t, for a universal constant c, for all t beyond the fixed first eligible look. Combining the two events, there is a deterministic t0 = t0(δ, σ Z ) such that, with probability at least 1 − δ,
+
+Vt ≤ 8tσ 2 
+
+> Z
+
+for all t ≥ t0. (14) 
+
+Part 2: oracle constant bet. For the target εZ , choose 
+
+λ = min 
+
+ 12 , εZ
+
+4σ2
+
+> Z
+
+
+
+.
+
+This bet depends on the distributional variance but not on the observed data, so it is predictable. On the event (14), the second term of (12) is at most 2 λσ 2 
+
+> Z
+
+≤ εZ /2. The first term is at most εZ /2whenever 
+
+t ≥
+
+(4 log 2 
+
+> α
+
+/ε Z , λ = 1 /2,
+
+8σ2 
+
+> Z
+
+log 2 
+
+> α
+
+/ε 2 
+
+> Z
+
+, λ = εZ /(4 σ2 
+
+> Z
+
+).
+
+Therefore 
+
+τEB (εZ ) ≤ max 
+
+( 4 log 2
+
+> α
+
+εZ
+
+, 8σ2 
+
+> Z
+
+log 2
+
+> α
+
+ε2
+
+> Z
+
+)
+
+∨ t0.
+
+Substitution of the payoff-scale quantities yields 
+
+τEB (ε) ≤ max 
+
+( 8B log 2
+
+> α
+
+ε , 8σ2 log 2
+
+> α
+
+ε2
+
+)
+
+∨ t0.
+
+For every ε below the distribution- and δ-dependent threshold at which the maximum exceeds t0,this proves Part 2. 
+
+Part 3: common-support alternatives. Let a = √σ2 + 4 ε2 and define laws P+ and P− on 
+
+{− a, a } by 
+
+P+(a) = 1 + 2 ε/a 
+
+2 , P−(a) = 1 − 2ε/a 
+
+2 ,
+
+with complementary masses at −a. Their means are 2 ε and −2ε, and both variances equal a2 − 4ε2 =
+
+σ2. The condition ε ≤ σ/ (2 √3) implies 2 ε/a ≤ 1/2, so all masses are positive; a ≤ B places the common support inside [ −B, B ]. 26 If either expected stopping time is infinite, the claimed lower bound is immediate. Otherwise, at the stopping time decide P+ when the reported interval center is positive and P− otherwise. A half-width-ε interval that covers 2 ε has positive center, and one that covers −2ε has negative center. Time-uniform coverage bounds both testing errors by α. The one-sample divergences are equal: KL( P+∥P−) = KL( P−∥P+) = 2εa log a + 2 εa − 2ε .
+
+The sequential information inequality therefore gives, for at least one law, 
+
+E[τ (ε)] ≥ (1 − 2α) log((1 − α)/α )(2 ε/a ) log(( a + 2 ε)/(a − 2ε)) .
+
+For x ∈ [0 , 1/2], x log((1 + x)/(1 − x)) ≤ (8 /3) x2. Taking x = 2 ε/a , the denominator is at most 32 ε2/(3 a2) ≤ 32 ε2/(3 σ2), which proves the stated order for fixed α < 1/2. 
+
+B.3 Derivation and boundary of the design proxy 
+
+The theorem’s three components have different quantifiers: a deterministic construction-specific floor, an oracle-bet high-probability upper bound, and an expected lower bound for a particular two-law family. They motivate (7) but do not combine into a stopping-time equivalence. When 
+
+BX = BY = B and 0 < σ 2 
+
+> Y
+
+≤ σ2 
+
+> X
+
+, consider the locations of ε relative to σ2 
+
+> X
+
+/B and σ2 
+
+> Y
+
+/B . Direct case analysis gives the clipped expression in (8). This algebra establishes only the equivalence of the two proxy formulas. 
+
+B.4 Proof of Proposition 3 
+
+Write g(t)2 = t−1ℓ(t), where 
+
+ℓ(t) = 2 
+
+
+
+1 + 1
+
+tρ 2
+
+
+
+log 
+
+ptρ 2 + 1 
+
+α
+
+!
+
+is positive and slowly varying. For sufficiently large deterministic t0, g is decreasing to zero, so 
+
+tε(σ) = inf {t ≥ t0 : σg (t) ≤ ε} is well-defined and diverges as ε → 0. At the asymptotic solution, 
+
+tε(σ) = σ2
+
+ε2 ℓ(tε(σ)) (1 + o(1)) ,
+
+where integer rounding is asymptotically immaterial. Applying this identity to σX and σY gives 
+
+tε(σX )
+
+tε(σY ) = σ2
+
+> X
+
+σ2
+
+> Y
+
+ℓ(tε(σX )) 
+
+ℓ(tε(σY )) (1 + o(1)) .
+
+The final quotient is precisely the ratio of slowly varying logarithmic factors denoted by Lε. This calculation compares deterministic width benchmarks only. It does not use, or imply, monotonicity of the sample variance or of the realized AsympCS half-width, and therefore does not characterize an actual random first crossing. 27 C Proofs for Online Value Functions 
+
+C.1 Proof of Theorem 2 
+
+Write τ ⋆ = τ ⋆(ε) and define 
+
+δε = 2R2τ ⋆
+
+σ2 
+
+> ⋆
+
+τ ⋆ , tδ = ⌈(1 + δε)τ ⋆⌉ .
+
+Because Rt = o(t) and τ ⋆ → ∞ as ε → 0, eventually R2τ ⋆ ≤ σ2 
+
+> ⋆
+
+τ ⋆/2. Hence δε ≤ 1 and tδ ≤ 2τ ⋆
+
+because τ ⋆ is represented by an integer benchmark time. Monotonicity of Rt and the variance-regret bound yield 
+
+σ2 
+
+> tδ
+
+≤ σ2 
+
+> ⋆
+
++ Rtδ
+
+tδ
+
+≤ σ2 
+
+> ⋆
+
++ R2τ ⋆
+
+(1 + δε)τ ⋆ + o(( τ ⋆)−1)= σ2
+
+> ⋆
+
+
+
+1 + δε
+
+2(1 + δε)
+
+
+
++ o(( τ ⋆)−1). (15) By definition of the deterministic oracle asymptotic benchmark, 
+
+ε2 = σ2 
+
+> ⋆
+
+gτ ⋆
+
+τ ⋆ .
+
+This equality uses an asymptotically immaterial integer representative. Assumption 1, uniformly on the deterministic window [ τ ⋆, 2τ ⋆], together with (15), gives 
+
+w2
+
+> tδ
+
+ε2 ≤ 1 + δε
+
+> 2(1+ δε)
+
+1 + δε
+
+gtδ
+
+gτ ⋆
+
+(1 + oP(1)) = 2 + 3 δε
+
+2(1 + δε)2 (1 + oP(1)) . (16) For every δ ∈ (0 , 1], 1 − 2 + 3 δ
+
+2(1 + δ)2 = δ + 2 δ2
+
+2(1 + δ)2 ≥ δ
+
+8 . (17) It remains to account for a possible δε smaller than the stochastic remainder. By uniform convergence in probability, choose a deterministic sequence ηε ↓ 0 such that the absolute remainder in (16) is oP(ηε). If δε ≥ ηε, then (17) implies wtδ ≤ ε with probability tending to one. Therefore 
+
+τ (ε) ≤ (1 + δε)τ ⋆ + 1 with probability tending to one. If δε < η ε, repeat the candidate-time argument with ηε in place of 
+
+δε; monotonicity of Rt and δε < η ε preserve the required average- variance upper bound, while the deterministic gap dominates the remainder. Then 
+
+τ (ε) ≤ (1 + ηε)τ ⋆ + 1 .
+
+This inequality holds on an event whose probability tends to one. Combining the two cases and using 1 /τ ⋆ = o(1) yields 
+
+τ (ε) ≤ τ ⋆(ε)
+
+
+
+1 + 2R2τ ⋆(ε)
+
+σ2 
+
+> ⋆
+
+τ ⋆(ε) + o(1) 
+
+
+
+with probability tending to one. 28 C.2 Proof of Lemma 2 
+
+Set d = v − v⋆, so ∥d∥∞ ≤ ∆. Subtracting the two corrected estimators on the same realized hand gives 
+
+Yt(v) − Yt(v⋆) = X
+
+> k∈Kt
+
+(Ea∼pk [d(hk ·a)] − d(hk ·ak)) .
+
+Every summand has absolute value at most 2∆, and |Kt| ≤ K. Therefore 
+
+|Yt(v) − Yt(v⋆)| ≤ 2K∆.
+
+Let D = Yt(v) − Yt(v⋆). The triangle inequality in conditional L2 gives 
+
+σ(v) ≤ σ⋆ + pVar( D | F t−1)
+
+≤ σ⋆ + ∥D∥∞ ≤ σ⋆ + 2 K∆.
+
+Thus 
+
+σ2(v) − σ2 
+
+> ⋆
+
+= ( σ(v) − σ⋆)( σ(v) + σ⋆)
+
+≤ (2 K∆)(2 σ⋆ + 2 K∆) = 4 Kσ ⋆∆ + 4 K2∆2.
+
+C.3 Proof of Corollary 1 
+
+If ∥vt − v⋆∥∞ ≤ ct −β , Lemma 2 gives 
+
+σ2 
+
+> t
+
+− σ2 
+
+> ⋆
+
+≤ 4Kσ ⋆c t −β + 4 K2c2t−2β .
+
+Summing through t shows that the regret condition holds with 
+
+Rt ≤ 4Kσ ⋆c S β (t) + 4 K2c2S2β (t), Sq(t) = X
+
+> s≤t
+
+s−q.
+
+For every q > 0, Sq(t) = o(t): it grows as O(t1−q) for q < 1, O(log t) for q = 1, and O(1) for q > 1. Hence Rt = o(t). Applying Theorem 2 gives the one-sided statement 
+
+τ (ε) ≤ τ ⋆(ε)(1 + o(1)) with probability tending to one. This does not imply convergence of the ratio to one: the online procedure may cross earlier. A matching lower bound would require additional control before the oracle benchmark time. The comparison is to the deterministic benchmark from Assumption 1, not to an oracle sample path’s random first crossing. 
+
+# D Experimental Details 
+
+D.1 Analysis status and common settings 
+
+E1 and E2 follow the hypotheses, sample sizes, and kill criteria of an internal protocol frozen before those experiments. P0 used an internally approved fixed-seed gate with a prespecified kill criterion, but no independently timestamped P0 preregistration is archived. A2 is a subsequent fixed-seed audit application. The leave-one-run-out and entry-length analyses are post hoc sensitivity checks. P0, the original E1/E2 executions, A2, and entry-length sensitivity share one fixed seed and the default AsympCS setting topt = 1000 with a 30-hand burn-in. The cross-setting and held-out analyses use disjoint seed ranges and the locked AsympCS settings reported with those analyses. All experiments use nominal α = 0 .05. The default AsympCS parameterization is ρ2 = 2 log(1 /α )/t opt ; the EB-CS uses the regularized predictable plug-in mean emt−1 and predictable bets capped at 1 /2. 29 D.2 HUNL data and P0 computation 
+
+The HUNL corpus consists of 15 PokerSkill/LLM-agent configurations, each played against GTO Wizard in one multi-hand run. A configuration fixes its agent and PokerSkill settings; the 15 configurations need not correspond to 15 distinct base models. One record per hand supplies the raw and the corrected payoff. Requiring both leaves 4,028–5,000 paired hands per run and 71,439 hands overall. Payoffs and means are expressed in big blinds (BB) and BB per hand, respectively. The Figure 1 labels R1–R15 order the runs by variance ratio. For each run, P0 creates 200 random permutations of the observed paired hands. For each method, stream, and target ε ∈ { 2, 1, 0.5, 0.3, 0.2} BB, it records the median stopping time and censoring fraction over permutations. The AsympCS burn-in is 30 hands. Run-level summaries in the main text take the median and range across the 15 within-run medians; they do not pool all permutations across runs. At ε = 0 .5 BB, the 15 within-run AIVAT AsympCS median stopping times are 42 .5, 43 .5, 48 , 49 , 49 , 53 , 56 , 56 .5, 57 , 57 , 58 , 58 .5, 61 , 63 , 71 .
+
+Thus the cross-run median is 56.5 and the range is 42.5–71. Every raw stream has censoring fraction one at that target. The previously used range 53–388 mixed a different collection of fields and is not the reported estimand. 
+
+P0 bound provenance. The execution obtained 200 BB by taking the maximum absolute value over the observed raw and AIVAT payoffs and rounding upward to a multiple of 50 BB, which yields the same number for every P0 run. On the raw stream the value is also available structurally: the evaluation seats 200 BB stacks and forbids rebuys, so one hand transfers at most one effective stack and |Xt| ≤ 200 BB holds almost surely for future draws as well. Across the 71,439 analyzed hands the maximum absolute raw payoff is exactly 200 BB, attained on 237 hands, with none exceeding it. The corrected stream is different: an AIVAT correction accumulates over transitions and scales with the value estimates rather than with the stack, so no analogous ceiling is available and the largest observed absolute corrected payoff is 153.79 BB. P0’s AIVAT EB-CS summaries therefore remain descriptive unless an independent |Yt| ≤ 200 BB argument is supplied. 
+
+P0 false-positive aggregation. For each of 15 runs and each of its raw and AIVAT streams, P0 centers the stream, draws 1,000 bootstrap sequences with replacement, and monitors for an exclusion of zero. The stored aggregate AsympCS value 0.0710667 is the unweighted mean of these 30 condition-level false-positive rates. The AIVAT-only mean across 15 run conditions is 0.124267; its median is 0.100. None of these is a single false-positive probability estimated from one pooled resampling experiment. 
+
+D.3 Leduc E1 and E2 
+
+The Leduc testbed has three ranks, two suits, two betting rounds, bet sizes 2 and 4, and at most two raises per round. The hero is CFR + after 2,000 iterations and the opponent is CFR + after 20 iterations. Exact full-tree evaluation gives μ = −0.00476973597 chips per hand. E1 uses 400 replications of 4,000 hands. E2 uses 100 replications of 8,192 hands and evaluates all four arms on the same simulated hands. 30 E1 bound deviation. The frozen protocol specified the structural raw-payoff bound |Xt| ≤ 13 chips. Corrected AIVAT samples exceeded this bound. The execution instead took the observed maximum absolute value across all simulated raw and corrected samples and rounded it upward to 
+
+B = 22. The observed 0% EB-CS miscoverage at this executed bound is therefore descriptive, not a confirmatory validation of exact coverage. The deliberately loose B′ = 200 arm was unchanged and is used only to demonstrate the numerical width floor. 
+
+E2 predictability and bound provenance. The frozen arm uses a uniform-opponent value function. The predictable arm refits a Laplace-smoothed opponent action-frequency model at doubling epochs using hands strictly before the current hand. The oracle arm uses the true opponent continuation values. Its EB coverage calculation takes the maximum absolute observed predictable-arm sample and rounds it upward. Hence its reported 0% EB-CS miscoverage is descriptive and is not an exact finite-sample coverage certificate. The AsympCS result is also not exact: its guarantee is asymptotic and its observed miscoverage is 6.0% over 100 replications. 
+
+Targeted zero-variance regression test. In the controlled laboratory only, using the oracle value function and corrections at all nodes, including opponent nodes whose strategy is known, causes AIVAT to telescope to Yt = μ hand by hand. The targeted regression test has maximum absolute floating-point error 9 .1 × 10 −16 over 200 hands. It guards the implementation of this identity; it does not validate a learned value function or a real-world opponent-node correction. 
+
+D.4 Structural-bound and calibration analyses 
+
+The new structural E1 rerun uses analytic bounds BX = 13 and BY = 117, a fixed seed, 400 replications, and 4,000 hands. The corrected bound is obtained as follows. In standard Leduc the pot never exceeds 13 chips, so |X| ≤ 13 and every continuation value satisfies |v| ≤ 13. The default estimator corrects the initial deal, the community chance node, and every hero transition. Along a realized trajectory the corrected terms telescope: the value entering a corrected node cancels against the value leaving the preceding corrected node, so the sum collapses to the root value plus the transitions that are left uncorrected. Enumerating the complete legal tree shows at most four such opponent transitions on any trajectory, and each contributes at most 2 · 13 in absolute value, giving |Y | ≤ 13 + 4(2 · 13) = 117. The enumeration verifies both the transition counts and the telescoping identity. This bound is strategy-independent and uses no evaluation sample, so it is admissible as the BY of Proposition 1, whose statement holds for any almost-sure bound on the corrected stream, the generic BX + 2 KV of part (ii) being one such choice. Any bound violation aborts before CS construction. EB-CS excludes the exact mean in 2/400 raw replications and 0/400 AIVAT replications; AsympCS exclusions are 15/400 and 9/400. At t = 1000 and 4000, the AIVAT EB-CS half-widths under BY = 117 are 1.730 and 0.435, with empirical-to-floor ratios 1.0019 and 1.0074. The historical sample-derived B = 22 execution remains a separate descriptive archive. The AsympCS amendment uses 400 calibration and 400 evaluation replications with disjoint seed ranges. Calibration searches an 18-candidate grid over the internal level, topt , and the burn-in, and freezes a single candidate before a one-time evaluation. Held-out exclusion counts for raw, frozen, predictable, and oracle are 8, 5, 7, and 5 out of 400. The corresponding four-arm Bonferroni-adjusted one-sided Clopper–Pearson upper bounds are 4.21%, 3.16%, 3.86%, and 3.16%. This is finite experimental calibration evidence and does not convert AsympCS into a nonasymptotic method. 31 D.5 A2 design details 
+
+Each HUNL run is centered by its own AIVAT sample mean before the 15 sequences are concatenated into a pool of 71,439 values. Each simulated entry samples 5,000 values with replacement. A fixed-sample normal interval is monitored from t = 30 and reports its first exclusion of zero. The audit checks EB-CS and AsympCS on the same prefix at that selected time. The H0 arm uses 2,000 entries; each injected-effect arm uses 500 and adds 0.05, 0.1, or 0.2 BB per hand. The A2 EB analysis declares a separate bound for every simulated entry as the ceiling of that entry’s observed maximum absolute payoff, with a floor of one. It therefore uses future values beyond an early reported stop and is sample-dependent. Its 0/2,000 standalone detections and 1,227/1,227 selected- stop containments are descriptive resampling outcomes, not formal finite-sample coverage evidence. 
+
+# E Robustness and Sensitivity Analyses 
+
+These analyses were added after the main experiments and are descriptive. They address sensitivity to leaving out one HUNL run and to the length of a simulated A2 leaderboard entry. They do not repair the data-dependent-bound limitations described in Appendix D. 
+
+E.1 Leave-one-run-out HUNL summaries 
+
+For each of the 15 HUNL runs in turn, we remove that complete run and recompute the median over available run-level summaries among the remaining 14 runs. Across the 15 leave-one-out datasets, the median variance-ratio summary ranges from 51.08 to 55.92, the ±1 BB AsympCS stopping-ratio summary from 73.31 to 74.71, and the corresponding EB-CS summary from 1.359 to 1.371. Thus no single archived run accounts for the large contrast between the two stopping methods.             
+
+> Quantity Median over omissions Range over omissions Variance ratio 52 .59 ×[51 .08, 55 .92] AsympCS stop ratio, ±1 BB 73 .85 ×[73 .31, 74 .71] EB-CS stop ratio, ±1 BB 1.365 ×[1 .359, 1 .371] AIVAT AsympCS FP median, LOO splits 9.6% [9.3%, 10.3%]
+
+Table 4: Post hoc leave-one-run-out sensitivity. Each entry first summarizes available run-level values and then summarizes those 15 omission results. The EB stopping-ratio splits contain 13 or 14 evaluable ratios because one full-data ratio is censored. The last row is the median across the 15 omission-specific medians of this sensitivity analysis, not a mean false-positive rate. It should not be confused with P0’s 7.1067% aggregate: the latter averages both raw and AIVAT rates across 30 conditions. 
+
+E.2 A2 entry-length sensitivity 
+
+We repeat the constructed H0 audit with 2,000 entries at lengths 1,000, 2,500, and 5,000, using the same centered payoff pool and seed. Longer entries give the repeatedly monitored fixed interval more opportunities to cross: its claim rate rises from 51.4% to 61.35%. The audited AsympCS selected-stop containment remains at least 99.90%, while its standalone false-positive rate is 8.65–10.4%. The EB column is numerically stable but cannot be read as exact coverage: every entry again uses the ceiling of its own observed maximum absolute payoff as the bound. The AsympCS column 32 1000 2500 5000 Leaderboard entry length 0.0 0.1 0.2 0.3 0.4 0.5 0.6 False-positive fraction 
+
+> Optional-stopping artifact persists across entry lengths
+> Nominal 5% Continuously monitored fixed CI AsympCS own false positive EB-CS own false positive
+
+Figure 5: Post hoc entry-length sensitivity. Error bars are Wilson 95% intervals from the archived 2,000-entry results. 
+
+N Claims Median ˆ t EB contain Asymp contain Asymp FP 1,000 1,028/2,000 52 100.0% 99.90% 8.65% 2,500 1,162/2,000 64 100.0% 100.0% 10.3% 5,000 1,227/2,000 59 100.0% 99.9185% 10.4% 
+
+Table 5: Post hoc A2 H0 sensitivity to simulated entry length. “Contain” means that the interval still contains zero at the monitor’s selected stop; “Asymp FP” is standalone detection by the horizon. is an approximate screen, with finite-horizon false-positive rates above the nominal 5% in all three horizons. 
+
+E.3 Controlled Leduc cross-settings 
+
+A separate controlled extension uses one frozen policy pool and keeps the reported payoff in seat 0. S1 pairs the CFR +-2000 policy with the uniform opponent model used by the frozen evaluator. Frozen and oracle corrected streams are identical in this matched control, so there is no identifiable oracle variance gap. S2 pairs CFR +-2000 with CFR +-20; S3 reverses these policy-budget roles. The iteration labels identify construction budgets, not a universal skill ordering. In S2 and S3, predictable learning recovers 78.6% and 77.1% of the frozen-to-oracle variance gap. At the ±0.1-chip target, its median stopping times are 2240.5 and 2608 hands, compared with 3039 and 4337.5 for the frozen arm and 1744 and 1425.5 for the oracle. Raw streams are fully right-censored at 8192 hands. These are two specific opponent-model mismatch constructions, not arbitrary-opponent or external-platform replication. 
+
+E.4 Limits of the checks 
+
+Centering each run constructs a zero-mean empirical pool but discards between- run mean differences. Sampling individual hands with replacement also removes serial dependence and any run-level clustering within a simulated entry. Consequently the A2 analysis demonstrates the effect of repeated peeking under this resampling design; it does not estimate the error rate of every deployed 33 leaderboard process. Likewise, leave-one-run-out stability addresses influence of a single archived run, not external replication across opponents, evaluators, or platforms. 
+
+# F Assumption Checklist 
+
+Table 6 collects the conditions AV-AIVAT relies on, the statement each one supports, and the artifact that lets a reader confirm it. 
+
+Assumption Needed for Check or report Independent bound BY Exact EB-CS certificate The HUNL observed-containment check is descriptive; the controlled Leduc run uses the analytic BY = 117 certificate of Ap-pendix D. Predictable vt Mean-zero corrections Algorithm 1 updates only vt+1 after hand t;Section 6.3 uses past hands only. Known conditional kernel AIVAT unbiasedness Log pt,h (·) given the complete pre-action information at every enabled chance or evaluated-agent correction node. Pre-action enablement AIVAT unbiasedness Record reached and enabled flags; St,h must be fixed before the outgoing action and the later trajectory. No current-hand peeking Legal online learning Algorithm 1 fixes vt before hand t; only vt+1 
+
+may use it (Section 5.1). AsympCS approximation Practical interval Finite-sample miscoverage is reported in ev-ery experiment of Section 6. Paired log release Reproducibility Rechecking a claim uses the Y prefix and stop metadata; paired ( Xt, Y t) is an optional raw-stream release (Section 8). 
+
+Table 6: Checklist connecting the AV-AIVAT assumptions to the reported checks. 
+
+# G Research Scope 
+
+AV-AIVAT targets sequential evaluations with a verifiable conditional action kernel or another conditional mean-zero correction mechanism. The HUNL evidence covers 15 configurations, not necessarily distinct base models, on one paired-metric platform. E2 supplies one matched-prior control and two mismatched Leduc policy pairs; its 77–79% variance-gap reduction characterizes those controlled constructions. A2 resamples individual centered hands and therefore studies optional stopping without preserving temporal dependence or run-level clustering. The same interface can be applied whenever the correction law is verifiable; extending the empirical evidence to additional platforms, dependent streams, multiplayer calibration, and per-seat analysis requires the corresponding data and sampling model. Reconstructing a stopping claim from its released prefix and metadata is distinct from detecting a manipulated correction generator. 
+
+# H Future Work 
+
+Several extensions would change the evidence base rather than enlarge the current experiment. First, finite-sample intervals designed for heavy-tailed or adaptively truncated payoffs should be compared 34 on the same streams using coverage, width, and stopping cost jointly. A narrower interval without a valid bias or tail argument is not a substitute for the EB theorem. Second, concrete variance-regret rates are needed for tabular opponent models and neural value learners. In games, the least-visited relevant information set can control sup-norm value error even when average prediction error improves rapidly. A visitation-aware analysis could relate reach probabilities, model estimation, and finite-horizon stopping directly. Third, a larger audit benchmark should inject isolated state, sign, seat, cache, node-selection, and update-order faults and preregister diagnostic thresholds. The two current defect logs show that simple checks can reveal severe failures; they do not rank diagnostics under a representative fault distribution. Finally, multi-platform and multiplayer studies are needed. Cross-platform data would separate evaluator-specific behavior from general statistical phenomena. Multiplayer evaluation requires explicit seat conditioning, node-law accounting, and dependence analysis before the two-player protocol can be transferred. 35

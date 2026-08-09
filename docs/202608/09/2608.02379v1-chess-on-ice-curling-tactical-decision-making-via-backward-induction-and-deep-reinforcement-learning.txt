@@ -1,0 +1,378 @@
+Title: Chess on Ice: Curling Tactical Decision-Making via Backward Induction and Deep Reinforcement Learning
+
+URL Source: https://arxiv.org/pdf/2608.02379v1
+
+Published Time: Tue, 04 Aug 2026 02:36:03 GMT
+
+Number of Pages: 10
+
+Markdown Content:
+> PRE-PRINT UNDER REVIEW 1
+
+# Chess on Ice: Curling Tactical Decision-Making via Backward Induction and Deep Reinforcement Learning 
+
+Patrick Oberlin, Student Member, IEEE, Matteo Cederle, Graduate Student Member, IEEE, Aren Karapetyan, Member, IEEE, Saverio Bolognani, Member, IEEE, Gian Antonio Susto, Senior Member, IEEE, and Florian D¨ orfler, Senior Member, IEEE 
+
+Abstract —Curling is often referred to as “Chess on Ice”, owing to the tactical complexity of its decision-making process. Yet unlike chess, curling remains largely underexplored from a machine learning perspective, with prior work confined mainly to statistical approaches. We propose a reinforcement learning framework capable of quantitatively evaluating and comparing tactical options in curling. The game poses several modeling challenges: continuous state and action spaces, stochastic action outcomes reflecting player skill variability, and state transitions that are highly sensitive to small perturbations in the executed action. To address them, we employ the Deep Deterministic Policy Gradient actor-critic algorithm, adapted to exploit the finite-horizon structure of the game. Our experiments show that effective curling strategies can be acquired in a fully self-supervised manner, without any human-annotated data: on a reduced four-rock variant, the learned agent matches a hand-crafted expert heuristic in a regime where that heuristic is close to optimal, a parity we quantify against the intrinsic hammer advantage of the variant. Beyond the resulting policy, the learned critic provides a dense value estimate over the entire continuous action space, enabling the quantitative comparison of tactical alternatives for applications such as post-game performance analysis and decision support during athlete preparation. 
+
+Index Terms —Curling, Game Strategy Optimization, Rein-forcement Learning, Learning in Games, Artificial Intelligence. 
+
+I. I NTRODUCTION 
+
+# GAmes, with their well-defined objectives and reward structures, serve as a natural testbed for reinforcement learning (RL) algorithms [1]–[4]. While the history of RL in games dates back to the 1950 -s with the game of checkers [5], and spans several decades with multiple prominent applica-tions, such as backgammon [6], blackjack [7] and chess [8], it is the AlphaGo algorithm [9] that marked a true breakthrough, achieving remarkable results for the game of Go and chess through a combination of tree-search and Deep Q-Learning methods. While initially restricted to discrete state and action spaces and deterministic transitions due to the nature of the games, these methods have since been extended to continuous settings, with video games [2], [3], [10] taking the center stage. Furthermore, recent advances in large language models, computer vision, robotics, and artificial intelligence (AI) more 
+
+Patrick Oberlin, Saverio Bolognani, and Florian D¨ orfler are with the Automatic Control Laboratory, ETH Zurich, Switzerland. Aren Karapetyan is with Belimo Automation AG, Hinwil, Switzerland. Matteo Cederle and Gian Antonio Susto are with the Department of Information Engineering, University of Padova, Italy. This work was supported by NCCR Automation, grant agreement 51NF40 225155 from the Swiss National Science Foundation, and by the Ing. Aldo Gini Foundation. The athlete plans their move. The athlete plays their move. The outcome is measured. The AI move is simulated. The AI move is executed. Adversarial move is computed. Athlete-in-the-loop training   
+
+> The rink state is measured. Strategic moves are computed. The AI moves are displayed.
+> The athlete selects and plays a move. The other team responds.
+
+In-game decision support 
+
+Fig. 1. Schematic depiction of possible applications for the proposed tool. 
+
+broadly [11], [12] have further pushed RL to new frontiers, with methods now being applied to physical agents and driving growing interest in physical AI [13]. This setting comes with a number of additional challenges that are not present in classi-cal game-theoretic RL formulations with discrete state-action spaces; examples include learning-based methods for real-world billiards [14], [15], table tennis [16], [17], badminton [18], [19], robot soccer [20], and what is oftentimes referred to as chess on ice: curling. Curling has been approached both from a physical-execution standpoint, e.g., through a robotic system achieving human-level performance against elite ath-letes [21], and from a tactical decision-making standpoint [22]–[24]. In this paper, we focus on the latter (whose rules are briefly summarized in the colored box, and available at [25]) and study how existing RL methods can leverage the particular structure of the game to overcome at least some of arXiv:2608.02379v1 [cs.AI] 3 Aug 2026 PRE-PRINT UNDER REVIEW 2
+
+The Game of Curling 
+
+Curling is a team sport played on ice, where two teams of four players take turns sliding heavy granite rocks 
+
+towards concentric circles, collectively known as the 
+
+house . The objective is to place one’s rocks closer to the center of the house, also called the button , than the opponent’s best rock. A full game of curling typically consists of eight or ten rounds, or ends . During each end, both teams alternately deliver eight rocks to the house , resulting in a total of sixteen rocks played. Only after these sixteen rocks have been played, the score is counted as follows. The team whose rock is closest to the button scores a point for every rock that is in the house and closer to the button than the best rock of the opposing team. The other team scores 0 points. It is possible (sometimes desired) that no rocks remain in the house. In this case, both teams score 0 points ( blank end ). Throwing the last rock is an advantage as it allows to place the rocks favorably right before the score is evaluated. This right is called hammer . If the team with hammer scores, it loses this right for the following end. In case of a blank end or if the team without hammer scored, the hammer stays with the same team. its associated challenges and learn tactically meaningful play from self-play alone. Crucially, unlike prior works [22]–[24], which rely on real gameplay datasets for training, our approach learns entirely from scratch without any pre-collected data. The reason why curling is often compared to chess is its emphasis on planning, positioning, and anticipating the opponent’s moves. Crucially, however, unlike chess, in curling the states and actions are continuous, the transition function is non-deterministic, and the game ends after a fixed number of shots, and only then is the score evaluated. This allows tactical planning in the game to unfold over multiple shots, with early rocks deliberately placed as guards. These do not contribute directly to scoring; instead, they protect later scoring attempts by obstructing direct paths for takeout . This layered tactical structure introduces additional depth, as players must rea-son about multiple future interactions under uncertainty. The interplay between offensive play (e.g., placing rocks as or behind guards) and defensive responses (e.g., clearing guards) requires teams to continuously update their strategy based on the evolving layout of rocks and their risk tolerance. Reinforcement learning addresses sequential decision-making problems typically formalized as Markov decision processes (MDPs), where the objective is to learn a policy that maximizes the expected cumulative reward [26], [27]. Classical approaches, such as dynamic programming [28] or temporal-difference methods including Q-learning [26], [29], establish convergence guarantees in tabular settings but assume discrete state–action spaces with a notable exception of the linear quadratic regulator [30], that is a special case of the more general RL problem. To address the scalability of such methods, function approximations, often with deep neural networks, have been incorporated into value-based methods, such as the Deep Q-Networks (DQN) [2], though these re-main inherently restricted to discrete actions. Policy gradi-ent methods [31]–[33] overcome this limitation by directly optimizing parameterized policies via gradient ascent in the policy space, providing a natural framework for continuous control. Actor–critic algorithms [34] unify value-based and policy-based paradigms by coupling a learned value function with a parameterized policy, improving variance properties and sample efficiency. Within this framework, deterministic policy gradient methods [35] exploit the structure of continuous action spaces by replacing stochastic policies with deter-ministic ones, achieving a more efficient gradient estimate. Deep Deterministic Policy Gradient (DDPG) [36] extends this idea using deep neural network approximators and off-policy learning, making it particularly suitable for high-dimensional, continuous control problems such as curling, where precise actuation is essential due to the nature of the game (see [37] for a recent systematic review of DDPG-based methods). The characteristics of the game of curling outlined above, combined with the demands they place on sequential decision-making under uncertainty, make it a compelling and rigorous benchmark for reinforcement learning research. In this work, we formalize curling within the classical RL framework and demonstrate that, with careful problem design, an actor-critic method can learn tactically meaningful policies from simu-lation alone, without recourse to human gameplay data. In particular, we leverage the finite horizon nature of the game and apply backward induction to reduce the computational complexity. We then solve each stage of the DDPG [36] algorithm to learn both a policy (actor) and a Q-function (critic); this stage-wise decomposition is related to, though distinct from, other recent adaptations of DDPG to episodic and finite-horizon settings, e.g., via terminal-value regulariza-tion [38] or dedicated exploration and replay strategies for sparse, terminal rewards [39]. By training the last stage first, we use it to evaluate the resulting state of the previous stage without simulating all future stages. To generate samples to learn from, we use an adapted version of the Python-based simulation of curling developed by Michael Brunner [40]. A distinctive feature of the resulting framework is that the learned critic assigns a value to every action available in a given rink configuration, which is precisely the primitive required to compare tactical alternatives rather than merely to select one. Building on this capability, we envision the proposed module being deployed in the three operational modes illustrated in Figure 1. We stress that these describe intended applications of the framework, and delineate the scope of the tool we aim to build, rather than functionality evaluated in the present paper, whose experimental scope is confined to simulation:  
+
+> •
+
+Tactical training – The athlete competes against an AI-controlled opponent, alternately selecting tactical actions. The physical execution of the actions is simulated and is not coupled to human motor performance. This mode is aimed at developing tactical awareness across a variety of PRE-PRINT UNDER REVIEW 3
+
+game situations. The AI is used both to suggest actions to the athlete and to generate the opponent’s responses.  
+
+> •
+
+Athlete-in-the-loop training – On a real rink, the athlete selects and physically executes tactical actions, thereby jointly training tactical decision-making and technical ex-ecution. The outcome of each action is acquired through sensing. The AI simulates the opposing team’s response, which is then physically realized on the rink (e.g., by repositioning rocks), thus closing the feedback loop be-tween AI decision-making and physical execution. See the upper panel of Figure 1.  
+
+> •
+
+In-game decision support – The AI system observes the current state of the rink and provides recommended actions (or a ranked set of candidate actions) to the athlete. The athlete executes the selected action, after which the opposing team responds with its own move. See the lower panel of Figure 1. Interestingly, curling remains comparatively underexplored from a tactical perspective. Most existing studies adopt either a statistical approach, focusing on shot outcomes or player tendencies in isolation, or a strategic perspective, analyzing decisions at an end-to-end level. In contrast, relatively few models address the tactical decision-making processes that govern the implementation of higher-level strategies. Further-more, recent rule changes introduced in 2018 and 2023—most notably the five-rock free guard zone—have rendered much of the earlier literature obsolete, thereby reinforcing the need for updated and systematic analyses. Most curling-related literature focuses on statistical models for end-to-end strategy, particularly regarding whether blanking or scoring a single point in certain ends is preferred [22], [23]. Closer to our approach, [24] propose a deep RL framework that combines kernel-regression Monte Carlo tree search with self-play re-inforcement learning to handle the continuous action space of simulated curling, winning an international digital curling competition; unlike our work, however, their method targets individual shot execution rather than full tactical planning over an entire end, and does not exploit the finite-horizon structure of the game. In [41], Wyss analyzed openings (the first five rocks of an end) and how they are influenced by the score difference. In [40], different approaches for tactical decision making are developed and compared. Similarly, [42] address the related problem of hammer-shot selection under a continuous, stochastic action space via Delaunay triangulation, reporting performance exceeding that of Olympic-level curlers, though again restricted to isolated shot decisions rather than full end-to-end tactical planning. Most of these approaches rely, however, on supervised learning techniques using expert evaluations to train, with [24] as a notable exception, relying instead on self-play reinforcement learning. Additionally, the continuous action space of curling was simplified to a softmax output layer consisting of 305 possible calls. As pointed out in [40], this discretization is not sufficient when compared to a continuous decision-making entity, such as human players. Especially for a large number of rocks, there can be more than 305 possible calls. Restricting the action space to a fixed set of predefined calls introduces bias and may prevent the agent from discovering truly optimal actions. We aim to overcome this limitation in this work. A concurrent work by Son et al. [43] independently pro-poses a unified reinforcement learning framework for curling, formulating a single end as an episodic MDP and training a policy via Soft Actor-Critic within a two-phase curriculum, using a self-play mechanism to train entirely within a custom simulator; the resulting agent’s shot patterns are subsequently compared against real elite match records to assess their alignment with human play. Our work differs primarily in the underlying algorithm: we adopt a deterministic actor-critic method (DDPG) explicitly restructured to exploit the finite-horizon nature of curling via backward induction, solving each stage of the game separately rather than optimizing the policy end-to-end. After formulating the problem in Section II, we introduce our RL methodology in detail in Section III. In Section IV, we show that the critic successfully approximates the gen-eral shape of the Q-function, providing a solid foundation for training effective policies. Our proposed method is then evaluated on a simplified game variant against a heuristic baseline that encodes expert curling knowledge, and is shown to match its performance despite being trained without any domain knowledge or human-annotated data, demonstrating that meaningful curling tactics can be acquired in a fully self-supervised manner. Finally, Section V concludes the paper with a discussion of the key takeaways and an outlook on promising directions for future work. II. P ROBLEM FORMULATION AND PRELIMINARIES 
+
+A. Game-theoretic modeling of Curling 
+
+We formulate the game of curling as a two-player turn-based stochastic game, allowing us to leverage the advancements in reinforcement learning and game theory to derive the optimal or close-to-optimal policy in this setting. The stochasticity stems from the imperfect execution of actions. In this section we define the elements of this game and motivate their choice. The game is abstracted on a turn-by-turn basis; that is, we measure the state of the game only after all rocks have come to rest, thus ignoring the intra-shot sliding dynamics. The state of the game sk ∈ S at stage k is defined as: 
+
+sk = ( d, e, h, k,⃗ p),
+
+where: 
+
+d ∈ Z is the score difference between the two teams. Since only the relative score matters within a tournament or game, the absolute score is irrelevant. 
+
+e ∈ N is the current end of the game. 
+
+h ∈ { 0, 1} denotes the team holding the hammer in the ongoing end. Conversely, ¯h = 1 − h denotes the team going first. 
+
+k ∈ { 0, . . . , N } is the index of the next shot in the end, where k = N corresponds to the terminal state at which the score is evaluated. In classical curling, N = 16 , while other variants exist, such as mixed doubles with N = 10 .⃗p is the set of rocks currently in play, with |⃗p| ≤ N . Each element is a triple (t, x, y ), where t ∈ { 0, 1} is a team PRE-PRINT UNDER REVIEW 4HOG LINE HOG LINE TEE LINE BACK LINE 
+
+τξξmax        
+
+> Fig. 2. Visualization of the action space of the game: τis the hot-to-hog time; ξ∈[−ξmax , ξ max ]is the coordinate of the aiming point.
+
+indicator and (x, y ) ∈ R2 are the spatial coordinates of the rock. The state is assumed to be fully observable at all times, in-cluding in situations where it is not discernible by eye whether a rock touches the house or centerline, which determines its protection status under the free guard and no-tick zones. In such cases, if the teams cannot agree, the rock’s status is determined by an umpire. The action taken by a player at stage k is denoted as ak ∈ A 
+
+and defined as the tuple: 
+
+ak = ( τ, ξ, ω ) ∈ A ⊆ R[t1,t 2] × R[−ξmax ,ξ max ] × { cw , ccw },
+
+where: 
+
+τ ∈ [t1, t 2] is the time it takes the rock to travel between the two hoglines, which is the standard way to measure rock speed in curling as it is unaffected by sweeping and robust to measurement imprecision 1. Here, t1 is the minimum time corresponding to the fastest physically deliverable rock, and t2 is the maximum time such that the rock still crosses the far hogline and remains in play. 
+
+ξ ∈ [−ξmax , ξ max ] is the x-coordinate of the aiming point, fixed at the teeline for consistency. The quantity ξmax 
+
+denotes the maximum meaningful lateral offset at which a rock can be played, corresponding to the line from the hack passing through the corner of the playing area, as illustrated in Figure 2. 
+
+ω ∈ { cw , ccw } is the direction of the rock’s rotation about the vertical axis (clockwise or counterclockwise). This rotation causes the rock to deviate laterally from a straight path as it travels, an effect known as curl , from which the sport takes its name. The magnitude of the angular velocity is known to have negligible influence on the trajectory and is therefore not actively varied by players; only its sign is relevant. The action selected by the policy will be referred to as a call ,representing the intended action prior to any noise. In practice, the executed action deviates from the call due to player skill and rink conditions. To model this imprecision, we add zero-mean Gaussian noise to the initial speed and lateral direction of the rock. The corresponding standard deviations στ and σξ (ak)
+
+are modeled as a Gaussian Mixture Model following [40], 
+
+> 1Players are allowed to use a stopwatch on the ice for this purpose.
+
+capturing the variable precision observed even among top-level players. The resulting noise at stage k is denoted as: 
+
+wk ∼ N  0, Σ( ak), Σ( ak) = diag  σ2 
+
+> τ
+
+, σ 2 
+
+> ξ
+
+(ak),
+
+with all samples drawn independently across stages. The chosen noise model corresponds to the precision of an average high-level player. Notice that we have not modeled sweeping . This is barely restrictive: sweeping is mainly an aid to correct small impre-cisions in the initial speed and direction and to compensate for ice conditions. Therefore, sweeping can be accounted for in the overall precision of a player. As is standard in finite-horizon games [1], the intermediate stage rewards are set to zero: 
+
+R(sk, a k) = 0 , ∀ k < N, (1) while the terminal reward is defined as: 
+
+R(sN ) = score (sN ), (2) where score (·) evaluates the final rock configuration once all 
+
+N rocks have been delivered. By symmetry of the game, 
+
+score (sN ) returns a positive value if the hammer team scores, and a negative value if the non-hammer team scores. Having defined the states, actions, and rewards in the context of curling, we are ready to formulate the policy optimization problem. The goal of team h is to find a policy 
+
+μh(·) that maximizes the expected cumulative reward, while team ¯h seeks a policy μ¯h(·) that minimizes the same quantity. Defining the state transition kernel as: 
+
+P (sk+1 | sk, a k, w k(ak)) ,
+
+we can formulate the problem as follows. Find: 
+
+μ∗ 
+
+> h
+
+= arg max 
+
+> μh
+
+min 
+
+> μ¯h
+
+Ewk
+
+" NX
+
+> k=0
+
+R(sk, a k) s0, μ h, μ ¯h
+
+#
+
+μ∗ 
+
+> ¯h
+
+= arg min 
+
+> μ¯h
+
+max 
+
+> μh
+
+Ewk
+
+" NX
+
+> k=0
+
+R(sk, a k) s0, μ h, μ ¯h
+
+#
+
+subject to: 
+
+sk+1 ∼ P (sk+1 | sk, a k, w k(ak)) , k = 0 , . . . , N −1
+
+ak =
+
+
+
+μh(sk) if k ∈ T h,μ¯h(sk) if k ∈ T ¯h,
+
+∅ if k = N, PRE-PRINT UNDER REVIEW 5
+
+where the expectation is taken over the stochastic state tran-sitions induced by the action noise wk(ak), N is the total number of throws per end, and Th, T¯h denote the index sets of throwing turns belonging to team h and team ¯h, respectively. This formulation casts the problem as a two-player zero-sum stochastic game over a finite horizon. Due to the continuous state and action spaces and the sensitivity of state transitions to small perturbations in the executed action, an exact solution is intractable, and we therefore resort to deep reinforcement learning to approximate the optimal policies. 
+
+B. Reinforcement Learning Concepts 
+
+Reinforcement learning (RL) [26] provides a framework for learning decision-making strategies through interaction, and extends naturally to competitive multi-agent settings. As formalized above, our problem is a two-player turn-based stochastic game, described by the tuple (S, A, P, r 1, r 2), in which only one player acts at each step k according to its policy πi, while the other observes the state, and the rewards satisfy r1 = −r2. Both agents are trained simultaneously via 
+
+self-play [44]: each player learns its policy by interacting with copies of itself, allowing strategies to co-evolve and adapt to the opponent’s behavior. For continuous action spaces, Deep Deterministic Policy Gradient (DDPG) [36] employs an actor– critic architecture [45], where each agent learns a deterministic policy μθi : S → A together with a critic estimating Qμi (s, a ),and where experience replay and target networks are used to stabilize training. III. L EVERAGING BACKWARD INDUCTION AND DEEP RL  
+
+> FOR
+
+CURLING STRATEGY LEARNING 
+
+A. Backward Induction 
+
+Since N < ∞ and, more specifically, fixed and small, we can exploit the finite-horizon structure of the game via backward induction. At the terminal state sN (i.e., after the last rock has been played and all rocks have come to rest), no further actions are possible, i.e., aN = ∅, and the action value function reduces to: 
+
+Q(sN , a N ) = R(sN ), (3) where R(sN ) is the terminal reward defined in Equation (2). Moving one step backward, the action-value function at stage 
+
+N − 1 is given by the Bellman operator [46]: 
+
+Q(sN −1, a N −1) = R(sN −1, a N −1)
+
+| {z }
+
+> = 0
+
++EwN −1
+
+Q(sN , a N ).
+
+(4) Since no intermediate reward is assigned when playing a rock, the first term vanishes and Equation (4) simplifies to: 
+
+Q(sN −1, a N −1) = EwN −1
+
+Q(sN , a N ). (5) The optimal policy for the last rock is then obtained as: 
+
+μ(sN −1) = arg max 
+
+> a∈A
+
+Q(sN −1, a ). (6) Having solved the last stage, we can proceed backward to stage 
+
+N − 2. The corresponding action-value function is obtained by substituting the already-computed optimal policy at the previous stage: 
+
+Q(sN −2, a N −2) = EwN −2
+
+Q sN −1, μ (sN −1) , (7) and the optimal policy at stage N − 2 follows analogously: 
+
+μ(sN −2) = arg max 
+
+> a∈A
+
+Q(sN −2, a ). (8) This procedure generalizes recursively to all stages k ∈{0, . . . , N − 1}:
+
+Q(sk, a k) = Ewk
+
+Q sk+1 , μ (sk+1 ) ,μ(sk) = arg max 
+
+> a∈A
+
+Q(sk, a ), (9) where sk+1 ∼ P (sk+1 | sk, a k, w k(ak)) , and Q(sN , a N ) = 
+
+R(sN ). We note that neither of these equations admits a closed-form solution, as the state transition distribution cap-tures both complex rock collision dynamics and stochastic action noise. Furthermore, the action-value function Q is not restricted to any specific functional form (e.g., linear or convex), which renders the arg max operation in Equation (9) analytically intractable in general. Consequently, we adopt a deep reinforcement learning approach to approximate both Q
+
+and μ at each stage through repeated interaction with the environment. 
+
+B. Training with Reinforcement Learning 
+
+As mentioned above, we adopt a deep reinforcement learn-ing approach to tackle the optimization problem in Equation (9). Specifically, we implement the state-of-the-art DDPG al-gorithm, adapted for our two-player zero-sum game, adopting 
+
+self-play [44], and training a separate agent for each stage. DDPG is particularly well suited in our setting for several reasons. First, it naturally accommodates continuous action spaces and benefits from the dense learning signal provided by the critic, enabling stable and efficient policy updates. Second, given its model-free nature, it eliminates the need to explicitly model or invert the state transition dynamics—an intractable task in our environment due to its complexity and stochasticity. Additionally, it is worth motivating this choice explicitly against the stochastic actor-critic methods that are more commonly adopted in continuous control, and that have recently been applied to curling in concurrent work [43]. Algorithms such as Soft Actor-Critic maximize an entropy-regularized objective, deliberately maintaining a stochastic policy in order to improve exploration and robustness. In our setting this is a mismatch on two counts. First, the environment already injects substantial stochasticity through the execution noise wk, so that the mapping from a call to an outcome is far from deterministic; additional policy entropy is therefore largely redundant, and it biases the learned policy away from the single action that an athlete should in fact be advised to attempt. Second, and more fundamentally, backward induction requires evaluating each stage at the specific action prescribed by the already-solved subsequent stage, as in Equation (9). A deterministic policy μ(sk+1 ) makes this substitution exact, whereas an entropy-regularized policy would require marginal-izing over the action distribution at every stage, reintroducing PRE-PRINT UNDER REVIEW 6        
+
+> Fig. 3. Distribution of the rocks’ starting positions. The rocks have a 55%
+> chance to be in the house, 15% to be a center guard, 10% to be a corner guard, and a 20% chance to be placed uniformly in the playing area.
+
+precisely the nested expectations that the backward decom-position is designed to eliminate. A similar argument applies to twin-critic variants such as TD3: the terminal-only reward structure bounds the return within [−N/ 2, N/ 2] , which limits the scope for the value overestimation that those methods are designed to correct. The overall training process is split into two phases: pre-training and fine-tuning . During pre-training, we randomly sample at each iteration a state of the game 2 with a suitable generation strategy. Specifically, the rock positions are selected according to the distribution depicted in Figure 3, which has been inspired from [40], and adapted here to create more realistic scenarios for training, by mainly favoring positions in the house, close to the button, and center guards, preventing easy access to rocks close to the button. After this initial pre-training phase, the reinforcement learn-ing agents are fine-tuned on more realistic game scenarios, generated by the policies of the earlier stages. In particular, we generate random positions for the second-to-last stage, then take an action according to the corresponding policy, and use the resulting position to train the last stage. After several samples are generated in this way, and the agents have been trained on the last two stages, we move on to stage N − 3, and the process continues iteratively: random positions for this stage are generated and the game is played until the end is over. The main advantage of this phase is that the networks are exposed to situations that are more realistic than those produced by purely random generation, as they emerge from previously learned policies. Moreover, gradually extending the game horizon improves the performance of later stages, whose learned policies and value estimates are then used to train earlier stages. The full-game training ( fine-tuning )is summarized in Algorithm 1. IV. E XPERIMENTAL RESULTS 
+
+This section presents the experimental evaluation of the proposed approach. It first describes the simulation setup used to conduct the experiments, then introduces the baseline 
+
+> 2Positions with a randomly selected number of rocks for each team within the maximum possible number at the current stage.
+
+Algorithm 1 Full-Game Training 
+
+Require: 
+
+actor k, critic k, ← Pre-trained actor and critic networks for each stage k
+
+Bk ← Empty memory buffer for each stage k
+
+{Mk}k=0 ,...,N −2 ← # of training iterations for each stage 
+
+σ2 
+
+> expl
+
+← Exploration noise variance 
+
+for start stage k0 = N − 2 to 0 do 
+
+i = 0 
+
+while i ≤ Mk0 do 
+
+j ← k0
+
+sj ← random position for stage k0
+
+repeat 
+
+aj ← actor j (sj ) + N (0 , σ 2
+
+> expl
+
+)
+
+Take action aj in the environment Move to sj+1 ∼ P and observe rj
+
+Add (sj , a j , s j+1 , r j ) to Bj
+
+j = j + 1 
+
+i = i + 1 
+
+until j = N
+
+for stage k′ = k0 to N − 1 do 
+
+Update actor k′ , critic k′ using buffer Bk′
+
+and the DDPG algorithm [36] 
+
+end for end while end for 
+
+method considered for comparison, and finally reports and discusses the obtained results. 
+
+A. Simulation setup 
+
+The results presented in this section have been obtained by considering a reduced version of the curling game, mainly to lighten the computational load required. In particular, we have considered a 4-rock variant of the game, meaning that each team plays two rocks in a single end. The agents were trained on 1 million of transitions for each stage, including the fine-tuning phase, where all stages were trained together. For our experiments, we employed the simulator developed in [40]. Both the actor and the critic are parameterized as neural networks with two hidden layers of equal width and ReLU activations. The proposed architecture assigns a dedicated DDPG agent to each game stage, with a hidden layer size of 256 neurons. To assess the impact of model capacity and architectural choices, we conduct an ablation study considering two additional hidden layer sizes — 64 and 128 neurons — as well as a simplified variant in which a single DDPG agent is shared across all stages, serving as a lightweight alternative to the full per-stage architecture. All configurations are then benchmarked against an expert heuristic baseline, formally defined in Algorithm 2. The baseline selects at each stage the action that maximizes the immediate scoring outcome, without any lookahead into future stages, and is therefore myopic by construction. While this makes it clearly suboptimal in the general case, it is a deliberately demanding point of PRE-PRINT UNDER REVIEW 7 
+
+> Fig. 4. Learned actor policy for the 4-rock minigame, in a configuration offering an unobstructed path to the house. The game is tied in the last end, with team red delivering the last rock and the blue shot rock lying at the center of the house. The dashed red line indicates the trajectory of the action selected by the policy, a direct takeout on the shot rock.
+
+comparison in our simplified setting, where each team plays only two rocks per end. With so few shots available, the margin for long-term tactical planning is limited, and a well-executed immediate scoring strategy already captures most of the available tactical depth. The baseline should therefore not be understood as a naive competitor, but as a compact encoding of expert curling knowledge that is close to optimal at this horizon — a point we quantify below. 
+
+Algorithm 2 Expert heuristic baseline 
+
+if own rock is in the best position then 
+
+Draw as close to it as possible 
+
+else if opponent’s rock is in the best position then 
+
+Hit that rock 
+
+else ▷ No rock in the house Draw to the button 
+
+end if 
+
+Before evaluating the learned policies, it is instructive to quantify how much room for improvement this simplified variant actually leaves. To this end, we let the heuristic baseline play against itself over 100 simulated ends: the team holding the hammer won 97% of them. In the 4-rock game, the last-rock advantage is therefore close to decisive on its own, and win rates of approximately 97% with hammer and 3% without constitute an effective ceiling against which any policy must be measured. We report this reference alongside our results in Table I, and we return to its implications when discussing them. 
+
+B. Results and discussion 
+
+Performance is assessed through two complementary ap-proaches. First, the learned Q-function and policy are analyzed using two representative scenarios of curling games; this is where the added value of the proposed method is most apparent, as the critic provides a dense evaluation of the entire action space that a rule-based policy cannot offer. Second, we quantitatively compare our proposed method against the heuristic baseline across many simulated games, interpreting the outcome in light of the hammer-advantage reference quan-tified in Section IV-A.  
+
+> Fig. 5. Critic’s Q-function evaluation for the game state in Figure 4. Each pixel represents the expected score for the corresponding action. The two subplots correspond to clockwise (left) and counter-clockwise (right) handle orientations. Red regions indicate takeout actions on the blue shot rock at house center, while color intensity reflects expected score magnitude.
+
+1) Scenario evaluation 1: Figure 5 presents the critic’s evaluation of the game state shown in Figure 4, where the final rock of the game is about to be played by team red. The action space is discretized into pixels, with each pixel’s value representing the corresponding Q-function estimate. The color scale indicates expected scoring outcomes: red (blue) denotes actions favoring team red (blue), with color intensity reflecting the magnitude of the expected score. The critic visualization comprises two subplots, correspond-ing to the binary handle parameter ω ∈ {cw , ccw }. The left subplot displays Q-values for clockwise handles, which induce rightward trajectory deviation (relative to the velocity vector). The right subplot shows counter-clockwise handle values, which produce leftward deviation. The horizontal axis represents the directional component of the action, while the vertical axis denotes hog-to-hog time. Hog-to-hog time spans the interval [6 , 20 .1] seconds, where 
+
+6s represents the physical limit for elite player delivery speed and 20 .1s denotes the minimum speed required for a rock to remain in play after crossing the hogline. Consequently, actions positioned higher in the plot correspond to faster deliveries. The dashed green contour delineates actions that place the rock within or touching the house boundary (the min-imum requirement for scoring eligibility), assuming perfect execution without noise. The dashed red trajectory in Figure 4 shows the intended path for a rock delivered at the policy’s selected action, though action noise applied during execution may cause deviation from this nominal trajectory. Moreover, the two red regions in Figure 5 correspond to takeout actions on the shot rock. Their asymmetric shape reflects the physics of rock trajectories: lateral deviation de-creases with delivery speed, requiring the aiming point to approach the target rock more directly. This effect diminishes at higher speeds as lateral deviation approaches zero, evident in the nearly vertical shape of the red region between 8s and 
+
+6s. The gradual transition from red to blue values reflects the decreasing probability of successful contact with the blue rock. Action noise acts as a smoothing factor on the Q-function, PRE-PRINT UNDER REVIEW 8  
+
+> Fig. 6. Monte Carlo reference estimate of the Q-function for the game state in Figure 4, obtained by discretizing the action space and averaging the outcomes of five simulated executions per action. The estimate provides a reference for the structure of the Q-function rather than a pointwise ground truth.
+
+which the critic’s network architecture captures effectively. For counter-clockwise actions, a white region appears at the house center, representing actions that may either position the shooter closer to the current shot rock or execute a soft collision that displaces it sufficiently for the shooter to become the new best rock. However, action noise prevents consistent execution of this outcome, yielding an expected value near zero. Finally, Figure 6 presents a Monte Carlo reference estimate of the Q-function for the state in Figure 4, constructed by discretizing the action space and simulating each action five times, with the mean outcome score assigned to each cell. We deliberately refrain from calling this a ground truth: five executions per cell are far too few to resolve the expectation over the action noise, and the speckled texture visible in Figure 6 is therefore largely sampling variance rather than genuine structure of Q. The comparison with Figure 5 should accordingly be read qualitatively, in terms of which regions of the action space are identified as valuable, and not as a pointwise accuracy assessment. Read in this way, the agreement is good: the learned critic recovers the position, curvature, and asymmetry of the primary high-value band, which is expected given that takeout actions on the shot rock receive extensive exploration during training, as they represent strong strategic options across many game states. It is worth noting that the smoothness of the learned critic is not merely an artifact of function approximation, but also acts as a form of variance reduction: by generalizing across neighbouring actions, the network aggregates informa-tion from far more than the five samples available to each cell of the reference, so that in sparsely sampled regions its estimate of the expected score may in fact be closer to the true Q than the Monte Carlo reference itself. Nevertheless, some regions adjacent to the main high-value band remain inadequately learned. For instance, the smaller high-value region to the left of the primary area corresponds to double-takeout actions removing both blue rocks. While this action offers no advantage in the current configuration, it could prove superior in alternative scenarios—for example, when a guard protects the blue shot rock from direct contact,   
+
+> Fig. 7. Learned actor policy for the same scenario as Figure 4, with the sole difference that the second blue rock now sits as a guard blocking the direct path to the shot rock. The dashed red line indicates the trajectory of the action selected by the policy: a markedly slower delivery that curls around the guard.
+> Fig. 8. Critic’s Q-function evaluation for the game state in Figure 7. Each pixel represents the expected score for the corresponding action. The two subplots correspond to clockwise (left) and counter-clockwise (right) handle orientations. Red regions indicate takeout actions on the blue shot rock at house center, while color intensity reflects expected score magnitude.
+
+or when the red rock lies farther from center than the second blue rock. 
+
+2) Scenario evaluation 2: Figure 7 presents a similar sce-nario with respect to Figure 4, with one critical modification: the blue rock previously in the green ring now obstructs the policy’s intended trajectory. The critic evaluation (Figure 8) shows the red takeout region has largely disappeared due to the blocked direct path. Only a small red area remains, containing the actor’s selected action. We can notice that the policy now selects a significantly slower delivery than previously. This reduced speed is necessary because the guard blocks the direct trajectory. The rock must circumvent the guard, requiring lateral displacement after passing it – acharacteristic achievable only through slow deliveries, which exhibit increased sideways motion in the latter portion of their trajectory. Given the action noise applied to the intended shot, successful contact with the center blue rock remains probable across multiple executions. The optimal outcome would displace the blue rock farther from center than the existing red rock, while positioning the shooter closer to the displaced blue rock’s new location, yielding a two-point score. Even if one objective fails, the strategy maintains reasonable probability of scoring one point. PRE-PRINT UNDER REVIEW 9             
+
+> TABLE I WIN RATES OVER 100 SIMULATED ENDS PER CONDITION . T HE FIRST ROW REPORTS THE HAMMER -ADVANTAGE REFERENCE ,OBTAINED BY LETTING THE HEURISTIC BASELINE PLAY AGAINST ITSELF ;THE SECOND ROW REPORTS OUR CURLING RL AGENT AGAINST THE SAME BASELINE .
+> With Hammer Without Hammer
+> Heuristic vs. heuristic 97% 3%
+> Curling RL vs. heuristic 100% 2%
+
+3) Comparison against baseline: Table I summarizes the performance of our best-performing Curling RL agent, evalu-ated over 200 simulated ends against the heuristic baseline, 100 with hammer and 100 without. The results must be read against the hammer-advantage reference established in Section IV-A. Holding the hammer, our agent wins 100% of the ends, compared to the 97% obtained by the heuristic itself in the same position; without the hammer, it steals 2% of the ends, compared to the heuristic’s 3%. Neither difference is statistically significant at this sample size, so the two policies are indistinguishable in terms of win rate. We stress that this should not be read as a failure to improve upon the baseline, but rather as a property of the evaluation regime: at a horizon of four rocks, the hammer advantage alone already accounts for a 97% win rate, leaving essentially no headroom for any policy to separate itself on this metric. What the comparison does establish is that a policy trained entirely through self-play, without any domain knowledge and without human-annotated data, attains the performance ceiling of a hand-crafted heuristic in which expert curling knowledge is encoded explicitly. That this ceiling is not attained trivially is confirmed by the remaining configurations — smaller hidden layer sizes (64 and 128 neurons) and the single shared-agent variant — which, trained on the same amount of data, remained consistently below both our agent and the heuristic reference. The win-rate metric thus saturates at the top of its range while still discriminating among weaker policies, which indicates that matching the reference is a non-trivial outcome rather than an artifact of the metric, and that both model capacity and a dedicated per-stage architecture contribute to achieving it. V. C ONCLUSIONS AND OUTLOOK 
+
+We study the game of curling from a strategical decision-making point of view, and introduce a reinforcement learning-based AI module that can be utilized for tactical training, athlete-in-the-loop training and in-game decision support. By formulating the game as a finite-horizon, stochastic, and adver-sarial decision process with continuous state and action spaces, we demonstrate that tactical curling behavior can emerge through simulation alone, without explicit domain knowledge. The method operates by iteratively training policies for each stage of the game, starting from the final rock and progressing backward. Earlier-stage actions are evaluated using value esti-mates from later stages. The learned agents consistently exhibit context-aware behavior, adapting their decisions to the current rock configuration and shot number. Particularly in short ends of four rocks per team, policies converged toward recognizable curling tactics, validating the potential of the approach. Despite these advances, several limitations remain. The model considers only single ends and does not account for longer-term planning across multiple ends, which is central to high-level curling strategy. A related limitation concerns evaluation: in the 4-rock variant studied here, the hammer advantage alone determines the outcome of 97% of the ends, so win rate saturates and cannot resolve differences between near-optimal policies. Assessing the benefit of long-horizon reasoning therefore requires longer ends, where the myopic nature of the heuristic baseline is expected to become a gen-uine handicap, or finer-grained metrics such as the expected number of points scored per end. Nonetheless, we believe that this work provides a first step toward learning curling strategy through reinforcement learning and simulation-based self-play. It offers a potential tool for post-game analysis, on- and off-ice tactical training or strategy exploration, and establishes a methodological foundation for future research in curling and similar domains. Promising directions for extension include full-game tactical modeling, improvement of the exploration techniques to better support athletes in evaluating risk-reward decisions, and adapting the algorithm to the opponent’s skill level during training. REFERENCES 
+
+[1] D. Silver et al., “Mastering the game of Go with-out human knowledge,” Nature , vol. 550, no. 7676, pp. 354–359, 2017. [2] V. Mnih et al., “Playing Atari with deep reinforcement learning,” arXiv:1312.5602 [cs.LG] , 2013. [3] Z. Li, Q. Ji, X. Ling, and Q. Liu, “A comprehensive review of multiagent reinforcement learning in video games,” IEEE Transactions on Games , vol. 17, no. 4, pp. 873–892, Dec. 2025. [4] Y. Wang, Y. Wang, F. Tian, J. Ma, and Q. Jin, “In-telligent games meeting with multi-agent deep rein-forcement learning: A comprehensive review,” Artificial Intelligence Review , vol. 58, no. 6, p. 165, 2025. [5] A. L. Samuel, “Some studies in machine learning using the game of checkers,” IBM Journal of Research and Development , vol. 3, no. 3, pp. 210–229, 1959. [6] G. Tesauro, “TD-Gammon, a self-teaching backgam-mon program, achieves master-level play,” Neural Com-putation , vol. 6, no. 2, pp. 215–219, 1994. [7] A. P´ erez-Uribe and E. Sanchez, “Blackjack as a test bed for learning strategies in neural networks,” in IEEE International Joint Conference on Neural Networks Proceedings. IEEE World Congress on Computational Intelligence , vol. 3, 1998, pp. 2022–2027. [8] M. Campbell, A. Hoane, and F. Hsu, “Deep blue,” 
+
+Artificial Intelligence , vol. 134, no. 1-2, pp. 57–83, Jan. 2002. [9] D. Silver et al., “Mastering the game of go with deep neural networks and tree search,” nature , vol. 529, no. 7587, pp. 484–489, 2016. PRE-PRINT UNDER REVIEW 10 
+
+[10] R. Gallotta et al., “Large language models and games: A survey and roadmap,” IEEE Transactions on Games ,2024. [11] A. Vaswani et al., “Attention is all you need,” Advances in neural information processing systems , vol. 30, 2017. [12] H. Naveed et al., “A comprehensive overview of large language models,” ACM Transactions on Intelligent Systems and Technology , vol. 16, no. 5, pp. 1–72, 2025. [13] P. Radanliev, D. De Roure, M. Van Kleek, O. Santos, and U. Ani, “Artificial intelligence in cyber physical systems,” AI & society , vol. 36, no. 3, pp. 783–796, 2021. [14] S. Haar, C. M. Van Assel, and A. A. Faisal, “Motor learning in real-world pool billiards,” Scientific Reports ,vol. 10, no. 1, p. 20 046, 2020. [15] J. M. Schiøtt, V. S. Petersen, and D. P. Papadopoulos, “Pix2pockets: Shot suggestions in 8-ball pool from a single image in the wild,” in Scandinavian Conference on Image Analysis , Springer, 2025, pp. 415–429. [16] J. Tebbe, L. Krauch, Y. Gao, and A. Zell, “Sample-efficient reinforcement learning in robotic table tennis,” in IEEE International Conference on Robotics and Automation (ICRA) , 2021. [17] D. B. DAmbrosio et al., “Achieving human level com-petitive robot table tennis,” in 2025 IEEE International Conference on Robotics and Automation (ICRA) , IEEE, 2025, pp. 74–82. [18] K.-D. Wang, Y.-T. Chen, Y.-H. Lin, W.-Y. Wang, and W.-C. Peng, “The coachai badminton environment: Bridging the gap between a reinforcement learning environment and real-world badminton games,” in AAAI Conference on Artificial Intelligence , vol. 38, 2024, pp. 23 844–23 846. [19] Y. Ma, A. Cramariuc, F. Farshidian, and M. Hut-ter, “Learning coordinated badminton skills for legged manipulators,” Science robotics , vol. 10, no. 102, eadu3922, 2025. [20] M. Riedmiller, T. Gabel, R. Hafner, and S. Lange, “Reinforcement learning for robot soccer,” Autonomous Robots , vol. 27, no. 1, pp. 55–73, 2009. [21] D.-O. Won, K.-R. M¨ uller, and S.-W. Lee, “An adaptive deep reinforcement learning framework enables curling robots with human-like performance in real-world con-ditions,” Science Robotics , vol. 5, no. 46, eabb9764, 2020. [22] P. Brenzel, W. Shock, and H. Yang, An analysis of curling using a three-dimensional Markov model. 2018. [23] D. Clement, “An analysis of curling strategy,” Journal of Quantitative Analysis in Sports , vol. 8, no. 3, 2012. [24] K. Lee, S.-A. Kim, J. Choi, and S.-W. Lee, “Deep reinforcement learning in continuous action spaces: A case study in the game of simulated curling,” in 35th International Conference on Machine Learning , 2018. [25] World Curling Federation, Rules of curling , https : / / worldcurling.org/rules/ [Accessed: 2026-07-17], 2025. [26] R. S. Sutton, A. G. Barto, et al., Reinforcement learning: An introduction . MIT press Cambridge, 1998, vol. 1. [27] M. L. Puterman, Markov decision processes: discrete stochastic dynamic programming . John Wiley & Sons, 2014. [28] D. Bertsekas, Dynamic programming and optimal con-trol: Volume I . Athena scientific, 2012, vol. 4. [29] C. J. Watkins and P. Dayan, “Q-learning,” Machine Learning , vol. 8, no. 3, pp. 279–292, 1992. [30] S. Bradtke, “Reinforcement learning applied to linear quadratic regulation,” Advances in Neural Information Processing Systems , vol. 5, 1992. [31] R. S. Sutton, D. McAllester, S. Singh, and Y. Mansour, “Policy gradient methods for reinforcement learning with function approximation,” Advances in Neural In-formation Processing Systems , vol. 12, 1999. [32] S. M. Kakade, “A natural policy gradient,” Advances in Neural Information Processing Systems , vol. 14, 2001. [33] J. Schulman, S. Levine, P. Abbeel, M. Jordan, and P. Moritz, “Trust region policy optimization,” in Inter-national Conference on Machine Learning , 2015. [34] V. Konda and J. Tsitsiklis, “Actor-critic algorithms,” 
+
+Advances in Neural Information Processing Systems ,vol. 12, 1999. [35] D. Silver, G. Lever, N. Heess, T. Degris, D. Wier-stra, and M. Riedmiller, “Deterministic policy gradient algorithms,” in International Conference on Machine Learning , 2014. [36] T. P. Lillicrap et al., “Continuous control with deep rein-forcement learning,” arXiv:1509.02971 [cs.LG] , 2019. [37] E. H. Sumiea et al., “Deep deterministic policy gradient algorithm: A systematic review,” Heliyon , vol. 10, no. 9, 2024. [38] J. Guo, T. Gao, P. Zhang, J. Han, and J. Duan, “Deep reinforcement learning in finite-horizon to explore the most probable transition pathway,” Physica D: Nonlin-ear Phenomena , vol. 458, p. 133 955, 2024. [39] E. Futuhi, S. Karimi, C. Gao, and M. M¨ uller, “Etgl-ddpg: A deep deterministic policy gradient algorithm for sparse reward continuous control,” arXiv preprint arXiv:2410.05225 , 2024. [40] M. Brunner, “Curling strategy analysis,” M.S. thesis, University of Bern, 2024. [41] B. Wyss, Openings and their relationship to scoreboard variables in elite curling , 2025. [42] Z. F. Ahmad, R. C. Holte, and M. Bowling, “Action selection for hammer shots in curling.,” in IJCAI , 2016, pp. 561–567. [43] Y. Son, J. Park, and B. Jeon, “Training agents for strate-gic curling through a unified reinforcement learning framework,” Mathematics , vol. 14, no. 3, p. 403, 2026. [44] D. Chakraborty and P. Stone, “Multiagent learning in the presence of memory-bounded agents,” Autonomous Agents and Multi-Agent Systems , vol. 28, no. 2, pp. 182– 213, 2014. [45] V. R. Konda and J. N. Tsitsiklis, “Onactor-critic algo-rithms,” SIAM Journal on Control and Optimization ,vol. 42, no. 4, pp. 1143–1166, 2003. [46] R. Bellman, “A Markovian decision process,” Journal of Mathematics and Mechanics , pp. 679–684, 1957.

@@ -1,0 +1,713 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-09T20:36:50.638616+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 13,
+    "deep_cap": 6,
+    "deep_selected": 6,
+    "quick_candidates": 23,
+    "quick_skim_target": 11,
+    "quick_selected": 11
+  },
+  "deep_dive": [
+    {
+      "id": "2608.05206v1",
+      "source": "arxiv",
+      "title": "Otter: A Time-Aware, History-Conditioned Human Chess AI",
+      "abstract": "Otter is a 15.3M-parameter human chess AI that predicts human move selection by modeling play as a time-aware, sequential process rather than treating each position in isolation. It combines two conditioning signals: (1) a move history encoder that conditions predictions on the last 20 moves, capturing opening preferences, positional drift, and intra-game behavioral tendencies; and (2) a time control module that modulates predictions based on clock pressure. Otter is trained on 6.1 billion positions from 117 million Lichess rapid games over 30 days on a single T4 GPU.   Otter achieves 55.23% top-1 and 90.95% top-5 move-prediction accuracy, surpassing the prior state-of-the-art human chess model, Maia 2, with far fewer parameters and less training data. Across 11 Elo brackets (<1100 to >=2000), accuracy peaks at 57.38% in the 1900-1999 bracket. These results show that modeling chess as a time-aware, sequential activity yields more human-accurate move prediction than position-only approaches, using a smaller model. Code, trained models, and complete training logs are publicly released.",
+      "authors": [
+        "Tarun Kumar S"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-08-05T07:47:30+00:00",
+      "link": "https://arxiv.org/pdf/2608.05206v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "predicts human move selection in chess, models player behavior",
+      "llm_evidence_cn": "预测人类在国际象棋中的走子选择，建模玩家行为",
+      "llm_evidence": "预测人类在国际象棋中的走子选择，建模玩家行为",
+      "canonical_evidence": "预测人类在国际象棋中的走子选择，建模玩家行为",
+      "llm_tldr_en": "Otter is a human chess AI that conditions move prediction on recent move history and clock pressure, outperforming prior human chess model Maia 2 with fewer parameters.",
+      "llm_tldr_cn": "现有象棋AI往往逐位置孤立地预测人类走法，忽视时间与历史上下文。Otter提出将玩家行为建模为时间感知的顺序过程，使用最近20步历史编码器与时间压力模块共同预测走子。其在61亿局面、1.17亿盘Lichess快棋上训练，实现55.23% top-1与90.95% top-5准确率，优于Maia 2且参数更少。这表明引入时间与历史信号可更高效地模拟人类玩家行为。",
+      "llm_tldr": "现有象棋AI往往逐位置孤立地预测人类走法，忽视时间与历史上下文。Otter提出将玩家行为建模为时间感知的顺序过程，使用最近20步历史编码器与时间压力模块共同预测走子。其在61亿局面、1.17亿盘Lichess快棋上训练，实现55.23% top-1与90.95% top-5准确率，优于Maia 2且参数更少。这表明引入时间与历史信号可更高效地模拟人类玩家行为。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "virtual game player modeling",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.01425v1",
+      "source": "arxiv",
+      "title": "Training Small LLMs as Spatial Multi-Agent Policies",
+      "abstract": "Training LLM-based multi-agent systems with multi-agent reinforcement learning is rapidly gaining traction, and a parallel line of work argues that such systems should be judged by their behavior, not only their reward. We take up both threads in spatial cooperative games, where small frozen LLMs prompted with low-level actions fail outright, earning zero reward. Guided by the options/semi-MDP framework---and, because option execution is asynchronous across agents, its multi-agent extension in macro-action Dec-POMDPs---we equip each game with a library of symbolic \\emph{options}: typed, state-feasible, short-horizon behaviors executed by a symbolic planner. Each library is drafted by a frontier coding model from the game's source code; the feasibility guards that filter each menu are then synthesized mechanically from cheap random-policy burn-in rollouts---a guard is adopted only if it explains repeated execution failures while hiding no logged success---so no guard is authored, selected, or reward-tuned by hand. Each agent's LLM acts as its policy over options, with a private per-agent LoRA adapter trained by a per-agent variant of multi-agent GRPO (PA-MAGRPO); this lifts frozen bases from zero reward to competent play across three games and four small backbones. Behavioral audits then reveal that reward and cooperation decouple: a rising reward curve may simply mean that one agent has learned to run the entire task alone while its partner idles---cooperation emerges only when the task makes it necessary. Reward alone is thus an unreliable readout of cooperation; behavioral evaluation must sit alongside it.",
+      "authors": [
+        "Yi Mao",
+        "Andrew Perrault"
+      ],
+      "primary_category": "cs.MA",
+      "categories": [
+        "cs.MA",
+        "cs.LG"
+      ],
+      "published": "2026-08-02T18:14:40+00:00",
+      "link": "https://arxiv.org/pdf/2608.01425v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "trains LLM-based multi-agent policies in spatial cooperative games",
+      "llm_evidence_cn": "在空间合作游戏中训练基于LLM的多智能体策略",
+      "llm_evidence": "在空间合作游戏中训练基于LLM的多智能体策略",
+      "canonical_evidence": "在空间合作游戏中训练基于LLM的多智能体策略",
+      "llm_tldr_en": "This paper trains small LLMs as multi-agent policies in spatial cooperative games via options/semi-MDP and macro-action Dec-POMDPs, enabling otherwise zero-reward frozen LLMs to succeed.",
+      "llm_tldr_cn": "现有小型冻结LLM在空间合作游戏中直接输出底层动作会完全失败。本文利用选项/半MDP框架及其多智能体扩展宏动作Dec-POMDP，为每个游戏构造符号选项库并由符号规划器执行。通过该方式训练的LLM多智能体策略能够在空间合作任务中取得奖励。研究强调应通过行为而非仅奖励来评价多智能体系统。",
+      "llm_tldr": "现有小型冻结LLM在空间合作游戏中直接输出底层动作会完全失败。本文利用选项/半MDP框架及其多智能体扩展宏动作Dec-POMDP，为每个游戏构造符号选项库并由符号规划器执行。通过该方式训练的LLM多智能体策略能够在空间合作任务中取得奖励。研究强调应通过行为而非仅奖励来评价多智能体系统。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.03420v1",
+      "source": "arxiv",
+      "title": "Towards Improving Sequential Decision-Making in LLM Agents via Experience Memory",
+      "abstract": "Large language models have improved substantially on single-shot reasoning tasks, but their performance in sequential decision-making is less well understood. We study this on fully-observable two-player zero-sum games, which provide ground-truth evaluation: outcomes are determined by the rules, and optimality of individual moves can be computed or approximated, without relying on a judge model. Across model tiers, LLMs play suboptimally in simple games such as tic-tac-toe or Connect Four, and lose to MCTS opponents. Obfuscations that preserve the game tree but rewrite its surface form leave performance largely unchanged, indicating the gap is not fully explained by recall of memorized strategies. Motivated by this performance gap, we introduce an agentic framework enhanced with an experience memory designed for the sequential setting and addressing common challenges of sequential decision-making such as credit assignment. We show that post-game reflection and rule extraction yield measurable improvements on tic-tac-toe without modifying the model weights.",
+      "authors": [
+        "Jakub Rada",
+        "Viliam Lisý"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-08-04T10:12:12+00:00",
+      "link": "https://arxiv.org/pdf/2608.03420v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "studies and improves LLM agents playing tic-tac-toe and Connect Four via experience memory",
+      "llm_evidence_cn": "研究并通过经验记忆改进LLM智能体在井字棋和四子棋中的游戏表现",
+      "llm_evidence": "研究并通过经验记忆改进LLM智能体在井字棋和四子棋中的游戏表现",
+      "canonical_evidence": "研究并通过经验记忆改进LLM智能体在井字棋和四子棋中的游戏表现",
+      "llm_tldr_en": "This paper analyzes LLM agents' suboptimal play in zero-sum games, showing performance gaps are not from memorized strategies, and introduces an experience memory approach to improve sequential decision-making.",
+      "llm_tldr_cn": "该论文发现大语言模型在井字棋、四子棋等简单零和游戏中表现欠佳，且该差距不能由记忆策略解释。作者提出一种经验记忆机制，通过记录和利用历史决策经验来增强智能体的序列决策能力。实验表明该方法能显著改善LLM智能体在游戏中的胜率，并有助于理解其决策失败的原因。这项工作为提升LLM在交互式决策任务中的表现提供了新思路。",
+      "llm_tldr": "该论文发现大语言模型在井字棋、四子棋等简单零和游戏中表现欠佳，且该差距不能由记忆策略解释。作者提出一种经验记忆机制，通过记录和利用历史决策经验来增强智能体的序列决策能力。实验表明该方法能显著改善LLM智能体在游戏中的胜率，并有助于理解其决策失败的原因。这项工作为提升LLM在交互式决策任务中的表现提供了新思路。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.05949v1",
+      "source": "arxiv",
+      "title": "VLMs for Videogame Data Annotation",
+      "abstract": "Vision Language Models (VLMs) and Artificial Intelligence (AI) agents have revolutionized how engineers approach complex problems in real-world applications. Their adoption in video games is on the other hand limited by the extreme variability of the synthetic scenarios and their poor compliance with real-world physics. Here we investigate the use of VLMs for annotating video game frame sequences with reward signals, a task with several potential applications including, among others, conditioned training and offline reinforcement learning. We show that VLMs often struggle to answer basic questions on racing video games (although we observed a similar behavior on other game genres) and discuss countermeasures such as VLM output mixing and prompt optimization. We also show how input sequence length, resolution, and question batching affect the annotation quality and its token consumption.",
+      "authors": [
+        "Katrin Schmid",
+        "Iuri Frosio"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CV",
+        "cs.LG"
+      ],
+      "published": "2026-08-06T12:20:53+00:00",
+      "link": "https://arxiv.org/pdf/2608.05949v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "uses VLMs to annotate videogame frame sequences with reward signals for agent training",
+      "llm_evidence_cn": "用视觉语言模型为游戏帧序列标注奖励信号，支持智能体训练",
+      "llm_evidence": "用视觉语言模型为游戏帧序列标注奖励信号，支持智能体训练",
+      "canonical_evidence": "用视觉语言模型为游戏帧序列标注奖励信号，支持智能体训练",
+      "llm_tldr_en": "This paper studies using VLMs to annotate video game frame sequences with reward signals, finds poor performance on racing games, and proposes output mixing and prompt optimization as countermeasures.",
+      "llm_tldr_cn": "本文探索将视觉语言模型用于电子游戏帧序列的奖励信号标注，该任务可服务于条件训练和离线强化学习。研究发现VLM在赛车等游戏上难以回答基本问题，但通过输出混合和提示优化等对策可以改善。此外输入序列的组织方式也显著影响标注效果。该工作为游戏数据自动化标注提供了新思路。",
+      "llm_tldr": "本文探索将视觉语言模型用于电子游戏帧序列的奖励信号标注，该任务可服务于条件训练和离线强化学习。研究发现VLM在赛车等游戏上难以回答基本问题，但通过输出混合和提示优化等对策可以改善。此外输入序列的组织方式也显著影响标注效果。该工作为游戏数据自动化标注提供了新思路。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.05954v1",
+      "source": "arxiv",
+      "title": "Training a Conditioned Video Game Agent on a VLM Annotated Dataset",
+      "abstract": "Reinforcement Learning (RL) is a powerful but far from easy-to-use technique for policy learning. In the specific case of video games, access to the game engine is required to get rewards for training (e.g. to collect rewards from the environment). Furthermore, the proper identification and weighting of the rewards generally requires a difficult trial-and-error approach. Lastly, rewards are often sparse and understanding how they eventually affect the learned policy is a non-trivial exercise. To ease these issues we propose annotating a video game dataset with Vision Language Models (VLMs) instructed to extract human defined rewards. We show that offline RL can then be used to train a conditioned agent that responds accordingly to the desired returns and we discuss the difficulties and limitations that emerged in our early experiments.",
+      "authors": [
+        "Katrin Schmid",
+        "Iuri Frosio"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CV",
+        "cs.LG"
+      ],
+      "published": "2026-08-06T12:25:54+00:00",
+      "link": "https://arxiv.org/pdf/2608.05954v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "trains a conditioned video game agent via offline RL on VLM-annotated rewards",
+      "llm_evidence_cn": "用VLM标注奖励的离线RL训练视频游戏智能体",
+      "llm_evidence": "用VLM标注奖励的离线RL训练视频游戏智能体",
+      "canonical_evidence": "用VLM标注奖励的离线RL训练视频游戏智能体",
+      "llm_tldr_en": "This paper trains a conditioned video game agent using offline RL on a dataset annotated by vision-language models, overcoming reward engineering challenges in game environments.",
+      "llm_tldr_cn": "该工作针对视频游戏强化学习奖励难以获取和设计的问题，提出用视觉语言模型(VLM)对游戏数据集进行标注，提取符合人类定义的奖励信号，进而利用离线强化学习训练条件化智能体。实验表明智能体能够按照期望回报进行行为响应，并支持对奖励的理解和调控。该方法减少了对游戏引擎奖励接口的依赖，为游戏AI训练提供了新途径。",
+      "llm_tldr": "该工作针对视频游戏强化学习奖励难以获取和设计的问题，提出用视觉语言模型(VLM)对游戏数据集进行标注，提取符合人类定义的奖励信号，进而利用离线强化学习训练条件化智能体。实验表明智能体能够按照期望回报进行行为响应，并支持对奖励的理解和调控。该方法减少了对游戏引擎奖励接口的依赖，为游戏AI训练提供了新途径。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.06362v1",
+      "source": "arxiv",
+      "title": "AV-AIVAT: 74x Cheaper Agent Evaluation with Certified Anytime-Valid Stopping in Imperfect-Information Games",
+      "abstract": "Deciding which of two agents is stronger means playing games until skill outweighs luck, and every game costs money, model inference, or expert time. Since the number of games needed is unknown, fixed-budget evaluations either keep paying after the result is settled or stop before the agents can be told apart, while naive optional stopping with an ordinary confidence interval invalidates the stated level. We make such an evaluation stop as soon as its evidence suffices, with the guarantee intact. The Action-Informed Value Assessment Tool (AIVAT) reduces variance in imperfect-information games through conditional mean-zero corrections, by a median $54\\times$ across 15 LLM agent configurations spanning 71,439 paired Heads-Up No-Limit Hold'em (HUNL) hands, but does not say when to stop. We combine AIVAT with continuously monitored Confidence Sequences (CSs) into anytime-valid AIVAT (AV-AIVAT), whose online value model learns only from past games so that no game scores its own correction. At the nominal 95\\% level and a target precision of $\\pm1$ Big Blind, raw outcomes need a median $74\\times$ as many hands as AIVAT-corrected outcomes to stop under the Asymptotic CS (AsympCS). Exact finite-sample certification uses the Empirical-Bernstein CS (EB-CS), which needs an independently justified bound on corrected payoffs. We establish such a bound structurally for Leduc hold'em and characterize a width floor set by the CS's bet cap and that bound, which governs how much of a variance gain becomes earlier stopping; the descriptive HUNL EB-CS runs show a median $1.37\\times$ stopping-time ratio. AV-AIVAT turns variance reduction into efficient, auditable early stopping while separating asymptotic screening from exact certification, so an evaluation can stop the moment its evidence suffices and hand a third party everything needed to recheck the verdict at that very stopping time.",
+      "authors": [
+        "Boning Li",
+        "Yu Chen",
+        "Longbo Huang"
+      ],
+      "primary_category": "cs.GT",
+      "categories": [
+        "cs.GT",
+        "cs.AI",
+        "cs.CL",
+        "cs.LG",
+        "cs.MA"
+      ],
+      "published": "2026-08-06T17:57:11+00:00",
+      "link": "https://arxiv.org/pdf/2608.06362v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "evaluates AI agents by playing imperfect-information games with certified anytime-valid stopping",
+      "llm_evidence_cn": "通过玩不完全信息游戏评估AI智能体，并具备认证的随时有效停止",
+      "llm_evidence": "通过玩不完全信息游戏评估AI智能体，并具备认证的随时有效停止",
+      "canonical_evidence": "通过玩不完全信息游戏评估AI智能体，并具备认证的随时有效停止",
+      "llm_tldr_en": "AV-AIVAT combines AIVAT variance reduction with anytime-valid stopping to decide which agent is stronger in imperfect-information games using far fewer games, certified at 74x cheaper evaluation.",
+      "llm_tldr_cn": "在不完全信息游戏中判断两个智能体孰强孰弱通常需要大量对局，成本高昂。本文提出AV-AIVAT，将AIVAT方差缩减技术与随时有效停止准则结合，保证统计有效性的同时尽早停止评估。在15种LLM智能体配置、7万多场成对对局中，所需对局数中位数降低54倍。该方法显著降低了智能体评估的推理与时间成本。",
+      "llm_tldr": "在不完全信息游戏中判断两个智能体孰强孰弱通常需要大量对局，成本高昂。本文提出AV-AIVAT，将AIVAT方差缩减技术与随时有效停止准则结合，保证统计有效性的同时尽早停止评估。在15种LLM智能体配置、7万多场成对对局中，所需对局数中位数降低54倍。该方法显著降低了智能体评估的推理与时间成本。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2608.01458v1",
+      "source": "arxiv",
+      "title": "PALMs: Using Multi Construct-Grounded Rationales for Modeling Population Preferences in LLMs",
+      "abstract": "Large language models are being extensively used to simulate individual user behavior, yet faithfully representing a population requires capturing the systematic variation in values, beliefs, and cultural norms that distinguish one group from another. We introduce Population Aligned Language Models (PALMs), a suite of models each aligned to specific populations, covering five countries: USA, India, Brazil, France and Italy. PALMs are created by synthesizing rationales grounded in psychological and cultural constructs and using these as latent supervision during preference tuning for population-specific alignment. Evaluated across four dimensions: personality, values and beliefs, cultural norms, and morality, PALMs consistently outperform baselines, including culture-specialized models, achieving an average of 8.59% relative improvement over the best baseline across all five populations. Notably, construct-grounded rationales outperform both demographic prompting and survey-based fine-tuning, suggesting that grounding preference learning in psychology and culture provides a richer inductive signal than surface-level response distributions. We further demonstrate strong generalization to downstream applications with- out task-specific supervision: outperforming best baselines by 5.19% in personalized reward modeling, 6.34% in population simulation, and showing strong transfer to social reasoning tasks. Datasets and code are available at: https://github.com/limenlp/PALMs.",
+      "authors": [
+        "Priyanka Dey",
+        "Brihi Joshi",
+        "Preyashi Poddar",
+        "Jieyu Zhao",
+        "Emilio Ferrara"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL"
+      ],
+      "published": "2026-08-02T19:31:59+00:00",
+      "link": "https://arxiv.org/pdf/2608.01458v1",
+      "tags": [
+        "keyword:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Population-aligned LLMs for modeling user preferences, directly applicable to virtual game player modeling",
+      "llm_evidence_cn": "面向群体偏好的LLM对齐方法，可直接用于虚拟游戏玩家建模",
+      "llm_evidence": "面向群体偏好的LLM对齐方法，可直接用于虚拟游戏玩家建模",
+      "canonical_evidence": "面向群体偏好的LLM对齐方法，可直接用于虚拟游戏玩家建模",
+      "llm_tldr_en": "PALMs align LLMs to specific populations via construct-grounded reasoning supervision, consistently outperforming baselines across personality, values, cultural norms, and morality, benefiting player modeling.",
+      "llm_tldr_cn": "大型语言模型常用于模拟用户行为，但忠实代表人群差异需要捕捉价值观和文化规范。该文提出PALMs，通过合成植根于心理与文化构念的推理作为潜在监督，对LLM进行特定人群的对齐。在人格、价值观、文化规范和道德等维度上的评估显示，PALMs显著优于未对齐模型。该方法为虚拟游戏玩家建模和玩家行为模拟提供了可靠的用户偏好建模工具。",
+      "llm_tldr": "大型语言模型常用于模拟用户行为，但忠实代表人群差异需要捕捉价值观和文化规范。该文提出PALMs，通过合成植根于心理与文化构念的推理作为潜在监督，对LLM进行特定人群的对齐。在人格、价值观、文化规范和道德等维度上的评估显示，PALMs显著优于未对齐模型。该方法为虚拟游戏玩家建模和玩家行为模拟提供了可靠的用户偏好建模工具。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "virtual game player modeling",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2608.01127v2",
+      "source": "arxiv",
+      "title": "MiniWorld: Democratizing the Training of Video World Models from Scratch",
+      "abstract": "Video world models predict future observations conditioned on historical observations and control signals, enabling long-horizon generation through autoregressive state transitions. Unlike conventional video generation models that primarily capture visual appearance and motion, video world models learn the underlying dynamics governing environment evolution under agent actions, providing a foundation for embodied AI and interactive simulation. Recent progress has largely relied on adapting pretrained video generation models through post-training or distillation. Although effective, these approaches often require complex training pipelines, substantial computational resources, and suffer from the mismatch between bidirectional pretraining and causal streaming inference. Recent studies have shown that training autoregressive video world models from scratch is feasible and scalable. However, the community still lacks a lightweight, transparent, and fully reproducible baseline trainable end-to-end with modest computational resources. We present MiniWorld, a reproducible framework for training streaming video world models from scratch. MiniWorld employs a block-causal Video Diffusion Transformer trained with Flow Matching in the latent space of a pretrained Video VAE. Building on Diffusion Forcing, it adopts a chunk-wise non-decreasing noise schedule and two-stage continued training to improve temporal modeling and stability. During inference, MiniWorld combines a rolling KV cache with pipelined asynchronous denoising for efficient streaming generation under bounded computation. The entire model can be trained within several days on a single 8-GPU server. By releasing the training and inference codebase and pretrained checkpoints, we hope MiniWorld will facilitate future research on video world modeling.",
+      "authors": [
+        "Yian Zhao",
+        "Ruochong Zheng",
+        "Hongcan Guo",
+        "Yu Yan",
+        "Jian Zhang",
+        "Jie Chen"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-02T09:57:02+00:00",
+      "link": "https://arxiv.org/pdf/2608.01127v2",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Video world models for interactive simulation and embodied AI",
+      "llm_evidence_cn": "视频世界模型用于交互仿真与具身AI",
+      "llm_evidence": "视频世界模型用于交互仿真与具身AI",
+      "canonical_evidence": "视频世界模型用于交互仿真与具身AI",
+      "llm_tldr_en": "MiniWorld presents a pipeline to train video world models from scratch, avoiding complex post-training of pretrained generators, thus making interactive simulation and embodied agent training more accessible.",
+      "llm_tldr_cn": "针对现有视频世界模型依赖预训练生成模型、训练管线复杂且资源消耗大的问题，本文提出MiniWorld，从零开始训练视频世界模型，学习环境在智能体动作下的动态演化。该方法降低了训练门槛和计算成本，避免了双向预训练与因果训练不匹配的问题。实验表明MiniWorld能够高效地学习可交互的世界动态，为具身AI和游戏环境智能体训练提供了可扩展的基础工具。",
+      "llm_tldr": "针对现有视频世界模型依赖预训练生成模型、训练管线复杂且资源消耗大的问题，本文提出MiniWorld，从零开始训练视频世界模型，学习环境在智能体动作下的动态演化。该方法降低了训练门槛和计算成本，避免了双向预训练与因果训练不匹配的问题。实验表明MiniWorld能够高效地学习可交互的世界动态，为具身AI和游戏环境智能体训练提供了可扩展的基础工具。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.01127v1",
+      "source": "arxiv",
+      "title": "MiniWorld: Democratizing the Training of Video World Models from Scratch",
+      "abstract": "Video world models predict future observations conditioned on historical observations and control signals, enabling long-horizon generation through autoregressive state transitions. Unlike conventional video generation models that primarily capture visual appearance and motion, video world models learn the underlying dynamics governing environment evolution under agent actions, providing a foundation for embodied AI and interactive simulation. Recent progress has largely relied on adapting pretrained video generation models through post-training or distillation. Although effective, these approaches often require complex training pipelines, substantial computational resources, and suffer from the mismatch between bidirectional pretraining and causal streaming inference. Recent studies have shown that training autoregressive video world models from scratch is feasible and scalable. However, the community still lacks a lightweight, transparent, and fully reproducible baseline trainable end-to-end with modest computational resources. We present MiniWorld, a reproducible framework for training streaming video world models from scratch. MiniWorld employs a block-causal Video Diffusion Transformer trained with Flow Matching in the latent space of a pretrained Video VAE. Building on Diffusion Forcing, it adopts a chunk-wise non-decreasing noise schedule and two-stage continued training to improve temporal modeling and stability. During inference, MiniWorld combines a rolling KV cache with pipelined asynchronous denoising for efficient streaming generation under bounded computation. The entire model can be trained within several days on a single 8-GPU server. By releasing the training and inference codebase and pretrained checkpoints, we hope MiniWorld will facilitate future research on video world modeling.",
+      "authors": [
+        "Yian Zhao",
+        "Ruochong Zheng",
+        "Hongcan Guo",
+        "Yu Yan",
+        "Jian Zhang",
+        "Jie Chen"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-02T09:57:02+00:00",
+      "link": "https://arxiv.org/pdf/2608.01127v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "video world models for interactive simulation; enables environment modeling for agent training in game-like worlds",
+      "llm_evidence_cn": "视频世界模型用于交互仿真，可为游戏等环境中的智能体训练提供低成本环境建模",
+      "llm_evidence": "视频世界模型用于交互仿真，可为游戏等环境中的智能体训练提供低成本环境建模",
+      "canonical_evidence": "视频世界模型用于交互仿真，可为游戏等环境中的智能体训练提供低成本环境建模",
+      "llm_tldr_en": "MiniWorld trains video world models from scratch, predicting future observations under control signals, avoiding reliance on pretrained video generation models and enabling cheaper interactive simulation for embodied AI.",
+      "llm_tldr_cn": "针对现有视频世界模型依赖预训练视频生成模型进行后训练或蒸馏、流程复杂且资源消耗巨大的问题，本文提出MiniWorld框架，支持从零开始训练视频世界模型。该方法学习环境在智能体动作下的动态演化规律，为具身AI和交互仿真提供基础，降低了训练门槛，使更多研究者能训练自己的世界模型。",
+      "llm_tldr": "针对现有视频世界模型依赖预训练视频生成模型进行后训练或蒸馏、流程复杂且资源消耗巨大的问题，本文提出MiniWorld框架，支持从零开始训练视频世界模型。该方法学习环境在智能体动作下的动态演化规律，为具身AI和交互仿真提供基础，降低了训练门槛，使更多研究者能训练自己的世界模型。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.02005v1",
+      "source": "arxiv",
+      "title": "Evolving in the Agent Jungle via History-Informed Opponent Awareness",
+      "abstract": "Learning to adapt strategies through interaction is a key step toward more general and autonomous LLM agents. Existing approaches typically achieve behavioral adaptation by revising skill libraries. However, in multi-agent environments, opponents may simultaneously update their strategies, causing the environment itself to evolve continuously. Applying skill-revision methods designed for static environments in such settings therefore amounts to updating against an obsolete reference. To address this challenge, we introduce OASE (Opponent-Aware Selective Evolution), which identifies and adopts genuinely beneficial skill revisions in dynamic multi-agent environments. Specifically, OASE conducts paired comparisons between a candidate skill and the incumbent under identical conditions anchored by historical snapshots of opponent strategies, and adopts the candidate only when its estimated payoff gain exceeds an acceptance threshold. We evaluate OASE in two decision-making scenarios: first-price auctions and private-cost Cournot competition. Experimental results show that, compared with a Reflexion-style baseline, OASE achieves a lower final equilibrium distance in both environments while accepting substantially fewer skill revisions, thereby suppressing strategy changes that lack sufficient payoff support. OASE therefore replaces blind updating with evidence-anchored selection, allowing agents to adapt stably and efficiently even as opponents continuously evolve.",
+      "authors": [
+        "Zhaofeng Zhang",
+        "Linhan Xia",
+        "Rui Liu",
+        "Yihao Wang",
+        "Binrui Shen",
+        "Shengxin Zhu"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-08-03T10:06:23+00:00",
+      "link": "https://arxiv.org/pdf/2608.02005v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "LLM agents adapt strategies in dynamic multi-agent environments with opponent awareness, relevant to AI agent playing games",
+      "llm_evidence_cn": "动态多智能体环境中带对手感知的策略自适应方法，与AI游戏智能体高度相关",
+      "llm_evidence": "动态多智能体环境中带对手感知的策略自适应方法，与AI游戏智能体高度相关",
+      "canonical_evidence": "动态多智能体环境中带对手感知的策略自适应方法，与AI游戏智能体高度相关",
+      "llm_tldr_en": "OASE uses paired comparisons to adopt genuinely beneficial skill revisions in dynamic multi-agent environments, preventing adaptation against obsolete references and improving strategic evolution.",
+      "llm_tldr_cn": "在动态多智能体环境中，对手也会持续更新策略，直接套用静态环境的技能修订方法会过时。该文提出对手感知的选择性进化（OASE）方法，通过候选技能与现有技能的两两比较，甄别并采纳真正有益的技能修订。实验表明OASE能在动态环境中实现更有效的策略适应，显著提升智能体的进化能力，对多智能体游戏和对抗性环境中的AI训练具有重要意义。",
+      "llm_tldr": "在动态多智能体环境中，对手也会持续更新策略，直接套用静态环境的技能修订方法会过时。该文提出对手感知的选择性进化（OASE）方法，通过候选技能与现有技能的两两比较，甄别并采纳真正有益的技能修订。实验表明OASE能在动态环境中实现更有效的策略适应，显著提升智能体的进化能力，对多智能体游戏和对抗性环境中的AI训练具有重要意义。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2608.02171v1",
+      "source": "arxiv",
+      "title": "From Profiling to Synthesis: Benchmarking Implicit Behavioral Alignment in Personalized LLM Agents",
+      "abstract": "Large Language Models have enabled increasingly capable autonomous agents, yet personalization remains critical for making such agents practically useful. Recent benchmarks have begun evaluating personalization in agents, but they largely rely on static preference snapshots, fixed interaction logs, or question answering over predefined user profiles. Such designs fail to capture the complexity of evolving user preferences and neglect preference-conditioned task execution-a discrepancy we term as the knowledge-to-action gap. To address this challenge, we introduce IBA-Bench, a benchmark for implicit behavioral alignment constructed from longitudinal interaction histories that contain noise, implicit cues, and temporal inconsistencies. Unlike prior work, IBA-Bench evaluates whether an agent can execute tasks while satisfying implicit user constraints inferred from historical interactions. We further propose IBA-Agent, an agent framework that reconciles conflicting priorities through broad retrieval and trajectory-level alignment. Experiment results on IBA-Bench show that effective personalization remains a significant challenge for state-of-the-art LLM agents, and the proposed IBA-Agent substantially improves behavioral alignment in complex scenarios across nine application domains.",
+      "authors": [
+        "Jiajia Song",
+        "Bobo Li",
+        "Haiwen Yi",
+        "Zibo Ji",
+        "Meishan Zhang",
+        "Hao Fei",
+        "Min Zhang",
+        "Mong-Li Lee",
+        "Wynne Hsu"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-08-03T12:52:04+00:00",
+      "link": "https://arxiv.org/pdf/2608.02171v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Benchmark for implicit behavioral alignment in personalized LLM agents, relevant to player behavior modeling in games",
+      "llm_evidence_cn": "面向个性化LLM智能体内隐行为对齐的基准，与游戏玩家行为建模相关",
+      "llm_evidence": "面向个性化LLM智能体内隐行为对齐的基准，与游戏玩家行为建模相关",
+      "canonical_evidence": "面向个性化LLM智能体内隐行为对齐的基准，与游戏玩家行为建模相关",
+      "llm_tldr_en": "IBA-Bench evaluates implicit behavioral alignment in personalized LLM agents using longitudinal noisy interaction histories, bridging the knowledge-to-action gap in preference-conditioned task execution.",
+      "llm_tldr_cn": "现有个人化智能体基准多依赖静态偏好快照或固定日志，难以反映用户偏好的动态演化，也忽视了智能体是否真正将偏好知识转化为行动。该文提出IBA-Bench，从包含噪声、隐式线索和时间不一致性的纵向交互历史中构造评测任务，目标是衡量智能体的内隐行为对齐。该基准能够揭示从知识到行动的差距，为个性化LLM智能体的评测提供更真实的标准，也为虚拟游戏玩家建模提供了评测思路。",
+      "llm_tldr": "现有个人化智能体基准多依赖静态偏好快照或固定日志，难以反映用户偏好的动态演化，也忽视了智能体是否真正将偏好知识转化为行动。该文提出IBA-Bench，从包含噪声、隐式线索和时间不一致性的纵向交互历史中构造评测任务，目标是衡量智能体的内隐行为对齐。该基准能够揭示从知识到行动的差距，为个性化LLM智能体的评测提供更真实的标准，也为虚拟游戏玩家建模提供了评测思路。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "virtual game player modeling",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.01678v1",
+      "source": "arxiv",
+      "title": "Progressive Agent Skill Generation via Reinforcement Learning",
+      "abstract": "Existing skill generation methods largely rely on heuristics or pipeline-style consolidation, which must be specially designed for different evidence sources. In contrast, learning-based approaches offer a more unified way to model skill generation across heterogeneous sources. However, learning-based skill generation remains challenging because skills lack a natural supervision signal based on relevance or correctness; their value can largely be determined only by whether they improve the behavior of the agent on downstream tasks. To address this challenge, we propose Skill-$α$, a reinforcement learning method for progressively generating high-quality agent skills. Specifically, we formulate skill generation as a sequential editing process that decomposes skill construction into individually evaluable edits, and introduce a novel rollback reward that evaluates each edit by comparing downstream execution under the original and edited skills on an anchored query. Extensive experiments show that Skill-$α$ generates more effective skills than methods based on heuristics or pipelines in both document-to-skill and experience-to-skill settings. Under the main GPT-4o worker, Skill-$α$ improves average downstream success rates over the strongest skill-generation baseline by 3.3 points on CL-Bench and 6.7 points on tau2-bench. Further ablations validate the importance of rollback reward and progressive generation.",
+      "authors": [
+        "Junhao Shen",
+        "Zhanqiu Zhang",
+        "Yiwen Guo",
+        "Hong Cheng"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CL"
+      ],
+      "published": "2026-08-03T04:14:59+00:00",
+      "link": "https://arxiv.org/pdf/2608.01678v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "RL-based skill generation that progressively improves agent behavior on downstream tasks",
+      "llm_evidence_cn": "用强化学习渐进生成技能以改进智能体下游行为",
+      "llm_evidence": "用强化学习渐进生成技能以改进智能体下游行为",
+      "canonical_evidence": "用强化学习渐进生成技能以改进智能体下游行为",
+      "llm_tldr_en": "This paper proposes Skill-alpha, a reinforcement learning method that generates skills via sequential editing, improving agent behavior on downstream tasks without explicit skill supervision.",
+      "llm_tldr_cn": "针对技能生成缺乏天然监督信号的问题，该论文提出Skill-α强化学习方法，将技能生成建模为顺序编辑过程，逐步生成高质量智能体技能。技能价值通过其在下游任务上对行为表现的提升来确定。实验显示该方法能够统一处理异构证据源并改善智能体决策。该工作为通用智能体技能学习提供了新范式，可迁移到游戏AI等场景。",
+      "llm_tldr": "针对技能生成缺乏天然监督信号的问题，该论文提出Skill-α强化学习方法，将技能生成建模为顺序编辑过程，逐步生成高质量智能体技能。技能价值通过其在下游任务上对行为表现的提升来确定。实验显示该方法能够统一处理异构证据源并改善智能体决策。该工作为通用智能体技能学习提供了新范式，可迁移到游戏AI等场景。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.02379v1",
+      "source": "arxiv",
+      "title": "Chess on Ice: Curling Tactical Decision-Making via Backward Induction and Deep Reinforcement Learning",
+      "abstract": "Curling is often referred to as \"Chess on Ice\", owing to the tactical complexity of its decision-making process. Yet unlike chess, curling remains largely underexplored from a machine learning perspective, with prior work confined mainly to statistical approaches. We propose a reinforcement learning framework capable of quantitatively evaluating and comparing tactical options in curling. The game poses several modeling challenges: continuous state and action spaces, stochastic action outcomes reflecting player skill variability, and state transitions that are highly sensitive to small perturbations in the executed action. To address them, we employ the Deep Deterministic Policy Gradient actor-critic algorithm, adapted to exploit the finite-horizon structure of the game. Our experiments show that effective curling strategies can be acquired in a fully self-supervised manner, without any human-annotated data: on a reduced four-rock variant, the learned agent matches a hand-crafted expert heuristic in a regime where that heuristic is close to optimal, a parity we quantify against the intrinsic hammer advantage of the variant. Beyond the resulting policy, the learned critic provides a dense value estimate over the entire continuous action space, enabling the quantitative comparison of tactical alternatives for applications such as post-game performance analysis and decision support during athlete preparation.",
+      "authors": [
+        "Patrick Oberlin",
+        "Matteo Cederle",
+        "Aren Karapetyan",
+        "Saverio Bolognani",
+        "Gian Antonio Susto",
+        "Florian Dörfler"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-08-03T15:23:42+00:00",
+      "link": "https://arxiv.org/pdf/2608.02379v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Deep reinforcement learning for tactical decision-making in the game of curling",
+      "llm_evidence_cn": "深度强化学习用于冰壶比赛的战术决策",
+      "llm_evidence": "深度强化学习用于冰壶比赛的战术决策",
+      "canonical_evidence": "深度强化学习用于冰壶比赛的战术决策",
+      "llm_tldr_en": "Presents a DDPG-based deep RL framework for curling that handles continuous state/action spaces and stochastic outcomes, enabling quantitative evaluation of tactical options in the game.",
+      "llm_tldr_cn": "针对冰壶比赛因连续状态和动作空间、随机结果对扰动敏感而缺乏机器学习研究的问题，本文提出了基于DDPG的深度强化学习框架，能够定量评估和比较不同战术选项。方法对运动员技能差异导致的随机动作结果进行了建模，并适应高度敏感的状态转移。实验表明该框架可以有效学习冰壶的战术策略，为体育博弈中的AI决策提供了一种新范式。该研究验证了强化学习在复杂博弈决策中的潜力。",
+      "llm_tldr": "针对冰壶比赛因连续状态和动作空间、随机结果对扰动敏感而缺乏机器学习研究的问题，本文提出了基于DDPG的深度强化学习框架，能够定量评估和比较不同战术选项。方法对运动员技能差异导致的随机动作结果进行了建模，并适应高度敏感的状态转移。实验表明该框架可以有效学习冰壶的战术策略，为体育博弈中的AI决策提供了一种新范式。该研究验证了强化学习在复杂博弈决策中的潜力。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2608.02352v1",
+      "source": "arxiv",
+      "title": "Qwen-CUA: Native Computer Use for (almost) Everything",
+      "abstract": "Native computer use offers a general interface for agents to operate almost any software available to people, but requires long-horizon state tracking, large-scale interactive experience, and learning from sparse yet verifiable outcomes. We introduce Qwen-CUA, a native computer-use agent with a 397B-A17B Qwen mixture-of-experts backbone. It observes only screenshots and acts through keyboard and mouse events, without DOM trees, accessibility metadata, or task-specific APIs. Its scaffold maintains up to 20 active screenshots and folds older visual history in fixed-size blocks to retain recent evidence while preserving reusable prompt prefixes. For training, we build a cloud rollout fleet with access to nearly 100,000 vCPUs and tens of thousands of concurrent environments, construct approximately 40,000 verifiable tasks, and collect personalized long-horizon workflows across everyday and professional software. We optimize complete trajectories with verifiable rewards and trajectory slicing, while iterative training runs refresh supervised data and recalibrate reinforcement-learning tasks. Across eight benchmarks, Qwen-CUA outperforms Qwen3.7 and remains competitive with leading proprietary systems, reaching 86.2 on OSWorld-Verified and 18.5/48.4 binary/partial completion on OSWorld 2.0. Scaling the same recipe to a model with over one trillion parameters yields Qwen-CUA-Max, improving these scores to 87.6 and 21.2/53.3. Qwen-CUA also reduces RedTeamCUA attack success from 36.6 to 16.4 relative to Qwen3.7. Efficiency analyses, a browser deployment, and Bash-augmented experiments further characterize practical behavior. These results establish native computer use as a broadly capable agent foundation and highlight scalable verifiable interaction and hybrid tool use as key directions.",
+      "authors": [
+        "Dunjie Lu",
+        "Shuai Bai",
+        "Tianyi Bai",
+        "Sicheng Fan",
+        "Chang Gao",
+        "Jian Guan",
+        "Feng Hu",
+        "Mianqiu Huang",
+        "Xingyang Huang",
+        "Yizhen Jiang",
+        "Yuheng Jing",
+        "Dehui Kong",
+        "Ning Li",
+        "Dayiheng Liu",
+        "Shixuan Liu",
+        "Zheng Liu",
+        "Que Shen",
+        "Bowen Wang",
+        "Junli Wang",
+        "Chencan Wu",
+        "Rui Xie",
+        "Tianbao Xie",
+        "Zhihui Xie",
+        "Haiyang Xu",
+        "An Yang",
+        "Tao Yu",
+        "Wenzhen Yuan",
+        "Xi Zhang",
+        "Zhenru Zhang",
+        "Mingkang Zhu",
+        "Zhaoqing Zhu",
+        "Yizhong Cao",
+        "Kai Dang",
+        "Binyuan Hui",
+        "Kaixin Li",
+        "Junyang Lin",
+        "Haiquan Wang",
+        "Zekun Wang",
+        "Yiheng Xu",
+        "Fan Yan",
+        "Mengqi Yuan",
+        "Danyang Zhang",
+        "Jiajun Zhang",
+        "Zhipeng Zhang",
+        "Fan Zhou",
+        "Fan Zhou"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CL"
+      ],
+      "published": "2026-08-03T15:04:20+00:00",
+      "link": "https://arxiv.org/pdf/2608.02352v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "AI agent trained with screenshots and keyboard/mouse actions in interactive environments, directly transferable to game-playing agents",
+      "llm_evidence_cn": "通过截图与键鼠操作在交互环境中训练AI智能体，可直接迁移到游戏智能体",
+      "llm_evidence": "通过截图与键鼠操作在交互环境中训练AI智能体，可直接迁移到游戏智能体",
+      "canonical_evidence": "通过截图与键鼠操作在交互环境中训练AI智能体，可直接迁移到游戏智能体",
+      "llm_tldr_en": "Qwen-CUA is a native computer-use agent that only observes screenshots and acts via keyboard and mouse, trained at large scale with a cloud rollout fleet; its long-horizon interactive learning approach is directly applicable to training AI agents in game environments.",
+      "llm_tldr_cn": "针对AI智能体在真实交互环境中长时程控制难题，本文提出Qwen-CUA智能体，仅通过截图感知环境并以键鼠操作执行任务，无需专用API。其采用大规模云端回滚训练和分块视觉记忆机制，支持复杂软件环境下的自主操作。该训练范式与交互接口可直接迁移至游戏智能体训练，为AI Agent游戏游玩提供可复用的技术基础。",
+      "llm_tldr": "针对AI智能体在真实交互环境中长时程控制难题，本文提出Qwen-CUA智能体，仅通过截图感知环境并以键鼠操作执行任务，无需专用API。其采用大规模云端回滚训练和分块视觉记忆机制，支持复杂软件环境下的自主操作。该训练范式与交互接口可直接迁移至游戏智能体训练，为AI Agent游戏游玩提供可复用的技术基础。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.01868v1",
+      "source": "arxiv",
+      "title": "No One Wins in Nuclear War: A Social Simulation of Military Decision-making",
+      "abstract": "WOPR is a social-simulation environment for studying how organizations make high-stakes decisions, built on a deterministic, replay-validated rules engine and using wargames as the vehicle. We instantiate it first with the published card game Nuclear War, traced against its published rules. We start with military decision-making because of its safety implications and because it needs further study, but the design is not specific to it: the decision-point contract that exposes the engine to agents is reusable across verifiable rule systems. Existing social-simulation work emphasizes persona fidelity and synthetic opinion, but lacks a verifiable rules engine with replay-checkable mechanics and private-channel negotiation. WOPR supplies that engine, and its contract makes every strategic choice an explicit agent decision. The method is agnostic to social-simulation frameworks; we adopt Concordia as the default harness for driving the game. On the same engine, WOPR layers a four-rung press ladder from silence to private single-recipient channels with structured commitments, and instantiates each faction as a collective command-and-control system rather than a single agent. We make all code, example configurations, and replay data publicly available at https://github.com/eilab-gt/wopr.",
+      "authors": [
+        "Glenn Matlin",
+        "Isaac Song",
+        "Anthony Wen-Ming Zang",
+        "Mark Riedl"
+      ],
+      "primary_category": "cs.CY",
+      "categories": [
+        "cs.CY",
+        "cs.AI",
+        "cs.CL",
+        "cs.MA"
+      ],
+      "published": "2026-08-03T08:15:40+00:00",
+      "link": "https://arxiv.org/pdf/2608.01868v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Social simulation environment with verifiable rules engine for agents in wargames, relevant to player behavior simulation",
+      "llm_evidence_cn": "基于可验证规则引擎的战争游戏社会模拟环境，与玩家行为模拟相关",
+      "llm_evidence": "基于可验证规则引擎的战争游戏社会模拟环境，与玩家行为模拟相关",
+      "canonical_evidence": "基于可验证规则引擎的战争游戏社会模拟环境，与玩家行为模拟相关",
+      "llm_tldr_en": "WOPR is a verifiable social-simulation environment with a replay-checkable rules engine, instantiated on the Nuclear War card game, exposing decision-point contracts to agents for reusable behavior simulation.",
+      "llm_tldr_cn": "该工作介绍了一个社会模拟环境WOPR，基于确定性、可回放验证的规则引擎，并以核战争卡牌游戏作为首个实例。环境提供了决策点接口供智能体接入，并支持私密频道谈判，弥补了现有社会模拟缺乏可验证规则引擎的不足。该设计不局限于军事场景，可复用于各类可验证规则系统，为游戏中的智能体行为仿真研究提供了新的基础设施。",
+      "llm_tldr": "该工作介绍了一个社会模拟环境WOPR，基于确定性、可回放验证的规则引擎，并以核战争卡牌游戏作为首个实例。环境提供了决策点接口供智能体接入，并支持私密频道谈判，弥补了现有社会模拟缺乏可验证规则引擎的不足。该设计不局限于军事场景，可复用于各类可验证规则系统，为游戏中的智能体行为仿真研究提供了新的基础设施。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "player behavior simulation techniques",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.04149v1",
+      "source": "arxiv",
+      "title": "Sublogarithmic Swap Regret in Multiplayer General-Sum Games via Hybrid Regularization",
+      "abstract": "Swap regret governs the rate at which uncoupled learning dynamics converge to correlated equilibria in multiplayer general-sum games. Under full-information feedback, the best previous guarantee when every player follows the same dynamics grows logarithmically in the horizon $T$. We construct uncoupled dynamics under which every player incurs only $O(nm^2\\sqrt{\\log m\\log T})$ swap regret, where $n$ is the number of players and $m$ bounds the number of actions per player. To our knowledge, this is the first sublogarithmic individual guarantee in this setting, and it implies that the time-averaged product distribution of play is an $O(nm^2\\sqrt{\\log m\\log T}/T)$-approximate correlated equilibrium. The key algorithmic choice is to combine the Blum--Mansour reduction with optimistic follow-the-regularized-leader using a hybrid regularizer that separately weights negative Shannon entropy and the log-barrier: the entropy controls the optimistic prediction error, whereas the log-barrier controls the transition-matrix movement through its Bregman divergence. A new sensitivity theorem for stationary distributions of Markov chains, which involves neither mixing parameters nor the smallest transition probability, transfers this control to the played strategies and yields a simpler analysis without local-norm or self-concordance arguments. The guarantee is preserved by an adversarially robust variant that additionally ensures $O(nm^2\\sqrt{\\log m\\log T}+\\sqrt{mT\\log m})$ swap regret against arbitrary utility sequences, and by a horizon-free variant that requires no prior knowledge of $T$.",
+      "authors": [
+        "Taira Tsuchiya"
+      ],
+      "primary_category": "cs.GT",
+      "categories": [
+        "cs.GT",
+        "cs.LG"
+      ],
+      "published": "2026-08-04T18:58:51+00:00",
+      "link": "https://arxiv.org/pdf/2608.04149v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "multiplayer general-sum game learning dynamics",
+      "llm_evidence_cn": "多人一般和博弈中的学习动力学",
+      "llm_evidence": "多人一般和博弈中的学习动力学",
+      "canonical_evidence": "多人一般和博弈中的学习动力学",
+      "llm_tldr_en": "Constructs uncoupled dynamics with hybrid regularization achieving sublogarithmic swap regret in multiplayer general-sum games, yielding the first such individual guarantee and an approximate correlated equilibrium.",
+      "llm_tldr_cn": "针对多人一般和博弈中无耦合学习动力学收敛到相关均衡的速度问题，以往个体交换遗憾上界随博弈次数呈对数增长。该文提出结合混合正则化的无耦合动力学，使每个玩家的交换遗憾达到次对数上界，并首次在此设定下给出个体次对数保证，同时意味着时间平均联合分布是近似相关均衡。该结果推进了多智能体学习与博弈论均衡的联系。",
+      "llm_tldr": "针对多人一般和博弈中无耦合学习动力学收敛到相关均衡的速度问题，以往个体交换遗憾上界随博弈次数呈对数增长。该文提出结合混合正则化的无耦合动力学，使每个玩家的交换遗憾达到次对数上界，并首次在此设定下给出个体次对数保证，同时意味着时间平均联合分布是近似相关均衡。该结果推进了多智能体学习与博弈论均衡的联系。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2608.03217v1",
+      "source": "arxiv",
+      "title": "3 Players Auction Bridge - Statistical Algorithmic Strategies",
+      "abstract": "Three-player auction bridge is an updated version of the worldwide-recognized auction bridge card game. Dynamic partners and opponents are the key factors in this game. This dynamic property reduces the bias and increases the authenticity of this game. The article provides insight on statistical learning and insight for a three-player auction bridge game. An exact algorithm for various scenarios is developed along with the corresponding winning strategies to explore different game plannings and the computational intelligence involved. Based on the algorithm, we simulate data and define the probabilistic values to win a certain game.",
+      "authors": [
+        "Sourish Sarkar",
+        "Aritrabha Majumdar",
+        "Moutushi Chatterjee"
+      ],
+      "primary_category": "cs.GT",
+      "categories": [
+        "cs.GT"
+      ],
+      "published": "2026-08-04T06:51:39+00:00",
+      "link": "https://arxiv.org/pdf/2608.03217v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "provides algorithmic winning strategies for a bridge card game using statistical learning",
+      "llm_evidence_cn": "使用统计学习为桥牌纸牌游戏提供算法制胜策略",
+      "llm_evidence": "使用统计学习为桥牌纸牌游戏提供算法制胜策略",
+      "canonical_evidence": "使用统计学习为桥牌纸牌游戏提供算法制胜策略",
+      "llm_tldr_en": "This paper develops exact algorithms and statistical strategies for three-player auction bridge, using computational intelligence to simulate data and define probabilistic win values for various game scenarios.",
+      "llm_tldr_cn": "三人拍卖桥牌以动态搭档与对手为关键特征，更具真实性与低偏差。本文为不同场景设计精确算法与对应获胜策略，结合统计学习和计算智能探索多种游戏规划，并通过模拟数据定义获胜概率值。其为纸牌游戏智能决策提供了可复用的统计算法框架。",
+      "llm_tldr": "三人拍卖桥牌以动态搭档与对手为关键特征，更具真实性与低偏差。本文为不同场景设计精确算法与对应获胜策略，结合统计学习和计算智能探索多种游戏规划，并通过模拟数据定义获胜概率值。其为纸牌游戏智能决策提供了可复用的统计算法框架。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

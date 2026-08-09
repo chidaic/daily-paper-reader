@@ -1,0 +1,253 @@
+Title: No One Wins in Nuclear War: A Social Simulation of Military Decision-making
+
+URL Source: https://arxiv.org/pdf/2608.01868v1
+
+Published Time: Tue, 04 Aug 2026 02:01:31 GMT
+
+Number of Pages: 16
+
+Markdown Content:
+Published at the Social Sim’26 Workshop at COLM 2026 
+
+# No One Wins in Nuclear War 
+
+## A Social Simulation of Military Decision-making 
+
+Glenn Matlin 
+
+Isaac Song ∗ Anthony Wen-Ming Zang ∗
+
+Mark Riedl 
+
+College of Computing, Georgia Institute of Technology 
+
+Georgia Tech AI Safety Initiative MATS Program 
+
+## Abstract 
+
+WOPR is a social-simulation environment for studying how organizations make high-stakes decisions, built on a deterministic, replay-validated rules engine and using wargames as the vehicle. We instantiate it first with the published card game Nuclear War , traced against its published rules. We start with military decision-making because of its safety implications and because it needs further study, but the design is not specific to it: the decision-point contract that exposes the engine to agents is reusable across verifiable rule systems. Existing social-simulation work emphasizes per-sona fidelity and synthetic opinion, but lacks a verifiable rules engine with replay-checkable mechanics and private-channel negotiation. WOPR sup-plies that engine, and its contract makes every strategic choice an explicit agent decision. The method is agnostic to social-simulation frameworks; we adopt Concordia as the default harness for driving the game. On the same engine, WOPR layers a four-rung press ladder from silence to private single-recipient channels with structured commitments, and instantiates each faction as a collective command-and-control system rather than a single agent. We make all code, example configurations, and replay data publicly available at https://github.com/eilab-gt/wopr .
+
+## 1 Introduction 
+
+Recent social-simulation work targets persona fidelity, belief-behavior alignment and syn-thetic opinion formation (Park et al., 2023; Hu et al., 2026; Xu et al., 2025), but rarely places consequences as the object of study. We focus on war decisions : strategic, adversarial choices whose consequences must be checkable. To study them rigorously, simulations require a game engine that owns the rules, supplies the legal actions, and records every state transition. Any claimed outcome can be replayed and audited. We aim to supply tooling for organizational decision-making. No current social-simulation environment provides such an engine. The same gap appears in matrix and open-ended wargaming with language models, where a model or human adjudicates mechanics instead of a deterministic engine and no shared decision contract binds external agents (Lamparth et al., 2024; Hogan & Brennen, 2024). We present WOPR, a social-simulation and causal-analysis environment for studying organization-level, high-stakes decision-making. The environment is built on a deterministic, replay-validated rules engine and is intended for wargames more generally; we instantiate it first with Nuclear War , a published card game from Flying Buffalo, with implemented mechanics traced to source in a conformance matrix (Appendix D). Any player that satisfies 
+
+> *
+
+Equal contribution. 
+
+1arXiv:2608.01868v1 [cs.CY] 3 Aug 2026 Published at the Social Sim’26 Workshop at COLM 2026 the contract can act as an agent; the engine is the sole source of legal actions and records every transition, so any game can be replayed and audited. Our contributions are: • A simulation environment built on a replay-validated rules engine, instantiated on a real published game and verified against a 240-game sweep that confirms seeded outcomes are preserved across changes to the engine (Section 3). • A decision-point contract that turns every strategic choice into an explicit agent decision at a deterministic, rule-defined point in the turn (Appendix A). • A four-rung press ladder that exposes communication capacity as a variable on an unchanged engine, from silence through public multi-turn exchange to full press with private channels and structured commitments (Section 4). • Four structurally distinct faction command-and-control archetypes, each motivated by a real-world nuclear-use command system, all of which converge on one release action per decision on the same contract (Section 5). This is an early-stage paper: we present the environment, not a controlled study. 
+
+## 2 Background and Related Work 
+
+A first line of work pursues believable agent personas and the social dynamics they produce. Park et al. (2023) introduced generative agents that remember, reflect, and plan in a small-town sandbox. That work established the memory-and-retrieval architecture that much of the field now builds on. The Concordia library (Vezhnevets et al., 2023) generalizes that idea into a harness for generative agent-based models in physical, social, or digital spaces. A second line turns those agents into measurable benchmarks of social behavior. SimBench (Hu et al., 2026) aggregates diverse datasets to evaluate how faithfully language models simulate group-level human behavior. SocialMaze (Xu et al., 2025) probes social reasoning under information uncertainty and deception. NegotiationGym (Mangla et al., 2025) pro-vides a configurable multi-agent simulation for self-optimizing agents in negotiation. A related thread studies governance and collective choice, including cooperation over shared resources (Piatti et al., 2024) and elections in AI societies (Deshpande & Jin, 2025). What none of these lines supply, for our purposes, is a verifiable and replay-checkable engine for the rules that govern the simulated choices. A model or an adjudicator produces the consequences instead of auditable transitions. A separate line of work applies language models to wargaming, crisis simulation, and negotiation-heavy strategy games (Rivera et al., 2024; Hua et al., 2023; Meta Fundamental AI Research Diplomacy Team (FAIR) et al., 2022). Lamparth et al. (2024) compare expert humans and language models in a crisis-escalation wargame and report systematic be-havioral differences, including a tendency of models to escalate. Open-ended wargames with language models (Hogan & Brennen, 2024) automate qualitative wargaming with a multi-agent system. These lines share the same gap: the mechanics are not encoded in an engine whose tran-sitions an external observer can replay. Without that, researchers cannot replay the same game to check whether a claimed outcome follows from the stated rules, nor compare agents across communication conditions while holding the rules fixed. WOPR belongs to the benchmark and environment cluster exemplified by SimBench, So-cialMaze, NegotiationGym, and GOVSIM-ELECT. It differs along two axes. First, rule conformance: the rules are a deterministic implementation of a real published game, and any game is replay-checkable against them (Appendix D). Second, reproducibility: the decision-point contract fixes what an agent must satisfy, and the press ladder fixes the communication axis. Researchers can therefore compare behavior across agents and com-munication conditions on an unchanged rules engine. 2Published at the Social Sim’26 Workshop at COLM 2026 (a) Decision contract for one agent seat         
+
+> Rules engine legal actions, state
+> Agent
+> Observe Reason Act observe action
+> (b) How agent seats compose around the same game world
+> Single decider
+> Observe →Reason →Act
+> Faction (command & control)
+> Member O→R→AMember O→R→AMember O→R→AC2 aggregation rule Game world rules engine action observe one action observe
+
+Figure 1: (a) The decision-point contract for a single agent seat: the engine remains the sole and authoritative source of legal actions, with the agent observing, reasoning, and then acting by selecting among them. (b) How agent seats compose around the same game world: a single decider runs one observe-reason-act loop, while a faction may run one for each member, following it with a command-and-control rule to collapse the candidates into one concrete action. Both seats return one LegalAction per decision, so they are interchangeable in the same game. Draw Secrets Slide Propaganda Deterrents Place Attack Intercept Final strike End next player's turn 
+
+Figure 2: The turn-phase cursor shown as a deterministic cycle. Mandatory steps (green) advance automatically; genuine choices (amber) pause for an agent decision. On End, the cursor passes to the next player. 
+
+## 3 The WOPR Testbed 
+
+The engine exposes a small, fixed contract for agent decisions: it reports the current choice, applies the chosen action, and advances mandatory steps until the next genuine choice (Appendix A). Individual personas and multi-agent decision systems are both valid players; the latter need not be visible to the engine. Figure 1 shows how one or many agents compose against the same world; Section 5 instantiates that design as per-faction command systems. The engine alone supplies legal actions, and observation preserves hidden information. A turn is a sequence of rule-defined phases in which mandatory steps advance automatically and only genuine choices pause as agent decisions. This turns the rulebook’s turn structure into a deterministic state machine, so the order and kind of agent choices are fixed by the rules (Figure 2). The engine surfaces several strategic decision types (for example, card placement, launch targeting, and defender interception), each an agent decision on the same cursor. The phase inventory and decision catalog are in Appendix A. Because the engine is deterministic, researchers can replay any game and check it against the rules. We use replay validation as a fidelity method, anchored on one principle: purely structural changes to the engine must leave seeded outcomes unchanged, and any change to outcomes must be explicitly asserted. This is checked across a 240-game sweep (3 and 4 players, heuristic and random agents, seeds 1–60). Appendix B details the method. The paper-facing demo captures are collected in Appendix C: Figure 3 shows the replay workbench, and Figure 9 shows the same interface connected to a local live rules API. 
+
+## 4 The Press Ladder 
+
+The press ladder adds a communication axis to the same verified-rules engine: four rungs that increase what players may say while leaving the rules unchanged (Figure 10). Speech is trace-only, never mutates game state, and leaves the replay JSON identical across rungs. 3Published at the Social Sim’26 Workshop at COLM 2026 The same game can therefore run at different rungs (communication constraints), so any effect of what players may say is measured against a fixed engine. In no-press , agents observe only their own game state. In press-light , each living agent may make one public statement per round. In multi-turn public , each round runs a fixed 
+
+N communication passes in which every living agent speaks once per pass and sees the accumulating transcript. The fourth rung, full press , adds private single-recipient channels and structured com-mitments to the public exchange. A commitment is recorded as data and linked to later decisions, with no automatic violation detection, so it is an honor-system signal analyzed after the game. Per-pass option mechanics and the privacy rule are in Appendix E. 
+
+## 5 Collective Decision-Making: Factions as Command Systems 
+
+The contract of Section 3 treats any agent uniformly, and a player need not be a single persona. Each faction is in practice a small command-and-control (C2) system rather than a single agent. The C2 system maps its members’ inputs to one release action. The decision-point contract is unchanged; a faction is a composite agent that runs an internal deliberation and returns one action. Externally it is indistinguishable from a single agent, so the same engine and the same replays apply regardless of which C2 structure is active. We define four archetypes along one literature-supported axis: where release authority aggregates and whether fresh deliberation occurs at release (Figure 11). A sole-authority 
+
+faction concentrates authority in one executive who consults a staff but may ignore it. A 
+
+council must concur: members vote, a threshold binds the body, and the executive cannot override. A distributed faction pre-delegates release to several holders, any of whom may act. An automated faction removes fresh deliberation entirely: a policy armed in advance fires on a trigger. Table 3 (Appendix F) motivates each archetype with a real-world nuclear-use command system as its origin, not a fidelity target; the configuration each exposes is listed in Table 1. 
+
+## 6 Discussion and Future Work 
+
+Two study families follow directly. The first varies the press rung as the independent variable, holding the engine fixed, to measure communication effects. The second varies C2 archetype and personality parameters across faction command systems. Both require games auditable after the fact, which the engine’s recorded transitions and per-agent views provide. Beyond those, the decision-point contract is not specific to Nuclear War , so the environment extends to other verifiable rule systems. The scope here is deliberately narrow: there is no controlled comparison across rungs and no claim about how agents behave under the press ladder. Press modes are single-game and are not yet evaluated at scale; multi-game batch analysis is left to future work. Commitments are recorded but not enforced. Of the faction command systems in Section 5, all four archetypes are defined but only the council has a worked example. These limits motivate the early-stage framing: the contribution is the engine and the contract. 
+
+## 7 Conclusion 
+
+We presented WOPR, a simulation environment built on a replay-validated rules engine, with a decision-point contract, a press ladder, and collective faction command systems layered on that engine. We instantiated it here for one wargame; the environment targets organizational decision-making more generally. 4Published at the Social Sim’26 Workshop at COLM 2026 
+
+## References 
+
+Paolo Cotta-Ramusino and Maurizio Martellini. Nuclear safety, nuclear stability and nuclear strategy in Pakistan: A concise report of a visit by Landau Network – Centro Volta. Landau Network – Centro Volta report, 14 January 2002, 2002. URL https://pugwash.org/2002/01/14/ report-on-nuclear-safety-nuclear-stability-and-nuclear-strategy-in-pakistan/ .Anushka Deshpande and Zhijing Jin. GOVSIM-ELECT: Elections in AI societies. In 
+
+Social Sim’25 Workshop at COLM 2025 , 2025. URL https://openreview.net/forum?id= P0rd5xA4PJ . OpenReview P0rd5xA4PJ. Peter Feaver and Kenneth Geers. “When the Urgency of Time and Circumstances Clearly Does Not Permit”: Pre-delegation in nuclear and cyber scenarios. In George Perkovich and Ariel E. Levite (eds.), Understanding Cyber Conflict: 14 Analogies . Georgetown University Press, 2017. ISBN 978-1-62616-497-0. URL https://carnegieendowment.org/research/ 2017/10/understanding-cyber-conflict-14-analogies .Government of Pakistan. National Command Authority Act, 2010 (Act Vof 2010). Pakistan Code, 2010. URL https://pakistancode.gov.pk/english/ UY2FqaJw1-apaUY2Fqa-apaUY2Npa5pn-sg-jjjjjjjjjjjjj .David E. Hoffman. The Dead Hand: The Untold Story of the Cold War Arms Race and Its Dangerous Legacy . Doubleday, 2009. ISBN 978-0-385-52437-7. Daniel P. Hogan and Andrea Brennen. Open-ended wargames with large language models, 2024. URL https://arxiv.org/abs/2404.11446 .Tiancheng Hu, Joachim Baumann, Lorenzo Lupo, Nigel Collier, Dirk Hovy, and Paul R ¨ ottger. SimBench: Benchmarking the ability of large language models to simulate human behaviors. In The Fourteenth International Conference on Learning Representations (ICLR) , 2026. URL https://arxiv.org/abs/2510.17516 .Wenyue Hua, Lizhou Fan, Lingyao Li, Kai Mei, Jianchao Ji, Yingqiang Ge, Libby Hemphill, and Yongfeng Zhang. War and peace (WarAgent): Large language model-based multi-agent simulation of world wars, 2023. URL https://arxiv.org/abs/2311.17227 .Feroz Hassan Khan. Eating Grass: The Making of the Pakistani Bomb . Stanford University Press, 2012. ISBN 978-0-8047-7601-1. Max Lamparth, Anthony Corso, Jacob Ganz, Oriana Skylar Mastro, Jacquelyn Schneider, and Harold Trinkunas. Human vs. machine: Behavioral differences between expert humans and language models in wargame simulations. In Proceedings of the AAAI/ACM Conference on AI, Ethics, and Society (AIES) , pp. 807–817, 2024. doi: 10.1609/aies.v7i1.31681. URL https://arxiv.org/abs/2403.03407 .Jeffrey G. Lewis and Bruno Tertrais. The finger on the button: The authority to use nuclear weapons in nuclear-armed states. CNS Occasional Paper 45, James Martin Center for Non-proliferation Studies, 2019. URL https://nonproliferation.org/wp-content/uploads/ 2019/02/Finger-on-the-Nuclear-Button.pdf .Shashank Mangla, Chris Hokamp, Jack Boylan, Demian Gholipour Ghalandari, Yuuv Jauhari, Lauren Cassidy, and Oisin Duffy. NegotiationGym: Self-optimizing agents in a multi-agent social simulation environment. In Social Sim’25 Workshop at COLM 2025 , 2025. URL https://arxiv.org/abs/2510.04368 .Meta Fundamental AI Research Diplomacy Team (FAIR), Anton Bakhtin, Noam Brown, Emily Dinan, Gabriele Farina, Colin Flaherty, Daniel Fried, Andrew Goff, Jonathan Gray, Hengyuan Hu, et al. Human-level play in the game of Diplomacy by combining language models with strategic reasoning. Science , 378(6624):1067–1074, 2022. doi: 10.1126/science. ade9097. 5Published at the Social Sim’26 Workshop at COLM 2026 Joon Sung Park, Joseph C. O’Brien, Carrie J. Cai, Meredith Ringel Morris, Percy Liang, and Michael S. Bernstein. Generative agents: Interactive simulacra of human behavior. In 
+
+Proceedings of the 36th Annual ACM Symposium on User Interface Software and Technology (UIST) . ACM, 2023. doi: 10.1145/3586183.3606763. Giorgio Piatti, Zhijing Jin, Max Kleiman-Weiner, Bernhard Sch ¨ olkopf, Mrinmaya Sachan, and Rada Mihalcea. Cooperate or collapse: Emergence of sustainable cooperation in a society of LLM agents. In Advances in Neural Information Processing Systems 37 (NeurIPS) ,2024. URL https://arxiv.org/abs/2404.16698 .Juan-Pablo Rivera, Gabriel Mukobi, Anka Reuel, Max Lamparth, Chandler Smith, and Jacquelyn Schneider. Escalation risks from language models in military and diplomatic decision-making. In Proceedings of the ACM Conference on Fairness, Accountability, and Transparency (FAccT) , pp. 836–898, 2024. doi: 10.1145/3630106.3658942. URL https: //arxiv.org/abs/2401.03408 .Naeem Salik. Learning to Live with the Bomb: Pakistan: 1998-2016 . Oxford University Press, 2017. ISBN 978-0-19-940456-8. U.S. Department of State, Office of the Historian. National security council report, NSC 5602/1: Basic national security policy. Foreign Relations of the United States, 1955–1957, Vol. XIX, National Security Policy, Document 66, 1956. URL https://history.state.gov/ historicaldocuments/frus1955-57v19/d66 .Alexander Sasha Vezhnevets, John P. Agapiou, Avia Aharon, Ron Ziv, Jayd Matyas, Edgar A. Du´ e ˜ nez-Guzm´ an, William A. Cunningham, Simon Osindero, Danny Karmon, and Joel Z. Leibo. Generative agent-based modeling with actions grounded in physical, social, or digital space using Concordia, 2023. URL https://arxiv.org/abs/2312.03664 .Amy F. Woolf and Anya L. Fink. Authority to launch nuclear forces. Technical Re-port IF10521, Congressional Research Service, 2023. URL https://www.congress.gov/ crs-product/IF10521 .Zixiang Xu, Yanbo Wang, Yue Huang, Jiayi Ye, Haomin Zhuang, Zirui Song, Lang Gao, Chenxi Wang, Zhaorun Chen, Yujun Zhou, Sixian Li, Wang Pan, Yue Zhao, Jieyu Zhao, Xiangliang Zhang, and Xiuying Chen. SocialMaze: A benchmark for evaluating social reasoning in large language models, 2025. URL https://arxiv.org/abs/2505.23713 .Valery E. Yarynich. C3: Nuclear Command, Control Cooperation . Center for Defense Infor-mation, Washington, D.C., 2003. ISBN 978-1-932019-08-7. URL https://archive.org/ details/c3nuclearcommand00vale .
+
+## Ethics Statement 
+
+WOPR simulates a commercial card game. Nuclear War is a satirical product, and our engine encodes its rules, not a model of real nuclear command, deterrence, or crisis behavior. Agents make fictional in-game choices under those rules. We make no fidelity claim for the real-world command systems named as archetype origins in Table 3; they motivate the design and are not modeled. The work involves no human subjects and collects no human data. Agents are language-model programs whose only outputs are legal game actions and, under the press rungs, trace-only messages between in-game factions. Because speech is recorded but not enforced, any analysis of betrayal, defection, or escalation is a post-hoc read of recorded traces, not a behavioral claim about deployed systems. We discourage extrapolating in-game outcomes to real strategic decisions. 6Published at the Social Sim’26 Workshop at COLM 2026 
+
+## Reproducibility Statement 
+
+The engine is deterministic: given a seed and an agent configuration, a game produces one sequence of legal state transitions, and that sequence is the artifact other researchers can re-derive. Every game is recorded as a replay JSON that an independent validator checks against the rules, and the parity invariant (Appendix B) is enforced by a 240-game sweep run as part of the standard gate. All tooling runs through uv from the nuclear war/ directory. The full gate runs the pytest suite, requires clean ruff and pyright output, requires validate-rules to return ok: true ,and runs the 240-game replay sweep. Checked-in example configs cover each press rung, including a no-provider offline variant that runs the full-press pipeline without a live model. A replay workbench ( wopr visualizer ) loads replay JSON and the separate press-trace sidecar for visual inspection. Full commands are in Appendix H. All code, example configurations, and replay artifacts are publicly available at https:// github.com/eilab-gt/wopr .
+
+## LLM Usage 
+
+Following the COLM 2026 policy on the use of large language models, we disclose LLM use in this work beyond minor assistance. Language models were used in four roles. 
+
+Implementation. LLM coding agents wrote and revised substantial portions of the engine, the agent harness, and the surrounding tooling in the released repository. Every change was gated by the deterministic test suite, the rules validator, and the replay parity sweep, and each was reviewed by a human author before merging. 
+
+Experiments. LLM agents were used to drive experiment batches and the model-calibration sweeps, and to assist in summarizing the recorded decision and press traces. 
+
+Writing. LLM assistance was used in drafting and revising the prose of this manuscript. 
+
+Review. LLM tools were used for adversarial review of the implementation, for rules-fidelity audits against the published game rules, and for automated review of pull requests. This disclosure concerns tools used by the authors in producing the work. It is separate from the language-model agents that are the object of study, which act as players inside the environment and are described in the body of the paper. The authors reviewed all of the above and take full responsibility for the content, claims, and results of this paper. 
+
+## A Decision-Point Contract 
+
+The engine exposes three entry points, in src/nuclear war env/decision loop.py and 
+
+engine/decision.py :• pending decision(state) -> Decision | None : the current choice, or None at a terminal state. • apply decision(state, action) -> list[EngineEvent] : apply the chosen action, run mandatory steps until the next genuine choice, and store the resulting decision on the state. • observe(state, agent id) -> Observation : a structured per-agent view. The table loop passes this into choose .An agent is anything satisfying the protocol in agent protocol.py :
+
+class DecisionAgent(Protocol): def choose(self, observation: Observation, options: list[LegalAction]) -> LegalAction: ... 
+
+7Published at the Social Sim’26 Workshop at COLM 2026 A legacy adapter wraps older choose(actions) agents. Baseline agents live in baseline.py 
+
+(HeuristicAgent , RandomAgent ); the observation-driven ObservationHeuristicAgent is ex-posed as the decision heuristic seat. A turn is a sequence of phases on a DecisionCursor : draw, secrets, slide, propaganda, de-terrents, place, attack, intercept, final strike, end. Mandatory steps auto-advance; only genuine choices pause as a Decision . The eight strategic decision types are: PLACE ,
+
+LAUNCH TARGET , SECRET TARGET , PROPAGANDA TARGET , FINAL STRIKE TARGET , INTERCEPT (de-fender), MODIFY DETERRENT , and PASS .The engine presents option lists in a fixed order: weakest opponent first for launch targeting, highest population first for secret and propaganda targets, and eligible anti-missiles before decline for interception. Observation preserves hidden information: a defender is even offered an interception choice when it has no anti-missile, so the option list never reveals the defender’s hand. The baseline heuristic picks options[0] , reproducing the deterministic engine policy without consuming RNG draws. That behavior makes the parity invariant in Appendix B checkable. 
+
+## B Replay Validation Method 
+
+Given a seed, the deterministic engine can serialize every game to replay JSON and re-execute it. We use replay validation as a fidelity method with two anchors. 
+
+The parity invariant. Migrating a rule into the decision interface must preserve seeded table outcomes byte-for-byte when the change is structural. When a fidelity fix intentionally removes a model bug, affected seeded outcomes change; the test suite asserts that divergence explicitly. For example, fixing duplicate physical card ids changed a documented set of seeded outcomes; the pre-fix and post-fix divergences are both pinned by name. 
+
+The 240-game sweep. The end-to-end gate runs the table simulation across 3 and 4 players, the heuristic and random agents, and seeds 1–60: 
+
+for players in (3, 4): for agent in ("heuristic", "random"): for seed in range(1, 61): simulate --mode table --players players \ --seed seed --agent agent 
+
+A migration that preserves parity keeps all 240 outcomes identical to the prior head. The strongest check is a two-worktree diff. It runs baseline-agent outcomes at the prior head and current head, normalizes the JSON round-trip (tuples become lists), and diffs the results. The diff proves that structural refactors leave outcomes unchanged, or it identifies exactly which seeded outcomes changed for a documented fidelity fix. It does not depend on a single hardcoded golden. Random-agent outcomes diverge by design wherever targeting or interception is a real decision, because the random agent draws RNG to choose there. That divergence is asserted by name in test random table outcomes diverged from a0 rather than absorbed silently. 
+
+## C Demo Visualizations 
+
+These screenshots show the local replay workbench, batch analysis view, and live workbench in the paper theme. They are UI captures used for visual inspection and discussion, not additional experimental measurements. 8Published at the Social Sim’26 Workshop at COLM 2026 
+
+Figure 3: Replay workbench table view for a cards-enqueued event. 
+
+Figure 4: Population chart and event timeline for the same replay. At turn 0 the top line is player 0, the middle player 2, and the bottom player 1. 9Published at the Social Sim’26 Workshop at COLM 2026 
+
+Figure 5: Decision-trace inspector showing the selected action context. The trace shown records a malformed (non-JSON) model response recovered after one retry. 
+
+Figure 6: Conversation inspector for a full-press game. The public statements shown carry structured stand down commitments for round 3. 10 Published at the Social Sim’26 Workshop at COLM 2026 
+
+Figure 7: Forensic inspector exposing replay JSON for audit. 
+
+Figure 8: Batch analysis view for the bundled three-run sample. 11 Published at the Social Sim’26 Workshop at COLM 2026 
+
+Figure 9: Live workbench connected to the local rules API. 12 Published at the Social Sim’26 Workshop at COLM 2026 Press ladder 
+
+> communication capacity no-press observation only press-light one public message per round multi-turn public N passes, full transcript
+> full press private channels + commitments
+
+Figure 10: The press ladder as a communication-capacity axis on an unchanged rules engine. Rungs increase what players may say to one another, from silence to private single-recipient channels with structured commitments. Speech never mutates game state. 
+
+## D Rule Conformance 
+
+We do not claim a one-to-one reproduction of the published rulebook. Instead the engine keeps a rule conformance matrix that traces each implemented mechanic to a source, and a rules-trace mechanism that maps a full deterministic table replay onto source-linked rule-step ids and reports gaps. 
+
+Traced mechanics. The matrix records the active edition variant, the base-card registry, and the implemented effects for warheads, delivery systems, propaganda, anti-missiles, secrets, the fallout spinner, final strike, and the postal equipment families. Each implemented effect is bound to a registry record and a source note. The rules-trace summary maps every replay action and event in one deterministic full table game to a source-mapped rule step and reports no full-game trace gaps. 
+
+Tracked limits. The matrix also records simplifications we have not resolved. Two matter for reproducibility. First, postal equipment launch resolution (space platforms, cruise missiles, killer satellites, Space Shuttle attacks, and the MX missile’s per-segment rolls) uses the base two-d10 fallout spinner where the postal rules specify a separate six-sided Radioactive Fallout die; the success and failure families are preserved, but the launch-failure probability differs. Second, exact card text, expansion deck composition, alternate editions, and postal press adjudication are not verified. These are tracked simplifications, not source-backed fidelity choices. 
+
+## E Press-Ladder Mechanics 
+
+Across all rungs, press is trace-only: it never mutates WOPR game state, and the replay JSON is byte-identical to a no-press game. The four rungs differ in what an agent may say and to whom (Figure 10). 
+
+Per-rung option sets. No-press offers no communication options. Press-light gives each living agent one public message per round, which the system injects into agents’ memory for the next round. Multi-turn public runs N fixed passes per round. Each living agent speaks once per pass and sees the accumulating transcript. Full press adds three choices per pass: decline , speak (public), and whisper (private, to one named recipient). When an 13 Published at the Social Sim’26 Workshop at COLM 2026 Command-and-control archetypes                  
+
+> each faction is an internal C2 system →one outward action
+> Sole-Authority Council Distributed Automated Exec
+> Advisor Advisor m1 m2 m3 Holder Holder Holder Trigger executive decides body must concur any holder releases policy fi res on trigger
+
+Figure 11: Four command-and-control archetypes a faction may instantiate, distinguished by where release authority aggregates. Sole-authority places authority in one executive who may ignore advisors. A council must concur and binds its members. Distributed release lets any authorized holder act. Automated release fires a pre-armed policy on a trigger without fresh deliberation. All four return one action per decision, so they are directly comparable as seats in the same game despite their structural differences. Real-world command systems cited as archetype origins in Table 3. agent chooses whisper , it specifies a to recipient; the parser extracts the recipient and an optional commitment from the model’s JSON response. 
+
+The visibility rule. A privacy filter visible to(player, transcript) determines what each agent sees. A public message is visible to all living players. A private whisper is visible only to its sender and its single recipient. For each message, the recorded prior messages 
+
+stores the filtered view that the speaker saw; a separate omniscient sidecar records every message in full for the researcher. 
+
+Commitment schema. A speaker may attach a structured commitment to a public state-ment or a private whisper. The schema is: 
+
+{"kind": "stand_down", "target_round": 3, # optional "notes": "details"} # optional 
+
+The system records commitments as data and links them to later decisions through 
+
+linked decision traces when applicable. The system performs no automatic violation detection; researchers analyze violations against the post-game artifact. 
+
+Parse robustness. A recoverable-once retry policy handles malformed model output (invalid JSON or an invalid recipient). In strict mode, repeated parse failures fail the run hard rather than silently degrading the transcript. 
+
+## F Faction Command-and-Control: Detail 
+
+A FactionDecisionAgent builds a composite faction with one subordinate client per member. At each decision, the faction collects one vote per member, applies the archetype’s aggrega-tion rule, and returns one LegalAction . The engine sees a single action. The agent records the deliberation in last deliberation : the vote list, the rule applied, and the selected action. 
+
+Aggregation rules. Each archetype maps its members’ votes to one action via a pure aggregation function. We demonstrate the binding case: councils. 
+
+Sole-authority returns the executive’s action, or defers to the first advisor when a deference 
+
+parameter is saturated. Advisors cannot bind the executive. 
+
+Council accumulates per-member weights per action id. The highest-scoring action wins if its share of total weight meets a threshold ; otherwise the faction defaults to the 14 Published at the Social Sim’26 Workshop at COLM 2026 first-cast vote. Ties break deterministically toward the earliest-cast action, so a seeded game replays exactly. 
+
+Distributed treats any non-default (non-pass) vote as a release authorization. If at least a quorum casts distinct release actions, the first release action wins; otherwise the faction holds. 
+
+Automated returns the policy action id set when the policy was armed; it reads no mem-ber votes at release time. 
+
+Configurable parameters. The structure fixes what is configurable; Table 1 lists the param-eter each archetype exposes.             
+
+> Archetype Parameter Effect sole-authority deference 0: ignore staff; 1: defer to first advisor council weights per-member vote weight council threshold share of weight to win (default 0.5) distributed quorum distinct releases required to act automated policy action id required pre-armed action (no default)
+
+Table 1: Per-archetype configuration. All are seat-config fields named under the faction c2 
+
+agent in the experiment config. 
+
+Worked trace: a council release decision. Table 2 shows one LAUNCH TARGET decision by a three-member council (archetype council , threshold 0.34). The faction observes a two-opponent endgame; members disagree. Member rationales are illustrative prose matched to the recorded votes. The vote ids, aggregation rule, and returned action come from a real last deliberation record. Because no option clears the threshold, the rule returns 
+
+threshold not met default . The faction then defaults to the first-cast vote, which becomes the single action recorded by the engine.            
+
+> Member Vote Stated rationale (illustrative) land-command target p2 p2 is depleted; finish them strategic-advisor pass conserve; p3 is the larger threat air-command target p3 p3 holds more population
+> Rule: threshold not met default
+> Faction action: target p2 (first-cast vote)
+
+Table 2: One council deliberation over a LAUNCH TARGET decision. Votes and the aggregation outcome are from a real last deliberation ; rationale prose is illustrative. The faction returns one action to the engine, linked to the replay like any agent action. 
+
+Literature origins. Table 3 maps each archetype to a real nuclear-use command system that motivates it. These entries provide origin and motivation, not fidelity targets; the simulation does not claim to model any named state. 
+
+Parity. A faction is a DecisionAgent that returns one LegalAction per choose call. The engine’s decision and apply path is unchanged: the table runner calls choose , validates the single returned action against the legal options, and applies it. Because the faction is a pure aggregation layer over deterministic member agents, same-seed determinism is preserved and is covered by test faction replay determinism (two runs of one seeded faction game produce an identical replay). Deliberation lives in last deliberation on the agent instance, not in the trace sidecar, so the trace schema (v4) is untouched. 15 Published at the Social Sim’26 Workshop at COLM 2026       
+
+> Archetype Real-world origin (cited) sole-authority US formal presidential release authority 1(Woolf & Fink, 2023) council Pakistan NCA, a civil-military council authority (Government of Pakistan, 2010); supporting accounts (Khan, 2012; Salik, 2017; Cotta-Ramusino & Martellini, 2002), comparative survey (Lewis & Tertrais, 2019) 2
+> distributed Contingent pre-delegation of use authority (Feaver & Geers, 2017) automated Semi-automated retaliatory assurance (Soviet Perimeter) (Hoff-man, 2009; Yarynich, 2003) 3
+
+Table 3: Each archetype is grounded in a real nuclear-use command structure, cited as its origin. The four archetypes are analytic abstractions inspired by recurring C2 design dimensions in the literature; they do not map one-to-one to the automaticity, devolution, delegation, and pre-delegation mechanisms of Feaver & Geers (2017). Permissive action links are a separate negative-control, use-denial mechanism and are not modeled here as a release-authority archetype. Notes: 1Under normal procedure; “sole authority” does not exclude historical advance-authorization (U.S. Department of State, Office of the Historian, 1956). 2Public primary sources establish the NCA’s statutory structure, not a real-time launch voting rule. 3Human activation and a human launch decision remained part of the known accounts; not a fully autonomous launch authority. 
+
+## G Concordia Connector Architecture 
+
+The Concordia integration has a one-way dependency: the connector package (nuclear war concordia ) imports from Concordia, but WOPR never does. The two systems touch through one optional press hook . This design keeps WOPR a standalone rules engine that any harness can drive, and keeps the press ladder as a layer the engine can ignore. The harness seats Concordia-style agents (identity, role, objective) at the WOPR table and routes their decisions through the decision-point contract (Appendix A). A generic OpenAI-compatible HTTP client produces press, rather than native Concordia press machinery, so the press producer remains replaceable. Because the press layer writes only to a sidecar and never mutates WOPR replay JSON, the active press rung does not affect engine parity or replay validation. 
+
+## H Reproducibility 
+
+Commands below assume uv from the nuclear war/ directory. 
+
+Running a full-press game. The full-press configuration is the checked-in ex-ample docs/examples/concordia full press together demo.json (four concordia http 
+
+seats, full press mode, two passes, five turns). The offline no-provider variant 
+
+concordia full press style demo.json uses concordia first legal seats. It produces decline-only traces and proves the pipeline runs without a live model. 
+
+Other rungs. Press-light and multi-turn public have analogous example configs. The press modes are single-game ( concordia-demo ); there is no batch runner for press. 
+
+Visualizer. The wopr visualizer replay workbench loads replay JSON plus the separate press-trace sidecar and renders the Conversation tab. Private whispers render distinctly (“speaker whispered to recipient”) and commitment badges appear when present. 16
