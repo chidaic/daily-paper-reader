@@ -1,0 +1,453 @@
+Title: Humans Are More Diverse: Frontier LLMs Show Extreme Policies in Idealised AI Development Races
+
+URL Source: https://arxiv.org/pdf/2608.01193v1
+
+Published Time: Tue, 04 Aug 2026 01:19:22 GMT
+
+Number of Pages: 16
+
+Markdown Content:
+# Humans Are More Diverse: Frontier LLMs Show Extreme Policies in Idealised AI Development Races 
+
+## Phu-Hoa Pham ∗
+
+Ho Chi Minh City University of Science Vietnam National University Ho Chi Minh City (VNU-HCM) Ho Chi Minh City, Vietnam 23122030@student.hcmus.edu.vn 
+
+## Duy-Minh Dao-Sy ∗
+
+Ho Chi Minh City University of Science Vietnam National University Ho Chi Minh City (VNU-HCM) Ho Chi Minh City, Vietnam 23122041@student.hcmus.edu.vn 
+
+## Trung-Kiet Huynh ∗
+
+Ho Chi Minh City University of Science Vietnam National University Ho Chi Minh City (VNU-HCM) Ho Chi Minh City, Vietnam 23122039@student.hcmus.edu.vn 
+
+## Phu-Quy Nguyen-Lam ∗
+
+Ho Chi Minh City University of Science Vietnam National University Ho Chi Minh City (VNU-HCM) Ho Chi Minh City, Vietnam 23122048@student.hcmus.edu.vn 
+
+## Chi-Nguyen Tran ∗
+
+Ho Chi Minh City University of Science Vietnam National University Ho Chi Minh City (VNU-HCM) Ho Chi Minh City, Vietnam 23122044@student.hcmus.edu.vn 
+
+## Minh-Trung Le ∗
+
+Ho Chi Minh City University of Technology (HCMUT) Vietnam National University Ho Chi Minh City (VNU-HCM) Ho Chi Minh City, Vietnam trung.leminh@hcmut.edu.vn 
+
+## Phong-Hao Le ∗
+
+Ho Chi Minh City University of Technology (HCMUT) Vietnam National University Ho Chi Minh City (VNU-HCM) Ho Chi Minh City, Vietnam hao.lephong@hcmut.edu.vn 
+
+## Dinh-Nam Nguyen ∗
+
+Ho Chi Minh City University of Technology (HCMUT) Vietnam National University Ho Chi Minh City (VNU-HCM) Ho Chi Minh City, Vietnam nam.nguyenkhmt@hcmut.edu.vn 
+
+## Thien-Ky Nguyen-Dong ∗
+
+Ho Chi Minh City University of Technology (HCMUT) Vietnam National University Ho Chi Minh City (VNU-HCM) Ho Chi Minh City, Vietnam ky.nguyendongthien@hcmut.edu.vn 
+
+## Elias Fernández Domingos 
+
+Vrije Universiteit Brussel Université Libre de Bruxelles Brussels, Belgium elias.fernandez.domingos@vub.be 
+
+## Le Hong Trang †
+
+Ho Chi Minh City University of Technology (HCMUT) Vietnam National University Ho Chi Minh City (VNU-HCM) Ho Chi Minh City, Vietnam lhtrang@hcmut.edu.vn 
+
+## The Anh Han †
+
+School of Computing, Engineering and Digital Technologies Center for Digital Innovation, Teesside University Middlesbrough, United Kingdom T.Han@tees.ac.uk 
+
+## ABSTRACT 
+
+An AI development race creates a multi-agent safety dilemma. Each company can develop slowly and safely, or move faster while tak-ing a risk that may remove its final reward. We use this repeated game to study strategic safety behaviour among large language model (LLM) agents in races with two to five players. However, a valid action does not show that an agent understands the game. We therefore place an audit gate before behavioural interpretation. We first verify the game engine, then test rule recall, state tracking, payoff calculation, and stability under different but equivalent task descriptions. We then compare LLM action sequences with an evo-lutionary game-theory benchmark and published human data, and explore differences across models, risk conditions, personas, and two- to five-player races. The audit shows that strong rule recall can coexist with weak state tracking and expected-payoff calcu-lation. Providing verified arithmetic and changing the response 
+
+> ∗These authors contributed equally to this work.
+> †Corresponding authors.
+
+representation can also change later actions, even when the game rules stay fixed. Across seven tested model endpoints, aggregate rates hide large differences in action sequences, responses to op-ponents, and responses to race position. Patterns across the tested three- to five-player races are also model-specific rather than a single effect of adding competitors. These results show why multi-agent AI-race simulations need validity checks and trajectory-level analysis before their outputs are described as strategic, human-like, or safety-aware. Our findings are exploratory and apply only to the tested models, prompts, and decoding settings. 
+
+## KEYWORDS 
+
+Lsarge language model agents, AI development races, multi-agent systems, repeated games, strategic decision-making, AI safety, prompt sensitivity, task validity arXiv:2608.01193v1 [cs.AI] 2 Aug 2026 1 INTRODUCTION 
+
+Competition over advanced artificial intelligence can create a safety dilemma. Each company may benefit from moving faster, but safety work can slow it down when its rivals do not follow the same standard [5, 6, 10]. An AI development race is a simple game that represents this tension. In each round, every player chooses be-tween slower Safe development and faster Unsafe development [11, 17]. The game is idealised: it does not model a real AI com-pany in full. Its value is control. It lets us test how choices change with competition, relative progress, and the earlier actions of other players. Human experiments show why the order of actions matters. In the two-player study of Domingos and Han [14], the preregistered comparison between the two higher private-risk conditions found no clear difference. Exploratory analyses instead linked later Unsafe choices to three parts of the race history: the opponent’s previous action, whether the player was ahead or behind, and the player’s first action. We call this path dependence : an early choice or event changes the later path of the interaction. A useful human–LLM comparison must therefore examine full action sequences, which we call trajectories , rather than only the overall Unsafe rate. Large language models (LLMs) can act as language-based players in this game. They are already studied as simulated participants, decision-making agents, and game-playing systems [1, 2, 4]. Yet their use creates a measurement problem. A model may return a correctly formatted action without correctly tracking the state or calculating the payoff. In a repeated game, one such action changes the next state and can affect every later round. A plausible final trajectory is therefore not, by itself, evidence that the model under-stood the game. Prompt-based evaluation is itself sensitive to presentation choices that do not necessarily change task meaning. Meaning-preserving few-shot formatting changes can produce large, model-dependent performance spreads [28]; reordering answer options can change multiple-choice predictions [25]; and order and response-token identity can create distinct selection biases [30]. Controlled stud-ies also report answer changes under output-format requests and atomic whitespace variants [27]. Persona prompts should therefore be treated as experimental interventions rather than generic per-formance improvements: across a large factual-question evaluation, their average benefit was absent or slightly negative and the best persona was difficult to select reliably [34]. These findings motivate our separate audits of wording, answer order, arithmetic disclosure, narrative framing, and opaque response mapping. Game-specific evaluations reveal the same validity threat in strategic choice. In Stag Hunt and Prisoner’s Dilemma presenta-tions, reversing the order of action labels and changing their pay-off assignments altered choice frequencies, with model-specific positional and payoff biases [18]. Across procedurally generated Prisoner’s Dilemma vignettes, decisions varied substantially with topic, actor, and world framing despite a common underlying game structure [26]. More generally, performance across 11 counterfac-tual tasks declined consistently when familiar default mappings were replaced by explicitly specified alternatives [31]. These results support our decision to test action-code mappings and narrative skins independently, and to avoid treating one familiar presentation as a neutral measurement instrument. Reproducible game-based frameworks provide a complemen-tary way to study these effects. FAIRGAME standardises repeated-game experiments across models, languages, and persona condi-tions, and supports comparison with game-theoretic predictions [8]. Later work extends this approach with a payoff-scaled Pris-oner’s Dilemma, a three-player Public Goods Game, and supervised recognition of canonical strategies from action trajectories [19]. A related payoff-scaling study finds that cooperation and inferred strategy distributions vary across models, languages, and incentive magnitudes, and can move in the opposite direction from its evo-lutionary benchmark [20]. These studies motivate our use of full trajectories and theoretical benchmarks, while our audit asks the separate question of whether an agent can correctly track the race that produces those trajectories. Behavioural evaluations that focus on action frequencies or strategic outcomes can obscure this distinction unless task validity and representation robustness are established separately. An LLM may produce an aggregate unsafe rate similar to that of human participants while relying on incorrect state computations, prompt-specific heuristics, or unstable action encodings. Conversely, two checkpoints with similar aggregate action rates may exhibit substan-tially different responses to opponent behaviour, relative position, or early-round events. Aggregate behavioural similarity is therefore insufficient evidence that an LLM understands the task, reproduces human decision dynamics, or exhibits a general safety preference [7]. We address this problem with an audit-first evaluation : we check that the game and the agent’s use of its rules are valid before we interpret the agent’s behaviour. We reproduce the two-player game studied by Domingos and Han [14] and add a compatible multi-player version based on Han et al. [17]. All agents in a round see the same state before anyone acts. Their choices remain hidden until every agent has responded, so the choices are simultaneous. The game engine, not the LLM, then calculates progress, payoffs, the end of the race, prizes, ties, and setbacks. We save every prompt, response, parsed action, retry, state change, configuration, random seed, and final outcome. The audit has four levels. First, mechanical validity means that the game engine applies the stated rules correctly. Second, task validity means that an agent can recall the rules, rebuild the current state, apply a state change, and calculate the final result. Third, 
+
+representation robustness means that choices remain stable when wording or response labels change but the game itself does not. Fourth, we compare valid trajectories with published human pat-terns. The human data are a reference for observable behaviour. They are not a target that an LLM must copy, and LLM outputs are not treated as replacements for human participants. That boundary is supported by mixed evidence from LLM-based behavioural simulation. Aher et al. reproduced qualitative findings in three of four experiments but found a hyper-accuracy distortion in the fourth [1]. Repeated-game work further shows that a model may predict an opponent’s pattern without immediately acting in accordance with that prediction, while eliciting the prediction before action can improve coordination and score [2]. Accordingly, neither a plausible trajectory nor a verbal strategy report is treated here as sufficient evidence of task comprehension. Distributional agreement is also stricter than matching a treat-ment mean. Dynamic market simulations have recovered broad differences between positive- and negative-feedback conditions while exhibiting less strategy heterogeneity than human partici-pants [13]. Accordingly, our human comparison reports trajectory archetypes and within-population diversity alongside aggregate unsafe rates. This emphasis on distributions rather than plausible prose is shared by broader evaluation work. CogBench phenotypes models with behavioural metrics from seven cognitive experiments [12], while SocioBench reports substantial individual- and subgroup-level gaps across large international survey data [29]. Persona-based simulation can reproduce linguistic patterns without recovering the full interaction of human perceptions [15], and specialised survey simulators still struggle on unseen questions [9]. Position papers consequently frame LLM social simulation as most defensible for pilot and exploratory use unless it is validated against the relevant population [3]. Strategic-game evidence is similarly heterogeneous: repeated Prisoner’s Dilemma policies are not fully consistent across parameter and framing changes [24]; human-like heuristics can be applied more rigidly than by human participants [33]; multi-round agents may cooperate instead of converging to the predicted Nash equilibrium [32]; and real multi-turn action sequences remain difficult to reproduce from prompts alone [21]. We organise the paper around three questions about strategic behaviour in an AI race: 
+
+• RQ1 - Strategic behaviour in two-player races: How do agents respond to risk, opponent history, relative progress, and early choices, compared with game-theory and human benchmarks? 
+
+• RQ2 - Multi-agent race dynamics: Across races with three to five agents, how is Unsafe play associated with rank, model, persona, and tested group size? 
+
+• RQ3 - Validity and strategic robustness: Can agents track the game well enough for strategic interpretation, and are choices stable across equivalent task presentations? The main insight is that the tested LLMs do not express one common strategic policy. In two-player races, models with similar aggregate Unsafe rates can respond differently to risk, opponent history, and relative progress. In three- to five-player races, the asso-ciation between rank and Unsafe play can change with both model and persona, while aggregate behaviour does not move monotoni-cally with group size. These are exploratory multi-agent patterns, not an identified causal effect of adding one more player. The valid-ity audit also sets an important boundary: rule recall can coexist with incorrect state tracking, and an equivalent representation of the same game can change later actions. The novelty lies in connecting four views of one AI race. We provide an auditable mechanism for two- and multi-player races; compare LLM play with game-theory and human benchmarks; ex-tend the analysis to three to five agents; and use a validity gate before strategic interpretation. Together, these views show model-specific response rules and multi-agent patterns that aggregate Unsafe rates hide, while keeping diagnostic and confirmatory evi-dence separate. Each reported behavioural conclusion is scoped to its tested checkpoint, prompt version, decoding contract, experimental con-figuration, and run period. The labels safe and unsafe denote actions within the experimental game and should not be inter-preted as direct measurements of general LLM safety, subjective risk preference, or suitability for autonomous deployment. 
+
+## 2 PRELIMINARIES 
+
+We first specify the two-player game reproduced from Domingos and Han [14] (§2.1), then its generalisation to 𝑁 > 2 companies (§2.2). Every quantity that is not restated in §2.2, namely the horizon, prize split, and private-risk formula, carries over unchanged from the two-player game; only the stage payoff changes shape (Figure 1). 
+
+## 2.1 Two-player game 
+
+Two companies 𝑖 ∈ { 1, 2} play a repeated race. In every round 
+
+𝑡 , both companies simultaneously choose an action 𝑎 𝑡 𝑖 ∈ { 𝑆, 𝑈 }
+
+(Safe, Unsafe) and commit to it before either learns the other’s choice for that round; only once both actions are committed does the round resolve (Figure 1a). Resolution has two parts. First, Safe advances the company’s cumulative progress by 𝜎 (𝑆 ) = 1.0 and Unsafe advances it by 𝜎 (𝑈 ) = 1.5, so Unsafe always closes the race faster; progress accumulates as 𝑃 𝑡 𝑖 = 𝑃 𝑡 −1 
+
+> 𝑖
+
++ 𝜎 (𝑎 𝑡 𝑖 ). Second, the round pays a stage payoff 𝜋 𝑡 𝑖 = 𝜋 (𝑎 𝑡 𝑖 , 𝑎 𝑡  
+
+> −𝑖
+
+), read off the fixed matrix (own action by row, opponent action by column, Figure 1b): 
+
+𝜋 =
+
+1.0 0.62.4 2.0
+
+
+
+. (1) Unsafe strictly dominates Safe at the stage-game level (row 2 ex-ceeds row 1 in both columns): the only cost of Unsafe development enters later, through accumulated private risk rather than through the round payoff itself. The race lasts a minimum of 5 rounds; after every completed round from round 5 onward it terminates with probability 0 .2, giving an expected horizon E[𝑇 ] = 9. Neither company is ever told the horizon in advance, so a company can never condition its action on knowing the current round is the last one (Figure 1a). Termination then resolves in two further steps. First, the company with the higher cumulative progress 𝑃 𝑇 𝑖 is declared the winner of a prize 𝐵 = 100; if progress is exactly tied, the two companies split it 50 /50. Second, and only for that winner or tied winners, an accumulated private setback risk is drawn: 
+
+𝑞 𝑖 (𝑇 ) = 𝑝 max  
+
+> 𝑟
+
+· 𝑛 𝑈 𝑖 (𝑇 )
+
+𝑇 , 𝑞 𝑖 (𝑇 ) ∈ [ 0, 1], 𝑝 max  
+
+> 𝑟
+
+∈ { 0.10 , 0.60 , 0.90 }, (2) where 𝑛 𝑈 𝑖 (𝑇 ) counts company 𝑖 ’s Unsafe choices over the whole race and 𝑝 max  
+
+> 𝑟
+
+is a treatment-level constant, assigned once per race, that we vary across three risk levels. If the draw against 𝑞 𝑖 (𝑇 ) fails, that company’s entire race payoff, every stage payoff it accumulated plus the prize, is zeroed; if it succeeds, the company keeps both. A company that ends behind is never subject to this draw at all: it keeps its accumulated stage payoffs regardless of how much Unsafe it played, but receives no share of the prize (Figure 1a). This asymmetry, in which risk is built by both companies but realised Round k Round k’ 1.0 0.6 2.4 2.0 +1.5 +1 pay  cost (c) increase risk SAFE UNSAFE Private risk N-Player 2-Player . . . .a. b. c. Figure 1: Overview of the AI-race mechanism shared by the two-player and 𝑁 -player games. (a) Each round, every company advances along the track by choosing Safe (green, +1 progress, pays cost 𝑐 ) or Unsafe (red, +1.5 progress, increases private setback risk); the race ends after a hidden number of rounds, at which point terminal prize 𝐵 is awarded to the progress leader or divided among tied leaders. (b) The two-player stage-payoff matrix: own Safe/opponent Safe pays 1.0, own Safe/opponent Unsafe pays 0.6, own Unsafe/opponent Safe pays 2.4, and own Unsafe/opponent Unsafe pays 2.0. (c) The 𝑁 -player stage-payoff rule: if 𝑘 of 𝑁 companies choose Safe, 𝐷 = 𝑘 + 𝑠 (𝑁 − 𝑘 ); each Safe-choosing company earns 𝑏 /𝐷 − 𝑐 and each Unsafe-choosing company earns 𝑠𝑏 /𝐷 , where 𝑏 is the per-round benefit and is distinct from terminal prize 𝐵 .
+
+only against whoever is ahead, is what makes Unsafe development a genuine gamble rather than a free speed advantage. 
+
+## 2.2 𝑁 -player game 
+
+The 𝑁 -player game keeps every element of §2.1 unchanged (simul-taneous sealed actions, progress increments 𝜎 (𝑆 ) = 1.0/ 𝜎 (𝑈 ) = 1.5, the minimum-5-round hidden horizon, terminal prize 𝐵 = 100, and the risk formula, Equation 2), but is played by 𝑁 ≥ 2 companies indexed by 𝑖 ∈ { 1, . . . , 𝑁 } instead of exactly two, and the prize at round 𝑇 splits evenly among however many companies share the highest progress rather than only two. The engine supports 
+
+𝑁 ∈ { 2, 3, 4, 5}. The two-player condition reproduces the original human-study mechanism, while the current multiplayer experi-ments cover matched conditions with 𝑁 ∈ { 3, 4, 5} (Figure 1c). With more than two companies there is no single opponent to index a matrix against, so Equation 1 generalises to the 𝑁 -player stage-payoff rule of Han et al. [17] (their Appendix B), evaluated at 𝑘 𝑡 ∈ { 0, 1, . . . , 𝑁 }, the number of companies (out of 𝑁 ) choosing Safe in round 𝑡 . Therefore, every Safe-choosing company earns 
+
+𝜋 Safe (𝑘 𝑡 ) = 𝑏 𝑘 𝑡 + 𝑠 (𝑁 − 𝑘 𝑡 ) − 𝑐, (3) and every Unsafe-choosing company earns 
+
+𝜋 Unsafe (𝑘 𝑡 ) = 𝑠 · 𝑏 𝑘 𝑡 + 𝑠 (𝑁 − 𝑘 𝑡 ) , (4) with cost 𝑐 = 1, per-round benefit 𝑏 = 4, and speed 𝑠 = 1.5 fixed across all group sizes (the per-round benefit 𝑏 is distinct from ter-minal prize 𝐵 , which is paid once, at the end of the race, not every round). Both payoffs depend on the group’s joint action counts, 𝑘 𝑡 
+
+and 𝑁 − 𝑘 𝑡 , not on any single rival’s action, which is the structural difference from the two-player game: Thus, stage payoffs depend on the number of rivals choosing each action, not on their identities. 
+
+## 2.3 Game-theoretic benchmark 
+
+The game contains two opposing incentives. In a single round, Unsafe strictly dominates Safe: it gives more progress and a higher stage payoff against either action. Across the full race, however, Unsafe choices increase the setback risk for a winner or tied winner. The best action can therefore depend on the risk condition, earlier actions, and the expected response of other players. This is the strategic tension that the LLM agents must navigate. We use four simple strategies as a theory benchmark: Always Safe (AS), Always Unsafe (AU), Conditional Safe (CS), which starts Safe and then copies the opponent, and Conditional Unsafe (CAS), which starts Unsafe and then copies the opponent. In the recon-structed finite-population evolutionary model of Domingos and Han [14], the most common strategy changes from AU at 𝑝 max  
+
+> 𝑟
+
+=
+
+0.10, to CAS at 0 .60, and to CS at 0 .90. Thus, the theory does not pre-dict one fixed amount of Unsafe play. It predicts a risk-dependent shift between unconditional speed, an aggressive opening, and con-ditional restraint. We use this as a qualitative benchmark, not as a fitted model of LLM output: prompted self-play trajectories are not samples from an evolutionary population. 
+
+## 3 EXPERIMENTAL DESIGN AND EVIDENCE POLICY 3.1 Agent protocol and units of analysis 
+
+At each decision, an agent receives a versioned prompt containing the current round, assigned maximum private risk, the publicly disclosed state, and the preceding revealed action profile when 𝑡 > 1. Same-round decisions are sealed: every response is obtained from the same pre-action snapshot before the engine resolves actions, progress, payoffs, and risk. The environment, rather than generated text or arithmetic, determines all transitions. Raw response, parsed action, retry count, parser status, pre-turn state, terminal record, configuration, and seed allocation are retained for every decision. The main behavioural outcome is whether an agent chooses Un-safe. The race, not the individual decision, is the main independent experimental unit. Decisions from the same race depend on earlier states and therefore cannot be treated as separate random samples. We report the number of races, trajectories, and decisions. Where possible, uncertainty is grouped by race or matched repetition. A 
+
+parse failure occurs when a response does not follow the required action format. Because the resulting fallback action changes later states, one parse failure marks the whole race as contaminated. Non -Persona  Risk-Aware Persona  Coop/Adv Persona lv. 1 lv. 2 lv. 3 lv. 4 lv. 5 lv. 6 Cooperative Adversarial Figure 2: Overview of the three persona-related framing families used to describe each company’s executive. The canonical baseline contains no persona sentence; a separate neutral placebo uses a length-matched neutral sentence. The risk-aware family contains six levels adapted from the Eckel–Grossman gamble scale. The cooperative/adversarial family frames each seat as believing rival firms do better through mutual restraint or only at each other’s expense. These are prompt conditions, not measured psychological traits. 
+
+## 3.2 Evidence strata and admission 
+
+We separate mechanical validity, task validity, diagnostic pilots, and confirmatory evidence. A diagnostic pilot is a small exploratory test used to find possible effects or failures. It does not estimate a stable population effect. A confirmatory study tests a question under a plan fixed before its results are inspected. A result enters that stronger evidence level only when the protocol, model identifier, prompt and configuration hashes, completed-race count, and exclusion rules were all fixed and recorded. The primary audit uses protocol ai-race-game-understanding-v2: 41 atomic probes spanning rule recall, one-stage payoffs, state re-construction, state transition, terminal scoring, and expected payoff. Numeric probes vary direct wording, paraphrase, and calculator dis-closure; categorical probes also reverse answer order. Strict output-format compliance and semantic correctness are scored separately. A paired behavioural diagnostic compares the canonical prompt with a deterministic four-row decision card that discloses the focal agent’s immediate payoff, progress, and private-risk consequences for each action profile. The card does not reveal the opponent’s move or the stopping horizon. We also vary the persona-related framing assigned to each com-pany’s executive. The canonical baseline contains no persona sen-tence, while a separate neutral placebo uses a length-matched neu-tral description. The risk-aware family contains six levels adapted from the Eckel–Grossman gamble scale, and the cooperative/adversarial family frames the executive as favouring either mutual restraint or zero-sum competition. These are prompt conditions, not measured psychological traits (Figure 2). The context extension keeps the game rules fixed but presents the game through eight different stories, which we call narrative skins . It also replaces Safe and Unsafe with the opaque response codes 𝑃 and 𝑄 . We study this in three ways. A paired first-round comparison tests the same initial state. A fixed-state replay asks for a new action at a previously recorded state without allowing that answer to change later states. It therefore measures the direct effect of the prompt at that state. A live trajectory lets each answer change the next state, so direct prompt effects and later feedback can build on each other. A separate comprehension test acts as an admission gate. If that gate fails, a behavioural difference shows prompt-conditioned output, not informed optimisation of the game. 
+
+Table 1: Evidence strata used in this paper. Pilot modules are never pooled with confirmatory inference.                           
+
+> Module Races Decisions Use Qwen task audit 685 –validity audit Calculator diagnostic 60 1,116 paired diagnostic Context pilot ( 𝑇 =0)768 13,680 robustness diagnos-tic Fixed-state replay 1,536 –direct prompt diag-nostic Five-checkpoint baseline 150 2,790 descriptive only OpenAI 𝑁 =3–5base-line 180 6,120 exploratory only
+
+## 4 RESULTS 
+
+We report the validity gate first because every strategic claim de-pends on it. We then answer RQ1 by comparing two-player LLM trajectories with the evolutionary and human benchmarks, includ-ing responses to risk, opponent history, and relative progress. We answer RQ2 with the three- to five-player pilots, focusing on rank and persona. Representation diagnostics answer RQ3 and define where the behavioural interpretation must stop. The Appendix contains full model tables, predictive diagnostics, and robustness checks. 
+
+## 4.1 Validity gate: can agents follow the race? 
+
+We first ask whether the audited model can carry out the rules it receives. The admitted audit contains 685 fixed-seed outputs from Qwen2.5-7B-Instruct, and all planned outputs were retained. As Table 2 shows, the model recalls rules and looks up a one-round payoff almost perfectly. It performs much worse when it must track the changing state. It follows the requested one-line format in only 32.1% of outputs, although the frozen semantic parser can recover a value from every response. Showing a verified calculator result also raises accuracy from 52.1% to 75.6%. Thus, knowing a rule is not the same as using it over time. This gap between local rule recall and reliable execution of the evolving game state is the lens through which every subsequent behavioural result in this section should be read: an agent can answer questions about the rules correctly while still failing to track the state those rules act on. Full probe-by-probe breakdowns are given in Appendix A. Table 2: Semantic accuracy on the 685-probe task audit (Qwen2.5-7B-Instruct), by probe subtask.         
+
+> Subtask Accuracy Rule recall 97.4% One-stage payoff lookup 100.0% Terminal scoring 53.3% State reconstruction 37.0% State transition 22.2% Expected-payoff calculation 16.7% Overall (all subtasks pooled) 59.1%
+
+Table 3: Disclosed-arithmetic diagnostic: canonical vs. decision-card conditions (30 races, 558 decisions each, zero parse failures).          
+
+> Condition unsafe rate 95% CI Mean payoff Canonical 52.0% 48.0–55.9% 42.77 Decision card 60.8% 51.2–67.9% 42.21
+
+## 4.2 Strategic robustness under equivalent presentations 
+
+We next ask whether sampled behaviour is stable under manipula-tions that leave the underlying game mechanics unchanged. 
+
+Disclosed arithmetic (clean diagnostic). The canonical and decision-card conditions each completed 30 races and 558 decisions with zero parse failures; matched risk-by-repetition cells had identical realised horizons. The decision card discloses the focal agent’s im-mediate payoff, progress, and private-risk consequences for each action profile without revealing the opponent’s move or the stop-ping horizon. Table 3 compares the two conditions. Only 3.3% of paired first-round decisions changed, so most divergence appeared later in the race histories, after feedback had accumulated. These values show that supplying current-round arithmetic changes sam-pled behaviour; they do not by themselves identify an internal world model or a confirmatory causal effect. 
+
+Opaque symbolic mapping (confounded, comprehension gate failed). 
+
+A stronger and more concerning form of sensitivity appears when the game is described through an opaque code rather than the words safe/unsafe. The temperature-zero context pilot completed 768 live races (13,680 decisions) and a separate fixed-state replay of 1,536 context–mapping cells, with no final parse failures. All paired non-control trajectories agreed at round one; divergence appeared only after feedback, with the largest live full-trajectory contrast against the abstract control at 34.0 percentage points and the largest fixed-state contrast at 16.7 points. When the symbol 𝑃 denoted safe, six context contrasts diverged from the abstract control; when 𝑄 
+
+denoted safe instead, every corresponding contrast was zero, even though the two mappings describe the identical game. We flag this result rather than treat it as confirmatory evidence for two reasons: the mapping was balanced by repetition parity rather than fully crossed within seed blocks, and, more importantly, the associated comprehension gate failed outright, with state-update accuracy at 12.5% and terminal-scoring accuracy at 17.2%. We therefore report this as representation-sensitive observed behaviour under fixed me-chanics , not as evidence that the model understood or optimised the race. Taken together, these two diagnostics show that plausible-looking action sequences can shift substantially under manipulations that a correct world model would treat as irrelevant, which is precisely why the comprehension check of §4.1 is a prerequisite for inter-preting any of the behavioural results that follow. 
+
+## 4.3 Game theory versus prompted race behaviour 
+
+The evolutionary benchmark predicts a sharp change with private risk. At its main reference setting, predicted Unsafe play is 99.2%, 98.0%, and 1.9% in the low-, medium-, and high-risk conditions. This pattern follows the shift from AU to CAS and then CS described in §2.3. The temperature-zero Qwen context pilot does not reproduce this phase change. In the technology framing it produces 0% Unsafe play at all three risk levels, while other narrative skins under the same mechanics range from 0% to about 33%. This is a boundary rather than a failed equilibrium test. The evolutionary model describes strategy frequencies under selection and mutation; the LLM experiment samples prompted self-play decisions. Their units are different. The comparison nevertheless gives a useful game-theoretic insight: holding the payoff mecha-nism fixed does not guarantee the behavioural pattern predicted by the reduced strategy model. For the audited checkpoint, task repre-sentation can be more visible in observed play than the theoretical risk transition. 
+
+## 4.4 Two-player strategic diversity: humans and LLMs 
+
+We compare model trajectories with the human benchmark of Domingos and Han [14] directly on the literal first-five-round action-and-position histories, without first reducing them to hand-designed summary statistics. The comparison includes 420 tra-jectories from the seven tested models’ two-player baseline (60 per model: GPT-5-nano, GPT-5.4-nano, Gemini-3-Flash, Gemini-3.1-Flash-Lite, Gemini-3.5-Flash-Lite, Claude Opus 5, and Claude Sonnet 5) and 340 complete human trajectories from the public de-identified dataset (one incomplete human record excluded); pooled 
+
+𝑁 = 760. Each player is represented by 15 raw features, 
+
+(own 1.. 5, opp 1.. 5, gap 1.. 5),
+
+own action, opponent action, and own-minus-opponent progress gap entering each of rounds 1–5 – the recorded state and actions themselves, rather than derived quantities such as unsafe rate or retaliation. Mean unsafe play over rounds 1–5 is lowest for GPT-5-nano (17%), followed by Claude Sonnet 5 (22%), Claude Opus 5 (33%), GPT-5.4-nano (54%), and humans (56%); the Gemini models range from 73% (Gemini-3-Flash) to 83% (Gemini-3.1-Flash-Lite). No single aggregate rate characterises the tested models, and closeness to the human mean is, on its own, uninformative about anything beyond that one number. Figure 3: Player-level mean unsafe rate over rounds 1–5 per population, the numbers reported in the paragraph above. 
+
+Figure 4: Composition of the eleven HDBSCAN-derived raw-action-and- position archetypes. The two largest are a mutual-first-round-safe archetype ( 𝑛 = 138 ) and a mutual-round-2-unsafe archetype ( 𝑛 = 124 ); 98 of 760 trajectories (12.9%) are unclustered. 
+
+We next group similar trajectories without giving the algorithm predefined strategy labels. HDBSCAN is a density-based clustering method: it finds dense groups and leaves unusual cases unassigned. We call each resulting group a behavioural archetype , meaning a common action-and-position pattern, not a mental type. With the fixed settings (minimum cluster size 15, minimum samples 6, excess-of-mass selection), HDBSCAN identifies eleven archetypes and leaves 98 of 760 trajectories unclustered (12.9%). All eleven archetypes occur among the human participants, whereas GPT-5-nano concentrates 95% of its trajectories into three predominantly-safe archetypes and 52% of GPT-5.4-nano’s trajectories are not assigned to any dense archetype at all, the highest unclustered share of any population. Claude Opus 5 and Claude Sonnet 5 fall almost entirely (100% and 93%, respectively) into two archetypes that both open with a mutual-safe first round. The embedding in Figure 5 makes the difference between be-havioural level and behavioural diversity visible: GPT-5-nano is concentrated in the low-unsafe region, Gemini-3.1-Flash- Lite is concentrated near the high-unsafe region, and human trajectories 
+
+Figure 5: t-SNE visualisation of the pooled 15-dimensional raw action-and-position space. Each panel highlights one population while rendering the other populations in grey; the human sample is shown in the larger left panel, with the seven LLM checkpoints arranged smaller to its right. 
+
+Figure 6: The same t-SNE coordinates as Figure 5, recoloured by each player’s own mean unsafe rate over rounds 1–5 (green = safe, red = unsafe) instead of population identity. Left: all 760 trajectories pooled. Right: the same colouring broken out per population. 
+
+occupy a much broader portion of the observed space, overlapping several model-specific regions. Recolouring the identical coordinates by outcome instead of identity (Figure 6) shows the embedding separates almost entirely by unsafe rate: a solid-green region, a solid-red region, and a mixed band in between, with almost no red points inside the green region or vice versa. The dense archetypes in Figure 4 sit inside the solid-coloured ends of this gradient, while the more diffuse, harder-to-cluster trajectories sit in the mixed middle band: the raw-sequence archetypes HDBSCAN finds are not arbitrary with respect to game outcome. We next test whether five rounds contain enough information to identify the population that produced a trajectory. A small decision tree reaches 38 .9% ± 3.3 accuracy under five-fold cross-validation. Random guessing among eight balanced classes would give 12.5%. Population identity is therefore visible, but the groups still overlap. The tree correctly identifies 96.7% of Gemini-3.1-Flash-Lite trajec-tories. For GPT-5-nano, this value is 63.3%, and 31.7% are instead labelled Claude Opus 5 because both often start with mutual Safe play. Only 33.2% of human trajectories are labelled human. This is the lowest value among the populations. Human actions overlap with several model patterns because the human sample is internally diverse, not because it follows one middle policy. The round-by-round profile in Figure 7 gives a complementary view to the aggregate rate: the human profile lies close to the pooled eight-population mean on nearly every own-, opponent-, and gap-action axis, whereas GPT-5-nano and Claude Sonnet 5 are displaced Figure 7: Mean round-by-round profile for each population, on the 14 features shared across every trajectory (own and opponent action at rounds 1–5, plus progress gap entering rounds 2–5; the round-1 gap is omitted because every race starts at gap 0 by construction and is therefore uninforma-tive). Solid lines show the population mean; the dotted line is the pooled mean across all eight populations. 
+
+toward safe, the two Gemini Flash-Lite checkpoints are displaced toward unsafe, and GPT-5.4-nano, Claude Opus 5, and Gemini-3-Flash fall between these extremes. Humans therefore do not oc-cupy a single isolated behavioural corner: their aggregate profile is comparatively central, while their individual trajectories span the regions occupied by several different models. This heterogeneity is not merely a visual impression. Fitting three nested logistic models to the pooled neutral-baseline pilot (risk-only, LLM-identity-only, and LLM-identity-by-risk interac-tion) shows that allowing the risk-response profile to vary by LLM improves fit substantially beyond LLM-specific intercepts alone, 
+
+𝜒 2 (10 ) = 354 .7, 𝑝 ≈ 4 × 10 −70 ,
+
+with several risk-by-LLM cells approaching complete separation (a convergence warning in the interaction model means the exact statistic should be read as approximate). The fit covers the five-model neutral baseline only; the two Claude models are not in it. Neither caveat changes the conclusion: no single risk-response curve represents all five, so cross-model differences are differences in shape , not only in level. This distributional picture is visible directly in the raw unsafe-rate data as well (Figure 8): human participant-level unsafe rates spread across nearly the entire available range at each risk level, whereas each tested model occupies a comparatively narrow, model-specific band: GPT-5-nano concentrated near the low-unsafe end, the Gemini models toward the high-unsafe end, and GPT-5.4-nano in a more intermediate, diffuse region. Consequently, similarity between one model’s aggregate unsafe rate and the human mean does not imply that the model reproduces the underlying human distribution. A more limited correspondence appears in the relationship be-tween race outcome and behaviour: human winners play unsafe 16.0 percentage points more often than human losers, versus an approximately 20-point pooled descriptive difference among the Original baseline checkpoints                                                       
+
+> Human (n=98) GPT-5 nano (n=40) GPT-5.4 nano (n=40) Gemini 3 Flash (n=40)
+> 020 40 60 80 100 10 0
+> 10 1
+> 10 2
+> 10 3
+> Smoothed density (%/10-pt bin, log scale)
+> Risk cap = 10%
+> 020 40 60 80 100 10 0
+> 10 1
+> 10 2
+> 10 3
+> Risk cap = 60%
+> 020 40 60 80 100 10 0
+> 10 1
+> 10 2
+> 10 3
+> Risk cap = 90%
+> Lite / newer-generation checkpoints
+> Human (n=98) Gemini 3.1 Flash Lite (n=20) Gemini 3.5 Flash Lite (n=20) GPT-5.6 Luna (n=40) GPT-5.6 Terra (n=40)
+> 020 40 60 80 100 10 0
+> 10 1
+> 10 2
+> 10 3
+> Smoothed density (%/10-pt bin, log scale)
+> 020 40 60 80 100 10 0
+> 10 1
+> 10 2
+> 10 3
+> 020 40 60 80 100 10 0
+> 10 1
+> 10 2
+> 10 3
+> Claude (Bedrock)
+> Human (n=98) Claude Opus 5 (n=40) Claude Sonnet 5 (n=40)
+> 020 40 60 80 100
+> Unsafe rate (%)
+> 10 0
+> 10 1
+> 10 2
+> 10 3
+> Smoothed density (%/10-pt bin, log scale)
+> 020 40 60 80 100
+> Unsafe rate (%)
+> 10 0
+> 10 1
+> 10 2
+> 10 3
+> 020 40 60 80 100
+> Unsafe rate (%)
+> 10 0
+> 10 1
+> 10 2
+> 10 3
+> Humans are spread across the full range; every LLM checkpoint is concentrated (smoothed, overlapping density curves, split into three checkpoint families so each panel stays readable)
+
+Figure 8: Smoothed distribution of player-level unsafe rates by risk cap (columns) and model family (rows), with the human benchmark repeated in every panel as the shaded reference. Density is log-scaled: model peaks span close to three orders of magnitude, and a linear axis would flatten all but the tallest. The middle row includes GPT-5.6 Luna and Terra, outside the seven-model roster. 
+
+tested models. This agreement is confined to one marginal associa-tion and does not extend to the full dynamic structure: the human estimates show a precise positive association with the opponent’s previous action and a negative association with relative race posi-tion, whereas several model estimates are weak, reversed in sign, or not reliably estimable because their action distributions sit near floor or ceiling. Differences in sign, magnitude, and precision across models confirm that agreement in an aggregate action rate does not imply agreement in the underlying behavioural dynamics. Finally, we ask whether models reproduce the diversity of hu-man strategies, not just an aggregate rate. This uses the full human sample of 341 participants rather than the 340-trajectory subset used in the HDBSCAN comparison above, since none of the five descriptors below requires a complete five-round export. Using five trajectory-level descriptors computed from these 341 human par-ticipants (overall unsafe rate, opponent reciprocity, position sensi-tivity, own-action autocorrelation, first-round action), 𝑘 -means at 
+
+𝑘 = 4 yields four reference archetypes ( cautious-starter , aggressive-starter/reciprocator , reciprocal catch-up , and persister ) with a modest silhouette score (0.24–0.32 across 𝑘 ∈ { 3, 4, 5}), so this partition should be read as a noisy exploratory organisation of the human data rather than a definitive taxonomy. Projecting each model’s trajectories into this human-only reference space, using human means and standard deviations throughout, gives Table 4. Table 4: Behavioural-archetype coverage: share of each popu-lation’s neutral-lane player-races assigned to each human-fit archetype. Human row is the reference clustering ( 𝑛 =341 ); each LLM row projects that checkpoint’s own no-persona player-races ( 𝑛 =60 –120 , see Table 1) into the same space. This table draws on the full nine-checkpoint cross-model pilot and therefore includes GPT-5.6 Luna and Terra, which are not part of the seven-model HDBSCAN/t-SNE/decision-tree comparison earlier in this subsection.                                             
+
+> Population Cautious Aggr./recip. Catch-up Persister Human (reference) 39.0% 49.9% 5.6% 5.6% GPT-5-nano 99.2% 0% 0% 0.8% GPT-5.4-nano 51.7% 33.3% 3.3% 11.7% Gemini-3-Flash 1.7% 78.3% 20.0% 0% Gemini-3.1-Flash-Lite 0% 83.3% 16.7% 0% Gemini-3.5-Flash-Lite 0% 76.7% 23.3% 0% GPT-5.6 Luna 3.3% 72.5% 24.2% 0% GPT-5.6 Terra 14.2% 59.2% 26.7% 0% Claude Opus 5 66.7% 33.3% 0% 0% Claude Sonnet 5 77.5% 20.8% 1.7% 0%
+
+GPT-5-nano is effectively a point mass in the cautious-starter archetype (99.2%): its low aggregate rate reflects a highly com-pressed behavioural distribution, not broad coverage of cautious human behaviour. The three Gemini models are similarly com-pressed into the aggressive-starter and catch-up archetypes and contribute essentially no cautious or persister trajectories, and GPT-5.6 Luna and Terra show the same pattern. Claude Opus 5 and Claude Sonnet 5 also concentrate in the cautious-starter archetype (66.7% and 77.5%, respectively), but, unlike GPT-5-nano, split the re-mainder with the aggressive-starter/reciprocator archetype (33.3% and 20.8%) rather than collapsing to a near-total point mass. GPT-5.4-nano is the only model represented in all four archetypes, con-sistent with its diffuse behavioural profile elsewhere in this section, but its cluster proportions still differ from the human distribution: proximity to a centroid is a resemblance measure, not evidence of psychological or mechanistic equivalence. Human-like behaviour is therefore multidimensional: a model can resemble one human archetype while failing to reproduce the diversity observed across human participants. 
+
+## 4.5 Observable drivers of unsafe play 
+
+Aggregate action rates do not show how agents respond to a chang-ing race. We therefore test how five pre-decision variables predict Unsafe play: the player’s previous action, the opponent’s previ-ous action, progress gap, assigned private risk, and round number. These are predictive associations, not causal effects or evidence about internal reasoning. The full random- forest and SHAP analy-sis is reported in Appendix A.5. The human data are organised mainly by the opponent’s previous action, which accounts for 48% of the fitted model’s total SHAP magnitude. The tested LLMs do not share one pattern. Progress gap is largest for GPT-5-nano (44%), the assigned risk condition is largest for two Gemini checkpoints (35–40%), and opponent history is largest for Claude Sonnet 5 (51%). GPT-5.4-nano has no single strong predictor. These results support a game-theoretic point: two populations can have similar Unsafe rates while following different 
+
+Figure 9: unsafe rate by relative position (Leader / Middle / Trailer) within each assigned persona band, for GPT-5-nano (left) and GPT-5.4-nano (right). Bars marked † in Tables 5–6 have 𝑛 < 20 and should be read as noisy pilot estimates rather than stable rates. Table 5: unsafe rate by persona band and relative position, GPT-5-nano. 𝑛 is the number of decisions in the cell; CI is the 95% confidence interval on the unsafe rate.                                                     
+
+> Persona band Position 𝑛 unsafe rate 95% CI Baseline Leader 1460 19.7% 17.7–21.8% Baseline Middle 1065 30.4% 27.7–33.3% Baseline Trailer 175 33.1% 26.6–40.4% Low (R1–R2) Leader 1094 5.9% 4.6–7.4% Low (R1–R2) Middle 198 14.6% 10.4–20.2% Low (R1–R2) Trailer 58 12.1% 6.0–22.9% Mid (R3–R4) Leader 649 40.7% 37.0–44.5% Mid (R3–R4) Middle 451 38.1% 33.8–42.7% Mid (R3–R4) Trailer 250 32.8% 27.3–38.8% High (R5–R6) Leader 702 63.2% 59.6–66.7% High (R5–R6) Middle 339 54.3% 49.0–59.5% High (R5–R6) Trailer 309 50.2% 44.6–55.7%
+
+response rules. Appendix A.5 reports model fit, confounding, and floor/ceiling limits. 
+
+## 4.6 Multi-agent dynamics: position in 𝑁 -player races 
+
+The two-player analysis uses the opponent’s previous action and the exact progress gap. In races with more players, we use a sim-pler question: does an agent act differently when it is a Leader, in the Middle, or a Trailer? We compare these positions within four persona bands. Baseline adds no persona sentence; Low combines R1–R2; Mid combines R3–R4; and High combines R5–R6. A Leader has the highest progress or is tied for it before the current round. A Trailer is strictly last. Middle covers every other position. These labels describe observed states; the experiment did not randomly assign rank. For GPT-5-nano, position matters, but its effect flips sign across persona bands (Table 5). At Baseline and Low, unsafe rate rises as rank falls, the qualitative direction predicted by the human “falling behind” account of Domingos and Han [14]: the company that is behind takes on more risk. At Mid and High, the ordering reverses, with Leaders now more unsafe than Trailers. We do not read this Table 6: unsafe rate by persona band and relative position, GPT-5.4-nano. Cells marked † have 𝑛 < 20 .                                                    
+
+> Persona band Position 𝑛 unsafe rate 95% CI Baseline Leader 1649 83.6% 81.8–85.3% Baseline Middle 703 84.8% 81.9–87.2% Baseline Trailer 348 86.5% 82.5–89.7% Low (R1–R2) Leader 1073 3.3% 2.4–4.5% Low (R1–R2) Middle 268 1.5% 0.6–3.8% Low (R1–R2) Trailer 9†0.0% 0.0–29.9% Mid (R3–R4) Leader 1164 95.7% 94.4–96.7% Mid (R3–R4) Middle 70 88.6% 79.0–94.1% Mid (R3–R4) Trailer 116 91.4% 84.9–95.3% High (R5–R6) Leader 1328 99.3% 98.7–99.6% High (R5–R6) Middle 4†100.0% 51.0–100.0% High (R5–R6) Trailer 18 †100.0% 82.4–100.0%
+
+reversal as evidence that being in the lead causes more risk-taking under more risk-seeking framing. Because rank is measured imme-diately before the action rather than assigned independently of it, a company’s own tendency to play unsafe and its current rank are entangled: a company that has already played unsafe more often is, mechanically, more likely to have accumulated the extra progress that makes it the Leader ( 𝜎 (unsafe ) = 1.5 vs. 𝜎 (safe ) = 1.0). Un-der Mid/High framing, where the model plays unsafe often enough for this composition effect to dominate, the Leader group is dis-proportionately populated by already-unsafe-leaning trajectories, which would produce exactly this reversal without any causal effect of being ahead on the next choice. Distinguishing this selection story from a genuine effect of rank would require conditioning on, or randomising, prior own-action history within rank; we flag this as a concrete next step rather than resolve it here. GPT-5.4-nano shows a starkly different pattern: the assigned persona band dominates and rank contributes little on top of it (Table 6). unsafe play is uniformly low at Low and uniformly near-ceiling at Mid and High, with Leader, Middle, and Trailer tracking each other closely within each band, including at Baseline itself, where all three ranks already sit in a similar range before any persona is applied. This is consistent with the model’s SHAP profile (Table 11), where progress gap contributes only 33% of predictive importance against a more evenly spread set of features, so relative standing is not the dominant driver of its unsafe choices. The three cells marked † in Table 6 have confidence intervals too wide for their point estimates to be treated as stable; they arise because so few races reach a Trailer or Middle rank at all once GPT-5.4-nano is pushed toward near-uniform unsafe play under Mid/High framing, which itself thins out the population of races with any surviving rank diversity to measure. Read together, the two models show that “does position matter” has no single answer even within one model family: GPT-5-nano displays a falling-behind-consistent pattern at Baseline/Low fram-ing that reverses under Mid/High framing in a way better explained by selection than by a causal effect of rank, while GPT-5.4-nano’s behaviour is essentially saturated by the assigned persona band regardless of rank. In both cases, the assigned persona, not relative standing, is the primary explanatory variable; position is, at most, a secondary modulator whose apparent effect depends on which framing a company was given. The bands here are the prompt-embedded risk persona examined next in §4.7, not the mechanism’s private-risk parameter 𝑝 max  
+
+> 𝑟
+
+(Eq. 2), and each band pools over 𝑝 max 
+
+> 𝑟
+
+rather than fixing it. The distinction matters: the persona is an instruction re-assigned per race, 𝑝 max  
+
+> 𝑟
+
+a property of the game. This section therefore shows rank effects modulated by persona; sep-arating that from the mechanical risk treatment needs a design crossing the two, which this pilot lacks. The broader 𝑁 ∈ { 3, 4, 5}
+
+self-play scope (180 pilot races, 6,120 decisions; aggregate unsafe rates of 16.2%, 26.8%, 21.9% for GPT-5-nano and 83.7%, 87.0%, 84.0% for GPT-5.4-nano at 𝑁 = 3, 4, 5) is reported in Appendix A; because changing 𝑁 also changes the stage-payoff table, opponent count, and prompt length, we do not treat that comparison as an isolated group-size effect. 
+
+## 4.7 Measured human risk and prompted LLM personas 
+
+Human risk preference and an LLM risk persona are different vari-ables. Human participants completed an incentivised risk task be-fore the race. Their score has almost no direct relation with later Unsafe play ( 𝑟 = −0.015, 𝑝 = 0.79, 𝑛 = 341). By contrast, an LLM persona is an instruction placed inside every race prompt. Across models with a six-level sweep, moving from the lowest to the high-est risk persona raises Unsafe play by 50.5 to 98.3 percentage points. The contrast supports a behavioural, not psychological, interpre-tation. The human measure describes a person before play; the LLM label actively changes the decision context. A risk persona therefore acts as a strong policy prompt, not as evidence that the model has a stable risk preference. Full curves, model-level estimates, and scope limits are reported in Appendix A.4. 
+
+## 5 DISCUSSION AND LIMITATIONS 
+
+The main lesson is not that an audited model “understands the game.” The evidence supports a narrower claim. The model can recall rules and find local payoffs, yet still make regular errors when it updates the state or calculates expected payoff. Its action sequences also change when verified arithmetic or an equivalent response representation is provided. Reports of LLM behaviour in repeated games should therefore show comprehension accuracy and parser health together with action rates. The human experiment gives us an external behavioural refer-ence. It is not a target that an LLM should reproduce. When an LLM matches a human association, the two populations behave similarly on that measured part of this task. This does not show that they use the same reasoning or psychology. A mismatch also does not make the human result invalid. Model, persona, and multiplayer comparisons have the same boundary: each applies only to the tested endpoint, prompt, decoding setting, provider route, and run period. Four limitations shape what we can claim. First, the context-to-symbol mapping changes with repetition parity, so mapping and repetition are not fully separated. Second, the related comprehen-sion gate failed. We can describe the result as prompt-sensitive output, but not as informed game optimisation. Third, fixed-state replay measures one decision per saved state, while live play mea-sures dependent decisions along a changing trajectory; their effect sizes are not directly interchangeable. Fourth, the multiplayer pilots are small, come from mixed sources, and do not include a matched two-player condition. Changing the number of players also changes the payoff table, opponent count, and prompt length. We therefore cannot identify a pure group- size effect. More broadly, this game models only a private speed–safety trade- off. It does not model the full structure of frontier AI labs, collective harm, regulation, communication, or uncertainty about real capabilities. 
+
+## 6 CONCLUSION 
+
+Strategic safety behaviour in these AI races is not a fixed property of an LLM. In two-player races, models differ in their responses to risk, opponents, and relative progress. Across three to five agents, position patterns vary by model and persona and are not monotone in group size. Yet rule recall does not ensure state tracking, and equivalent presentations can change later play. Multi-agent AI-race studies should therefore report dynamic response rules and validity, not only aggregate Unsafe rates. These findings remain exploratory until matched confirmatory runs pass the same gates. 
+
+## ACKNOWLEDGEMENTS 
+
+T.A.H. acknowledges travel and accommodation support from the Ho Chi Minh City University of Technology (HCMUT), VNUHCM (Adjunct Professorship scheme HCMUT-VNUHCM). L.H.T acknowl-edges the Ho Chi Minh City University of Technology (HCMUT), VNUHCM for supporting this study. TAH is supported by EPSRC (grant EP/Y00857X/1). 
+
+## A EXTENDED RESULTS AND ROBUSTNESS CHECKS 
+
+This appendix collects the material referenced from Section 4 as supporting rather than extending the main claims: the full task-validity probe breakdown (§A.1), the human-benchmark replication check (§A.2), the persona comparison (§A.4), the predictive analysis (§A.5), the HDBSCAN sensitivity check (§ ?? ), and the full two-player and 𝑁 -player descriptive results (§A.6, §A.7). 
+
+## A.1 Task-validity probe battery: full breakdown 
+
+Table 7 reports the full breakdown behind the single semantic-accuracy figure (59.1%) quoted in §4.1. The admitted task audit used Qwen2.5-7B-Instruct under protocol ai-race-game-understanding-v2 :41 atomic probes spanning rule recall, one-stage payoffs, state re-construction, state transition, terminal scoring, and expected payoff, with 685 planned fixed-seed probe outputs, all retained. Numeric probes varied direct wording, paraphrase, and calculator disclosure; categorical probes additionally reversed answer order. Two further contrasts qualify these category-level numbers. First, semantic accuracy without a disclosed calculator result was 52.1%, versus 75.6% when the verified result was shown – the same clean-diagnostic comparison discussed behaviourally in §4.2, here mea-sured at the level of task comprehension rather than sampled action. Second, answer-order reversal did not change correctness on the tested categorical probes, whereas paraphrasing the same question 
+
+Table 7: Task-validity probe accuracy by category, Qwen2.5-7B-Instruct, protocol ai-race-game-understanding-v2 (𝑛 =
+
+685 retained probe outputs).          
+
+> Probe category Accuracy Rule recall 97.4% One-stage payoff lookup 100.0% State reconstruction 37.0% State transition 22.2% Terminal scoring 53.3% Expected-payoff calculation 16.7%
+> Overall semantic accuracy 59.1% Strict output-format compliance 32.1%
+
+changed correctness on some state-reconstruction and terminal-scoring items; this separates repeatability under a fixed decoding contract from robustness of the underlying measurement , and is part of why we treat state-level probes as less reliable than rule-recall probes even before looking at any behavioural result. At the level of individual paired probe items, none of the 7 order-reversal pairs (spanning rule recall and terminal scoring) flipped either the raw parsed answer or scored correctness (0/7). Of the 41 paraphrase pairs, 12 flipped the raw parsed answer, but only 3 changed scored correctness: state_own_risk (state reconstruc-tion), and terminal_opp_final and terminal_winner_setback 
+
+(both terminal scoring). The remaining 9 answer-only flips left correctness unchanged because both paraphrase variants were al-ready scored the same way (both correct or both incorrect). This is the exact pairwise count behind the qualitative claim above: paraphrase-induced correctness changes concentrate in state- and terminal-level items, not rule-recall items. 
+
+## A.2 Human-benchmark replication check 
+
+Before comparing model-generated behaviour with the human benchmark of Domingos and Han [14] in §4.4, we first validated our reconstruction of that benchmark by refitting its published dynamic specification on the same public de-identified data. The reconstructed estimation sample contains 2,888 round-level ob-servations, 172 race-pair clusters, and 338 participants. Table 8 compares the refit coefficients against the values reported in the original study. 
+
+Table 8: Replication of Domingos and Han [14]’s dynamic specification on the public de-identified human data. “Recon-structed” is our refit; “Original” is the coefficient reported in the source study.           
+
+> Term Reconstructed Original Opponent’s previous action 0.606 0.607 Player’s progress gap −0.295 −0.296 First-round action 0.217 0.217 Player’s own previous action −0.195 −0.193
+
+## A.3 Claim-scoped citation audit 
+
+Table 9 records both the supported use of each cited study and the nearest excluded overclaim. These evidence boundaries do not turn the diagnostic pilots in this paper into confirmatory results. The reconstruction reproduces the original coefficients almost exactly (largest discrepancy 0.002), which is the basis for treating the human-side comparisons in §4.4 and §4.7 as resting on a correctly processed benchmark rather than on a reimplementation error. 
+
+## A.4 Risk preference and assigned personas 
+
+We finally distinguish three constructs that should not be con-flated: the human participants’ pre-game elicited risk preference, the mechanism’s assigned private-risk treatment, and the narrative risk persona supplied to an LLM in its prompt. Human participants completed an incentivised Eckel–Grossman gamble elicitation (0 = most risk-averse, 5 = least risk-averse) before playing the two-player race. This elicited measure has essentially no direct association with subsequent unsafe rate, slope = −0.004 , 𝑟 = −0.015 , 𝑝 = 0.79 , 𝑛 = 341 ,
+
+with the difference in mean unsafe play between the most and least risk-accepting human groups (approximately five percentage points) lying within the corresponding uncertainty interval. This null result independently reproduces Domingos and Han’s own preregistered finding that elicited risk preference did not signifi-cantly predict unsafe choice [14], and stands in contrast to the tournament literature’s general finding that human risk-taking re-sponds to competitive standing rather than remaining a fixed trait [16, 22, 23]: in this task, the round-by-round interaction captured in §4.4 and §4.6 is a stronger organising signal than static pre-game disposition. A weaker, second-order association does survive at the level of behavioural phenotype rather than mean rate: the same elicited measure differs across the raw-sequence archetypes of §4.4 (Kruskal– Wallis 𝐻 = 21 .95, 𝑝 = 0.001, 𝑛 = 286 clustered human players), so the elicitation may help stratify which dynamic pattern a participant falls into even though it does not predict how much 
+
+unsafe they play overall. Figure 10 (left) shows how little that null leaves. Human mean unsafe play stays inside a 49–62% band across the entire elicitation range, never approaching the low-unsafe models of §4.4 (GPT-5-nano 17%, Claude Sonnet 5 22%, Claude Opus 5 33%) or the high-unsafe Gemini models (73–83%). Elicited risk preference does not move a participant far enough to resemble a different model’s policy. The right panel is the opposite (Table 10): every model with a six-level sweep climbs 50.5 to 98.3 points from R1 to R6, all but the two nano models monotonically, and those two dip by well un-der a point at R2 before rising. The label does not, however, move models by a common factor — GPT-5.6 Terra runs lowest at R1 and finishes within 1.3 points of the top, while GPT-5-nano starts fifth of seven and ends last — so curve order is not preserved, and the same instruction is worth very different amounts to different models. Of the seven tested models, five have such a sweep; neither Gemini Flash-Lite checkpoint does. In logistic models that addi-tionally control for the mechanism’s actual private-risk treatment, the coefficients on the agent’s own assigned risk label remain large for the three models where that controlled fit has been run, so the persona effect is not simply standing in for the mechanical risk treatment. This contrast does not show that LLM agents possess a latent risk preference comparable to the human elicitation: the human variable is a measured pre-game disposition that turns out to be nearly unrelated to in-game behaviour, whereas the LLM variable is an explicit instruction embedded in the prompt. The more defensible reading is that an assigned risk persona functions as a high-salience behavioural instruction for these models, not as an analogue of a stable human risk disposition. Because the LLM estimates come from a separate risk-matrix experiment, available for five of the seven tested models and with the private-risk-controlled logistic fit run for only three of those five, this comparison remains exploratory and cross-experimental rather than a like-for-like measurement. 
+
+## A.5 Predictive structure of unsafe choices 
+
+The preceding section shows that populations produce different action patterns. We now ask which recorded parts of the game best predict their next Unsafe choice. This is a study of associa-tion, not cause or internal reasoning. For each population, we fit a random forest, a model that combines many decision trees. It predicts decisions after round one from five values known before the choice: the player’s previous action, the opponent’s previous action, the progress gap, the assigned maximum private risk, and the round number. TreeSHAP then measures how much each value contributes to the fitted model’s predictions. A larger SHAP share means that the predictor relied more on that feature. It does not mean that the feature caused the decision. For human participants, the opponent’s previous action accounts for 48% of total SHAP magnitude, far more than any other fea-ture, while the player’s own previous action contributes only 6%: a reciprocity-dominated profile that independently recovers the pat-tern found in the human logistic analysis. GPT-5-nano is close to the opposite profile: relative race position (progress gap) accounts for 44% of its predictive importance and opponent history for only 4%, and its apparently strong test AUC of 0.82 is misleading on its own, since balanced accuracy is exactly 0.50: the model plays so close to the safe floor that the classifier effectively fails to recover the rare unsafe class. Gemini-3- Flash and Gemini-3.1-Flash-Lite are primarily risk-treatment-driven (35% and 40% of SHAP magnitude), consistent with their strong, monotone descriptive risk-response curves. Claude Sonnet 5 is the only model whose profile matches the human ordering outright, with the opponent’s previous action largest at 51%, slightly above the human 48%; Gemini-3.5-Flash-Lite is the next closest (34%), though its progress gap remains more influ-ential than in the human model. GPT-5.4-nano has no comparably dominant predictor: importance is spread across progress gap, risk, round, and its own previous action, with opponent history at only 7% and the lowest above-chance predictive fit in the table (AUC 0.56, balanced accuracy 0.53), so its behaviour is comparatively difficult to reconstruct from these five mechanical state variables rather than clearly governed by any one signal. Claude Opus 5 shows why these shares must be read against the design that produced them. Its 43% opponent share reads as strong reciprocity and is not: on the neutral lane it plays unsafe on essentially every low-risk decision and essentially none at high Table 9: Source-level audit for citations added to the prompt-sensitivity and behavioural-validity argument. 
+
+Source Supported use Excluded overclaim Sclar et al. [28] Meaning-preserving few-shot formatting changes can yield large, model-dependent performance spreads. Not evidence for semantic paraphrase effects or a universal effect size. Pezeshkpour and Hr-uschka [25] Reordering multiple-choice answer options can change pre-dictions. The proposed uncertainty-plus-placement mechanism is not causally identified. Wei et al. [30] Order and response-token identity are distinct selection-bias targets. Not proof that every task or model exhibits the same bias. Salinas and Morstat-ter [27] Controlled output-format and atomic whitespace variants can alter answers. Not a claim that every added space changes behaviour. Zheng et al. [34] Across their factual-question setup, average persona benefit was absent or slightly negative and reliable persona selection remained difficult. Not a universal null effect for persona-driven agent tasks. Aher et al. [1] Three of four behavioural findings were qualitatively repro-duced, while the fourth showed a hyper-accuracy distortion. Not evidence that LLM samples are interchangeable with human populations. Akata et al. [2] Prediction before action improved coordination and scores in repeated games. Not a general claim that an observed action reveals a correct opponent belief. Herr et al. [18] Action-label order and payoff reassignment changed choices in two canonical two-player games. Not evidence that every strategically equivalent transforma-tion has the same effect. Robinson and Bur-den [26] Procedurally varied vignettes produced substantial contex-tual variability under one underlying Prisoner’s Dilemma structure. Not a repeated-game result and not an estimate for the present race. Wu et al. [31] Performance declined consistently across 11 tasks when de-fault mappings were replaced by specified counterfactual alternatives. Not proof that the tested models lacked all abstract reasoning ability. del Rio-Chanona et al. [13] LLM markets recovered broad feedback-condition dynamics but displayed less strategy heterogeneity than human par-ticipants. Not evidence that LLM agents and human participants are exchangeable. 
+
+Table 10: LLM risk-persona effect: change in unsafe rate from the lowest (R1) to the highest (R6) assigned risk label, and the per-level OLS slope, for every model with a six-level risk-label sweep ( 𝑛 = 360 players per level, 𝑛 = 330 for Gemini-3-Flash). The persona coefficient (logistic model additionally controlling for the mechanism’s actual private-risk treat-ment) has been fit only for the first three; “–” marks models for which only the descriptive delta and slope are available. Starred rows sit outside the seven-model roster. 
+
+Model Δ unsafe (pp) Per-level slope Coefficient GPT-5-nano 50.5 0.123 0.93 GPT-5.4-nano 98.2 0.212 1.47 Gemini-3-Flash 62.8 0.139 2.03 Claude Opus 5 81.6 0.152 –Claude Sonnet 5 61.3 0.129 –GPT-5.6 Luna ∗ 71.5 0.156 –GPT-5.6 Terra ∗ 98.3 0.203 –
+
+risk, so the risk treatment alone separates its choices, and since both seats behave that way the opponent’s previous action is a proxy for the risk level rather than an independent signal. The forest then splits importance between two variables encoding the same event, and the perfect AUC describes a step function, not a better fit. A feature-importance share is interpretable only where the feature keeps variation independent of the others, which is what a near-deterministic policy removes. Predictive performance varies substantially across populations (AUC 0.56 to 1.00), so SHAP shares should not be read as directly comparable measures of decision quality; floor and ceiling be-haviour mechanically limits minority-class prediction for several models. The defensible conclusion is narrower than “LLMs use different features”: the same observable state variables organise predictive information differently across populations, and matching a human aggregate action rate does not imply matching the human reciprocity-dominated association profile. 
+
+## A.6 Two-player checkpoint descriptive baseline (full scope) 
+
+The five-checkpoint two-player descriptive baseline referenced throughout §4.4 and §4.5 completed 150 races and 2,790 decisions, crossing five checkpoints (GPT-5-nano, GPT-5.4-nano, Gemini-3-Flash-preview, Gemini-3.1-Flash-Lite, Gemini-3.5-Flash-Lite) with the mechanism’s three assigned private-risk levels (0 .10 , 0.60 , 0.90; Eq. (2)). At the level of descriptive curves rather than the pooled aggregate rates already reported in the main text, GPT-5-nano’s unsafe rate was low and nearly flat across the three risk levels; GPT-5.4-nano’s response to risk level was non-monotone; and the three Gemini checkpoints’ unsafe rate declined as the assigned maximum risk increased – the opposite direction from the two OpenAI checkpoints. Because provider routes, protocol signatures, and pilot sample sizes differ across checkpoints, these five curves demonstrate qualitative heterogeneity in how each checkpoint re-sponds to the risk manipulation; we do not pool them into a single 0 1 2 3 4 5
+
+Eckel –Grossman gamble choice (0 –5)         
+
+> 0.0 0.2 0.4 0.6 0.8 1.0
+> Unsafe rate
+> slope = -0.004 / step
+> r= -0.015 (n= 341)
+> 64 64 94 37 36 46
+> participants per bin
+
+Human — elicited risk preference (measured once, before play)      
+
+> R1 R2 R3 R4 R5 R6
+
+Assigned risk-persona level (R1 –R6) 
+
+LLM — assigned risk label (re-assigned every race, in prompt)  
+
+> * GPT-5.6 Luna and Terra have a risk-label sweep but sit outside the seven-model roster (dashed). Gemini 3.1 / 3.5 Flash Lite have no risk-label run and cannot appear.
+
+A measured human disposition barely moves behaviour; an assigned label moves it from fl oor to ceiling 
+
+> GPT-5 nano GPT-5.4 nano Gemini 3 Flash Claude Opus 5 Claude Sonnet 5 GPT-5.6 Luna* GPT-5.6 Terra*
+
+Figure 10: A measured human disposition against an assigned model label. Left: mean unsafe rate by elicited Eckel–Grossman gamble choice, with 95% confidence intervals and participants per bin; the dotted line is the trend across the six group means. Right: mean unsafe rate by assigned risk-persona level, for every model with a six-level sweep; GPT-5.6 Luna and Terra (dashed) sit outside the seven-model roster. The shared six-step axis is visual alignment only — the left is a disposition measured once before play, the right an instruction re-assigned every race. Table 11: Population-specific random-forest prediction of unsafe play. Feature columns report shares of total mean absolute SHAP magnitude (rows sum to 100%, up to rounding); AUC and balanced accuracy are evaluated on the population-specific test split.                                                                
+
+> Population Own previous Opponent previous Progress gap Risk Round Test AUC Balanced accuracy Human 6% 48% 14% 12% 20% 0.62 0.54 GPT-5-nano 2% 4% 44% 16% 33% 0.82 0.50 GPT-5.4-nano 18% 7% 33% 22% 20% 0.56 0.53 Gemini-3-Flash 5% 15% 23% 35% 23% 0.95 0.81 Gemini-3.1-Flash-Lite 16% 7% 13% 40% 24% 0.94 0.81 Gemini-3.5-Flash-Lite 14% 34% 27% 17% 9% 0.80 0.70 Claude Opus 5 26% 43% †0% 30% 0% 1.00 1.00 Claude Sonnet 5 22% 51% 4% 14% 10% 0.96 0.92
+> †Collinear with the risk treatment, not a reciprocity estimate; see the discussion below.
+
+model-family estimate, and the formal test of that heterogeneity is the checkpoint-by-risk interaction reported in §4.4 ( 𝜒 2 (10 ) = 354 .7). Table 12 gives the per-checkpoint, per-risk-level rates underlying the qualitative curve descriptions above. 
+
+## A.7 𝑁 -player self-play scope ( 𝑁 = 3, 4, 5)
+
+§4.6 reports position effects for GPT-5-nano and GPT-5.4-nano at fixed 𝑁 ; this subsection gives the broader group-size scope refer-enced there. Matched OpenAI self-play baselines cover 𝑁 ∈ { 3, 4, 5}
+
+for both checkpoints: 180 pilot races, 720 player trajectories, and 6,120 decisions in total, pooled across the mechanism’s three risk levels. Table 13 reports the aggregate unsafe rate by checkpoint and group size. Neither checkpoint’s response to group size is monotone in 
+
+𝑁 , and the association is checkpoint-specific: GPT-5-nano’s rate roughly doubles from 𝑁 = 3 to 𝑁 = 4 before partially receding at 
+
+𝑁 = 5, while GPT-5.4-nano stays within a narrow 83–87% band throughout. We do not read either pattern as an isolated group-size effect, for two reasons. First, changing 𝑁 also changes the stage-payoff rule itself (Eq. (3)–(4) use the joint count 𝑘 𝑡 of Safe-choosing companies rather than a single opponent’s move), the number of opponents, and prompt length, so 𝑁 is confounded with the representation of the game as well as with its size. Second, the Own previous action Unsafe Opponent's previous action Unsafe Progress gap (own - opponent/others) Risk treatment (max_private_risk) Round number                                          
+
+> Human GPT-5 nano GPT-5.4 nano Gemini 3 Flash Gemini 3.1 Flash Lite Gemini 3.5 Flash Lite GPT-5.6 Luna GPT-5.6 Terra Claude Opus 5 Claude Sonnet 5
+> 6% 48% 14% 12% 20% 2% 4% 44% 16% 33% 18% 7% 33% 22% 20% 5% 15% 23% 35% 23% 16% 7% 13% 40% 24% 14% 34% 27% 17% 9% 14% 5% 29% 11% 41% 30% 5% 18% 34% 12% 26% 43% 0% 30% 0% 22% 51% 4% 14% 10%
+> Share of predictive weight (mean |SHAP value|) per feature, Random Forest fi t separately on each population's own decisions
+
+Figure 11: Population-specific predictive structure for round-
+
+𝑡 ≥ 2 unsafe choices. Each row reports the share of mean absolute SHAP value assigned to the same five pre-decision features by a random forest fitted separately to that popu-lation. SHAP magnitudes describe how the fitted classifier uses observed features; they are neither causal effects nor evidence of the agents’ internal reasoning. Table 12: Player-level unsafe rate by checkpoint and as-signed maximum-private-risk level, five-checkpoint two-player descriptive baseline ( 𝑛 = 20 players per checkpoint– risk cell, ten races each). 
+
+Checkpoint Risk 0.10 Risk 0.60 Risk 0.90 GPT-5 nano 12.3% 15.1% 14.5% GPT-5.4 nano 57.7% 49.6% 56.7% Gemini 3 Flash 100.0% 72.3% 53.9% Gemini 3.1 Flash Lite 100.0% 80.1% 69.9% Gemini 3.5 Flash Lite 83.8% 70.8% 62.6% 
+
+Table 13: Aggregate unsafe rate by group size, OpenAI self-play, pooled across the three assigned private-risk levels. Ten independent races per model–risk– 𝑁 cell. 
+
+Checkpoint 𝑁 = 3 𝑁 = 4 𝑁 = 5GPT-5-nano 16.2% 26.8% 21.9% GPT-5.4-nano 83.7% 87.0% 84.0% 
+
+pilots use only ten independent races per model–risk– 𝑁 cell, which is a small base for the per-cell rates entering Table 13 and leaves individual cells vulnerable to the same kind of small-𝑛 noise flagged for specific rank × risk-band cells in §4.6. Table 14 disaggregates Table 13 by assigned risk level and reports a 95% Wilson interval for every cell. 
+
+Table 14: unsafe rate by checkpoint, group size, and assigned maximum-private-risk level, OpenAI 𝑁 -player self-play (95% Wilson intervals; 𝑛 is the decision count per cell). 
+
+𝑁 Checkpoint Risk 𝑛 unsafe rate (95% CI) 3 GPT-5 nano 0.10 255 17.3% (13.1–22.4%) 3 GPT-5 nano 0.60 255 18.0% (13.8–23.2%) 3 GPT-5 nano 0.90 255 13.3% (9.7–18.1%) 3 GPT-5.4 nano 0.10 255 84.3% (79.3–88.3%) 3 GPT-5.4 nano 0.60 255 84.3% (79.3–88.3%) 3 GPT-5.4 nano 0.90 255 82.4% (77.2–86.5%) 4 GPT-5 nano 0.10 340 21.2% (17.2–25.8%) 4 GPT-5 nano 0.60 340 30.3% (25.7–35.4%) 4 GPT-5 nano 0.90 340 28.8% (24.3–33.9%) 4 GPT-5.4 nano 0.10 340 87.6% (83.7–90.7%) 4 GPT-5.4 nano 0.60 340 88.8% (85.0–91.7%) 4 GPT-5.4 nano 0.90 340 84.4% (80.2–87.9%) 5 GPT-5 nano 0.10 425 20.2% (16.7–24.3%) 5 GPT-5 nano 0.60 425 21.2% (17.6–25.3%) 5 GPT-5 nano 0.90 425 24.2% (20.4–28.5%) 5 GPT-5.4 nano 0.10 425 80.2% (76.2–83.7%) 5 GPT-5.4 nano 0.60 425 87.1% (83.5–89.9%) 5 GPT-5.4 nano 0.90 425 84.7% (81.0–87.8%) 
+
+## REFERENCES 
+
+[1] Gati V Aher, Rosa I. Arriaga, and Adam Tauman Kalai. 2023. Using Large Lan-guage Models to Simulate Multiple Humans and Replicate Human Subject Studies. In Proceedings of the 40th International Conference on Machine Learning (Proceed-ings of Machine Learning Research, Vol. 202) , Andreas Krause, Emma Brunskill, Kyunghyun Cho, Barbara Engelhardt, Sivan Sabato, and Jonathan Scarlett (Eds.). PMLR, Honolulu, Hawaii, USA, 337–371. https://proceedings.mlr.press/v202/ aher23a.html [2] Elif Akata, Lion Schulz, Julian Coda-Forno, Seong Joon Oh, Matthias Bethge, and Eric Schulz. 2025. Playing repeated games with large language models. Nature Human Behaviour 9, 7 (01 Jul 2025), 1380–1390. https://doi.org/10.1038/s41562-025-02172-y [3] Jacy Reese Anthis, Ryan Liu, Sean M. Richardson, Austin C. Kozlowski, Bernard Koch, Erik Brynjolfsson, James Evans, and Michael S. Bernstein. 2025. Position: LLM Social Simulations Are a Promising Research Method. In Proceedings of the 42nd International Conference on Machine Learning (Proceedings of Machine Learning Research, Vol. 267) . PMLR, Vancouver, Canada, 81005–81034. https: //proceedings.mlr.press/v267/anthis25a.html [4] Lisa P. Argyle, Ethan C. Busby, Nancy Fulda, Joshua R. Gubler, Christopher Rytting, and David Wingate. 2023. Out of One, Many: Using Language Models to Simulate Human Samples. Political Analysis 31, 3 (2023), 337–351. https: //doi.org/10.1017/pan.2023.2 [5] Stuart Armstrong, Nick Bostrom, and Carl Shulman. 2016. Racing to the precipice: a model of artificial intelligence development. AI & SOCIETY 31, 2 (01 May 2016), 201–206. https://doi.org/10.1007/s00146-015-0590-y [6] Amanda Askell, Miles Brundage, and Gillian K. Hadfield. 2019. The Role of Cooperation in Responsible AI Development. arXiv:1907.04534 [cs.CY] https: //arxiv.org/abs/1907.04534 [7] James Bisbee, Joshua D. Clinton, Cassy Dorff, Brenton Kenkel, and Jennifer M. Larson. 2024. Synthetic Replacements for Human Survey Data? The Perils of Large Language Models. Political Analysis 32, 4 (2024), 401–416. https: //doi.org/10.1017/pan.2024.5 [8] A. Buscemi, D. Proverbio, A. Di Stefano, T.A. Han, G. Castignani, and P. Liò. 2025. FAIRGAME: a Framework for AI Agents Bias Recognition using Game Theory. In Front. Art. Int. Appl. , Vol. 413: ECAI2025. IOS Press. [9] Yong Cao, Haijiang Liu, Arnav Arora, Isabelle Augenstein, Paul Röttger, and Daniel Hershcovich. 2025. Specializing Large Language Models to Simulate Survey Response Distributions for Global Populations. In Proceedings of NAACL 2025 . Association for Computational Linguistics, Albuquerque, New Mexico, 3141–3154. https://doi.org/10.18653/v1/2025.naacl-long.162 [10] Stephen Cave and Seán S. ÓhÉigeartaigh. 2018. An AI Race for Strategic Advan-tage: Rhetoric and Risks. In Proceedings of the 2018 AAAI/ACM Conference on AI, Ethics, and Society (New Orleans, LA, USA) (AIES ’18) . Association for Computing Machinery, New York, NY, USA, 36–40. https://doi.org/10.1145/3278721.3278780 [11] Theodor Cimpeanu, Francisco C. Santos, Luís Moniz Pereira, Tom Lenaerts, and The Anh Han. 2022. Artificial intelligence development races in heterogeneous settings. Scientific Reports 12, 1 (02 Feb 2022), 1723. https://doi.org/10.1038/ s41598-022-05729-3 [12] Julian Coda-Forno, Marcel Binz, Jane X. Wang, and Eric Schulz. 2024. CogBench: A Large Language Model Walks into a Psychology Lab. In Proceedings of the 41st International Conference on Machine Learning (Proceedings of Machine Learning Research, Vol. 235) . PMLR, Vienna, Austria, 9076–9108. https://proceedings.mlr. press/v235/coda-forno24a.html [13] R. Maria del Rio-Chanona, Marco Pangallo, and Cars Hommes. 2025. Can Gen-erative AI Agents Behave Like Humans? Evidence from Laboratory Market Experiments. arXiv:2505.07457 [econ.GN] https://arxiv.org/abs/2505.07457 Preprint. [14] Elias Fernández Domingos and The Anh Han. 2026. Falling Behind Drives Unsafe Development in an Idealised AI Race Experiment. arXiv:2607.26034 [cs.AI] https://arxiv.org/abs/2607.26034 [15] Salvatore Giorgi, Tingting Liu, Ankit Aich, Kelsey Jane Isman, Garrick Sherman, Zachary Fried, João Sedoc, Lyle Ungar, and Brenda Curtis. 2024. Modeling Human Subjectivity in LLMs Using Explicit and Implicit Human Factors in Personas. In Findings of the Association for Computational Linguistics: EMNLP 2024 . Association for Computational Linguistics, Miami, Florida, USA, 7174–7188. https://doi.org/10.18653/v1/2024.findings-emnlp.420 [16] Oliver Gürtler, Lennart Struth, and Max Thon. 2023. Competition and risk-taking. European Economic Review 160 (2023), 104592. https://doi.org/10.1016/j. euroecorev.2023.104592 [17] The Anh Han, Luís Moniz Pereira, Francisco C. Santos, and Tom Lenaerts. 2020. To regulate or not: A social dynamics analysis of an idealised ai race. Journal of Artificial Intelligence Research 69 (2020), 881–921. https://doi.org/10.1613/JAIR.1. 12225 [18] Nathan Herr, Fernando Acero, Roberta Raileanu, María Pérez-Ortiz, and Zhibin Li. 2024. Are Large Language Models Strategic Decision Makers? A Study of Perfor-mance and Bias in Two-Player Non-Zero-Sum Games. arXiv:2407.04467 [cs.AI] https://arxiv.org/abs/2407.04467 [19] Trung-Kiet Huynh, Duy-Minh Dao-Sy, Thanh-Bang Cao, Phong-Hao Le, Hong-Dan Nguyen, Phu-Quy Nguyen-Lam, Minh-Luan Nguyen-Vo, Hong-Phat Pham, Phu-Hoa Pham, Thien-Kim Than, Chi-Nguyen Tran, Huy Tran, Gia-Thoai Tran-Le, Alessio Buscemi, Le Hong Trang, and The Anh Han. 2025. Under-standing LLM Agent Behaviours via Game Theory: Strategy Recognition, Bi-ases and Multi-Agent Dynamics. https://doi.org/10.48550/arXiv.2512.07462 arXiv:2512.07462 [cs.MA] Preprint. [20] Trung-Kiet Huynh, Duy-Minh Dao-Sy, Thanh-Bang Cao, Phong-Hao Le, Hong-Dan Nguyen, Phu-Quy Nguyen-Lam, Minh-Luan Nguyen-Vo, Hong-Phat Pham, Phu-Hoa Pham, Thien-Kim Than, Chi-Nguyen Tran, Huy Tran, Gia-Thoai Tran-Le, Alessio Buscemi, Le Hong Trang, and The Anh Han. 2026. Payoff Scaling Shapes Cooperation in LLM Agents across Languages. https://doi.org/10.48550/ arXiv.2601.19082 arXiv:2601.19082 [cs.AI] Preprint, version 2 revised June 2026. [21] Yuxuan Lu, Jing Huang, Yan Han, Bingsheng Yao, Sisong Bei, Yaochen Xie, Yisi Sang, Qi He, and Dakuo Wang. 2026. Can LLM Agents Simulate Multi-Turn Human Behavior? Evidence from Real Online Customer Behavior Data. In Proceedings of the 64th Annual Meeting of the Association for Computational Linguistics . Association for Computational Linguistics, San Diego, California, USA, 43961–43977. https://doi.org/10.18653/v1/2026.acl-long.2034 [22] Petra Nieken and Dirk Sliwka. 2010. Risk-taking tournaments – Theory and experimental evidence. Journal of Economic Psychology 31, 3 (2010), 254–268. https://doi.org/10.1016/j.joep.2009.03.009 [23] Serkan Ozbeklik and Janet Kiholm Smith. 2017. Risk taking in competition: Evidence from match play golf tournaments. Journal of Corporate Finance 44 (2017), 506–523. https://doi.org/10.1016/j.jcorpfin.2014.05.003 [24] Saptarshi Pal, Abhishek Mallela, Lenz Pracher, Chiyu Wei, Feng Fu, Santiago Schnell, and Martin A Nowak. 2026. Large language models instantiate evolu-tionarily robust strategies of cooperation. PNAS nexus 5, 6 (2026), pgag210. [25] Pouya Pezeshkpour and Estevam Hruschka. 2024. Large Language Models Sensitivity to the Order of Options in Multiple-Choice Questions. In Find-ings of the Association for Computational Linguistics: NAACL 2024 . Associa-tion for Computational Linguistics, Mexico City, Mexico, 2006–2017. https: //doi.org/10.18653/v1/2024.findings-naacl.130 [26] Isaac Robinson and John Burden. 2025. Framing the Game: How Context Shapes LLM Decision-Making. arXiv:2503.04840 [cs.CL] https://arxiv.org/abs/2503.04840 [27] Abel Salinas and Fred Morstatter. 2024. The Butterfly Effect of Altering Prompts: How Small Changes and Jailbreaks Affect Large Language Model Performance. arXiv:2401.03729 [cs.CL] https://arxiv.org/abs/2401.03729 [28] Melanie Sclar, Yejin Choi, Yulia Tsvetkov, and Alane Suhr. 2024. Quan-tifying Language Models’ Sensitivity to Spurious Features in Prompt De-sign or: How I Learned to Start Worrying About Prompt Formatting. In International Conference on Learning Representations . OpenReview.net, Vienna, Austria. https://proceedings.iclr.cc/paper_files/paper/2024/hash/ 6c0e99d736da621403018ca7b32b1a4d-Abstract-Conference.html [29] Jia Wang, Ziyu Zhao, Tingjuntao Ni, and Zhongyu Wei. 2025. SocioBench: Modeling Human Behavior in Sociological Surveys with Large Language Models. In Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing . Association for Computational Linguistics, Suzhou, China, 26257– 26289. https://doi.org/10.18653/v1/2025.emnlp-main.1335 [30] Sheng-Lun Wei, Cheng-Kuang Wu, Hen-Hsen Huang, and Hsin-Hsi Chen. 2024. Unveiling Selection Biases: Exploring Order and Token Sensitivity in Large Language Models. In Findings of the Association for Computational Linguistics: ACL 2024 . Association for Computational Linguistics, Bangkok, Thailand, 5598– 5621. https://doi.org/10.18653/v1/2024.findings-acl.333 [31] Zhaofeng Wu, Linlu Qiu, Alexis Ross, Ekin Akyürek, Boyuan Chen, Bailin Wang, Najoung Kim, Jacob Andreas, and Yoon Kim. 2024. Reasoning or Reciting? Explor-ing the Capabilities and Limitations of Language Models Through Counterfactual Tasks. In Proceedings of the 2024 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies .Association for Computational Linguistics, Mexico City, Mexico, 1819–1862. https://doi.org/10.18653/v1/2024.naacl-long.102 [32] Jiayi Yao, Cong Chen, and Baosen Zhang. 2026. Competition and Cooperation of LLM Agents in Games. arXiv:2604.00487 https://arxiv.org/abs/2604.00487 [33] Kehan Zheng, Jinfeng Zhou, and Hongning Wang. 2025. Beyond Nash Equilib-rium: Bounded Rationality of LLMs and Humans in Strategic Decision-Making. arXiv:2506.09390 https://arxiv.org/abs/2506.09390 [34] Mingqian Zheng, Jiaxin Pei, Lajanugen Logeswaran, Moontae Lee, and David Jurgens. 2024. When “A Helpful Assistant” Is Not Really Helpful: Personas in System Prompts Do Not Improve Performances of Large Language Models. In 
+
+Findings of the Association for Computational Linguistics: EMNLP 2024 . Association for Computational Linguistics, Miami, Florida, USA, 15126–15154. https://doi. org/10.18653/v1/2024.findings-emnlp.888

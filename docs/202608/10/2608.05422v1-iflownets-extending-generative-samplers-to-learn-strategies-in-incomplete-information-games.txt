@@ -1,0 +1,671 @@
+Title: IFlowNets: Extending Generative Samplers to Learn Strategies in Incomplete Information Games
+
+URL Source: https://arxiv.org/pdf/2608.05422v1
+
+Published Time: Fri, 07 Aug 2026 00:15:23 GMT
+
+Number of Pages: 18
+
+Markdown Content:
+> DynaFront2025: Dynamics at the Frontiers of Optimization, Sampling, and Games – NeurIPS 2025 Workshop 1–18
+
+# IFlowNets: Extending Generative Samplers to Learn Strategies in Incomplete Information Games 
+
+Conor M. Artman artman1@llnl.gov 
+
+AI Research Group, Lawrence Livermore National Laboratory 
+
+Nicholas Di nd56@rice.edu 
+
+Deptartment of Statistics, Rice University, AI Research Group, Lawrence Livermore National Laboratory 
+
+Scott Perkins perkins35@llnl.gov 
+
+Strategic Competition Analysis Group, Lawrence Livermore National Laboratory 
+
+Abstract 
+
+While many algorithms blend reinforcement learning (RL) with counterfactual regret (CFR) methods to leverage tradeoffs in computational speed and performance, there are fewer investigations into generative sampling frameworks in game theoretic applications in incomplete information games. We extend a generative flow network framework, Adver-sarial Flow Networks (AFlowNets), to incomplete information games, called Information Flow Networks (IFNs). We prove that previously established constraints for generative flow networks in complete information games are inadmissible for obtaining valid densities (cor-responding to player strategies) and a valid training objective. We show that our proposed generalization, IFlowNets, alleviates this issue and strictly generalizes AFlowNets. In pre-liminary results for three standard game environments, IFlowNets perform comparably to or better than Outcome Sampling Monte Carlo Counterfactual Regret (OS-MCCFR) and standard RL-based methods in performance and speed. 
+
+1. Introduction 
+
+Generative flow networks (GFlowNets) operate by converting flow matching constraints 
+
+over directed acyclic graphs (DAGs) into an objective function, which is then used to fit a sampler that respects terminal, reward-proportional sampling via direct, gradient-based search. In DAGs with intragraph uncertainty, Jiralerspong et al. (2024) extended GFlowNets to handle uncertain intragraph transitions by using alternating samplers that use expectations to smooth over uncertainty, called Expected Flow Networks (EFlowNets). As an application, Jiralerspong et al. (2024) showed that one can alternate these samplers as agents playing a complete information extensive form game, called adversarial flow networks (AFlowNets). AFlowNet agents learn a policy that samples proportional to the expected utility under environment and player transition dynamics, which produced results as good or better than AlphaZero augmented by Monte Carlo Tree Search (as well as standard RL methods, e.g., DQN, A2C and PPO). Importantly, AFlowNets rely solely on generating trajectories and observing outcomes strictly during training. In contrast, many RL-centric methods, such as AlphaZero, need approximate recursive search to perform well. Further, the approach appears promising, because in perfect information environments, AFlowNets learn to play effectively in the vast majority of states without any form of inference-time search and human heuristics, despite only seeing a small fraction of these states. Despite  
+
+> ©C.M. Artman, N. Di & S. Perkins. arXiv:2608.05422v1 [cs.LG] 5 Aug 2026 Artman Di Perkins
+
+these observations, generative flow network-based methods have not been investigated in the context of non-stationary, sequential, or incomplete information games. In this new context, we theoretically demonstrate that our extension, Information Flow Networks (IFlowNets), generalizes AFlowNets and validly reproduces the expected flow-matching property. The expected flow matching property is known to induce a generalized Nash equilibrium called a quantal response equilibrium (QRE), and are typically difficult to estimate (Jiralerspong et al., 2024; Bland and Turocy, 2025). (We defer studying of QRE estimated by IFlowNets compared to classic methods for future work, but see Appendix D for a brief description of IFlowNets as QRE.) Our contributions are as follows. 1. We prove that directly applying Jiralerspong et al. (2024)’s approach to handling intragraph uncertainty is impossible: doing so invalidates properties necessary for expected reward-proportional sampling in incomplete information settings. 2. We generalize AFlowNets to incomplete information settings and demonstrate they preserve desired properties in the literature, e.g., the flow matching property. 3. We test our IFlowNet formulation in three standard incomplete information environ-ments and show preliminary results against Outcome Sampling Monte Carlo CFR, deep CFR, and neural fictitious self play (NFSP). 
+
+2. Background & Notation 
+
+[N ] := {1, . . . , N } is the set of players, indexed by i. H represents sequences denoting the possible histories or trajectories of actions. For h, h ′ ∈ H , let h′ be a longer history than 
+
+h. Starting at any h and choosing an action a leads to the next history, h′ := ( h, a ). h is a “prefix” of h′. Z ⊆ H are terminal histories, and each z is a sequence of actions representing a complete path from the start of the game to a terminal node. The set of all actions for the current player acting at a non-terminal history h is A(h) := {a : ( h, a ) ∈ H} . Actions available player i at h is denoted Ai(h), h ∈ H \ Z . In RL terminology, if all histories were fully observable at every time-step, we could just call them states, denoted s ∈ S . However, due to uncertainty in the game, agents may not know what state they are in at a particular decision point. An information state I (infostate or infoset ), is an aggregate state over all the possible states a player could be in at a decision point. Precisely, ∀h, h ′ ∈ I with h̸ = h′,
+
+h and h′ are indistinguishable to an agent. Equivalently, A(h) = A(h′). We distinguish between different agents’ infostates by information partitions , Ii. Ii partitions the set of all histories into player i’s potential histories, also with the property A(h) = A(h′) whenever 
+
+h, h ′ ∈ I i. Subscripts denote which agent’s action space and infostates we are referring to. Each player has a utility function ui : Z 7 → R, and we interpret reward functions Ri to be transformations of utility functions. Utility functions determine classes of games, e.g., if [N ] = {1, 2} and u1 = −u2, the game is a two-player zero-sum game. We will be focused on zero-sum extensive form games of incomplete information, which are DAG-structured games. We assume perfect recall throughout. The set of child nodes of an (info)states Ch( ·)is all next-possible transitions from that history or infostate. Reward proportional sampling is Pi(z) ∝ Ri(z), for sampler (or strategy) Pi; expected reward proportional sampling refers to Pi(z) ∝ E−i[R(z)], where −i is all players except i. F refers to the “flow” function, which maps (info)states to unnormalized probability mass. 
+
+> 2Generative Sampling in Incomplete Information Games
+
+2.1. Review of Expected & Adversarial Flow Networks 
+
+Due to space limits, we defer review of expected detailed balance (EDB) and AFlowNets to Appendix C. 
+
+3. Methodology 
+
+Before discussing technical details, we summarize our findings as follows. 1. The EDB constraints for AFlowNets are inadmissible for incomplete information games, i.e., the same expectation-based smoothing approach as Jiralerspong et al. (2024) cannot work. 2. Consequently, we cannot rely on the theorems developed by Jiralerspong et al. (2024). Therefore, we must fix and extend their constraints to justify using the usual trajectory balance objective for generative flow network models (Madan et al.). 
+
+3.1. Aggregating Flows over Infostates. 
+
+Below we discuss the two main steps for fixed and generalizing AFlowNets to incomplete information games. (See Appendix B, Figure 2 for graphics visualizing the two new cases that must be accounted for.) 
+
+Generalization #1: Information Set Aggregation. Our first insight is that the EDB are missing an extra necessary constraint to be applied to incomplete information games that we refer to as infostate aggregation property : F (I) = P 
+
+> h∈I
+
+F (h). While this appears similar to flow matching, this is actually a self-consistency condition, whereas flow matching asserts that all inflows must match all outflows, F (I) = P 
+
+> I′∈Ch (I)
+
+F (I′). (see Appendix A for more discussion.) 
+
+Generalization #2: Higher Intragraph Uncertainty in Incomplete Information games. Due to agent-level uncertainty about which history an agent occupies in an infos-tate, there is another layer of uncertainty to aggregate or smooth over, which we refer to as double intragraph uncertainty . In incomplete information games, we find that applying the same principles Jiralerspong et al. (2024) used to derive the EDB do not work in the incomplete information setting (see Theorem 1). (See Figure 2 for diagrams describing new uncertainties introduced by incomplete information games.) To illustrate why these generalizations are necessary, we naively extend Jiralerspong et al. (2024)’s to incomplete information settings and re-apply the idea of using expectations to smooth over intragraph uncertainty. We refer to these as the Double Expected Detailed Balance (DEDB) constraints. 
+
+> 3Artman Di Perkins
+
+F (z) = R(z), (∀z ∈ Z ) (D1) 
+
+F (I) = EI′∼Penv (·| I)
+
+h
+
+F (I′)
+
+i
+
+, (∀h, h ′ ∈ I env ) (D2) 
+
+F (I)Pagent (a|I) = Eh′∼Penv 
+
+h
+
+F (h′)
+
+i
+
+, (∀a, h ′, I ∈ I agent ) (D3) 
+
+F (I) = X
+
+> h∈I
+
+F (h), (∀h, I ∈ I ) (D4) While we augment Jiralerspong et al. (2024)’s constraints to respect infostates with D4, the key issue remains in constraint D3. Theorem 1 implies Penv ceases to be a valid probability mass function in order to satisfy flow matching, so it is impossible to learn valid sampling strategies. 
+
+Theorem 1 (Expectation-Based Aggregation over Infosets via DEDB Invalidates Flow Match-ing)(see Appendix E.1 for proof of Theorem 1.) 
+
+In response, we propose the generalized expected detailed balance (GEDB) constraints .Our GEDB constraints over DAGs of incomplete information games accomplish the follow-ing. 1. The GEDB constraints successfully induce expected flow matching property over infos-tates .2. The GEDB automatically recover the EDB constraints in complete information settings. 3. (D0-D3 in (Jiralerspong et al., 2024)). The last item follows directly if items 1 and 2 are satisfied, so we focus on the first two (Jiralerspong et al., 2024). 
+
+3.2. Generalized Expected Detailed Balance 
+
+In addition to adding the necessary infostate aggregation constraint, we find that constraint C3 corrects D3. This allows for flow matching to hold over infostates, which paves the way for expected reward proportional sampling in incomplete information games. 
+
+F (z) = R(z), (∀z ∈ Z ) (C1) 
+
+F (I) = EI′∼Penv (·| I)
+
+h
+
+F (I′)
+
+i
+
+, (∀h, h ′ ∈ I env ) (C2) 
+
+F (I)Pagent (a|I) = X
+
+> h′∋a
+
+F (h′), (∀a, h ′, I ∈ I agent ) (C3) 
+
+F (I) = X
+
+> h∈I
+
+F (h), (∀h, I ∈ I ) (C4) In the next lemma, the GEDB constraints imply that the graph-level flow function F
+
+satisfies expected flow matching over infosets. As a consequence, it is valid to use the well-known trajectory balance objective function to fit agent policies over infostates rather than complete information states (Madan et al.; Jiralerspong et al., 2024). (See Appendix F for trajectory balance objective and implementation details.) 
+
+> 4Generative Sampling in Incomplete Information Games
+
+Lemma 2 (Generalized Expected Detailed Balance Conditions Imply Expected Flow Match-ing over Infosets.) See Appendix E.2. 
+
+The next Lemma indicates that the GEDB allow IFlowNets to automatically switch between complete and incomplete information games by reparameterizing states. 
+
+Lemma 3 (The GEDB Constraints Recover the EDB Constraints in Complete Information Settings.) See Appendix E.3 for proof. 
+
+4. Experiments 
+
+We evaluate our IFlowNet formulation in the following tasks: Weighted RPS, Kuhn Poker, Leduc Poker . In the latter two, we compare to Neural Fictitious Self Play (NFSP), Deep CFR, and Outcome Sampling Monte Carlo CFR (OC-MCCFR). 
+
+Weighted Rock-Paper-Scissors In Weighted Rock-Paper-Scissors (RPS+) the wins and losses are doubled if Scissors is played. RPS+ is played in extensive form, so Player 1 chooses a move first and Player 2 observes Player 1’s choice after the game ends. Player 2 is always at an incomplete information state, and Player 1 must learn to play over the uncertainty of Player 2’s strategy. The Nash equilibrium in RPS+ is ( R, P, S ) = ( .4, . 4, . 2) for both players. 1 IFlowNets find the Nash strategy (Figure 1) and approach minimal exploitability (see Figure 3). 
+
+(a) (b)Figure 1: Policies per training iteration in RPS+. (a) Player 1 (b) Player 2 
+
+Kuhn Poker Kuhn poker is a simplified form of poker as a simple model zero-sum two-player imperfect-information games (Kuhn and Tucker (2016)). In Kuhn poker, the deck includes only three playing cards: a King, Queen, and Jack. One card is dealt to each player, which may place bets similarly to a standard poker. If both players bet or both players pass, then the player with the higher card wins. Otherwise, the player who bet wins. 
+
+> 1. Note: in repeated play (such as our setup) RPS+ is deceptively difficult for RL and is a benchmark for multi-agent learners’ ability to adapt in non-stationary, incomplete information environments (Lanctot et al., 2023).
+> 5Artman Di Perkins
+
+Algorithm Exploitability Iters./Sec. IFlowNet 0.087 340 OS-MCCFR 0.068 1211 
+
+NFSP 0.417 0.35 DeepCFR 0.451 0.008 Table 1: Kuhn Poker with n = 2 players after 10 , 000 iterations. 
+
+Leduc Poker Leduc Hold’em is 2-player Limit Texas Hold’em, with 2 rounds and a six card deck (Jack, Queen, and King in 2 suits). At the beginning of the game, each player receives one card and, after betting, a public card is revealed. After another round, the player with the best hand wins and receives a reward 1 and the loser receives -1. At any time, players can fold. Algorithm Exploitability Iters./Sec. IFlowNet 1.287 55 
+
+OS-MCCFR 2.725 7.62 NFSP 2.691 0.09 DeepCFR 1.431 0.01 Table 2: Leduc Poker with n = 2 players after 10 , 000 iterations. 
+
+5. Discussion & Conclusion 
+
+We show IFlowNets generalize AFlowNets to incomplete information games and show pre-liminary results comparable to or better than closely-related MCCFR and RL variants. In Kuhn Poker, IFlowNets perform comparably to OS-MCCFR in exploitability but is slower. In Leduc Poker, IFlowNets perform best and are faster to compute compared to relevant CFR and Deep RL variants. 
+
+Acknowledgments 
+
+This work was performed under the auspices of the U.S. Department of Energy by Lawrence Livermore National Laboratory under Contract DE-AC52-07NA27344 and was supported by the LLNL-LDRD Program under Project No. 25-FS-026. LLNL-CONF-2010743. 
+
+Government Use License Notice 
+
+This manuscript has been authored by Lawrence Livermore National Security, LLC under Contract No. DE-AC52-07NA2 7344 with the US. Department of Energy. The United States Government retains, and the publisher, by accepting the article for publication, acknowledges that the United States Government retains a non-exclusive, paid-up, irrevo-cable, world-wide license to publish or reproduce the published form of this manuscript, or allow others to do so, for United States Government purposes. 
+
+> 6Generative Sampling in Incomplete Information Games
+
+References 
+
+Yoshua Bengio, Salem Lahlou, Tristan Deleu, and Edward J Hu. GFlowNet foundations. James R. Bland and Theodore L. Turocy. Quantal response equilibrium as a struc-tural model for estimation: The missing manual. Games and Economic Behavior ,February 2025. ISSN 0899-8256. doi: 10.1016/j.geb.2025.02.008. URL https://www. sciencedirect.com/science/article/pii/S0899825625000211 .Tristan Deleu and Yoshua Bengio. Generative Flow Networks: a Markov Chain Perspective, July 2023. URL http://arxiv.org/abs/2307.01422 . arXiv:2307.01422 [cs]. Marco Jiralerspong, Bilun Sun, Danilo Vucetic, Tianyu Zhang, Yoshua Bengio, Gauthier Gidel, and Nikolay Malkin. Expected flow networks in stochastic environments and two-player zero-sum games, March 2024. URL http://arxiv.org/abs/2310.02779 .arXiv:2310.02779 [cs]. Behbod Keshavarzi and Hamidreza Navidi. Comparative analysis of extensive form zero sum game algorithms for Poker like games. Scientific Reports , 15(1):2917, January 2025. ISSN 2045-2322. doi: 10.1038/s41598-025-86899-8. URL https://www.nature.com/ articles/s41598-025-86899-8 . Publisher: Nature Publishing Group. Harold W. Kuhn and Albert William Tucker. Contributions to the Theory of Games, Volume I. Princeton University Press, March 2016. ISBN 978-1-4008-8172-7. Google-Books-ID: OVfQCwAAQBAJ. Marc Lanctot, Edward Lockhart, Jean-Baptiste Lespiau, Vinicius Zambaldi, Satyaki Upad-hyay, Julien P´ erolat, Sriram Srinivasan, Finbarr Timbers, Karl Tuyls, Shayegan Omid-shafiei, Daniel Hennes, Dustin Morrill, Paul Muller, Timo Ewalds, Ryan Faulkner, J´ anos Kram´ ar, Bart De Vylder, Brennan Saeta, James Bradbury, David Ding, Sebas-tian Borgeaud, Matthew Lai, Julian Schrittwieser, Thomas Anthony, Edward Hughes, Ivo Danihelka, and Jonah Ryan-Davis. OpenSpiel: A Framework for Reinforcement Learning in Games, September 2020. URL http://arxiv.org/abs/1908.09453 . arXiv:1908.09453 [cs]. Marc Lanctot, John Schultz, Neil Burch, Max Olan Smith, Daniel Hennes, Thomas Anthony, and Julien Perolat. Population-based Evaluation in Repeated Rock-Paper-Scissors as a Benchmark for Multiagent Reinforcement Learning, October 2023. URL 
+
+http://arxiv.org/abs/2303.03196 . arXiv:2303.03196 [cs]. Kanika Madan, Jarrid Rector-Brooks, Maksym Korablyov, Emmanuel Bengio, Moksh Jain, Andrei Nica, Tom Bosc, Yoshua Bengio, and Nikolay Malkin. Learning GFlowNets From Partial Episodes For Improved Convergence And Stability. Richard D. McKelvey and Thomas R. Palfrey. Quantal Response Equilib-ria for Extensive Form Games. Experimental Economics , 1(1):9–41, June 1998. ISSN 1386-4157, 1573-6938. doi: 10.1023/A:1009905800005. URL 
+
+https://www.cambridge.org/core/journals/experimental-economics/ article/abs/quantal-response-equilibria-for-extensive-form-games/ 
+
+> 7Artman Di Perkins
+
+CECA1F0028DCE25FA77566303C5EA1EA . Publisher: Cambridge University Press &Assessment. Samuel Sokota, Ryan D’Orazio, J. Zico Kolter, Nicolas Loizou, Marc Lanctot, Ioannis Mitliagkas, Noam Brown, and Christian Kroer. A Unified Approach to Reinforcement Learning, Quantal Response Equilibria, and Two-Player Zero-Sum Games, April 2023. URL http://arxiv.org/abs/2206.05825 . arXiv:2206.05825 [cs]. 
+
+> 8Generative Sampling in Incomplete Information Games
+
+Appendix A. Extended Note on Necessity of Generalization #1: Information Set Aggregation 
+
+In incomplete information games, information set aggregation (Eqn. D4) is not a trivial condition to omit. This reasoning behind this is the following. All generative flow network methodologies can be likened to direct-search variants of Hamiltonian MCMC (Deleu and Bengio, 2023). Consequently, GFlowNet models target a marginal distribution of the in-variant distribution over a DAG: specifically, they approximate the terminating state distri-bution as the target distribution. However, this is possible only if the boundary conditions over terminal nodes are correctly specified. When infostate aggregation is excluded from the boundary conditions, then we are mis-specifying the constraints that allow a GFlowNet model to approximate the terminating distribution over game outcomes. 
+
+Appendix B. Two New Cases to Cover in Incomplete vs. Complete Information DAGs for IFlowNets 
+
+Figure 2: Left: Illustration of why infostate aggregation property necessary. Right: Illus-tration of higher intra-graph uncertainty in incomplete information games. (See below for details.) 
+
+Left Scenario of Figure 2: In the complete information case, P2 could distinguish between h1 and h2. Now that h1 and h2 are indistinguishable, they are grayed out; this is because they are in the same infostate, Player 1 and Player 2 must take this into account. The only way this is done in AFlowNet and IFlowNets is through flow constraints over the graph, encoded as the (Generalized) Expected Detailed Balance constraints. 
+
+Right Scenario of Figure 2: In an incomplete information game, it is possible P1 may find themself at an infostate where they cannot distinguish the probability of being in h1
+
+or h2. Therefore, P1 must take this into account and pool the total flow mass associated with h1 and h2 in a way that still induces expected reward proportional sampling. 
+
+> 9Artman Di Perkins
+
+Appendix C. Review of Expected & Adversarial Flow Networks 
+
+Adversarial Flow Networks (AFlowNets) are collections of alternating EFlowNets, so we start with EFlowNets. EFlowNets are samplers over a tree ( G, S), encoded as a DAG G
+
+over states S with an unique initial state s0 ∈ S , a set of terminal states Z, and a reward function R associated with every s ∈ Z . Each EFlowNets smooths over transitions it cannot control in the DAG by taking expectations, so there is a sampler i for each source of uncertainty. Given sampler i, we denote the ith of N EFlowNets by Ei := ⟨G , S, s 0, X , P i, R i⟩.We assume for every Ei that S partitions non-terminal states into agent states , denoted by 
+
+Si, and environment states , denoted Senv or S−i, where −i ∈ [N ] \ i, so we may write 
+
+S \ X = Sagent i
+
+S
+
+· S Env := Si
+
+S
+
+· S −i. When we are considering the ith sampler, the other samplers are treated as a product distribution over environment states, i.e., PEnv (s′|s) = 
+
+P−i(s′|s), ∀s′ ∈ Ch (s), ∀s ∈ S Env , ∀i ∈ [N ]. An agent policy is defined to be a collection of distributions over the children of next-possible states, i.e., Pagent (·| s) for every s ∈ S agent (or Pi(·| s) for every s ∈ S i). A
+
+forward policy PF is the forward-sampling distribution, started from s0, determined by alternating all Pagent and Penv . Finally, an AFlowNet is defined with respect to a collec-tion of reward functions Ri and a collection of all i agents’ states Si, A := ∪i∈[N ]Ei =
+
+⟨G , s 0, S
+
+· i∈[N ] Si, X , (Ri)i∈[N ]⟩. In two-player, zero-sum games, AFlowNets are trained by minimizing a log ratio objective constructed from the branch-adjusted trajectory balance (TB) objective that is induced by expected detailed balance (EDB) constraints over the graph (summarized by constraints in Eqn.s D1-D3, but with complete information states): 
+
+Z0
+
+Y
+
+> i:si∈S 1
+
+P1(si+1 |si ) = R1(z)B2(z) Y
+
+> i:si∈S 2
+
+P2(si+1 |si ), (1) where Z0 is a normalizing constant, Ri is the branch-adjusted reward function per-player, and Bi(z) = Q  
+
+> k:sk∈S k
+
+|Ch (sk)| is agent i’s branching factor. 
+
+Appendix D. Quantal Response Equilibria 
+
+In this section we sketch IFlowNets’ connection to quantal response equilibria (QRE). First we note that while Jiralerspong et al. (2024) suggest this connection for AFlowNets in complete information games, their work only considers QRE in complete information games. Specifically, we focus on agent QREs (AGREs) (McKelvey and Palfrey, 1998), which are QREs for extensive-form games like those considered in this work (note that QRE for normal form games need not match QREs in extensive-form games). AQREs can be viewed as entropy-regularized Nash equilibria, and in incomplete information games, as a type of Bayesian equilibrium for a game with perturbed payoffs (Sokota et al., 2023). While we do not empirically or theoretically study AQRE properties of IFlowNets in this work, we briefly sketch its relation to AQREs and hope future studies will rigorously analyze these connections. Given that IFlowNets reproduce AFlowNet properties for incomplete information games, we know IFlowNet agent policies follow Pi(Ii) ∝ EP−i Fi(Ii) (see Lemma 5), so that like Jiralerspong et al. (2024)’s AFlowNets, IFlowNets have an expected flow matching property over environment dynamics and other players strategies, P−i. In words, each agent obtained 
+
+> 10 Generative Sampling in Incomplete Information Games
+
+from an IFlowNet will sample actions, on average, that are proportional to the learned flow function; following this stepwise-sampling as a strategy then implies that IFlowNet players will sample trajectories of play that are proportional to expected terminal, branch-adjusted rewards. However, if all agent policies follow this structure ∀i, then Pi(Ii) ∝ EP−i Fi(Ii) is some 
+
+AQRE (McKelvey and Palfrey, 1998; Sokota et al., 2023). Therefore, if we get to choose the particular branching factor Bi and reward Ri = BiR0 
+
+> i
+
+for the game, then IFlowNets encode the subset of AQREs that are expressible by Ri.For example, suppose an IFlowNet satisfies that Pi(Ii) ∝ EP−i Fi(Ii) and EP−i Fi(Ii)is a logistic function. Then all players are sampling strategies proportional to a logistic function of the reward (or utilities), so immediately we know we have estimated some logit AQRE (McKelvey and Palfrey, 1998). The advantage with IFlowNet-based estimation is that we can make this argument for any AQRE that is estimable by EP−i Fi(Ii). Therefore, in principle, one should be able to carefully choose Bi and transformations of the reward to find various AQREs. 
+
+Appendix E. Technical Appendices 
+
+E.1. Expectation-Based Aggregation Fails to Induce Flow Matching over Infostates Theorem 4 (Expectation-Based Aggregation over Infosets via DEDB Invalidates Flow Match-ing over Infostates) 
+
+Proof 
+
+Suppose Penv is known. Under DEDB, fixing some a ∈ A (I)
+
+F (I)Pagent (a|I) = Eh∼Penv [F (h, a )] (2) 
+
+⇐⇒ F (I) = X
+
+> a∈A (I)
+
+X
+
+> h∈I
+
+Penv (h)F (h, a ) (3) But for FM to hold, we need the following to be satisfied: 
+
+X
+
+> a∈A (I)
+
+X
+
+> h∈I
+
+Penv (h)F (h, a ) need 
+
+= X
+
+> a∈A (I)
+
+X
+
+> h∈I
+
+F (h, a ), ∀(h, a, I ) (4) 
+
+⇐⇒ X
+
+> a∈A (I)
+
+X
+
+> h∈I
+
+F (h, a )
+
+h
+
+Penv (h) − 1
+
+i
+
+= 0 , ∀(h, a, I ) (5) 
+
+⇐⇒ Penv (h) = 1 , ∀(h, I ) (6) 
+
+∴ X
+
+> h∈I
+
+Penv (h) = |I|, ∀(h, I ) (7) 
+
+⇒⇐ (8) because Penv is a probability distribution that should sum to 1 for any h or I. Therefore, re-applying expectation-based aggregation via the DEDB constraints cannot produce the FM property over infosets. 
+
+> 11
+
+Artman Di Perkins 
+
+E.2. Infoset Flow Matching Lemma 5 (Generalized Expected Detailed Balance Conditions Imply Flow Matching over Infosets.) 
+
+Proof Suppose C1 through C4 hold. Then, focusing on C3, 
+
+F (I)Pagent (a|I) = X
+
+> h′∋a
+
+F (h′) (9) 
+
+⇐⇒ F (I) = X
+
+> a∈A (I)
+
+X
+
+> h′∋a
+
+F (h′) (10) 
+
+> def.
+
+= X
+
+> a∈A (I)
+
+X
+
+> (h,a )∋a
+
+F (h, a ) (11) 
+
+> def.
+
+= X
+
+> I′∈Ch (I)
+
+F (I′) (12) 
+
+∴ F (I) = X
+
+> I′∈Ch (I)
+
+F (I′) (13) Hence the result. We note that because the GEDB repair and recover the EDB conditions with infoset-based flow-matching, one can apply similar arguments as Proposition 5 in Jiralerspong et al. (2024). After reparameterizing to infostates, we have that Pi ∝ Fi, for each agent i, and then by following the argument for Proposition 5 using the GEDB, we inherit the same expected flow matching property (with the expectation taken over other players IFlowNet strategies and environment dynamics). 
+
+E.3. GEDB Constraints Generalize the EDB Constraints Lemma 6 (The GEDB Constraints Recover the EDB Constraints in Complete Information Settings.) 
+
+Proof Suppose C1 through C4 hold. We want to show that C1 through C4 correspond to and recover the following constraints. 
+
+F (z) = R(z), (∀z ∈ Z ) (E1) 
+
+F (s) = Es′∼Penv (·| s)
+
+h
+
+F (s′)
+
+i
+
+, (∀s, s ′ ∈ S ) (E2) 
+
+F (s)Pagent (s′|s) = F (s′), (∀s, s ′ ∈ S ) (E3) First note that we leave out a condition corresponding to C4, as it is vacuously true when all infosets are singletons: F (s) = P 
+
+> s∈s
+
+F (s), which is a tautology. Next, C1 and E1 
+
+12 Generative Sampling in Incomplete Information Games 
+
+automatically correspond to one-another, as the flow of any terminal is always taken to be the reward achieved at that terminal node. Now we focus on C2 and C3. Suppose I = S
+
+and consider C2. Then we know I = s for some s and I′ = s′ for some s′.=⇒ F (I) = F (s) = EI′∼P·| s [F (I′)] = Es′∼P·| s [F (s′)] (14) 
+
+∴ F (s) = Es′∼P·| s [F (s′)] , (15) recovering E2. Finally suppose I = S and consider C3. 
+
+F (I)Pagent (a|I) = X
+
+> h′∋a
+
+F (h′) (16) =⇒ F (s)Pagent (a|s) = X
+
+> s′∋a
+
+F (s′) = F (s′) (17) The implication follows by definition definition, as each s or s′ is a singleton, so the sum-mation on the right-hand side is over a single node. Finally, s′ = ( s, a ) by construction, so =⇒ F (s)Pagent (a|s) = F (s)Pagent (s′|s) = F (s′) (18) 
+
+∴ F (s)Pagent (a|s) = F (s′), (19) which proves C3 implies E3. Therefore, C1 through C4 recover and generalize E1 through E3, as required. 
+
+13 Artman Di Perkins 
+
+E.4. IFlowNets and Optimality Criteria 
+
+In this section, we step through the optimality criteria and desiderata outlined by Jiraler-spong et al. (2024) to show that the GEDB satisfy them. For completeness, we step through the proofs, but the primary differences are in how to handle the re-parameterized infosets and making sure that the original constraints satisfy flow matching (FM). We start by considering the case when there is n = 1 player vs. the environment, or a Nature player. Note that once our GEDB are shown to be valid, any sampler satisfying them also sat-isfies expected reward proportional sampling, under the dynamics of the game and other players, immediately due to Proposition 5 under the GEDB constraints on infostates (Ji-ralerspong et al., 2024). 
+
+Theorem 7 (There exists an unique (F, P agent ) pair satisfying GEDB for n = 1 )
+
+Proof In analogy to the EFlowNets case of AFlowNets, consider a single agent navigating an incomplete information game tree G by alternating moves with a Nature player, encoded by Penv . Then the two distributions characterizing PF , the forward policy, are Pagent , the agent’s policy, and Penv , the environment dynamics. In parallel to Jiralerspong et al. (2024)’s Proposition 1, proving this relies on two char-acteristics: a recurrence on the flow function F induced by the GEDB and flow matching being satisfied by the full forward policy. By the hypothesis, F satisfies the GEDB below. 
+
+F (I) = 
+
+P 
+
+> I′∈Ch (I)
+
+F (I′), I ∈ I agent 
+
+EI′∼Penv (·| I)
+
+h
+
+F (I′)
+
+i
+
+I ∈ I env 
+
+P 
+
+> h∈I
+
+F (h), I ∈ I agent 
+
+R(I) I ∈ Z 
+
+(20) 
+
+where we write constraint C3 as a sum in the first line of the piecewise function due to Lemma 5. The proof proceeds similarly to Proposition 1 in Jiralerspong et al. (2024) as long as it satisfies the key requirement of flow matching, and by Lemma 5, the GEDB induce flow matching on infosets. Consequently, as in Proposition 5, we may once again consider the longest trajectory over the DAG, and it satisfies a recurrence induced by the GEDB. 
+
+Remark 8 Note that in the DEDB constraints, even if a flow function F satisfies DEDB, the flow function is not unique exactly because it cannot satisfy flow matching. Consequently, even if one constructs a policy P DEDB agent from a flow function F DEDB , there is no unique 
+
+(F DEDB , P DEDB agent ) pair satisfying DEDB. Next, because we know ∃!F satisfying GEDB, the uniqueness of Pagent follows in an argument similar to Proposition 1 in Jiralerspong et al. (2024): by construction, R(z) > 0
+
+and F (I) > 0, ∀I, and the GEDB define a positivity-preserving recurrence. Consequently, we may construct the agent policy from the unique flow function as Pagent ∆
+
+= F (I′)  
+
+> F(I)
+
+. Now, because F is unique and satisfies GEDB, we also have that 
+
+F (I)Pagent (a|I) = F (I) F (I′)
+
+F (I) = F (I′) (21) 
+
+Our proof departs at this point, and now, because of infoset consistency and the fact that 
+
+h′ def. 
+
+= ( h, a ) in incomplete information games, we have 
+
+> 14
+
+Generative Sampling in Incomplete Information Games 
+
+F (I′) = X
+
+> (h,a )∋a
+
+F (h, a ) = X
+
+> h′∋a
+
+F (h′) (22) 
+
+Therefore, we have that 
+
+F (I)Pagent (a|I) = F (I′) = X
+
+> h′∋a
+
+F (h′) (23) 
+
+as desired. Therefore, ∃!( F, P agent ) satisfying GEDB for n = 1 (but not the DEDB). 
+
+Theorem 9 (For all players i ∈ [n], there exist unique flow functions and policies (Fi, P i)
+
+that satisfy GEDB with respect to their generalized EFlowNet.) 
+
+Proof We want to show that ∃!( Fi, P i)i∈[n], n > 1, satisfying the GEDB, where each player 
+
+Pi in the game alternates moves and independently plays their local policy Pi against the unknown joint policy of all other players, P−i, encoded as Penv in Theorem 7. Here, we will refer to P−i as Pj , j̸ = i.Similar to Theorem 7, we start with the recurrence on the flow function Fi induced by the GEDB. 
+
+Fi(I) = 
+
+P 
+
+> I′∈Ch (I)
+
+Fi(I′), I ∈ I iP     
+
+> I′∈Ch (I)Fi(I′)Fj(I′)
+> P
+> I′∈Ch (I)Fj(I′)
+
+I ∈ I j , j ̸ = i
+
+P 
+
+> h∈I
+
+Fi(h), I ∈ I i
+
+Ri(I) I ∈ Z 
+
+(24) By Theorem 7, we know that this recurrence induces an unique ( Fi, P i) pair, but we need to check that it satisfies the n-player recurrence here. The first case goes through by Lemma 5 and the third and fourth cases go through by construction, so we need to verify the second case (which encodes GEDB constraint C2) holds. However, this is equivalent to the same EDB condition as in Jiralerspong et al. (2024)’s Proposition 2 over a re-parameterized state space I, so the same calculation goes through if and only if flow matching holds. However, because the GEDB satisfies flow matching (see Lemma 5), we have 
+
+P 
+
+> I′∈Ch (I)
+
+Fi(I′)Fj (I′)
+
+P 
+
+> I′∈Ch (I)
+
+Fj (I′) = X
+
+> I′∈Ch (I)
+
+Fi(I′)Fj (I′)
+
+P 
+
+> I′′ ∈Ch (I)
+
+Fj (I′′ ) = X
+
+> I′∈Ch (I)
+
+Fi(I)Pj (I′|I) = EI′∼Pj (·| I)
+
+h
+
+F (I′)
+
+i
+
+(25) As desired, this reproduces the recurrence we had in Theorem 7. 
+
+15 Artman Di Perkins 
+
+Theorem 10 (In n = 2 player zero-sum IFNs, if agent policies (P1, P 2) and flows (F1, F 2)
+
+jointly satisfy existence and uniqueness with respect to the GEDB, then F (I) ∆
+
+= F1(I)F2(I)
+
+satisfies flow matching with respect to the joint reward R(x) ∆
+
+= R1(x)R2(x).) 
+
+Proof 
+
+Following Jiralerspong et al. (2024), by construction F1(z) = R1(z) and F2(z) = R2(z)for all z ∈ Z, so F (z) def. 
+
+= F1(z)F2(z) C1 
+
+= R1(z)R2(z) for all z ∈ Z.We now show that flow matching holds when I ∈ I \ Z. WLOG, suppose I ∈ I 1. Then we have 
+
+F (I) = F1(I)F2(I) = F1(I)EI′∼P1(I′|I)F2(I′) = F1(I) X
+
+> I′∈Ch (I)
+
+F1(I′)
+
+F1(I) F2(I′) = X
+
+> I′∈Ch (I)
+
+F1(I′)F2(I′)(26) 
+
+> def.
+
+= X
+
+> I′∈Ch (I)
+
+F (I′) (27) So the joint flow function satisfies flow matching if their component flows satisfy the GEDB, as required. 
+
+16 Generative Sampling in Incomplete Information Games 
+
+Appendix F. Implementation Details & Extra Figures 
+
+For each environment, we parameterized agent policies as independent MLPs and used the training objective below by resampling trajectories from an online replay buffer. For RP S +agents used a 3-layer MLP with 32 hiddent units, and for Kuhn and Leduc Poker, agents used a 3-layer MLP with 512 hidden units. To find final settings, we ran simulation studies using grid search over ranges of values described by Keshavarzi and Navidi (2025) and picked the model with the best exploitability. For comparisons, we then ran all models for 10,000 of the model-specific training iterations and recorded exploitability and iterations per second. We use PyTorch and the default settings with the Adam optimizer. All environments were available through the OpenSpiel Python library (Lanctot et al. (2020)). In all environments, we work with the trajectory balance objective over infostates, which is valid by the flow matching property of the GEDB constraints (Madan et al.). Suppose we have a trajectory starting at an initial state h0 or infostate I0 (or batch of trajectories) τ , such that each infostate alternates as players alternate moves until players reach the end of the game z. At the end of the game, players receive zero-sum rewards 
+
+R01(z) := exp( u1(z)) and R02(z) := exp( u2(z)), where we take exp( ·) because generative flow network models assume positive rewards, and because we will use a log-transformed objective (Bengio et al.). Following Jiralerspong et al. (2024), we use a branch-adjustment factor, Bi(z) = Q  
+
+> j:Ij∈Ii
+
+|Ch (Ij )|, which penalizes equivalent rewards that occur later in the game so that agents prioritize sooner wins. The final reward we work with is Ri(z) := 
+
+R0 
+
+> z
+
+/B i(z). Let Zθ be a learned normalizing constant. The objective we use is 
+
+Lθ(τ ) = log Zθ
+
+Q 
+
+> It∈I1
+
+P θ 
+
+> 1
+
+(It+1 |It)
+
+R1(z)B2(z) Q 
+
+> It∈I2
+
+P θ 
+
+> 2
+
+(It+1 |It)
+
+!
+
+F.1. RPS+ 
+
+(a) (b)Figure 3: (a) KLD of IFN policy vs. NE strategy (b) Exploitability in RPS+ 
+
+F.2. Kuhn Poker 
+
+> 17 Artman Di Perkins
+
+Figure 4: IFN exploitability and KLD from CFR solution. (Exploitability and CFR com-puted with OpenSpiel utilites in Kuhn OpenSpiel environment.)

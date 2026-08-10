@@ -6,71 +6,70 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-09
-- 运行时间：2026-08-09 20:50:00 UTC
+- 最新运行日期：2026-08-10
+- 运行时间：2026-08-10 19:55:11 UTC
 - 运行状态：成功
-- 本次总论文数：17
-- 精读区：6
+- 本次总论文数：16
+- 精读区：5
 - 速读区：11
 
 ### 今日简报（AI）
-今日共筛选17篇论文，精读6篇、速读11篇，聚焦棋类战术决策与多智能体空间策略。最值得关注的是《Otter》时间感知人类象棋AI（10分）与《Training Small LLMs as Spatial Multi-Agent Policies》（9分），两者分别探索历史情境建模和语言模型驱动的具身协作。建议普通读者优先精读这两篇，并速读《Chess on Ice》对比跨场景决策方法。
-- 详情：[/202608/09/README](/202608/09/README)
+今日精选16篇，多智能体世界模型与大规模社会模拟领跑，最高分达9.0。  
+最值得精读：MASS以权威共享状态构建多人世界模型（9.0），MatrAIx模拟83亿人格代理（8.0）。  
+建议优先深入这两篇，再速读7分的AI发展竞赛、混合强化学习与环境设计论文，拓宽视角。
+- 详情：[/202608/10/README](/202608/10/README)
 
 ### 精读区论文标签
-1. [Otter: A Time-Aware, History-Conditioned Human Chess AI](/202608/09/2608.05206v1-otter-a-time-aware-history-conditioned-human-chess-ai)  
-   标签：评分：10.0/10、query:player-ai
-   evidence：预测人类在国际象棋中的走子选择，建模玩家行为
-2. [Training Small LLMs as Spatial Multi-Agent Policies](/202608/09/2608.01425v1-training-small-llms-as-spatial-multi-agent-policies)  
+1. [MASS: Multiplayer World Models with Authoritative Shared State](/202608/10/2608.06257v1-mass-multiplayer-world-models-with-authoritative-shared-state)  
    标签：评分：9.0/10、query:player-ai
-   evidence：在空间合作游戏中训练基于LLM的多智能体策略
-3. [Towards Improving Sequential Decision-Making in LLM Agents via Experience Memory](/202608/09/2608.03420v1-towards-improving-sequential-decision-making-in-llm-agents-via-experience-memory)  
-   标签：评分：9.0/10、query:player-ai
-   evidence：研究并通过经验记忆改进LLM智能体在井字棋和四子棋中的游戏表现
-4. [VLMs for Videogame Data Annotation](/202608/09/2608.05949v1-vlms-for-videogame-data-annotation)  
-   标签：评分：9.0/10、query:player-ai
-   evidence：用视觉语言模型为游戏帧序列标注奖励信号，支持智能体训练
-5. [Training a Conditioned Video Game Agent on a VLM Annotated Dataset](/202608/09/2608.05954v1-training-a-conditioned-video-game-agent-on-a-vlm-annotated-dataset)  
-   标签：评分：9.0/10、query:player-ai
-   evidence：用VLM标注奖励的离线RL训练视频游戏智能体
-6. [AV-AIVAT: 74x Cheaper Agent Evaluation with Certified Anytime-Valid Stopping in Imperfect-Information Games](/202608/09/2608.06362v1-av-aivat-74x-cheaper-agent-evaluation-with-certified-anytime-valid-stopping-in-imperfect-information-games)  
-   标签：评分：9.0/10、query:player-ai
-   evidence：通过玩不完全信息游戏评估AI智能体，并具备认证的随时有效停止
+   evidence：面向多人游戏环境的世界模型，解耦世界动态与环境渲染
+2. [MatrAIx: Simulating the World with 8.3 Billion Persona Agents](/202608/10/2608.04205v1-matraix-simulating-the-world-with-83-billion-persona-agents)  
+   标签：评分：8.0/10、query:player-ai
+   evidence：83亿人物智能体的人口规模模拟用户评测，可用于玩家行为模拟
+3. [Emotion Dynamics in Social Deception Games: Analysis of Professional and Nonprofessional Players through Electrodermal Activity in Werewolf Games](/202608/10/2608.04605v1-emotion-dynamics-in-social-deception-games-analysis-of-professional-and-nonprofessional-players-through-electrodermal-activity-in-werewolf-games)  
+   标签：评分：8.0/10、query:player-ai
+   evidence：狼人杀游戏中的玩家情绪与沟通建模
+4. [AI-Farol: Co-Evolutionary Dynamics in a Multi-Agent Two-Sided Learning Framework](/202608/10/2608.05479v1-ai-farol-co-evolutionary-dynamics-in-a-multi-agent-two-sided-learning-framework)  
+   标签：评分：8.0/10、query:player-ai
+   evidence：AI智能体在El Farol酒吧博弈中学习与适应行为
+5. [Beyond the Black Box: Interpretable Models of Human Randomisation Failures](/202608/10/2608.07220v1-beyond-the-black-box-interpretable-models-of-human-randomisation-failures)  
+   标签：评分：8.0/10、query:player-ai
+   evidence：在牌类游戏中用可解释模型预测人类玩家决策
 
 ### 速读区论文标签
-1. [PALMs: Using Multi Construct-Grounded Rationales for Modeling Population Preferences in LLMs](/202608/09/2608.01458v1-palms-using-multi-construct-grounded-rationales-for-modeling-population-preferences-in-llms)  
-   标签：评分：8.0/10、query:player-ai
-   evidence：面向群体偏好的LLM对齐方法，可直接用于虚拟游戏玩家建模
-2. [Evolving in the Agent Jungle via History-Informed Opponent Awareness](/202608/09/2608.02005v1-evolving-in-the-agent-jungle-via-history-informed-opponent-awareness)  
-   标签：评分：8.0/10、query:player-ai
-   evidence：动态多智能体环境中带对手感知的策略自适应方法，与AI游戏智能体高度相关
-3. [Chess on Ice: Curling Tactical Decision-Making via Backward Induction and Deep Reinforcement Learning](/202608/09/2608.02379v1-chess-on-ice-curling-tactical-decision-making-via-backward-induction-and-deep-reinforcement-learning)  
-   标签：评分：8.0/10、query:player-ai
-   evidence：深度强化学习用于冰壶比赛的战术决策
-4. [Sublogarithmic Swap Regret in Multiplayer General-Sum Games via Hybrid Regularization](/202608/09/2608.04149v1-sublogarithmic-swap-regret-in-multiplayer-general-sum-games-via-hybrid-regularization)  
-   标签：评分：8.0/10、query:player-ai
-   evidence：多人一般和博弈中的学习动力学
-5. [MiniWorld: Democratizing the Training of Video World Models from Scratch](/202608/09/2608.01127v2-miniworld-democratizing-the-training-of-video-world-models-from-scratch)  
+1. [Humans Are More Diverse: Frontier LLMs Show Extreme Policies in Idealised AI Development Races](/202608/10/2608.01193v1-humans-are-more-diverse-frontier-llms-show-extreme-policies-in-idealised-ai-development-races)  
    标签：评分：7.0/10、query:player-ai
-   evidence：视频世界模型用于交互仿真与具身AI
-6. [From Profiling to Synthesis: Benchmarking Implicit Behavioral Alignment in Personalized LLM Agents](/202608/09/2608.02171v1-from-profiling-to-synthesis-benchmarking-implicit-behavioral-alignment-in-personalized-llm-agents)  
+   evidence：LLM智能体玩重复博弈游戏并与人类数据对比
+2. [Hybrid LLM-Augmented Reinforcement Learning Agents for Complex Sequential Decision Tasks](/202608/10/2608.03502v1-hybrid-llm-augmented-reinforcement-learning-agents-for-complex-sequential-decision-tasks)  
    标签：评分：7.0/10、query:player-ai
-   evidence：面向个性化LLM智能体内隐行为对齐的基准，与游戏玩家行为建模相关
-7. [Qwen-CUA: Native Computer Use for (almost) Everything](/202608/09/2608.02352v1-qwen-cua-native-computer-use-for-almost-everything)  
+   evidence：LLM与强化学习混合智能体用于复杂序列决策任务，是游戏AI的核心
+3. [Beyond Simply Environment Scaling: Designing Effective Environment Distributions for Multimodal Agent Learning](/202608/10/2608.03571v1-beyond-simply-environment-scaling-designing-effective-environment-distributions-for-multimodal-agent-learning)  
    标签：评分：7.0/10、query:player-ai
-   evidence：通过截图与键鼠操作在交互环境中训练AI智能体，可直接迁移到游戏智能体
-8. [3 Players Auction Bridge - Statistical Algorithmic Strategies](/202608/09/2608.03217v1-3-players-auction-bridge---statistical-algorithmic-strategies)  
+   evidence：面向智能体训练的多样化与分难度环境分布设计
+4. [State2State: Environment-Derived Mid-Training for LLM Agents](/202608/10/2608.04934v1-state2state-environment-derived-mid-training-for-llm-agents)  
    标签：评分：7.0/10、query:player-ai
-   evidence：使用统计学习为桥牌纸牌游戏提供算法制胜策略
-9. [MiniWorld: Democratizing the Training of Video World Models from Scratch](/202608/09/2608.01127v1-miniworld-democratizing-the-training-of-video-world-models-from-scratch)  
+   evidence：通过环境交互派生训练目标，可迁移到游戏环境中的智能体训练
+5. [IFlowNets: Extending Generative Samplers to Learn Strategies in Incomplete Information Games](/202608/10/2608.05422v1-iflownets-extending-generative-samplers-to-learn-strategies-in-incomplete-information-games)  
+   标签：评分：7.0/10、query:player-ai
+   evidence：生成流网络用于不完全信息博弈中的策略学习
+6. [Solver-Guided Reasoning for Mixed-Equilibrium Strategies](/202608/10/2608.06741v1-solver-guided-reasoning-for-mixed-equilibrium-strategies)  
+   标签：评分：7.0/10、query:player-ai
+   evidence：利用求解器引导LLM进行游戏中的均衡推理
+7. [SKT: Skill-Use Training at Scale via Verified Synthetic Data Generation](/202608/10/2608.02287v1-skt-skill-use-training-at-scale-via-verified-synthetic-data-generation)  
    标签：评分：6.0/10、query:player-ai
-   evidence：视频世界模型用于交互仿真，可为游戏等环境中的智能体训练提供低成本环境建模
-10. [Progressive Agent Skill Generation via Reinforcement Learning](/202608/09/2608.01678v1-progressive-agent-skill-generation-via-reinforcement-learning)  
+   evidence：通过验证式合成数据训练智能体技能使用，可应用于游戏环境
+8. [Quo Vadis, World Modeling?](/202608/10/2608.02713v1-quo-vadis-world-modeling)  
    标签：评分：6.0/10、query:player-ai
-   evidence：用强化学习渐进生成技能以改进智能体下游行为
-11. [No One Wins in Nuclear War: A Social Simulation of Military Decision-making](/202608/09/2608.01868v1-no-one-wins-in-nuclear-war-a-social-simulation-of-military-decision-making)  
+   evidence：面向智能体训练的交互式世界代理方法
+9. [Beyond Simply Environment Scaling: Designing Effective Environment Distributions for Multimodal Agent Learning](/202608/10/2608.03571v2-beyond-simply-environment-scaling-designing-effective-environment-distributions-for-multimodal-agent-learning)  
    标签：评分：6.0/10、query:player-ai
-   evidence：基于可验证规则引擎的战争游戏社会模拟环境，与玩家行为模拟相关
+   evidence：为智能体学习设计有效环境分布
+10. [Predicting Task Difficulty Without Rollouts](/202608/10/2608.05797v1-predicting-task-difficulty-without-rollouts)  
+   标签：评分：6.0/10、query:player-ai
+   evidence：无需展开即可预测智能体任务难度，可用于游戏等环境中的渐进式训练课程
+11. [EnvACE: Internalizing Environment Dynamics via World Rehearsal for Agentic Reinforcement Learning](/202608/10/2608.06197v1-envace-internalizing-environment-dynamics-via-world-rehearsal-for-agentic-reinforcement-learning)  
+   标签：评分：6.0/10、query:player-ai
+   evidence：通过世界排练训练智能体，无需外部环境，可用于游戏智能体训练
 
 
 <div class="dpr-home-promo-card">

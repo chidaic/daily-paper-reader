@@ -1,0 +1,776 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-10T19:41:26.130725+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 5,
+    "deep_cap": 6,
+    "deep_selected": 5,
+    "quick_candidates": 11,
+    "quick_skim_target": 11,
+    "quick_selected": 11
+  },
+  "deep_dive": [
+    {
+      "id": "2608.06257v1",
+      "source": "arxiv",
+      "title": "MASS: Multiplayer World Models with Authoritative Shared State",
+      "abstract": "Current video world models struggle in multiplayer environments because they entangle world state with view-dependent visual latents, leading to redundant compute, view inconsistencies, and poor scalability. We propose MAS (Multiplayer world models with Authoritative Shared State) to resolve this limitation. Inspired by multiplayer game architectures, MAS disentangles world dynamics and view rendering. A learned Logic Engine advances a global, authoritative typed state from joint actions without any hand-written transition function, acting as the sole recurrent memory and synchronization reference. From this shared state, a learned Rendering Engine generates independent and consistent views for any requested camera on demand. This explicit disentangling allows MAS to achieve superior state accuracy and lower cross-view inconsistency compared to state-of-the-art multi-view baselines on a matched multiplayer Snake benchmark. It advances predicted worlds with 1,024 concurrent players for 10,000 recurrent steps. Our results show that explicit, authoritative state modeling provides a practical foundation for scalable and consistent multi-agent world simulation.",
+      "authors": [
+        "Ziqi Cai",
+        "Siqi Yang",
+        "Yimu Wang",
+        "Zixian Gao",
+        "Yunheng Liu",
+        "Shuchen Weng",
+        "Erwin Wu",
+        "Kaipeng Zhang",
+        "Boxin Shi"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.HC"
+      ],
+      "published": "2026-08-06T16:47:24+00:00",
+      "link": "https://arxiv.org/pdf/2608.06257v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "multiplayer world models for video game environments",
+      "llm_evidence_cn": "面向多人游戏环境的世界模型，解耦世界动态与环境渲染",
+      "llm_evidence": "面向多人游戏环境的世界模型，解耦世界动态与环境渲染",
+      "canonical_evidence": "面向多人游戏环境的世界模型，解耦世界动态与环境渲染",
+      "llm_tldr_en": "MASS disentangles world dynamics from view rendering in multiplayer environments. A learned Logic Engine advances a global authoritative state from joint actions, and a Rendering Engine produces consistent views on demand, improving scalability and consistency for multiplayer world models.",
+      "llm_tldr_cn": "当前视频世界模型在多人环境中因将世界状态与视角相关潜变量纠缠，导致计算冗余、视角不一致和扩展性差。本文受多人游戏架构启发提出MASS，将世界动态与视角渲染解耦：逻辑引擎从联合动作中学习推进全局权威类型化状态，渲染引擎按需为任意相机生成一致视角。这种显式解耦避免了手写转移函数，显著提升多人环境的可扩展性与一致性。该工作为多人游戏AI训练和玩家行为模拟提供了核心世界模型技术。",
+      "llm_tldr": "当前视频世界模型在多人环境中因将世界状态与视角相关潜变量纠缠，导致计算冗余、视角不一致和扩展性差。本文受多人游戏架构启发提出MASS，将世界动态与视角渲染解耦：逻辑引擎从联合动作中学习推进全局权威类型化状态，渲染引擎按需为任意相机生成一致视角。这种显式解耦避免了手写转移函数，显著提升多人环境的可扩展性与一致性。该工作为多人游戏AI训练和玩家行为模拟提供了核心世界模型技术。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "artificial intelligence in games",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.04205v1",
+      "source": "arxiv",
+      "title": "MatrAIx: Simulating the World with 8.3 Billion Persona Agents",
+      "abstract": "Human evaluation of AI systems and digital products is costly, slow, and difficult to scale. Offline evaluations are more scalable but often abstract away human diversity and interactive behavior. We therefore introduce MatrAIx, a population-scale simulated-user evaluation infrastructure for testing AI systems and digital products with heterogeneous users. MatrAIx has three core components: First, Persona 8B contains 8.3 billion persona records represented by 1,290 categorical dimensions. Records are either sampled from a dependency graph that preserves correlated attributes or derived from human-authored profiles. We release a quality-filtered coreset of approximately 1 million personas, comprising 599,847 human-grounded and 400,000 synthetic records. Second, the MatrAIx Playground provides four environments in which diverse users evaluate and interact with digital products: Survey, AI Chatbot, Web, and App. Third, MatrAIx provides 1,010 application tasks spanning more than 25 domains, including Commerce, Software, Finance, and Healthcare. We conducted 18,189 evaluation trials across eight representative tasks. Persona agents were powered by three LLMs: Claude Opus 4.8, GPT 5.5, and Claude Haiku 4.5. The resulting feedback captures how decisions and preferences vary across persona backgrounds, including hesitation after a price increase, willingness to continue after an AI assistant fails, and latency tolerance. We conducted two main validation studies: First, a 400-trial controlled study evaluated persona adherence across ten behavioral attributes and all four environments. The declared behavior was expressed or correctly suppressed in 366 trials (91.5%). Second, human and LLM judges evaluated the extraction quality of human-grounded personas. Overall, MatrAIx provides an end-to-end infrastructure for evaluating AI systems and digital products with diverse simulated human users.",
+      "authors": [
+        "Xiaomin Li",
+        "Yuexing Hao",
+        "Jianheng Hou",
+        "Jintao Huang",
+        "Qianfeng Wen",
+        "Shirley Huang",
+        "Yifan Liu",
+        "Xiaoyi Liu",
+        "Yilan Fan",
+        "Yijun Wang",
+        "Koutian Wu",
+        "Ruoqi Gao",
+        "Muhammad Ahmed Mohsin",
+        "Jing Tang",
+        "Brihi Joshi",
+        "Heming Liu",
+        "Zheyuan Deng",
+        "Zonglin Di",
+        "Sankalp Jajee",
+        "Jiuyao Lu",
+        "Zhiwei Zhang",
+        "Saksham Kapoor",
+        "Ishan Gupta",
+        "Yunhan Zhao",
+        "Chanwoo Park",
+        "Yucheng Lu",
+        "Bing Hu",
+        "Weihang Xiao",
+        "Aravind Mohan",
+        "Hanwen Xing",
+        "Runyu Zhang",
+        "Mihir Kulshreshtha",
+        "Yuanda Xu",
+        "Qianyu Zhu",
+        "Dianzhuo Wang",
+        "Yuxin Xiao",
+        "Bowen Jiang",
+        "Yongye Su",
+        "Wenhao Chai",
+        "Zuxin Liu",
+        "Lawrence Yunliang Chen",
+        "Xuandong Zhao",
+        "Ethan Ye",
+        "Shivam Patel",
+        "Jason Xie",
+        "Alex Martin Richmond",
+        "Weixiang Ding",
+        "Emre Okcular",
+        "Diya Mathew",
+        "Ziheng Wang",
+        "Rana M. Shahroz Khan",
+        "Zhejian Peng",
+        "Fang Wu",
+        "Fan Nie",
+        "Xinyang Han",
+        "Yubin Kim",
+        "Jiawei Zhang",
+        "Zhenting Qi",
+        "Huangyuan Su",
+        "Xu Pan",
+        "Abinitha Gourabathina",
+        "Hyewon Jeong",
+        "Hemanth Neelgund Ramesh",
+        "Kumail Alhamoud",
+        "Kimia Hamidieh",
+        "Zidi Xiong",
+        "Samuel Schmidgall",
+        "Pengrui Han",
+        "Yepeng Huang",
+        "Yongheng Wang",
+        "Bowen Yang",
+        "Alex Gu",
+        "Yuchu Wang",
+        "Akshay Paruchuri",
+        "Brenna Li",
+        "Hejie Cui",
+        "Jiayuan Ding",
+        "Chaosheng Dong",
+        "Jiahao Wang",
+        "Yixuan He",
+        "Chi Wang",
+        "Pamela Bhattacharya",
+        "Tianyi Peng",
+        "Paul Pu Liang",
+        "Mitchell Gordon",
+        "Yilun Du",
+        "Marinka Zitnik",
+        "James Zou",
+        "Prasanna Tambe",
+        "Philip Torr",
+        "Emily Fox",
+        "Asu Ozdaglar",
+        "Dawn Song"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-08-04T20:04:49+00:00",
+      "link": "https://arxiv.org/pdf/2608.04205v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Population-scale simulated-user evaluation with 8.3 billion persona agents for player behavior simulation",
+      "llm_evidence_cn": "83亿人物智能体的人口规模模拟用户评测，可用于玩家行为模拟",
+      "llm_evidence": "83亿人物智能体的人口规模模拟用户评测，可用于玩家行为模拟",
+      "canonical_evidence": "83亿人物智能体的人口规模模拟用户评测，可用于玩家行为模拟",
+      "llm_tldr_en": "MatrAIx introduces Persona 8B with 8.3 billion persona records and a coreset of 1M personas to simulate heterogeneous users for population-scale evaluation of AI systems and digital products.",
+      "llm_tldr_cn": "论文针对人类评测成本高、难以规模化的问题，提出MatrAIx，一个以83亿虚拟用户（persona）为核心的人口规模模拟评测基础设施。它包含1,290维属性依赖图生成的相关人物记录，并发布约100万经过质量筛选的核心人物集。该基础设施能模拟多样化且交互式的用户行为，可广泛用于游戏等数字产品的AI系统测评与玩家行为模拟。",
+      "llm_tldr": "论文针对人类评测成本高、难以规模化的问题，提出MatrAIx，一个以83亿虚拟用户（persona）为核心的人口规模模拟评测基础设施。它包含1,290维属性依赖图生成的相关人物记录，并发布约100万经过质量筛选的核心人物集。该基础设施能模拟多样化且交互式的用户行为，可广泛用于游戏等数字产品的AI系统测评与玩家行为模拟。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "player behavior simulation techniques",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.04605v1",
+      "source": "arxiv",
+      "title": "Emotion Dynamics in Social Deception Games: Analysis of Professional and Nonprofessional Players through Electrodermal Activity in Werewolf Games",
+      "abstract": "The development of AI systems capable of emotionally resonant communication remains a significant challenge. This study examines how humans influence emotions in social deception games by comparing professional and non-professional players. We measured electrodermal activity during gameplay to capture physiological emotional responses and analyzed communication patterns during periods of high emotional arousal. Our results revealed distinct communication strategies: professional players maintained persuasion-based approaches under high arousal, while nonprofessional players shifted toward information-focused communication. Statistical analysis confirmed significant differences in expression patterns between expertise levels. Professional players exhibited more stable emotional states during gameplay, indicating better emotional regulation. These findings inform the design of AI systems that can adapt their communication strategies based on recipient characteristics, advancing the development of emotionally intelligent artificial agents.",
+      "authors": [
+        "Sho Mitarai",
+        "Chang Liu",
+        "Goshiro Yamamoto",
+        "Nagisa Munekata"
+      ],
+      "primary_category": "cs.HC",
+      "categories": [
+        "cs.HC"
+      ],
+      "published": "2026-08-05T09:12:51+00:00",
+      "link": "https://arxiv.org/pdf/2608.04605v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "player emotion and communication modeling in Werewolf game",
+      "llm_evidence_cn": "狼人杀游戏中的玩家情绪与沟通建模",
+      "llm_evidence": "狼人杀游戏中的玩家情绪与沟通建模",
+      "canonical_evidence": "狼人杀游戏中的玩家情绪与沟通建模",
+      "llm_tldr_en": "Analyzes physiological and communication patterns of professional vs nonprofessional players in Werewolf, revealing distinct strategies under high arousal for emotionally resonant AI.",
+      "llm_tldr_cn": "该研究通过测量狼人杀游戏中的皮肤电活动，比较专业与非专业玩家的情绪反应和沟通模式。结果显示高情绪唤醒时专业玩家保持说服式策略，而非专业玩家转向信息导向沟通。这些发现有助于开发能够情绪共鸣的AI系统，并为玩家行为建模提供数据基础。",
+      "llm_tldr": "该研究通过测量狼人杀游戏中的皮肤电活动，比较专业与非专业玩家的情绪反应和沟通模式。结果显示高情绪唤醒时专业玩家保持说服式策略，而非专业玩家转向信息导向沟通。这些发现有助于开发能够情绪共鸣的AI系统，并为玩家行为建模提供数据基础。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "virtual game player modeling",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.05479v1",
+      "source": "arxiv",
+      "title": "AI-Farol: Co-Evolutionary Dynamics in a Multi-Agent Two-Sided Learning Framework",
+      "abstract": "The El Farol Bar game is a classical model of coordination under uncertainty that traditionally treats the venue as a passive constraint. In this work, we reconceptualize the problem by modeling the bar as a strategic player endowed with AI-driven learning capabilities. We extend the original framework in two principal directions: first, by introducing partial observability, whereby agents observe only subsets of past attendees; and second, by transforming the bar from a passive capacity threshold into an active mechanism designer that adjusts pricing policies to balance revenue, utilization, and sustainability constraints. Agents employ AI-based learning to form beliefs and adapt attendance strategies under incomplete information, while the bar applies policy learning to optimize dynamic pricing. The resulting two-sided learning system frames coordination as a co-evolutionary process between boundedly rational agents and an adaptive institution, offering insights into congestion management, resource allocation, and mechanism design in complex adaptive systems.",
+      "authors": [
+        "Iosif Polenakis",
+        "Kalliopi Kastampolidou",
+        "Theodore Andronikos"
+      ],
+      "primary_category": "cs.GT",
+      "categories": [
+        "cs.GT"
+      ],
+      "published": "2026-08-05T23:55:49+00:00",
+      "link": "https://arxiv.org/pdf/2608.05479v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "AI agents learn and adapt behaviors in El Farol Bar game",
+      "llm_evidence_cn": "AI智能体在El Farol酒吧博弈中学习与适应行为",
+      "llm_evidence": "AI智能体在El Farol酒吧博弈中学习与适应行为",
+      "canonical_evidence": "AI智能体在El Farol酒吧博弈中学习与适应行为",
+      "llm_tldr_en": "AI-Farol extends the El Farol Bar game with partial observability and an AI-driven bar that adjusts pricing, studying co-evolutionary learning dynamics of AI agents. It demonstrates emergent coordination and strategy adaptation under incomplete information.",
+      "llm_tldr_cn": "经典的El Farol酒吧博弈通常将场地视为被动约束，本文将其改造为具有AI学习能力的战略玩家，并引入部分可观测性。AI智能体在不完全信息下通过信念学习调整参与策略，酒吧则作为机制设计者动态调整定价以平衡收益、利用率与可持续性。实验揭示了双向学习框架下的协同演化动态，为AI在多主体博弈中的自适应行为模拟提供了新场景。",
+      "llm_tldr": "经典的El Farol酒吧博弈通常将场地视为被动约束，本文将其改造为具有AI学习能力的战略玩家，并引入部分可观测性。AI智能体在不完全信息下通过信念学习调整参与策略，酒吧则作为机制设计者动态调整定价以平衡收益、利用率与可持续性。实验揭示了双向学习框架下的协同演化动态，为AI在多主体博弈中的自适应行为模拟提供了新场景。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.07220v1",
+      "source": "arxiv",
+      "title": "Beyond the Black Box: Interpretable Models of Human Randomisation Failures",
+      "abstract": "Mixed strategy equilibrium predicts i.i.d play: past actions should not help predict future decisions. Human players, however, systematically depart from this benchmark, and in O'Neill's zero sum card game, these departures can be predicted by black box sequence models such as LSTMs. This paper asks whether that predictive power can be achieved by transparent alternatives that also reveal the behavioural structure behind it. Using 84,060 decisions from 2,802 pairs, the analysis first benchmarks naive and behavioral models against interpretable machine learning and deep learning models, then evaluates the modified EWA specifications of prior work against these benchmarks and uses the LASSO diagnostics to motivate a further nested frequency tracking extension. The results show that repeat or avoid behavior, especially players' management of their own recent action histories, accounts for most of the interpretable and strategically exploitable signal, while frequency tracking adds little out of sample.",
+      "authors": [
+        "Ngoc Linh Dao"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-08-07T13:36:55+00:00",
+      "link": "https://arxiv.org/pdf/2608.07220v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "predicts human player decisions in a card game with interpretable models",
+      "llm_evidence_cn": "在牌类游戏中用可解释模型预测人类玩家决策",
+      "llm_evidence": "在牌类游戏中用可解释模型预测人类玩家决策",
+      "canonical_evidence": "在牌类游戏中用可解释模型预测人类玩家决策",
+      "llm_tldr_en": "Analyzes 84,060 human decisions in O'Neill's zero-sum card game, showing LSTMs predict departures from mixed equilibrium; benchmarks interpretable ML/behavioral models and uses LASSO diagnostics to reveal behavioral structure underlying human randomisation failures.",
+      "llm_tldr_cn": "该文围绕人类玩家在O'Neill零和纸牌游戏中的随机化失败展开，基于84,060个决策数据发现LSTM等黑箱序列模型可以预测人类偏离混合策略均衡的行为。作者进一步用朴素模型、行为模型、可解释机器学习与深度模型进行基准比较，并通过LASSO诊断提出嵌套频率追踪模型，在保持预测能力的同时揭示行为结构。该工作直接服务于游戏场景下的人类玩家行为建模，与虚拟游戏玩家建模需求高度契合。",
+      "llm_tldr": "该文围绕人类玩家在O'Neill零和纸牌游戏中的随机化失败展开，基于84,060个决策数据发现LSTM等黑箱序列模型可以预测人类偏离混合策略均衡的行为。作者进一步用朴素模型、行为模型、可解释机器学习与深度模型进行基准比较，并通过LASSO诊断提出嵌套频率追踪模型，在保持预测能力的同时揭示行为结构。该工作直接服务于游戏场景下的人类玩家行为建模，与虚拟游戏玩家建模需求高度契合。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "virtual game player modeling",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2608.01193v1",
+      "source": "arxiv",
+      "title": "Humans Are More Diverse: Frontier LLMs Show Extreme Policies in Idealised AI Development Races",
+      "abstract": "An AI development race creates a multi-agent safety dilemma. Each company can develop slowly and safely, or move faster while taking a risk that may remove its final reward. We use this repeated game to study strategic safety behaviour among large language model (LLM) agents in races with two to five players. However, a valid action does not show that an agent understands the game. We therefore place an audit gate before behavioural interpretation. We first verify the game engine, then test rule recall, state tracking, payoff calculation, and stability under different but equivalent task descriptions. We then compare LLM action sequences with an evolutionary game-theory benchmark and published human data, and explore differences across models, risk conditions, personas, and two- to five-player races. The audit shows that strong rule recall can coexist with weak state tracking and expected-payoff calculation. Providing verified arithmetic and changing the response representation can also change later actions, even when the game rules stay fixed. Across seven tested model endpoints, aggregate rates hide large differences in action sequences, responses to opponents, and responses to race position. Patterns across the tested three- to five-player races are also model-specific rather than a single effect of adding competitors. These results show why multi-agent AI-race simulations need validity checks and trajectory-level analysis before their outputs are described as strategic, human-like, or safety-aware. Our findings are exploratory and apply only to the tested models, prompts, and decoding settings.",
+      "authors": [
+        "Phu Hoa Pham",
+        "Duy Minh Dao Sy",
+        "Trung Kiet Huynh",
+        "Phu Quy Nguyen Lam",
+        "Chi Nguyen Tran",
+        "Minh Trung Le",
+        "Phong Hao Le",
+        "Dinh Nam Nguyen",
+        "Thien Ky Nguyen Dong",
+        "Elias Fernandez Domingos",
+        "Le Hong Trang",
+        "The Anh Han"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CY",
+        "cs.GT",
+        "cs.LG",
+        "cs.MA"
+      ],
+      "published": "2026-08-02T12:18:00+00:00",
+      "link": "https://arxiv.org/pdf/2608.01193v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "LLM agents playing repeated game and compared with human data",
+      "llm_evidence_cn": "LLM智能体玩重复博弈游戏并与人类数据对比",
+      "llm_evidence": "LLM智能体玩重复博弈游戏并与人类数据对比",
+      "canonical_evidence": "LLM智能体玩重复博弈游戏并与人类数据对比",
+      "llm_tldr_en": "This paper studies LLM agents in AI development races as repeated games, showing frontier LLMs adopt more extreme policies than humans, and verifies game reasoning via audit gates.",
+      "llm_tldr_cn": "该论文将AI研发竞赛建模为2-5人重复博弈游戏，研究LLM智能体的策略安全行为。作者在行为解释前设置审计门，验证智能体对规则的记忆、状态跟踪和收益计算等能力，并将LLM动作序列与进化博弈基准和人类数据对比。结果表明前沿LLM比人类表现出更极端的策略，提示在游戏式多智能体环境中LLM的行为偏差需要谨慎解释。",
+      "llm_tldr": "该论文将AI研发竞赛建模为2-5人重复博弈游戏，研究LLM智能体的策略安全行为。作者在行为解释前设置审计门，验证智能体对规则的记忆、状态跟踪和收益计算等能力，并将LLM动作序列与进化博弈基准和人类数据对比。结果表明前沿LLM比人类表现出更极端的策略，提示在游戏式多智能体环境中LLM的行为偏差需要谨慎解释。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.02287v1",
+      "source": "arxiv",
+      "title": "SKT: Skill-Use Training at Scale via Verified Synthetic Data Generation",
+      "abstract": "Agent skills have become an important mechanism for equipping language-model agents with reusable procedural knowledge. However, providing skills alone does not guarantee that current models can effectively identify, apply, and coordinate them. To improve skill-use capabilities, we introduce SKT, a verified data synthesis pipeline that constructs skill-grounded tasks and executable trajectories from large collections of agent skills. SKT selects suitable single-skill and multi-skill configurations, synthesizes tasks through rule-based and agent-based verification with feedback-guided repair, and retains only successful trajectories that substantially use every required skill. Using 2,000 public skills, SKT produces 4,000 task packages and 27,164 verified trajectories. Based on the same pipeline and a disjoint test pool, we further construct SkillEval, a held-out executable benchmark for evaluating skill use. Experiments across diverse models, benchmarks, and agent harnesses show that supervised fine-tuning on SKT-generated trajectories consistently improves skill-use performance. Verification ablations, cross-harness evaluation, and scaling experiments further demonstrate that these gains depend on high-quality supervision, extend beyond a single agent interface, and increase with broader skill coverage. Together, these results establish verified data synthesis as an effective and scalable approach for skill-use training.",
+      "authors": [
+        "Zelin Tan",
+        "Yiqun Zhang",
+        "Hao Li",
+        "Zhiyao Cui",
+        "Hejia Geng",
+        "Shao Zhang",
+        "Hangfan Zhang",
+        "Yang Chen",
+        "Xiaosong Wang",
+        "Lilong Wang",
+        "Zhenfei Yin",
+        "Shuyue Hu",
+        "Chen Zhang",
+        "Lei Bai"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-08-03T14:18:00+00:00",
+      "link": "https://arxiv.org/pdf/2608.02287v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "synthetic data pipeline for skill-use training of agents, applicable to game environments",
+      "llm_evidence_cn": "通过验证式合成数据训练智能体技能使用，可应用于游戏环境",
+      "llm_evidence": "通过验证式合成数据训练智能体技能使用，可应用于游戏环境",
+      "canonical_evidence": "通过验证式合成数据训练智能体技能使用，可应用于游戏环境",
+      "llm_tldr_en": "SKT is a verified data synthesis pipeline that generates skill-grounded tasks and executable trajectories, training agents to identify and coordinate skills. It produces 4,000 task packages and over 27,000 verified trajectories, showing scalable skill-use training with potential for game environments.",
+      "llm_tldr_cn": "提供技能并不意味着模型能够有效识别、应用和协调技能，为此本文提出SKT数据合成流水线。它从大规模技能库中选择单技能与多技能配置，通过规则和智能体双重验证并利用反馈修复生成任务与轨迹。基于2000个技能生成了4000个任务包和27164条验证轨迹，显著提升了智能体的技能使用能力。该方法为游戏环境中智能体的技能训练提供了可扩展的数据生成思路。",
+      "llm_tldr": "提供技能并不意味着模型能够有效识别、应用和协调技能，为此本文提出SKT数据合成流水线。它从大规模技能库中选择单技能与多技能配置，通过规则和智能体双重验证并利用反馈修复生成任务与轨迹。基于2000个技能生成了4000个任务包和27164条验证轨迹，显著提升了智能体的技能使用能力。该方法为游戏环境中智能体的技能训练提供了可扩展的数据生成思路。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.03502v1",
+      "source": "arxiv",
+      "title": "Hybrid LLM-Augmented Reinforcement Learning Agents for Complex Sequential Decision Tasks",
+      "abstract": "Large Language Models (LLMs) have recently shown strong capabilities in reasoning, planning, and tool-use, enabling new forms of autonomous agents. However, LLM-based agents struggle with long-horizon sequential decision tasks that require precise action optimization and environment interaction. Reinforcement Learning (RL), while effective for sequential control, often lacks the high-level abstraction and task decomposition abilities needed for complex scenarios. This paper introduces an LLM-Augmented Reinforcement Learning Agent that integrates LLM-driven planning with RL-based action optimization. The proposed architecture leverages the LLM to generate subgoals, structured plans, and contextual guidance, while the RL agent refines low-level actions through interaction with the environment. Experiments on sequential decision tasks demonstrate improved sample efficiency, higher success rates, and more coherent action trajectories compared to RL-only and LLM-only baselines. This hybrid paradigm highlights a promising direction for building more capable autonomous systems.",
+      "authors": [
+        "Christophe D. Hounwanou",
+        "John Emeka Eze",
+        "Yaé Ulrich Gaba"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.LG",
+        "cs.MA"
+      ],
+      "published": "2026-08-04T11:44:07+00:00",
+      "link": "https://arxiv.org/pdf/2608.03502v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Hybrid LLM and RL agent for complex sequential decision tasks, core for game AI",
+      "llm_evidence_cn": "LLM与强化学习混合智能体用于复杂序列决策任务，是游戏AI的核心",
+      "llm_evidence": "LLM与强化学习混合智能体用于复杂序列决策任务，是游戏AI的核心",
+      "canonical_evidence": "LLM与强化学习混合智能体用于复杂序列决策任务，是游戏AI的核心",
+      "llm_tldr_en": "The paper proposes a hybrid agent that integrates LLM-driven planning with RL action optimization for long-horizon sequential decision tasks, showing improved performance and sample efficiency.",
+      "llm_tldr_cn": "论文针对LLM智能体难以完成需要精确动作优化的长时序决策任务、而RL缺乏高层抽象能力的问题，提出LLM规划与RL动作优化相结合的新型智能体架构。该架构让LLM生成子目标和结构化规划，RL智能体负责精炼执行。实验表明其在复杂序列决策任务上较纯LLM或纯RL方法更高效，为游戏智能体提供了结合推理与控制的可行范式。",
+      "llm_tldr": "论文针对LLM智能体难以完成需要精确动作优化的长时序决策任务、而RL缺乏高层抽象能力的问题，提出LLM规划与RL动作优化相结合的新型智能体架构。该架构让LLM生成子目标和结构化规划，RL智能体负责精炼执行。实验表明其在复杂序列决策任务上较纯LLM或纯RL方法更高效，为游戏智能体提供了结合推理与控制的可行范式。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.02713v1",
+      "source": "arxiv",
+      "title": "Quo Vadis, World Modeling?",
+      "abstract": "Continually improving agents require dynamic interaction feedback beyond static supervision, yet direct real-environment interaction is costly, slow, unsafe, and hard to parallelize. World modeling offers a natural intermediate proxy that allows agents to query lower-cost, more controllable feedback before committing to real actions. Classical world models instantiate this proxy primarily through future physical-state prediction, a formulation useful yet narrow for agents that require actionable feedback beyond raw state transitions. In this work, we conceptualize Agent-Centric Interactive World Proxies, shifting the fundamental paradigm from physical state transitions to agent-usable information transitions, such as execution outcomes, retrieved experiences or skills, and verification signals, broadening the scope of world modeling to provide versatile feedback for continually improving agents. To systematically map this design space, we organize world proxies into six functional forms based on their feedback modalities: dynamics, spatial, execution, memory/experience, skill, and reward/verification proxies, which together characterize the primary ways world modeling serves agent improvement. We further analyze how these proxies empower agents across three progressive levels: L.1 Inference-Time Guidance, where proxy outputs enrich in-context information for superior decisions; L.2 Training-Time Optimization, where proxy outputs yield rewards, critiques, or synthetic rollouts for policy learning; and L.3 Agent-Proxy Co-Evolution, where real-environment evidence continuously updates both the proxy and the agent for co-evolution. Ultimately, this work recasts world modeling into an agent-centric paradigm, establishing a roadmap for building world proxies that empower agents to plan better, learn faster, and evolve continually.",
+      "authors": [
+        "Yu Yang",
+        "Xuemeng Yang",
+        "Licheng Wen",
+        "Lingdong Kong",
+        "Xiaobin Hu",
+        "Dongyue Lu",
+        "Wei Chow",
+        "Xiyan Huang",
+        "Yuxiang Feng",
+        "Yue Liao",
+        "Jianbiao Mei",
+        "Daocheng Fu",
+        "Rong Wu",
+        "Pinlong Cai",
+        "Ran Yi",
+        "Ying Tai",
+        "Jiangning Zhang",
+        "Botian Shi",
+        "Yong Liu",
+        "Shuicheng Yan"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI",
+        "cs.RO"
+      ],
+      "published": "2026-08-03T17:59:58+00:00",
+      "link": "https://arxiv.org/pdf/2608.02713v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "world proxies for agent training feedback in interactive environments",
+      "llm_evidence_cn": "面向智能体训练的交互式世界代理方法",
+      "llm_evidence": "面向智能体训练的交互式世界代理方法",
+      "canonical_evidence": "面向智能体训练的交互式世界代理方法",
+      "llm_tldr_en": "Proposes Agent-Centric Interactive World Proxies, shifting world models from physical state prediction to agent-usable information transitions such as execution outcomes and verification signals, enabling lower-cost feedback for continually improving agents in interactive environments.",
+      "llm_tldr_cn": "论文指出现有世界模型仅预测未来物理状态，对需要可执行反馈的智能体过于狭窄；为此提出以智能体为中心的交互式世界代理（Agent-Centric Interactive World Proxies），把建模对象从状态迁移扩展为执行结果、经验检索、验证信号等智能体可用信息迁移。该方法可为游戏等交互环境中的AI智能体提供低成本、可控的反馈代理，对游戏环境中的智能体训练具有方法论支撑价值。",
+      "llm_tldr": "论文指出现有世界模型仅预测未来物理状态，对需要可执行反馈的智能体过于狭窄；为此提出以智能体为中心的交互式世界代理（Agent-Centric Interactive World Proxies），把建模对象从状态迁移扩展为执行结果、经验检索、验证信号等智能体可用信息迁移。该方法可为游戏等交互环境中的AI智能体提供低成本、可控的反馈代理，对游戏环境中的智能体训练具有方法论支撑价值。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.03571v1",
+      "source": "arxiv",
+      "title": "Beyond Simply Environment Scaling: Designing Effective Environment Distributions for Multimodal Agent Learning",
+      "abstract": "Recent works train agents by constructing large-scale multimodal environment pools. However, we find that simply increasing the number of multimodal environments does not always benefit. We further analyze the limitations in current multimodal environment distributions through a series of experiments. Based on these findings, we study how to build more effective training environment distributions from two dimensions: **diversity** and **difficulty structure**. For diversity, we propose **Ability-aware Environment Selection (AES)** to obtain diverse environment sets. For difficulty structure, we propose **Hierarchical Difficulty Curriculum (HDC)**, which organizes curriculum learning through two difficulty levels: harness weakening and state-scale progression. Experiments show that AES and HDC effectively improve multimodal agent training.",
+      "authors": [
+        "Kejian Zhu",
+        "Zhuoran Jin",
+        "Dongqi Huang",
+        "Hongbang Yuan",
+        "Yupu Hao",
+        "Kang Liu",
+        "Jun Zhao"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-04T12:32:18+00:00",
+      "link": "https://arxiv.org/pdf/2608.03571v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "designing effective environment distributions for agent training",
+      "llm_evidence_cn": "面向智能体训练的多样化与分难度环境分布设计",
+      "llm_evidence": "面向智能体训练的多样化与分难度环境分布设计",
+      "canonical_evidence": "面向智能体训练的多样化与分难度环境分布设计",
+      "llm_tldr_en": "This paper finds that simply scaling multimodal environments does not benefit agent learning, and proposes Ability-aware Environment Selection and Hierarchical Difficulty Curriculum to construct diverse, well-structured training distributions, improving multimodal agent learning.",
+      "llm_tldr_cn": "现有研究通过构建大规模多模态环境池训练智能体，但本文发现简单增加环境数量并不总是有效。文章分析了当前多模态环境分布的问题，并提出基于能力感知的环境选择（AES）和分层难度课程（HDC）来设计兼具多样性与难度结构的环境分布。实验结果表明该方法能显著提升多模态智能体的学习效果，为智能体训练环境设计提供了新思路。",
+      "llm_tldr": "现有研究通过构建大规模多模态环境池训练智能体，但本文发现简单增加环境数量并不总是有效。文章分析了当前多模态环境分布的问题，并提出基于能力感知的环境选择（AES）和分层难度课程（HDC）来设计兼具多样性与难度结构的环境分布。实验结果表明该方法能显著提升多模态智能体的学习效果，为智能体训练环境设计提供了新思路。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.03571v2",
+      "source": "arxiv",
+      "title": "Beyond Simply Environment Scaling: Designing Effective Environment Distributions for Multimodal Agent Learning",
+      "abstract": "Recent works train agents by constructing large-scale multimodal environment pools. However, we find that simply increasing the number of multimodal environments does not always benefit. We further analyze the limitations in current multimodal environment distributions through a series of experiments. Based on these findings, we study how to build more effective training environment distributions from two dimensions: **diversity** and **difficulty structure**. For diversity, we propose **Ability-aware Environment Selection (AES)** to obtain diverse environment sets. For difficulty structure, we propose **Hierarchical Difficulty Curriculum (HDC)**, which organizes curriculum learning through two difficulty levels: harness weakening and state-scale progression. Experiments show that AES and HDC effectively improve multimodal agent training.",
+      "authors": [
+        "Kejian Zhu",
+        "Zhuoran Jin",
+        "Dongqi Huang",
+        "Hongbang Yuan",
+        "Yupu Hao",
+        "Kang Liu",
+        "Jun Zhao"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-04T12:32:18+00:00",
+      "link": "https://arxiv.org/pdf/2608.03571v2",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Designing effective environment distributions for agent learning",
+      "llm_evidence_cn": "为智能体学习设计有效环境分布",
+      "llm_evidence": "为智能体学习设计有效环境分布",
+      "canonical_evidence": "为智能体学习设计有效环境分布",
+      "llm_tldr_en": "This paper studies how to build effective training environment distributions for multimodal agents, proposing AES for diversity and HDC for difficulty curriculum. Experiments show better learning efficiency and generalization.",
+      "llm_tldr_cn": "论文针对多模态智能体训练中简单扩大环境数量并不总是有效的问题，提出从多样性和难度结构两个维度设计更有效的环境分布。方法包括能力感知环境选择（AES）和分层难度课程（HDC）。实验表明，所提方法能显著提升智能体的学习效率与泛化表现，为游戏等复杂环境下的智能体训练提供了可借鉴的课程设计思路。",
+      "llm_tldr": "论文针对多模态智能体训练中简单扩大环境数量并不总是有效的问题，提出从多样性和难度结构两个维度设计更有效的环境分布。方法包括能力感知环境选择（AES）和分层难度课程（HDC）。实验表明，所提方法能显著提升智能体的学习效率与泛化表现，为游戏等复杂环境下的智能体训练提供了可借鉴的课程设计思路。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.04934v1",
+      "source": "arxiv",
+      "title": "State2State: Environment-Derived Mid-Training for LLM Agents",
+      "abstract": "Training LLM agents commonly relies on supervised fine-tuning from expert trajectories or online reinforcement learning over human-specified tasks with handcrafted verifiers. Though effective, both remain bottlenecked by externally specified tasks and supervision signals, limiting the scalability and diversity of agent training. We study an environment learning paradigm in which agents acquire interaction and manipulation capabilities solely through environment interaction, without externally specified tasks. We propose State2State, an environment-derived mid-training method that converts explored environment states into training objectives, challenging agents to reach a specified target state. By deriving tasks from environment exploration and verifying success through rule-based state matching, State2State provides scalable and verifiable training objectives without expert supervision or manual task design. Experiments on ALFWorld and ScienceWorld show that State2State improves agent performance as a standalone environment-learning stage in most settings. As initialization for downstream RL, it further improves final performance and learning efficiency, with promising evidence of cross-environment generalization.",
+      "authors": [
+        "Xuanyu Lei",
+        "Yiqi Zhu",
+        "Chenliang Li",
+        "Kaiming Liu",
+        "Peng Li",
+        "Ming Yan",
+        "Jieping Ye",
+        "Ya-Qin Zhang",
+        "Yang Liu"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-08-05T15:02:41+00:00",
+      "link": "https://arxiv.org/pdf/2608.04934v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Environment-derived mid-training trains agents purely via environment interaction, transferable to AI agent training in game environments",
+      "llm_evidence_cn": "通过环境交互派生训练目标，可迁移到游戏环境中的智能体训练",
+      "llm_evidence": "通过环境交互派生训练目标，可迁移到游戏环境中的智能体训练",
+      "canonical_evidence": "通过环境交互派生训练目标，可迁移到游戏环境中的智能体训练",
+      "llm_tldr_en": "LLM agent training relies on external tasks. The proposed State2State derives training objectives from explored environment states so agents learn interaction and manipulation skills solely through environment experience, offering a transferable training paradigm for game environments.",
+      "llm_tldr_cn": "该论文指出LLM智能体训练通常依赖专家轨迹或人工验证器，外部任务瓶颈限制了规模与多样性。为此提出State2State环境派生中期训练方法，让智能体纯粹通过与环境交互，把探索到的状态转化为训练目标。实验表明智能体无需外部指定任务即可习得交互与操控能力。该范式可迁移到游戏环境中的AI agent训练，为自主技能获取提供新路径。",
+      "llm_tldr": "该论文指出LLM智能体训练通常依赖专家轨迹或人工验证器，外部任务瓶颈限制了规模与多样性。为此提出State2State环境派生中期训练方法，让智能体纯粹通过与环境交互，把探索到的状态转化为训练目标。实验表明智能体无需外部指定任务即可习得交互与操控能力。该范式可迁移到游戏环境中的AI agent训练，为自主技能获取提供新路径。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.05797v1",
+      "source": "arxiv",
+      "title": "Predicting Task Difficulty Without Rollouts",
+      "abstract": "Task difficulty dictates an agent's likelihood of success, and estimating it without rollouts means forecasting this directly from a task description before executing costly simulations in stateful environments. Reliable estimates would therefore allow environment designers to calibrate evaluation benchmarks and construct progressive training curricula. This becomes increasingly important as agents move into long-horizon domains, where empirical trial-and-error is a severe computational bottleneck. Prior work on early prediction is limited to static tasks or isolated coding environments, often relying on narrow features and inaccurate evaluation metrics. We study \\textit{ex ante} difficulty prediction across 17 agentic benchmarks spanning coding, mathematics, machine learning, web navigation, function calling, and other domains. We show that AUC can mask poor difficulty estimates, identify token-level entropy as a useful predictive signal, and show how residuals between expected and observed difficulty can expose hidden environment flaws such as contamination and infeasibility.",
+      "authors": [
+        "Stefan Krsteski",
+        "Charlotte Meyer"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.CL"
+      ],
+      "published": "2026-08-06T09:33:09+00:00",
+      "link": "https://arxiv.org/pdf/2608.05797v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Ex ante task difficulty prediction without rollouts enables progressive training curricula in stateful environments like games",
+      "llm_evidence_cn": "无需展开即可预测智能体任务难度，可用于游戏等环境中的渐进式训练课程",
+      "llm_evidence": "无需展开即可预测智能体任务难度，可用于游戏等环境中的渐进式训练课程",
+      "canonical_evidence": "无需展开即可预测智能体任务难度，可用于游戏等环境中的渐进式训练课程",
+      "llm_tldr_en": "This paper predicts task difficulty for agents directly from task descriptions before costly rollouts. Experiments across 17 agentic benchmarks show feasible ex ante prediction, enabling benchmark calibration and progressive curricula in stateful environments like games.",
+      "llm_tldr_cn": "该论文针对智能体在长周期环境中试错成本高昂的问题，研究无需实际执行即可从任务描述预测任务难度的方法。作者在涵盖编程、数学、机器学习等17个智能体基准上进行实验，验证了这种‘先验’难度预测的可行性。可靠的难度估计能帮助环境设计者校准评测基准、构建渐进式训练课程。该方法可迁移到游戏环境中，为AI agent训练提供低成本难度信号。",
+      "llm_tldr": "该论文针对智能体在长周期环境中试错成本高昂的问题，研究无需实际执行即可从任务描述预测任务难度的方法。作者在涵盖编程、数学、机器学习等17个智能体基准上进行实验，验证了这种‘先验’难度预测的可行性。可靠的难度估计能帮助环境设计者校准评测基准、构建渐进式训练课程。该方法可迁移到游戏环境中，为AI agent训练提供低成本难度信号。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.05422v1",
+      "source": "arxiv",
+      "title": "IFlowNets: Extending Generative Samplers to Learn Strategies in Incomplete Information Games",
+      "abstract": "While many algorithms blend reinforcement learning (RL) with counterfactual regret (CFR) methods to leverage tradeoffs in computational speed and performance, there are fewer investigations into generative sampling frameworks in game theoretic applications in incomplete information games. We extend a generative flow network framework, Adversarial Flow Networks (AFlowNets), to incomplete information games, called Information Flow Networks (IFNs). We prove that previously established constraints for generative flow networks in complete information games are inadmissible for obtaining valid densities (corresponding to player strategies) and a valid training objective. We show that our proposed generalization, IFlowNets, alleviates this issue and strictly generalizes AFlowNets. In preliminary results for three standard game environments, IFlowNets perform comparably to or better than Outcome Sampling Monte Carlo Counterfactual Regret (OSMCCFR) and standard RL-based methods in performance and speed.",
+      "authors": [
+        "Conor M. Artman",
+        "Nicholas Di",
+        "Scott Perkins"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.MA"
+      ],
+      "published": "2026-08-05T21:31:23+00:00",
+      "link": "https://arxiv.org/pdf/2608.05422v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "generative flow networks for strategy learning in incomplete-information games",
+      "llm_evidence_cn": "生成流网络用于不完全信息博弈中的策略学习",
+      "llm_evidence": "生成流网络用于不完全信息博弈中的策略学习",
+      "canonical_evidence": "生成流网络用于不完全信息博弈中的策略学习",
+      "llm_tldr_en": "Extends generative flow networks to incomplete-information games, proving prior constraints inadmissible and proposing Information Flow Networks to learn player strategies.",
+      "llm_tldr_cn": "该论文将对抗流网络（AFlowNets）推广到不完全信息博弈，提出信息流网络（IFNs）来学习玩家策略。论文证明原有生成流网络约束在此类博弈中无法得到有效密度，并通过推广约束得到可训练的目标。该工作为不完全信息博弈中的生成式策略学习提供了新框架。",
+      "llm_tldr": "该论文将对抗流网络（AFlowNets）推广到不完全信息博弈，提出信息流网络（IFNs）来学习玩家策略。论文证明原有生成流网络约束在此类博弈中无法得到有效密度，并通过推广约束得到可训练的目标。该工作为不完全信息博弈中的生成式策略学习提供了新框架。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.06197v1",
+      "source": "arxiv",
+      "title": "EnvACE: Internalizing Environment Dynamics via World Rehearsal for Agentic Reinforcement Learning",
+      "abstract": "Training large language model agents for long-horizon tool use typically relies on interactions with real or synthesized executable environments, whose construction and verification are costly, or on external simulators that are difficult to ground. We introduce EnvACE, an agentic reinforcement learning method that replaces external environment interaction during training with world rehearsal. The policy alternates between acting and rehearsal: it first generates a tool call, then plays the role of the environment to produce the response induced by that action, and conditions subsequent decisions on the rehearsed response. Both roles are jointly optimized end-to-end using task-success rewards. Through world rehearsal, the policy internalizes the relationship between actions and their environment responses in its parameters, yielding an agent world model that directly supports decision making. Across BFCL-v4, tau^2-Bench, VitaBench, and FinMCP-Bench, EnvACE achieves strong and transferable performance, outperforming environment-scaling baselines in the overall evaluation. Controlled studies further show that world rehearsal consistently improves policy learning across model scales. At test time, the internalized world model enables private rehearsal before committed execution, yielding further gains under a moderate rehearsal budget without additional external interaction. Our findings establish world rehearsal as a new path toward scaling LLM agent training beyond the constraints of external environments. Our code is publicly available at https://github.com/Within-yao/EnvACE.",
+      "authors": [
+        "Zishan Xu",
+        "Zhiyuan Yao",
+        "Yuxin Chen",
+        "Yifu Guo",
+        "Zhengxi Lu",
+        "Yuquan Lu",
+        "Jinyang Huang",
+        "Yan Xu",
+        "Yasheng Wang",
+        "Weinan Zhang",
+        "Xingshan Zeng",
+        "Weiwen Liu"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-08-06T15:54:36+00:00",
+      "link": "https://arxiv.org/pdf/2608.06197v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Agent training via world rehearsal without external environment, relevant for game agent training",
+      "llm_evidence_cn": "通过世界排练训练智能体，无需外部环境，可用于游戏智能体训练",
+      "llm_evidence": "通过世界排练训练智能体，无需外部环境，可用于游戏智能体训练",
+      "canonical_evidence": "通过世界排练训练智能体，无需外部环境，可用于游戏智能体训练",
+      "llm_tldr_en": "EnvACE replaces external environment interaction with world rehearsal, allowing LLM agents to be trained end-to-end for long-horizon tool use without costly simulators.",
+      "llm_tldr_cn": "论文提出EnvACE，通过世界排练让智能体在训练中既扮演行动者又扮演环境，生成工具调用后的反馈，从而摆脱对外部可执行环境的依赖。策略通过任务成功奖励进行端到端联合优化，有效降低环境构造与验证成本。该方法可用于游戏环境中的智能体训练，在缺少真实模拟器时依然能够学习长时序交互策略。",
+      "llm_tldr": "论文提出EnvACE，通过世界排练让智能体在训练中既扮演行动者又扮演环境，生成工具调用后的反馈，从而摆脱对外部可执行环境的依赖。策略通过任务成功奖励进行端到端联合优化，有效降低环境构造与验证成本。该方法可用于游戏环境中的智能体训练，在缺少真实模拟器时依然能够学习长时序交互策略。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.06741v1",
+      "source": "arxiv",
+      "title": "Solver-Guided Reasoning for Mixed-Equilibrium Strategies",
+      "abstract": "Reasoning in large language models (LLMs) is often grounded in human text, human demonstrations, and human-generated rationales. For equilibrium reasoning in complex games, however, relying on human data can be suboptimal. In fact, human play is often guided by intuition and heuristics and can deviate substantially from game equilibrium. This discrepancy is amplified in games with mixed-strategy equilibria, where human data is heavily biased toward pure strategies. Consequently, conditioning LLMs on this data yields weak game strategies. To grant LLMs the reasoning capacity in games, in this work, we study how to elicit equilibrium play using solver output. We propose Mixed-Strategy Decision Tree (MDT), which articulates the silent optimality of the equilibrium into sparse strategic rules that both humans and LLMs could understand. Using solver output rather than human annotation allows us to extend the input to arbitrarily new states and continuations. We instantiate this study on No-Limit Texas Hold'em by querying a solver oracle for over \\textbf{250 million mixed-strategy decisions}; MDT together with other techniques \\textbf{reduces the $\\ell_1$ distance to the equilibrium by $52.6\\%$} across $8$ different LLM configurations. A Route-only ablation tests the incremental contribution of the shadow-based contrast, while complete River-endgame and Liar's Dice experiments evaluate strategic fidelity and portability beyond the original NLH communication setting.",
+      "authors": [
+        "Han Wang",
+        "Philippe Beardsell",
+        "Boning Li",
+        "Aaron Sasmita",
+        "Shuai Li",
+        "Hongyuan Zha",
+        "Baoxiang Wang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.GT"
+      ],
+      "published": "2026-08-07T03:12:06+00:00",
+      "link": "https://arxiv.org/pdf/2608.06741v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "equilibrium reasoning in games using LLM with solver guidance",
+      "llm_evidence_cn": "利用求解器引导LLM进行游戏中的均衡推理",
+      "llm_evidence": "利用求解器引导LLM进行游戏中的均衡推理",
+      "canonical_evidence": "利用求解器引导LLM进行游戏中的均衡推理",
+      "llm_tldr_en": "This paper proposes Mixed-Strategy Decision Tree (MDT) to guide LLM reasoning with solver output for mixed-strategy equilibria in games, addressing human data bias. It shows improved game strategies over human-conditioned reasoning.",
+      "llm_tldr_cn": "大语言模型在复杂游戏中的均衡推理通常依赖人类示范，而人类数据在混合策略均衡上存在明显偏向纯策略的偏差。本文提出混合策略决策树（MDT），利用求解器的输出来引导LLM认识均衡的隐性最优性，从而在博弈中获得更强的策略表现。实验表明该方法相比基于人类数据的推理能够生成更接近均衡的策略，为提升LLM在游戏推理与决策中的能力提供新路径。",
+      "llm_tldr": "大语言模型在复杂游戏中的均衡推理通常依赖人类示范，而人类数据在混合策略均衡上存在明显偏向纯策略的偏差。本文提出混合策略决策树（MDT），利用求解器的输出来引导LLM认识均衡的隐性最优性，从而在博弈中获得更强的策略表现。实验表明该方法相比基于人类数据的推理能够生成更接近均衡的策略，为提升LLM在游戏推理与决策中的能力提供新路径。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "artificial intelligence in games",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

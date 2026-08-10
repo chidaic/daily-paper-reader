@@ -1,0 +1,842 @@
+Title: Beyond Simply Environment Scaling: Designing Effective Environment Distributions for Multimodal Agent Learning
+
+URL Source: https://arxiv.org/pdf/2608.03571v2
+
+Published Time: Fri, 07 Aug 2026 00:24:12 GMT
+
+Number of Pages: 26
+
+Markdown Content:
+# Beyond Simply Environment Scaling: Designing Effective Environment Distributions for Multimodal Agent Learning 
+
+Kejian Zhu 1,2 , Zhuoran Jin 1,2 , Dongqi Huang 1,2 , Hongbang Yuan 1,2 , Yupu Hao 1,2 ,Kang Liu 1,2 , Jun Zhao 1,2 †1The Key Laboratory of Cognition and Decision Intelligence for Complex Systems, Institute of Automation, Chinese Academy of Sciences, Beijing, China 
+
+> 2
+
+School of Artificial Intelligence, University of Chinese Academy of Sciences, Beijing, China 
+
+zhukejian2025@ia.ac.cn , {zhuoran.jin,kliu,jzhao} @nlpr.ia.ac.cn 
+
+Abstract 
+
+Recent works train agents by constructing large-scale multimodal environment pools. How-ever, we find that simply increasing the number of multimodal environments does not always benefit. We further analyze the limitations in current multimodal environment distributions through a series of experiments. Based on these findings, we study how to build more effective training environment distributions from two di-mensions: diversity and difficulty structure .For diversity, we propose Ability-aware En-vironment Selection (AES) to obtain diverse environment sets. For difficulty structure, we propose Hierarchical Difficulty Curriculum (HDC) , which organizes curriculum learning through two difficulty levels: harness weaken-ing and state-scale progression. Experiments show that AES and HDC effectively improve multimodal agent training. § Code 
+
+1 Introduction 
+
+Recent advances in multimodal large language models (MLLMs) and agents are shifting the focus of model training from static datasets (Jin et al., 2026) to dynamic environments (Shi et al., 2026). To improve different abilities of agents, a growing body of work constructs large-scale multimodal en-vironments and trains agents jointly on them (Meng et al., 2026). Existing efforts on scaling multi-modal environments mainly emphasize the qual-ity of each individual environments (Zhang et al., 2025b). They typically verify whether an environ-ment can be executed (Wu et al., 2026) or provide reliable reward (He et al., 2025). We refer to this perspective as sample-level quality . Such checks are necessary for ensuring that each environment is usable. However, for agent training, the quality of individual environments is not sufficient. What an agent actually learns, and how well it generalizes,   
+
+> †Corresponding authors. Effectiveness of Environment Distribution
+> Task Diversity Difficulty Level Level 1
+> Level 3
+> Level 4
+> Environment
+> Pool
+> Curriculum Learning
+> Level 2
+
+Figure 1: Environment distribution needs to be evalu-ated from two dimensions: diversity and difficulty level. 
+
+is also directly depended on the effectiveness of training environment distribution .To analyze the limitations of existing environ-ment distributions, we build a pool of 200 environ-ments based on prior works (Wang et al., 2026b; Meng et al., 2026) and conduct a series of prelim-inary experiments in Section 2. First, the results in Section 2.1 show that as the number of training environment types increases, model performance may fluctuate substantially or even degrade. This suggests that more multimodal environment types are not necessarily better. Second, in Section 2.2, we find that this mixed-training failure is more se-vere in multimodal environments. For the same environment distribution, we construct both text-symbolic and multimodal versions for comparison. The results show that the multimodal version ex-hibits stronger negative transfer and gradient con-flicts across environments, and is more likely to suf-fer performance degradation under mixed training. These preliminary findings indicate that training multimodal agents requires a deeper analysis of the effectiveness of training environment distributions, going beyond simple environment scaling. Thus our research question is: how can we eval-uate and design effective training environment distributions for multimodal agents? We argue that the effectiveness of environment distribution should be evaluated along two dimensions: diver-sity and difficulty structure , as shown in Figure 1. Diversity requires the environment set to cover 1arXiv:2608.03571v2 [cs.CV] 6 Aug 2026 Diversity : Ability-aware Environment Selection 
+
+> Small Model
+> Strong Model
+> Environment
+> Success Trajectory 1
+> Failed Trajectory n
+> Success Trajectory 2
+
+...... 
+
+> Annotation
+> Model
+> Trajectory Pool
+
+......    
+
+> Behavior 1 Behavior 2 ...
+> ...
+> Failure Pattern 1 ...
+> Atom Ability Pool
+> Environment Profile
+> extract grid state
+> solve path planning
+
+...... 
+
+> format action
+
+...... 
+
+> solve path planning
+> verify terminal state
+
+...... 
+
+Construct Environment Profile 1   
+
+> Core Ability
+> Soft Ability
+> Ability Graph
+
+2 
+
+> Source Environments Calculate Gain
+
++ New Ability Coverage  
+
+> Final Environments
+> Select the environment
+> with maximum gain
+> Cover all
+> Abilities?
+> Atom Ability
+> Segment
+
+Environment Selection   
+
+> Selected
+> Environments
+> in Round t
+> Combine
+> & Summarize
+> Collect Agent Trajectory
+> Behavior 1 Behavior 2
+
+Difficulty : Hierarchical Difficulty Curriculum  
+
+> Text Observation
+> P
+
+. . . 
+
+> H
+
+. H H 
+
+. . . .
+
+. . . G
+
+> P: Player H:Hole
+> G: Goal
+> player_pos = [0, 0]
+> goal_pos = [3, 3]
+> holes = [(1,0), (1,2), (1,3)]
+> Text State
+> Action list:
+> [up], [down] ...
+> Objective: Navigate
+> from the start to the
+> goal ... without
+> falling into any
+> holes.
+> The gift icon is the goal, the
+> figure icon is your current
+> position ...
+> Text Hint
+
+Training Harness  Rules   
+
+> Visual
+> Observation
+> Harnesses
+> Inner Curriculum
+> State-scale Difficulty
+> Harnesses Harnesses Harnesses
+
+...... 
+
+> S Level 0
+> Small
+> S Level 1
+> Medium
+> S Level 2
+> Large
+> S Level
+> Reset
+> Outer Curriculum
+> Harness Weakening
+> H Level 0
+
+Hierarchical  Curriculum Learning  S Level   
+
+> Reset
+> H Level 1 H Level 2 H Level 4
+
+- Redundancy  
+
+> (Profile Similarity)
+
+- Conflict    
+
+> (Negative Gradient Cosine)
+> Yes
+> No t+1
+
+Figure 2: An overview of our methods for evaluating and designing effective environment distribution. 
+
+broad abilities while avoiding redundancy and con-flicts. Difficulty structure refers to whether the environment distribution provides a meaningful dif-ficulty progression, so that the agent can improve continuously and stably. Based on this perspec-tive, we analyze these two dimensions separately and propose corresponding methods. The overall framework of our method is illustrated in Figure 2. 
+
+(1) For diversity , our goal is to obtain an envi-ronment distribution with high coverage, low re-dundancy and optimization conflict. As discussed in Section 3, instead of measuring diversity through surface-level signals, such as task-description rep-resentations, as in prior works (Zhang et al., 2025b), we argue that the underlying diversity of environ-ments should be analyzed from the perspective of agent behaviors and the abilities learned during training. We therefore analyze agent trajectories in different environments, decompose them into reusable atomic abilities, and construct a meta-ability profile for each environment. Based on these profiles, we propose Ability-aware Environment Selection (AES) . AES selects environments by maximizing the coverage of meta-abilities. Mean-while, it reduces redundancy through profile simi-larity analysis and mitigates potential optimization conflicts through mechanistic gradient analysis. 
+
+(2) For difficulty structure , we further study multimodal-specific difficulty structure in Sec-tion 4. We first show that two major ability bottle-necks of multimodal agents are visual state extrac-tion and world modeling, which is consistent with prior multimodal agent studies (Wang et al., 2026b; Meng et al., 2026). However, existing works often follow the same framework as text environments and mainly define difficulty structure by state scale, such as grid size. This does not directly target the unique bottlenecks of multimodal agents. To this end, we propose Hierarchical Difficulty Curricu-lum (HDC) , a multimodal difficulty curriculum. Our two-level difficulty structure consists of har-ness weakening and state-scale progression. Here, a harness refers to a type of training scaffold that provides additional textual auxiliary information to help the agent extract visual states and understand world dynamics. As shown on the right side of Fig-ure 2, we design multiple harnesses and gradually remove these scaffolds to help the agent overcome the two major ability bottlenecks. Within each harness stage, we further apply conventional state-scale curriculum learning as the inner curriculum to improve training stability and generalization. We evaluate our framework on multiple settings. The experiments show that the high-quality envi-ronment subset selected by AES can outperform training on the full environment pool while using fewer environments. In addition, HDC leads to more stable training and better performance than both direct training and conventional scale-only cur-riculum learning. Together, AES and HDC achieve a 143.2% average relative gain across different set-tings. These results highlight that designing effec-tive environment distributions is an important and promising direction for multimodal agent research. 
+
+2 Preliminaries 
+
+We first collect and unify 200 multimodal environ-ments based on prior works (Wang et al., 2026b; 20 20 40 60 80 100 120 140 160 
+
+> Number of Training Environments
+> 0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7
+> Success Rate
+
+Scaling Multimodal Environments          
+
+> ID Envs OOD Envs Figure 3: Effect of simply environment scaling.
+> Setting Avg. Single Avg. Mixed Drop Text-symbolic 70.4 69.5 -1.3% Multimodal 48.4 43.2 -10.7%
+> Table 1: Results of mixed-environment training. Avg. Single denotes the average performance of separately trained single-environment models, while Avg. Mixed denotes the average performance of one model trained on the mixed environment set.
+
+Meng et al., 2026). Then we conduct a series of controlled experiments on them to analyze the key problems in current multimodal environments. De-tailed settings are provided in Appendix B. 
+
+2.1 Naive Scaling Multimodal Environments Not Always Benefits 
+
+To train agents with diverse abilities, recent works have constructed large-scale multimodal environ-ment collections. However, does simply scaling the number of environment types always benefits? To study this question, we train agents on our 200-environment pool. We gradually increase the num-ber of environment types used for training and keep the total compute budget fixed. As shown in Fig-ure 3, model performance does not monotonically improve as the number of environment types in-creases. Under some environment scales, the per-formance may even decrease. This indicates that simply scaling the number of multimodal environ-ments is not always stable. It may introduce redun-dancy or conflicts. Therefore, we need to further analyze the distribution of environment set. 
+
+2.2 Multimodal Environments Are More Prone to Negative Transfer 
+
+To determine whether the mixed-training degra-dation simply comes from logic conflicts among environments, we conduct a controlled comparison. Specifically, we construct two versions of the same environment set: text-symbolic and multimodal. In the text-symbolic version, visual observations are converted into text observations, while other infor-mation remains unchanged. For each version, we train separate models on individual environments and also train one model on mixed-environment. We first compare how mixed-environment train-ing affects the two versions. As shown in Table 1, the text-symbolic version is more stable under mixed training. Compared with single-environment training, mixed training causes only a 1.3% drop in the text-symbolic setting, but a much larger 10 .7% 
+
+drop in the multimodal setting, indicating stronger negative transfer. Appendix E.2 provides the full transfer matrices, including cross-environment evaluation results of single-environment models. These results further show that multimodal envi-ronments are more prone to negative transfer. We further analyze training conflicts from the gradient perspective. Given two environments, we compute their training gradients gi and gj , and use cosine similarity to measure the consistency of their update directions. A large | cos( gi, g j )| indicates strong coupling between the update directions, and negative values suggest conflict. As shown in Fig-ure 4. Compared with the text-symbolic version, the multimodal version exhibits more polarized gra-dient similarities, including several strongly neg-ative correlations. This indicates that even when the underlying task logic remains unchanged, the multimodal environments can amplify optimization conflicts between environments. Overall, these results suggest that mixed-environment training degradation is more pronounced in multimodal en-vironments. This motivates a closer study of how to construct effective training environment distribu-tions for multimodal agents. 
+
+2.3 Multimodal-Specific Failure Modes 
+
+Finally, we analyze multimodal-specific bottle-necks of models in multimodal environments. We examine 200 failure trajectories of Qwen3-VL-4B and conduct manual error analysis. As shown in Figure 5, we find that model failures mainly stem from two factors. The first is visual state extraction .Models often fail to reliably extract the environ-ment state from visual observations. The second is 
+
+world modeling . The model may fail to correctly understand environment rules and how actions af-fect the environment. These findings are consistent with recent studies (Wang et al., 2026b). However, these two bottlenecks cannot be solved simply by 3Addition Table Mini Sudoku Rectangle Count Rotate Matrix Spiral Matrix TicTacToe QA Addition Table Mini Sudoku Rectangle Count Rotate Matrix Spiral Matrix TicTacToe QA - 0.062 0.082 0.100 0.126 0.058 0.062 - 0.074 0.082 0.040 0.067 0.082 0.074 - 0.125 0.116 0.042 0.100 0.082 0.125 - 0.231 0.055 0.126 0.080 0.116 0.231 - 0.061 0.058 0.067 0.042 0.055 0.061 -
+
+Text-Symbolic                               
+
+> Addition Table Mini Sudoku Rectangle Count Rotate Matrix Spiral Matrix TicTacToe QA Addition Table Mini Sudoku Rectangle Count Rotate Matrix Spiral Matrix TicTacToe QA -0.315 -0.130 0.004 0.004 -0.009 0.315 --0.131 0.226 0.254 0.006 -0.130 -0.131 -0.015 0.015 0.026 0.004 0.226 0.015 -0.550 0.022 0.004 0.254 0.015 0.550 -0.026 -0.009 0.006 0.026 0.022 0.026 -
+
+Multimodal 
+
+> -0.19 -0.05 0.00 0.08 0.21 0.34 0.47 0.60
+
+Figure 4: Gradient cosine similarity analysis between environments under different versions. 30% 22% 23% 15% 5% 5% Visual State Extraction Error World Modeling Error Text Reasoning Error Action Format Invalid Output Formatting Error Others 
+
+Figure 5: Error analysis of multimodal agents. 
+
+increasing the number of environments. Instead, it requires a difficult schedule tailored to the unique challenges of multimodal agents to help the model overcome these limitations (Meng et al., 2026). 
+
+2.4 From Simply Environment Scaling to Effective Environment Distribution 
+
+The preliminary experiments show that the key to multimodal environments is not merely to construct 
+
+more “usable” environments , but to construct a more effective training environment distribution .Therefore, we focus on how to design effective en-vironment distributions for multimodal agents. We argue that the effectiveness of an environment dis-tribution should be evaluated along at least two core dimensions: diversity and difficulty structure . In the following sections, we will study these two dimensions and introduce corresponding methods. 
+
+3 Diversity: Environmental Selection 
+
+The first key dimension is diversity . Existing works often measure environment diversity using surface representations such as task descriptions or environment code (Song et al., 2026; Wang et al., 2026a). However, these representations do not nec-essarily reflect the actual abilities that agents need to learn in the environments. Therefore, we charac-terize environment diversity from the perspective of agent ability diversity . The core idea is that the underlying diversity of environments should be analyzed through agent behaviors and the abil-ities required to solve the tasks. Based on this idea, we first decompose agent trajectories into a set of reusable atomic abilities , and then build a 
+
+meta-ability profile for each environment. We fur-ther propose Ability-aware Environment Selec-tion (AES) , which selects a compact and comple-mentary environment subset based on meta-ability profiles and gradient-based conflict analysis. We describe this method in detail below. We show the complete pipeline on the left side of Figure 2. 
+
+3.1 Construct Meta-Ability Profiles 
+
+As shown in the upper-left panel of Figure 2, for each environment, we collect 40 agent trajectories: half from Qwen3-VL-4B and half from a stronger model, Gemini-3-Flash (Google DeepMind, 2025). Using models with different capability levels al-lows the trajectory pool to contain both successful strategies and failure patterns, which reveal the underlying ability requirements from complemen-tary perspectives. We then use a strong annota-tion model, GPT-5 (OpenAI, 2025), to perform 
+
+atomic ability segmentation . Given the environ-ment information and model responses, GPT-5 de-composes each complete trajectory into a sequence of atomic abilities. Here, atomic does not refer to the lowest-level tokens, but to interpretable behav-ior units that are meaningful for solving the task, such as “identifying the target position”. To con-trol the segmentation granularity, we design a uni-fied prompt with few-shot examples and manually inspect the outputs to filter low-quality segmenta-tions, such as overly coarse labels like “perception”. Detailed prompts are provided in Appendix F. 4After obtaining atomic abilities from trajecto-ries, we aggregate them to build a meta-ability profile Pe for each environment e. We first use GPT-5 to merge semantically equivalent atomic abilities. Then, we compute the frequency of each meta-ability and the transition frequency between different meta-abilities, forming an ability graph. Low-frequency and unstable abilities are filtered out. Finally, each environment is represented by a 
+
+meta-ability profile , which contains meta-abilities, transition edges, and their frequencies. We further divide meta-abilities into core and soft abilities .Core abilities appear stably in an environment and are directly related to task completion, while soft abilities appear occasionally or are only weakly related to solving the task. Through this process, we construct meta-ability profiles for all 200 envi-ronments and summarize 72 core meta-abilities. 
+
+3.2 Methodology: Ability-aware Environment Selection (AES) 
+
+As shown in the lower-left panel of Figure 2, after obtaining the meta-ability profile of each environ-ment, we propose Ability-aware Environment Selection (AES) . We point out that the goal of diversity should be broader core capability cov-erage, with less redundancy and conflict .For each candidate environment e, we define its coverage set C(e), which is constructed from the core and soft abilities in its profile, where core abilities are assigned higher weights. Given the cur-rent selected environment set S, the new coverage brought by e is defined as: 
+
+NewCoverage( e, S ) = X
+
+> a∈C(e)\C(S)
+
+wa,
+
+where wa denotes the weight of ability a, and C(S)
+
+denotes the union of abilities already covered by the selected set S.We also consider two factors that may influence joint training: redundancy and conflict . Redun-dancy is measured by the similarity between meta-ability profiles. If an environment is highly similar to the selected environments, it may provide lim-ited new training information. We define: 
+
+Redundancy( e, S ) = max  
+
+> e′∈S
+
+sim( Pe, P e′ ),
+
+where sim( ·, ·) is the weighted profile similarity. Conflict is estimated by the gradient between en-vironments. As discussed in Section 2.2, when two 1 5 10 15 20 25 30 35 
+
+> Selected Environments
+> 0.0 0.2 0.4 0.6 0.8 1.0
+> Coverage Ratio
+> 30 selected envs Redundant Region
+> Coverage Accumulation
+
+Figure 6: Core ability coverage curve when selecting environments using AES. 
+
+environments have negative gradient cosine similar-ity, they are more likely to introduce optimization interference during joint training. Therefore, we define the conflict score as: 
+
+Conflict( e, S ) = max  
+
+> e′∈S
+
+max(0 , − cos( ge, g e′ )) .
+
+Finally, in each selection step, the gain of a can-didate environment e is defined as: 
+
+Gain( e | S) = λ1NewCoverage( e, S )
+
+− λ2Redundancy( e, S )
+
+− λ3Conflict( e, S ).
+
+Here, λ1, 2, 3 are hyperparameters that control the relative weights. The algorithm starts from an empty set. At each step, it selects the environment with the highest gain and adds it to S. This process is repeated until all core behaviors are covered. Based on AES, we select a diverse subset of 30 environments from the original environment pool. Figure 6 shows the coverage curve as environments are added sequentially. The coverage of core meta-abilities increases steadily and eventually reaches full coverage, suggesting that AES can preserve broad ability coverage with only a small number of environments. In Appendix E.4, we further visual-ize the selected environments in profile space. 
+
+4 Difficulty: Curriculum Learning 
+
+The experiments in Section 2.3 show that the bot-tleneck of multimodal agents comes more from the insufficient ability to extract visual states and model environmental rules. Thus when only raw vi-sual inputs are provided at the early training stage, the model often struggles to solve the tasks, leading to sparse RL reward signals and unstable training. Based on this, we design several textual har-nesses to help models overcome the bottlenecks. In this work, a harness refers to a type of train-ing scaffold : auxiliary information provided by 5Harness Selected Envs. Held-Out Envs. Avg. ST MT ST MT ST MT                               
+
+> None 13.1 11.9 13.8 9.5 13.5 10.7 Text Obs. 28.2 18.7 30.6 17.1 29.4 17.9 Text State 30.5 20.3 32.9 21.4 31.7 20.9
+> Text Hint 20.7 15.1 24.6 13.6 22.7 14.4 Rule 18.8 16.5 20.8 15.7 19.8 16.1
+> Table 2: The effects of different textual harness infor-mation. ST and MT denote single-turn and multi-turn.
+
+the environment to help the model extract states from visual observations and understand rules. We consider four types of harnesses: textual observa-tions, text states, text hints, and rule descriptions. They provide, respectively, text-symbolic descrip-tions of visual observations, key environment states, hints about important visual content, and explicit task rules. Examples of different harness types are shown in Figure 2. We evaluate the effect of these harnesses in Table 2. With harness assistance, the model can solve more environments, which can provide more reliable training signals for RL. We further use harnesses to design a two-dimensional difficulty schedule tailored to the bot-tlenecks of multimodal agents. Specifically, we pro-pose Hierarchical Difficulty Curriculum (HDC) ,which organizes training along two difficulty axes: 
+
+harness weakening and state-scale progression .Harness weakening gradually removes auxiliary scaffolds, forcing the model to rely more on raw visual observations. State-scale difficulty refers to the scale complexity of an environment instance and is controlled by environment-specific state pa-rameters such as grid size. Our curriculum follows a hierarchical structure. State-scale progression serves as the inner curriculum, gradually increas-ing instance complexity within each harness stage and Harness weakening serves as the outer curricu-lum. Next, we will introduce them separately. 
+
+4.1 Harness Weakening as Outer Curriculum 
+
+We first define outer curriculum axis based on har-ness and divide it into five difficulty levels, denoted as H0 to H4. H0 corresponds to full harnesses. As the level increases, harness is gradually removed. Finally, H4 retains only the basic information, in-cluding raw visual observations and task descrip-tions. Table 7 in Appendix summarizes the har-nesses available at each level. In practice, for each environment e, we main-tain a current harness frontier: re ∈ { 0, 1, 2, 3, 4}.
+
+During training, samples are not always generated from re. Instead, earlier harness levels can also be sampled, which avoids abrupt distribution shifts and mitigates forgetting. For each training instance, we sample its harness level from an environment-specific distribution De:
+
+h ∼ De(h | re).
+
+This distribution assigns a probability pcur to the current frontier harness re. The remaining probabil-ity mass 1 − pcur is distributed over earlier harness levels h < r e according to an exponential decay: 
+
+wh = exp   − α(re − h),De(h | re) = (1 − pcur ) wh
+
+P 
+
+> j<r e
+
+wj
+
+, h < r e.
+
+4.2 State-Scale Difficulty as Inner Curriculum 
+
+Even under a strong harness, the agent may fail to obtain rewards if it is exposed too early to complex state (e.g. complex grids). Therefore we introduce a second curriculum axis, state-scale difficulty .For each environment e, we define a set of state-scale difficulty levels: s ∈ { 0, 1, . . . , S e}. The meaning of s is environment-specific (e.g. grid size). And a state-scale level corresponds to a range of environment parameters. Formally, for each environment e and scale level s, we define an environment-specific parameter distribution: 
+
+θ ∼ Qe(θ | s),
+
+where θ denotes the parameters used to generate an environment instance. During training, each environment indepen-dently maintains a current state-scale frontier ue.Similar to harness sampling, we avoid training only on a single difficulty level. Instead, we sample s
+
+from a sliding window of size ∆d:
+
+s ∼ Uniform  {ℓe, ℓ e + 1 , . . . , u e},
+
+where the lower bound of the sampling window is defined as ℓe = max(0 , u e − ∆d).
+
+4.3 Methodology: Hierarchical Difficulty Curriculum (HDC) 
+
+We now describe the overall algorithm. For each en-vironment e, we independently maintain its curricu-lum state as a tuple (re, ℓ e, u e), where re denotes the current harness frontier and [ℓe, u e] denotes the current state-scale sampling window. 6Model Method ID-Split ID Envs. OOD Envs. General Benchmarks ST MT Rel. ST MT Rel. MathVision MMMU MMStar Rel. 4B                                                                                                                                                             
+
+> Base Model Random 15.7 13.1 0.0 13.8 9.5 0.0 52.3 66.0 62.7 0.0 Base Model AES 13.1 11.9 0.0 13.8 9.5 0.0 52.3 66.0 62.7 0.0 All Envs. Full 25.4 19.8 80.1 17.6 8.3 7.5 51.6 66.1 63.6 0.1 Random-KRandom 32.2 21.3 83.8 17.9 7.1 2.2 52.6 66.7 62.0 0.2 Random-K+ HDC Random 37.3 29.4 131.0 18.7 9.0 15.1 52.0 65.6 63.9 0.2 AES AES 37.7 25.4 150.6 21.0 12.2 40.3 53.0 67.9 62.3 1.2
+> AES + HDC AES 45.0 36.2 223.9 22.1 16.8 68.5 53.3 67.2 63.1 1.5 8B
+> Base Model Random 17.6 14.8 0.0 16.3 11.2 0.0 54.6 69.1 64.0 0.0 Base Model AES 16.0 13.3 0.0 16.3 11.2 0.0 54.6 69.1 64.0 0.0 All Envs. Full 29.7 20.5 69.9 19.6 12.5 15.9 55.3 68.6 65.3 0.9
+> Random-KRandom 34.7 25.9 86.1 20.8 9.5 6.2 54.3 69.9 64.4 0.4 Random-K+ HDC Random 43.0 33.2 143.4 22.3 10.3 14.4 55.6 68.8 64.7 0.8 AES AES 41.0 30.9 144.3 23.2 17.0 47.1 54.0 69.2 65.0 0.2
+> AES + HDC AES 49.9 40.1 206.7 26.5 20.7 73.7 54.9 70.1 63.5 0.4
+
+Table 3: Main results with K = 30 . ST denotes single-turn success rate, and MT denotes normalized return in multi-turn environments. ID-Split specifies the evaluation split for the Random and AES subsets. Rel. is the relative gain over the corresponding base model. Gray rows denote our complete method and show the best performance. 
+
+Each training sample is generated as follows. We first sample an environment, e ∼ E train . Given the current harness frontier re, we sample a har-ness level from h ∼ De(h | re), as described in Section 4.1. We then sample a state-scale level from the current window, s ∼ Uniform( {ℓe, ℓ e +1, . . . , u e}). Finally, we generate a concrete train-ing instance according to the tuple (e, h, s ) and optimize the policy. Importantly, environments do not need to share the same difficulty level; each en-vironment maintains its own curriculum progress. As shown in Figure 2, the curriculum update is also hierarchical. When the model reaches the scale advancement threshold τs, we advance the inner curriculum, ue ← ue + 1 . When ue reaches the target state-scale level target e and the model satisfies the harness advancement threshold τh, we advance the outer curriculum, re ← re + 1 , and then reset the state-scale. Therefore, HDC can be summarized as follows: within each harness level, we increase state-scale; after the model achieves sufficient competence, we weaken the harness and restart scale. Appendix D.1 and E.7 provides the pseudocode and training curve of HDC. 
+
+5 Experiments 
+
+We conducted extensive experiments to evaluate the effectiveness of our methods: AES and HDC. 
+
+5.1 Experimental Setup 
+
+We conduct the main experiments on Qwen3-VL-4B/8B-Instruct. As a control baseline, we construct 
+
+Random-K by sampling 30 environments from the original 200-environment pool, with environments evenly sampled across human-annotated categories inherited from the original works (Wang et al., 2026b; Meng et al., 2026). We further evaluate the trained models on general multimodal benchmarks from different categories. Detailed experimental settings are provided in Appendix B. 
+
+5.2 Main Results Effect of Diversity-Aware Environment Selec-tion (AES). Training on the AES-selected environ-ments achieves stronger environment performance than both Random-K and All Envs. Averaged over the ID/OOD environment groups and two model scales, AES obtains a 95.6% relative gain over the base model, compared with 43.4% for All Envs. This suggests that using more environments is not always better, since large environment pools may contain redundant or conflicting environments that reduce the efficiency of joint training. AES also out-performs Random-K, which only achieves a 44.6% relative gain. This indicates that human-defined categories is less effective than AES which selects environments from the model’s ability perspective. Meanwhile, AES shows good generalization and robustness. Although the selected environments are constructed using trajectory and gradient infor-mation from Qwen3-VL-4B, they remain effective for Qwen3-VL-8B, where AES achieves a 144.3% relative gain on ID environments and a 47.1% rel-ative gain on OOD environments. Appendix E.5 7Method #Env OOD-ST OOD-MT Rel.                     
+
+> Base Model –13.8 9.5 0.0 Random-K30 17.9 7.1 2.2 AES w/o Redund. 41 18.6 11.0 25.3 AES w/o Conflict 34 18.5 6.8 2.8
+> AES 30 21.0 12.2 40.3
+> Table 4: Results of ablation experiments on AES.
+
+further illustrates the comparison between AES and existing diversity methods. 
+
+Effect of Difficulty-Aware Curriculum Learn-ing (HDC). HDC further improves performance across different environment sets. The strongest result is achieved by combining HDC with AES, where AES + HDC obtains an average relative gain of 143.2% over the base model across the ID/OOD environment groups and two model scales. This shows that diversity and difficulty are not only two important dimensions of environment distribution, but can also complement each other to further im-prove training effectiveness. HDC also improves Random-K, increasing its average relative gain from 44.6% to 73.7%. This suggests that appropri-ate difficulty scheduling can partially mitigate the instability caused by heterogeneous multimodal en-vironments. By starting from easier instances with stronger harnesses, the model can obtain more reli-able learning signals, thereby alleviating imbalance among environments to some extent. 
+
+5.3 Ablation Study Ablation on AES. AES consists of three key fac-tors: meta-ability coverage, redundancy and con-flict control. To examine the effects of redundancy and conflict control, we ablate these two compo-nents separately. All variants are trained without HDC. As shown in Table 4, the full AES achieves the largest relative gain 40.3% over the base model on OOD environments. Removing redundancy con-trol reduces the relative gain from 40.3% to 25.3%, while removing conflict control reduces it to only 2.8%. These results show that both components are important for our AES method. 
+
+Ablation on HDC. We ablate the two axes of HDC: harness weakening and state-scale progres-sion. All variants use the same AES-selected en-vironment set. As shown in Table 5, both single-axis curricula benefit. The scale-only curriculum brings an average relative gain of 11.5%, while the harness-only curriculum brings a larger gain of 18.1%. Combining both axes achieves the best performance, with an average relative gain of                                
+
+> Method ID Ens. OOD Ens. Rel. ST MT ST MT
+> Base Model 13.1 11.9 13.8 9.5 –AES 37.7 25.4 21.0 12.2 0.0 AES + Scale-only 40.7 29.8 21.6 14.1 11.5 AES + Harness-only 41.9 33.1 21.2 15.3 18.1
+> AES + HDC 45.0 36.2 22.1 16.8 27.7
+> Table 5: Results of ablation experiments on HDC.
+
+27.7%. These results show that harness weakening and state-scale progression are complementary and jointly improve multimodal environment training. 
+
+6 Related Works 
+
+We summarize the research most relevant to our core ideas, and provide more discussions in Ap-pendix A. Recently, multimodal environmental and agent learning have become cutting-edge research areas (Shi et al., 2026). Among them, we mainly fo-cused on general multimodal environments (Meng et al., 2026; Wang et al., 2026b). Another important line of work studies environment quality verifica-tion (Jain et al., 2025). They focused on whether environments are executable (Pan et al., 2025), whether state transitions are correct and so on (Hu et al., 2025; Wu et al., 2026). These approaches mainly address sample-level quality. However, how to assess the effectiveness of environment distribu-tion remains less systematically studied (Huang et al., 2025). In particular, for multimodal envi-ronments, the diversity and difficulty structure re-main insufficiently explored. Current diversity con-trol methods often rely on task-description embed-dings (Zhang et al., 2025b) or tool categories (Li et al., 2023a). Meanwhile, difficulty control in mul-timodal environments largely follows the frame-work of text-based environments (Zeng et al., 2025; Verma et al., 2025; Ying et al., 2026). To bridge this gap, we analyze diversity and difficulty separately and propose corresponding methods. 
+
+7 Conclusion 
+
+In this paper, we show that simply scaling mul-timodal environments is not always effective for agent training. Our analyses reveal that the effec-tiveness of an environment distribution depends on both diversity and difficulty structure. Based on this insight, we propose Ability-aware Environ-ment Selection (AES) to construct diverse environ-ment set, and Hierarchical Difficulty Curriculum (HDC) specific to multimodal agents. Experiments 8demonstrate that AES and HDC consistently im-prove agent training. 
+
+Limitations 
+
+Although we have conducted extensive experi-ments and analyses, there are still some aspect that need improvement. First, due to cost con-straints, our environment pool is mainly built upon existing multimodal environment works, and we do not further study large-scale environment syn-thesis. This remains an important direction for future exploration. Second, due to limited com-putational resources, we mainly compare different methods under a unified compute budget. Since multimodal environment training, especially multi-turn training, is computationally expensive, some environments may not be fully trained. Future work can further validate our findings under larger train-ing budgets. Finally, AES uses gradient informa-tion to characterize optimization conflicts between environments, which introduces additional offline computation compared with traditional diversity measures. Future work may explore more efficient conflict estimation methods or alternative metrics. 
+
+Ethics and Artifact Use Statement 
+
+Potential risks. This work studies how to de-sign effective training environment distributions for multimodal agent learning. A potential risk is that environment-based training may improve agents’ ability of decision making in interactive tasks. If such models are deployed in open real-world systems without sufficient safeguards, they may produce incorrect actions or other unintended effects. Therefore, the models trained in this work are evaluated only in controlled and verifiable mul-timodal research environments, and should not be directly deployed in open real-world systems with-out proper safety treatment. 
+
+Artifacts, licenses, and intended use. Our en-vironment pool is mainly built upon existing mul-timodal environment works and is used only for research purposes. We properly cite all assets and adhere to their licenses and terms of use. 
+
+Data privacy and content safety. The envi-ronments used in this work are virtual multimodal interactive environments and do not involve collect-ing personal data from real users. 
+
+Use of AI assistants. First, in our method, LLMs were used for atomic ability segmentation and environment profile construction with manual inspection by the authors. Second, during writing, LLMs were used to check grammar and polish text, and we carefully verified that their use did not alter the original meaning. In addition, AI assistants were used to improve the presentation of some ta-bles and figures, while all experimental results were checked by the authors and remained unchanged. 
+
+References         
+
+> Pranjal Aggarwal, Graham Neubig, and Sean Welleck. 2026. Gym-anything: Turn any software into an agent environment. CoRR , abs/2604.06126. Muhammad Awais Ahmad, Tauqir Ahmed, Muhammad Aslam, Amjad Rehman, Faten S. Alamri, Saeed Ali Bahaj, and Tanzila Saba. 2025. Mathvision: An ac-cessible intelligent agent for visually impaired people to understand mathematical equations. IEEE Access ,13:6155–6165. Shihao Cai, Runnan Fang, Jialong Wu, Baixuan Li, Xinyu Wang, Yong Jiang, Liangcai Su, Liwen Zhang, Wenbiao Yin, Zhen Zhang, Fuli Feng, Pengjun Xie, and Xiaobin Wang. 2025. Autoforge: Automated en-vironment synthesis for agentic reinforcement learn-ing. CoRR , abs/2512.22857. Yilin Cao, Yufeng Zhong, Zhixiong Zeng, Liming Zheng, Jing Huang, Haibo Qiu, Peng Shi, Wenji Mao, and Wan Guanglu. 2026. Mobiledreamer: Genera-tive sketch world model for gui agent. arXiv preprint arXiv:2601.04035 .Delong Chen, Théo Moutakanni, Willy Chung, Yejin Bang, Ziwei Ji, Allen Bolourchi, and Pascale Fung. 2025. Planning with reasoning using vision language world model. CoRR , abs/2509.02722. Jianlv Chen, Shitao Xiao, Peitian Zhang, Kun Luo, Defu Lian, and Zheng Liu. 2024a. Bge m3-embedding: Multi-lingual, multi-functionality, multi-granularity text embeddings through self-knowledge distillation.
+> Preprint , arXiv:2402.03216. Lin Chen, Jinsong Li, Xiaoyi Dong, Pan Zhang, Yuhang Zang, Zehui Chen, Haodong Duan, Jiaqi Wang, Yu Qiao, Dahua Lin, and Feng Zhao. 2024b. Are we on the right way for evaluating large vision-language models? In Advances in Neural Information Pro-cessing Systems 38: Annual Conference on Neural Information Processing Systems 2024, NeurIPS 2024, Vancouver, BC, Canada, December 10 - 15, 2024 .Xiang Deng, Yu Gu, Boyuan Zheng, Shijie Chen, Sam Stevens, Boshi Wang, Huan Sun, and Yu Su. 2023. Mind2web: Towards a generalist agent for the web.
+> Advances in Neural Information Processing Systems ,36:28091–28114. Michael Dennis, Natasha Jaques, Eugene Vinitsky, Alexandre Bayen, Stuart Russell, Andrew Critch, and
+
+9Sergey Levine. 2021. Emergent complexity and zero-shot transfer via unsupervised environment design. 
+
+Preprint , arXiv:2012.02096. ARC Foundation. 2026. Arc-agi-3: A new challenge for frontier agentic intelligence. arXiv preprint arXiv:2603.24621 .Google DeepMind. 2025. Gemini 3.1 pro. Accessed: 2026-03-16. Daya Guo, Dejian Yang, Haowei Zhang, Junxiao Song, Peiyi Wang, Qihao Zhu, Runxin Xu, Ruoyu Zhang, Shirong Ma, Xiao Bi, Xiaokang Zhang, Xingkai Yu, Yu Wu, Z. F. Wu, Zhibin Gou, Zhihong Shao, Zhu-oshu Li, Ziyi Gao, Aixin Liu, and 175 others. 2025. Deepseek-r1 incentivizes reasoning in llms through reinforcement learning. Nat. , 645(8081):633–638. Yupu Hao, Zhuoran Jin, Huanxuan Liao, Kang Liu, and Jun Zhao. 2026a. Pushing the limits of llm tool calling via experiential knowledge integration and activation. Preprint , arXiv:2606.10875. Yupu Hao, Zhuoran Jin, Huanxuan Liao, Kang Liu, and Jun Zhao. 2026b. Why multi-step tool-use reinforce-ment learning collapses and how supervisory signals fix it. Preprint , arXiv:2606.26027. Xianglong He, Chunli Peng, Zexiang Liu, Boyang Wang, Yifan Zhang, Qi Cui, Fei Kang, Biao Jiang, Mengyin An, Yangyang Ren, and 1 others. 2025. Matrix-game 2.0: An open-source real-time and streaming interactive world model. arXiv preprint arXiv:2508.13009 .Mengkang Hu, Bowei Xia, Yuran Wu, Ailing Yu, Yude Zou, Qiguang Chen, Shijian Wang, Jiarui Jin, Kexin Li, Wenxiang Jiao, Yuan Lu, and Ping Luo. 2025. Agent2world: Learning to generate symbolic world models via adaptive multi-agent feedback. CoRR ,abs/2512.22336. Yuchen Huang, Sijia Li, Wei Liu, Zhiyuan Fan, Yi R Fung, and 1 others. 2025. Scaling environments for llm agents in the era of learning from interaction: A survey. In Workshop on Scaling Environments for Agents .Naman Jain, Jaskirat Singh, Manish Shetty, Liang Zheng, Koushik Sen, and Ion Stoica. 2025. R2e-gym: Procedural environments and hybrid veri-fiers for scaling open-weights SWE agents. CoRR ,abs/2504.07164. Joel Jang, Seonghyeon Ye, Zongyu Lin, Jiannan Xi-ang, Johan Bjorck, Yu Fang, Fengyuan Hu, Spencer Huang, Kaushil Kundalia, Yen-Chen Lin, and 1 oth-ers. 2025. Dreamgen: Unlocking generalization in robot learning through video world models. arXiv preprint arXiv:2505.12705 .Hongrui Jia, Jitong Liao, Xi Zhang, Haiyang Xu, Tian-bao Xie, Chaoya Jiang, Ming Yan, Si Liu, Wei Ye, and Fei Huang. 2025. Osworld-mcp: Benchmarking MCP tool invocation in computer-use agents. CoRR ,abs/2510.24563. Guochao Jiang, Wenfeng Feng, Guofeng Quan, Chuzhan Hao, Yuewei Zhang, Guohua Liu, and Hao Wang. 2025. Vcrl: Variance-based curriculum rein-forcement learning for large language models. arXiv preprint arXiv:2509.19803 .Minqi Jiang, Michael Dennis, Jack Parker-Holder, Jakob N. Foerster, Edward Grefenstette, and Tim Rocktäschel. 2021a. Replay-guided adversarial envi-ronment design. CoRR , abs/2110.02439. Minqi Jiang, Edward Grefenstette, and Tim Rock-täschel. 2021b. Prioritized level replay. Preprint ,arXiv:2010.03934. Zhuoran Jin, Hongbang Yuan, Kejian Zhu, Jiachun Li, Pengfei Cao, Yubo Chen, Kang Liu, and Jun Zhao. 2025. Omni-reward: Towards generalist omni-modal reward modeling with free-form preferences. 
+
+Preprint , arXiv:2510.23451. Zhuoran Jin, Kejian Zhu, Hongbang Yuan, Yupu Hao, Pengfei Cao, Yubo Chen, Kang Liu, and Jun Zhao. 2026. Look light, think heavy: What multi-modal chain-of-thought reasoning can and cannot do. 
+
+Preprint , arXiv:2606.22565. Dinging Li, Yingxiu Zhao, Xinrui Cheng, Kangheng Lin, Hongbo Peng, Hongxing Li, Zixuan Wang, Yuhong Dai, Haodong Li, Jia Wang, and 1 others. 2026a. Spatialevo: Self-evolving spatial intelligence via deterministic geometric environments. arXiv preprint arXiv:2604.14144 .Hong Li, Minqi Meng, Yanjun Liang, Chongjie Ye, Houyuan Chen, Weiqing Xiao, Xianda Guo, Guo-jun Lei, Xuhui Liu, Chaojie Yang, Yanlun Peng, Hao Zhao, and Baochang Zhang. 2026b. Monoc-ular avatar reconstruction via cascaded diffusion pri-ors and uv-space differentiable shading. Preprint ,arXiv:2606.28144. Jiachun Li, Shaoping Huang, Zhuoran Jin, Chenlong Zhang, Pengfei Cao, Yubo Chen, Kang Liu, and Jun Zhao. 2026c. Mmr-life: Piecing together real-life scenes for multimodal multi-image reasoning. 
+
+Preprint , arXiv:2603.02024. Jiachun Li, Zhuoran Jin, Tianyi Men, Yupu Hao, Ke-jian Zhu, Lingshuai Wang, Dongqi Huang, Longx-iang Wang, Shengjia Hua, Lu Wang, Jinshan Gao, Hongbang Yuan, Ruilin Xu, Kang Liu, and Jun Zhao. 2026d. Agentic environment engineering for large language models: A survey of environment model-ing, synthesis, evaluation, and application. Preprint ,arXiv:2606.12191. Minghao Li, Yingxiu Zhao, Bowen Yu, Feifan Song, Hangyu Li, Haiyang Yu, Zhoujun Li, Fei Huang, and Yongbin Li. 2023a. Api-bank: A comprehensive benchmark for tool-augmented llms. In Proceedings of the 2023 conference on empirical methods in natu-ral language processing , pages 3102–3116. 
+
+10 Renda Li, Hailang Huang, Fei Wei, Feng Xiong, Yong Wang, and Xiangxiang Chu. 2026e. Adacurl: Adap-tive curriculum reinforcement learning with invalid sample mitigation and historical revisiting. In Pro-ceedings of the AAAI Conference on Artificial Intelli-gence , volume 40, pages 23123–23131. Wenjun Li, Pradeep Varakantham, and Dexun Li. 2023b. Generalization through diversity: Improv-ing unsupervised environment design. Preprint ,arXiv:2301.08025. Ziyang Luo, Zhiqi Shen, Wenzhuo Yang, Zirui Zhao, Prathyusha Jwalapuram, Amrita Saha, Doyen Sahoo, Silvio Savarese, Caiming Xiong, and Junnan Li. 2025. Mcp-universe: Benchmarking large language mod-els with real-world model context protocol servers. 
+
+arXiv preprint arXiv:2508.14704 .Tianyi Men, Zhuoran Jin, Pengfei Cao, Yubo Chen, Kang Liu, and Jun Zhao. 2025. Agent-rewardbench: Towards a unified benchmark for reward modeling across perception, planning, and safety in real-world multimodal agents. Preprint , arXiv:2506.21252. Tianyi Men, Zhuoran Jin, Pengfei Cao, Yubo Chen, Kang Liu, and Jun Zhao. 2026a. Empowering gui agents via autonomous experience exploration and hindsight experience utilization for task planning. 
+
+Preprint , arXiv:2606.27330. Tianyi Men, Zhuoran Jin, Kang Liu, and Jun Zhao. 2026b. The physics of multi-turn long-horizon planning: From pre-training to post-training via single- and multi-teacher on-policy agentic distilla-tion. Preprint , arXiv:2607.24720. Fanqing Meng, Lingxiao Du, Jiawei Gu, Jiaqi Liao, Linjie Li, Zijian Wu, Xiangyan Liu, Ziqi Zhao, Mengkang Hu, Yue Zhang, Zichen Liu, Jiaheng Zhang, and Michael Qizhe Shieh. 2026. Gym-v: A unified vision environment system for agentic vision research. CoRR , abs/2603.15432. OpenAI. 2025. Introducing gpt-5.4. Accessed: 2026-03-16. Mingyu Ouyang, Siyuan Hu, Kevin Qinghong Lin, Hwee Tou Ng, and Mike Zheng Shou. 2026. Gameworld: Towards standardized and verifiable evaluation of multimodal game agents. CoRR ,abs/2604.07429. Jiayi Pan, Xingyao Wang, Graham Neubig, Navdeep Jaitly, Heng Ji, Alane Suhr, and Yizhe Zhang. 2025. Training software engineering agents and verifiers with swe-gym. In Forty-second International Confer-ence on Machine Learning, ICML 2025, Vancouver, BC, Canada, July 13-19, 2025 , volume 267 of Pro-ceedings of Machine Learning Research . PMLR / OpenReview.net. Shubham Parashar, Shurui Gui, Xiner Li, Hongyi Ling, Sushil Vemuri, Blake Olson, Eric Li, Yu Zhang, James Caverlee, Dileep Kalathil, and 1 others. 2025. Curriculum reinforcement learning from easy to hard tasks improves llm reasoning. arXiv preprint arXiv:2506.06632 .Jack Parker-Holder, Minqi Jiang, Michael Dennis, Mikayel Samvelyan, Jakob Foerster, Edward Grefen-stette, and Tim Rocktäschel. 2023. Evolving curric-ula with regret-based environment design. Preprint ,arXiv:2203.01302. Zehan Qi, Xiao Liu, Iat Long Iong, Hanyu Lai, Xueqiao Sun, Jiadai Sun, Xinyue Yang, Yu Yang, Shuntian Yao, Wei Xu, and 1 others. 2025. Webrl: Training llm web agents via self-evolving online curriculum reinforcement learning. In International Conference on Learning Representations , volume 2025, pages 79791–79821. Guangming Sheng, Chi Zhang, Zilingfeng Ye, Xibin Wu, Wang Zhang, Ru Zhang, Yanghua Peng, Haibin Lin, and Chuan Wu. 2025. Hybridflow: A flexible and efficient RLHF framework. In Proceedings of the Twentieth European Conference on Computer Systems, EuroSys 2025, Rotterdam, The Netherlands, 30 March 2025 - 3 April 2025 , pages 1279–1297. ACM. Chengshuai Shi, Wenzhe Li, Xinran Liang, Yizhou Lu, Wenjia Yang, Ruirong Feng, Seth Karten, Zi-ran Yang, Zihan Ding, Gabriel Sarch, and 1 others. 2026. Odysseus: Scaling vlms to 100+ turn decision-making in games via reinforcement learning. arXiv preprint arXiv:2605.00347 .Xiaoshuai Song, Haofei Chang, Guanting Dong, Yutao Zhu, Zhicheng Dou, and Ji-Rong Wen. 2026. En-vscaler: Scaling tool-interactive environments for LLM agent via programmatic synthesis. CoRR ,abs/2601.05808. Shuang Sun, Huatong Song, Lisheng Huang, Jinhao Jiang, Ran Le, Zhihao Lv, Zongchao Chen, Yiwen Hu, Wenyang Luo, Wayne Xin Zhao, Yang Song, Hongteng Xu, Tao Zhang, and Ji-Rong Wen. 2026. Swe-world: Building software engineering agents in docker-free environments. CoRR , abs/2602.03419. Qwen Team. 2025. Qwen3 technical report. CoRR ,abs/2505.09388. Jayden Teoh, Wenjun Li, and Pradeep Varakantham. 2025. Improving environment novelty quantifica-tion for effective unsupervised environment design. 
+
+Preprint , arXiv:2502.05726. Vivek Verma, David Huang, William Chen, Daniel Klein, and Nicholas Tomlin. 2025. Measuring general intelligence with generated games. CoRR ,abs/2505.07215. Kangrui Wang, Pingyue Zhang, Zihan Wang, Yaning Gao, Linjie Li, Qineng Wang, Hanyang Chen, Chi Wan, Yiping Lu, Zhengyuan Yang, Lijuan Wang, Ranjay Krishna, Jiajun Wu, Li Fei-Fei, Yejin Choi, and Manling Li. 2025. VAGEN: reinforcing world model reasoning for multi-turn VLM agents. CoRR ,abs/2510.16907. 
+
+11 Zhaoyang Wang, Canwen Xu, Boyi Liu, Yite Wang, Si-wei Han, Zhewei Yao, Huaxiu Yao, and Yuxiong He. 2026a. Agent world model: Infinity synthetic envi-ronments for agentic reinforcement learning. CoRR ,abs/2602.10090. Zirui Wang, Junyi Zhang, Jiaxin Ge, Long Lian, Letian Fu, Lisa Dunlap, Ken Goldberg, Xudong Wang, Ion Stoica, David M. Chan, Sewon Min, and Joseph E. Gonzalez. 2026b. Visgym: Diverse, customizable, scalable environments for multimodal agents. CoRR ,abs/2601.16973. Yifan Wu, Yiran Peng, Yiyu Chen, Jianhao Ruan, Zi-jie Zhuang, Cheng Yang, Jiayi Zhang, Man Chen, Yenchi Tseng, Zhaoyang Yu, Liang Chen, Yuyao Zhai, Bang Liu, Chenglin Wu, and Yuyu Luo. 2026. Autowebworld: Synthesizing infinite verifiable web environments via finite state machines. CoRR ,abs/2602.14296. John Yang, Kilian Leret, Carlos E. Jimenez, Alexan-der Wettig, Kabir Khandpur, Yanzhe Zhang, Binyuan Hui, Ofir Press, Ludwig Schmidt, and Diyi Yang. 2025. Swe-smith: Scaling data for software engineer-ing agents. CoRR , abs/2504.21798. John Yang, Akshara Prabhakar, Karthik Narasimhan, and Shunyu Yao. 2023. Intercode: Standardizing and benchmarking interactive coding with execution feed-back. Advances in Neural Information Processing Systems , 36:23826–23854. Lance Ying, Ryan Truong, Prafull Sharma, Kaiya Ivy Zhao, Nathan Cloos, Kelsey R. Allen, Thomas L. Griffiths, Katherine M. Collins, José Hernández-Orallo, Phillip Isola, Samuel J. Gershman, and Joshua B. Tenenbaum. 2026. Ai gamestore: Scalable, open-ended evaluation of machine gen-eral intelligence with human games. Preprint ,arXiv:2602.17594. Xiang Yue, Yuansheng Ni, Tianyu Zheng, Kai Zhang, Ruoqi Liu, Ge Zhang, Samuel Stevens, Dongfu Jiang, Weiming Ren, Yuxuan Sun, Cong Wei, Botao Yu, Ruibin Yuan, Renliang Sun, Ming Yin, Boyuan Zheng, Zhenzhu Yang, Yibo Liu, Wenhao Huang, and 3 others. 2024. MMMU: A massive multi-discipline multimodal understanding and reasoning benchmark for expert AGI. In IEEE/CVF Conference on Com-puter Vision and Pattern Recognition, CVPR 2024, Seattle, WA, USA, June 16-22, 2024 , pages 9556– 9567. IEEE. Yucheng Zeng, Weipeng Lu, Linyun Liu, Shupeng Li, Zitian Qu, Chenghao Zhu, Shaofei Li, Zhengdong Tan, Mengyue Liu, Haotian Zhao, and 1 others. 2026. Logigen: Logic-driven generation of verifiable agen-tic tasks. arXiv preprint arXiv:2603.00540 .Zhiyuan Zeng, Hamish Ivison, Yiping Wang, Lifan Yuan, Shuyue Stella Li, Zhuorui Ye, Siting Li, Jacque-line He, Runlong Zhou, Tong Chen, Chenyang Zhao, Yulia Tsvetkov, Simon Shaolei Du, Natasha Jaques, Hao Peng, Pang Wei Koh, and Hannaneh Hajishirzi. 2025. RLVE: scaling up reinforcement learning for language models with adaptive verifiable environ-ments. CoRR , abs/2511.07317. Dazhi Zhan, Xin Liu, Wei Bai, Wei Li, Shize Guo, and Zhisong Pan. 2025. GAME-RL: generating ad-versarial malware examples against API call based detection via reinforcement learning. IEEE Trans. Dependable Secur. Comput. , 22(5):5431–5447. Enci Zhang, Xingang Yan, Wei Lin, Tianxiang Zhang, and Lu Qianchun. 2025a. Learning like humans: Advancing llm reasoning capabilities via adaptive difficulty curriculum learning and expert-guided self-reformulation. In Proceedings of the 2025 Confer-ence on Empirical Methods in Natural Language Processing , pages 6630–6644. Kaichen Zhang, Bo Li, Peiyuan Zhang, Fanyi Pu, Joshua Adrian Cahyono, Kairui Hu, Shuai Liu, Yuan-han Zhang, Jingkang Yang, Chunyuan Li, and Zi-wei Liu. 2024. Lmms-eval: Reality check on the evaluation of large multimodal models. Preprint ,arXiv:2407.12772. Ruizhi Zhang, Ye Huang, Yuangang Pan, Chuanfu Shen, Zhilin Liu, Ting Xie, Wen Li, and Lixin Duan. 2026a. Pokegym: A visually-driven long-horizon benchmark for vision-language models. CoRR , abs/2604.08340. Wei Zhang, Jack Yang, Renshuai Tao, Lingzheng Chai, Shawn Guo, Jiajun Wu, Xiaoming Chen, Ganqu Cui, Ning Ding, Xander Xu, Hu Wei, and Bowen Zhou. 2025b. V-gamegym: Visual game generation for code large language models. CoRR , abs/2509.20136. Ziyun Zhang, Zezhou Wang, Xiaoyi Zhang, Zongyu Guo, Jiahao Li, Bin Li, and Yan Lu. 2026b. In-finiteweb: Scalable web environment synthesis for GUI agent training. CoRR , abs/2601.04126. Shuyan Zhou, Frank F. Xu, Hao Zhu, Xuhui Zhou, Robert Lo, Abishek Sridhar, Xianyi Cheng, Tianyue Ou, Yonatan Bisk, Daniel Fried, Uri Alon, and Gra-ham Neubig. 2024. Webarena: A realistic web en-vironment for building autonomous agents. In The Twelfth International Conference on Learning Rep-resentations, ICLR 2024, Vienna, Austria, May 7-11, 2024 . OpenReview.net. Kejian Zhu, Zhuoran Jin, Hongbang Yuan, Jiachun Li, Shangqing Tu, Pengfei Cao, Yubo Chen, Kang Liu, and Jun Zhao. 2026. Mmr-v: What’s left unsaid? a benchmark for multimodal deep reasoning in videos. 
+
+Preprint , arXiv:2506.04141. 
+
+A More Related Works 
+
+We discuss the works most closely related to our main thread in Section 6. In this appendix, we provide a detailed review of several related areas about environment (Li et al., 2026d) and agent learning (Men et al., 2026b; Hao et al., 2026b,a). 12 A.1 Multimodal Environments 
+
+Recent research on multimodal agents (Men et al., 2025) has gradually shifted from static datasets (Zhu et al., 2026; Li et al., 2026c; Jin et al., 2025; Li et al., 2026b) to dynamic interactive en-vironments (Li et al., 2026a). Existing studies ex-tend multimodal environments from different per-spectives. Some works focus on scalable construc-tion of Web and GUI environments (Zhang et al., 2026b; Aggarwal et al., 2026; Men et al., 2026a). Other works further use game environments for re-inforcement learning of VLM agents, emphasizing verifiable feedback, long-horizon interaction, and world-model reasoning (Zhan et al., 2025; Wang et al., 2025). Meanwhile, some works mainly focus on evaluation. Several studies build standardized benchmarks for multimodal game agents (Ouyang et al., 2026; Zhang et al., 2026a; Foundation, 2026). Most related to our work are more general multi-modal environment systems such as Gym-V and VisGym, which unify diverse visual tasks into multi-turn interaction frameworks and provide a foundation for studying multimodal environment scaling. 
+
+A.2 Sample-Level Environment Quality 
+
+Another line of work examines the quality of constructed environments, typically focusing on whether each individual environment is executable and provides reliable reward signals (Yang et al., 2025; Jain et al., 2025). Common practices include using sandbox execution and unit tests to verify whether a task can run correctly (Pan et al., 2025; Zhang et al., 2025b). Many works further vali-date the correctness of state transitions and task solvability with golden trajectories or expert tool sequences (Hu et al., 2025; Cai et al., 2025). Simi-larly, for multimodal environments where images or videos are difficult to test directly with unit tests, metric such as interaction consistency is often used as a correctness check (Jang et al., 2025; He et al., 2025). GUI and Web environments also commonly combine execution-based evaluators with expert review (Wu et al., 2026; Yang et al., 2023). These methods provide important guarantees for the ex-ecutability, solvability, and evaluation reliability of individual environments. However, they mainly answer whether a single environment is valid. In contrast, our work further studies the distribution-level quality of an environment pool when it is used as a training distribution. 
+
+A.3 Environment Diversity 
+
+A key aspect of distribution-level quality is diver-sity (Sun et al., 2026). Existing works usually control diversity in two ways. The first line re-moves semantically similar tasks using information such as embedding similarity (Wang et al., 2026a). For example some works reduce repeated samples through embedding-based deduplication, topic dis-persion analysis, or clustering of game seeds (Wang et al., 2026a; Song et al., 2026; Zhang et al., 2025b). The second line controls diversity through struc-tured construction. Some works analyze diversity from the perspectives of tool categories and tool combinations (Li et al., 2023a; Cai et al., 2025), while Web and GUI environments often judge by the coverage of application scenarios (Deng et al., 2023; Zhou et al., 2024; Luo et al., 2025). However, these methods mostly measure surface-level diver-sity, such as task descriptions or domain sources, and may not reflect the diversity of abilities that the model actually learns during training. In contrast, our work studies the diversity of underlying logic and dynamics of the environment through agent behavior and gradient-level mechanism analysis. 
+
+A.4 Difficulty Grading and Curriculum Learning 
+
+Difficulty grading and scheduling within an envi-ronment set are also crucial to training-set qual-ity. Existing works often characterize task com-plexity using structural parameters, such as the number of tools, state entities, or code scale (Jia et al., 2025; Zeng et al., 2026). Some studies cal-ibrate difficulty with strong models or human ex-perts (Verma et al., 2025; Ying et al., 2026). For long-horizon planning tasks, difficulty is also ad-justed by planning horizon or the number of search iterations (Cao et al., 2026; Chen et al., 2025). Several works further use difficulty schedules for curriculum learning. Early curriculum learning methods often rely on predefined stages or static easy-to-hard ordering (Parashar et al., 2025). Re-cent RL methods for LLMs further emphasize the dynamic nature of difficulty. RLVE (Zeng et al., 2025) adaptively adjusts the difficulty of problems in verifiable environments based on model perfor-mance. ADCL (Zhang et al., 2025a) periodically re-estimates sample difficulty to mitigate difficulty shift during training. VCRL (Jiang et al., 2025) selects samples with strong learning signals for the current model using group reward variance for 13 rollouts. AdaCuRL (Li et al., 2026e) performs curriculum learning with coarse-to-fine difficulty estimation. WebRL (Qi et al., 2025) constructs an online self-evolving curriculum by generating tasks from failed trajectories. Existing difficulty grading for multimodal environments is also often based on environment scale (Wang et al., 2026b; Meng et al., 2026). However, the difficulty of multimodal envi-ronments does not only come from task scale, but also from multimodal-specific ability bottlenecks. Prior works provide limited systematic analysis of difficulty grading and curriculum learning tailored to these multimodal-specific factors. 
+
+A.5 Unsupervised Environment Design 
+
+Unsupervised Environment Design (UED) automat-ically generates or selects environments according to the current learning state of an agent, thereby inducing an adaptive curriculum. PAIRED (Dennis et al., 2021) formulates environment design as an adversarial minimax-regret problem and generates environments near the current capability frontier. Subsequent work improves how environments are reused. PLR (Jiang et al., 2021b) prioritizes pre-viously encountered levels according to their esti-mated learning potential. REPAIRED (Jiang et al., 2021a) combines adversarial environment genera-tion with prioritized replay, while ACCEL (Parker-Holder et al., 2023) edits and mutates previously generated levels to produce challenging environ-ments. Beyond learning potential, Diversity-UED (Li et al., 2023b) observes that UED may repeat-edly select similar environments and therefore in-troduces an explicit environment-distance measure to promote diversity. CENIE (Teoh et al., 2025) further quantifies curriculum-aware environment novelty using the student’s historical state-action coverage. Unlike UED, which typically generates instances online, AES and HDC select and organize a fixed, heterogeneous pool of multimodal environ-ment types. The two settings therefore address different stages of environment design. 
+
+B Experiment Details 
+
+This section describes the experimental settings in detail. We first introduce the settings shared by all experiments, and then describe the specific settings for each group of experiments. 
+
+B.1 General Settings Training. We use Qwen3-VL-4B-Instruct (Team, 2025) as the base model for training. In the main experiments, we further include Qwen3-VL-8B-Instruct to evaluate whether our method remains effective with a larger model. To ensure a fair com-parison, we follow the setting of RLVE (Zeng et al., 2025) and keep the compute budget the same across different training runs. Specifically, all runs use the same total number of training samples, which is set to 7,680 in our experiments. We use GRPO as the training algorithm (Guo et al., 2025), and set the rollout group size for each prompt to 16. Our re-inforcement learning framework is modified from VeRL (Sheng et al., 2025) and follow its default implementation. We thank the authors for their ex-cellent open source work. All training experiments are conducted on 4 A100 GPUs (80G). 
+
+Evaluation. The main evaluation in this paper is conducted on multimodal environments, with the goal of measuring both model performance and generalization. We consider two evaluation set-tings: in-distribution (ID) and out-of-distribution (OOD). ID evaluation uses unseen instances gen-erated from environment types that appear during training. The specific set of ID environments may vary across experiments. OOD evaluation uses 30 held-out environments randomly selected from our pool of 200 environments. These 30 environments are never used in any training experiment in this pa-per. Therefore, all OOD results refer to evaluation on this same held-out set. For each environment type, we generate 100 instances for evaluation. Our evaluation scripts for multimodal environments are based on the implementation of Gym-V (Meng et al., 2026). We thank the authors for their excel-lent open source work. 
+
+B.2 Settings for Preliminary Experiments 
+
+For the environment scaling experiment in Sec-tion 2.1, we conduct all experiments on Qwen3-VL-4B and keep the compute budget fixed. The environment sets are nested across different scales, meaning that a larger set contains the smaller set as a subset. In this experiment, the ID evaluation set is defined as the smallest subset of 20 environments, so that all trained models are evaluated on the same group of ID environments. For the gradient conflict analysis in Section 2.2, we sample 10 batches from each environment. Each batch contains 10 samples, and each prompt uses 16 rollouts. We then com-pute the gradient direction for each batch. For the error analysis in Section 2.3, two human annotators independently label the model errors. The anno-tations are then cross checked, and disagreements 14 are resolved to obtain the final labels. 
+
+B.3 Settings for Main Experiments Training. In the main experiments, we further in-clude Qwen3-VL-8B-Instruct to test whether our method is still effective at a larger scale. We use the same compute budget for all methods. Note that the All Envs setting trains on the pool of 170 environments, after excluding the 30 held-out envi-ronments. This setting is used to analyze whether naive scaling of the environment pool is effective. It should also be noted that among the 30 environ-ments in the AES-selected set, there are 22 single-turn and 8 multi-turn environments. Among the 30 OOD environments in the held-out set, there are 20 single-turn and 10 multi-turn environments. 
+
+Evaluation. For the main environment evalua-tion, ID has slightly different meanings for differ-ent methods. For all settings except Random-K, ID refers to the 30 environments selected by AES in Section 3.2. For Random-K, ID refers to the 30 randomly selected training environments. In addition, we evaluate the trained models on com-mon general multimodal benchmarks to examine whether training on interactive environments harms their general perception and reasoning ability. We use three benchmarks of different types: MathVi-sion (Ahmad et al., 2025), MMMU (Yue et al., 2024) with the validation split, and MMStar (Chen et al., 2024b). The evaluation scripts for these gen-eral multimodal benchmarks are based on lmms-eval (Zhang et al., 2024). We thank the authors for their excellent open source implementation. 
+
+C Details of Ability-aware Environment Selection (AES) 
+
+C.1 Atomic Ability Segmentation 
+
+We first use Qwen3-VL-4B and Gemini-3-Flash to generate 20 trajectories for each environment. In practice, we sample 5 instances for each environ-ment type, and generate 4 trajectories for each in-stance with each model. For atomic ability segmen-tation, we use GPT-5 as the segmentation model. The prompt is shown in Appendix F. The goal is to decompose a complete agent trajectory into reusable and interpretable behavior units. When defining the segmentation granularity, we first rely on the model’s understanding, and then manually inspect the results to slightly adjust the granularity. 
+
+C.2 Construction of Environment Meta Ability Profiles 
+
+After obtaining atomic ability segmentations from 40 trajectories for each environment, we merge these atomic abilities into environment level meta abilities. The resulting meta ability profile is used to represent the underlying logic of environment. During merging, we first use GPT-5 to combine abilities with the same meaning but slightly dif-ferent wording. We then filter out atomic abilities whose frequency is lower than 10%, treating them as noise. For the remaining abilities, we use GPT-5 to classify them into core abilities and soft abilities. Core abilities refer to abilities that are essential for solving the task, such as path planning, while soft abilities refer to auxiliary abilities, such as an-swer formatting. These two types of abilities are assigned different weights in later diversity based selection 3.2. We also record transition edges be-tween abilities as ability graph information. Finally, we aggregate core abilities, soft abilities, ability graph edges, and their frequencies into the meta ability profile of each environment. 
+
+C.3 Settings of the AES Method 
+
+Our selection method computes the utility of each candidate environment based on three factors: cov-ering as many core abilities as possible, reducing redundancy, and reducing conflict. We set the weights of these three terms, denoted by λ, to 1 in our current experiments. For redundancy, we use the maximum profile similarity between the candidate environment and the already selected en-vironments as the redundancy penalty. To compute cosine similarity, we embed core abilities, soft abil-ities, and ability graph edges. These three compo-nents are weighted differently. The weight of a core ability vector is its frequency, while the weights of soft ability vectors and edge vectors are 0.3 times their frequencies. This is because soft abilities should not dominate the redundancy estimate. For example, two completely different environments may both require the ability of answer formatting. Finally, we measure conflict using gradients, fol-lowing the same implementation as described in Appendix B.2. Table 6 lists the 30 high quality en-vironments selected by AES. These environments are selected to achieve broad coverage, low redun-dancy, and low conflict. The table also provides a brief task description for each environment. 15 Environment Task Description 
+
+DoorKey In a first-person partial-view room, find the key, unlock the door, pass through, and reach the green goal. Tents-QA Visual QA on Tents and Trees: place tents next to trees while satisfying row/column counts and non-adjacency constraints. PegJump Jump one peg over another to remove it; goal is to finish with exactly one peg remaining. Arc1D Infer the 1D input-output transformation rule from examples and predict the output for the test input. LavaGap Cross a lava gap and reach the goal in first-person view without stepping on lava. Minimum Spanning Tree Counting Count the number of distinct minimum spanning trees in a weighted undirected graph, modulo a given value. Othello Two-player Othello: place discs to flip opponent pieces; win by having more pieces when the game ends. Frozen Lake Navigate from start to goal on a slippery frozen-lake grid without falling into holes. Multi Room Explore multiple connected rooms in first-person view; use keys and doors to reach the goal. Mini Sudoku Fill a Mini Sudoku so each row, column, and block contains each digit exactly once. Tree Even Partitioning Partition a tree with N ×K vertices into N connected groups of K vertices each. Sum Triangle Area Compute the sum of areas of all triangles formed by given 2D points, where collinear triples count as 0. Matchstick Equation Fix a broken matchstick equation by moving one match per action until the equation is mathematically correct. Knight Swap Determine whether white and black knights can swap positions via legal L-moves; output the move sequence or “impossible”. Texas Holdem Two-player limit Texas Hold’em: form the best 5-card hand from hole and community cards; win via call, raise, fold, or check. Hue-QA Visual QA on a color-gradient board about cell colors, gradient patterns, and color matching. Circuit Logic Given input assignments and a logic-circuit diagram, compute the circuit output, either 0 or 1. Weighted Binarytree Build a binary tree with fixed inorder traversal 0, . . . , N −1 that maximizes the given recursive score function. Nine Puzzle Transform the start grid into the target grid using bounded cyclic row/column shifts. Math Path Find a path from S to G on a number grid whose visited cells sum to the target value. Minimum Chromatic Number Find the minimum number of colors needed to properly color the vertices of an undirected graph. Tree To Traversal Read a binary tree visualization and output preorder, inorder, and postorder traversals. Chess Ranger-QA Visual QA on Chess Ranger: capture-only chess puzzles aiming to leave exactly one piece on the board. Klo Blocks Redistribute values via adjacent ±1 operations to maximize the longest contiguous subarray with all values at least K.
+
+Continued on next page 
+
+16 Table 6 continued from previous page. 
+
+Environment Task Description 
+
+Rush Hour Slide cars to free the red car [X] and drive it out through the right edge. Largest Island Find the maximum area of a 4-connected land island in a binary grid; return 0 if none exists. Grid Local Minimum Counting Count valid numberings of 1 to N × M such that marked cells are exactly the 8-neighbor local minima. Binary Matrix For each cell in a binary matrix, compute the Manhattan distance to the nearest 0. Ultra TicTacToe-QA Visual QA on Ultimate Tic-Tac-Toe, consisting of nine nested 3 ×3 boards, about rules, moves, or scoring. Ska Rock Garden Choose coordinate swaps on points to minimize the axis-aligned bounding-box perimeter, with total swap cost used as a tie-breaker. 
+
+> Table 6: Selected environments and task descriptions.
+
+17 Algorithm 1 Hierarchical Difficulty Curriculum 
+
+Require: Training environments Etrain 
+
+Require: Harness sample distribution De and scale range [ℓe, u ⋆e], ℓe = 0 
+
+Require: Thresholds τscale and τharness  
+
+> 1:
+
+Initialize re = 0 and ue = ℓe for each environ-ment e ∈ E train  
+
+> 2:
+
+for each training step do  
+
+> 3:
+
+Sample e ∼ E train  
+
+> 4:
+
+Sample h ∼ De(h | re) 
+
+> 5:
+
+Sample s ∼ Uniform( {ℓe, . . . , u e}) 
+
+> 6:
+
+Generate an instance with (e, h, s ) 
+
+> 7:
+
+Update the policy with RL  
+
+> 8:
+
+Estimate recent performance pe on scale 
+
+ue 
+
+> 9:
+
+if pe > τ scale then  
+
+> 10:
+
+ue ← min( ue + 1 , u ⋆e) 
+
+> 11:
+
+end if  
+
+> 12:
+
+if ue = u⋆e and pe > τ harness then  
+
+> 13:
+
+re ← re + 1 ; reset ue ← ℓe 
+
+> 14:
+
+end if  
+
+> 15:
+
+end for 
+
+D Details of Hierarchical Difficulty Curriculum (HDC) 
+
+D.1 Pseudocode of HDC 
+
+This section provides the pseudocode of the Nested Harness-Annealed Curriculum in Algorithm 1 to facilitate understanding of our curriculum design. The core idea is that each environment maintains its own curriculum state, including the current harness frontier re and the state-scale difficulty frontier ue.During training, we first sample an environment, then sample a harness level and a scale level, and finally generate a concrete training instance. As described in Section 4.3, this curriculum is nested. Within each harness level, the model first progresses along the state-scale difficulty axis. Once the target scale is reached, we weaken the harness, advance the outer curriculum frontier, and restart the growth of state-scale difficulty. 
+
+D.2 Harness Level 
+
+This section presents detailed summarization of the harness level discussed in Section 4.1. Here, H0
+
+represents the strongest harness, where the model can simultaneously access textual observations, text state, text hints, and complete rule descrip-tions. As the level increases, auxiliary information is gradually removed. Finally, H4 retains only ba-                              
+
+> Level Text Obs. Text State Text Hint Rule Basic Info.
+> H0✓✓✓✓✓
+> H1–✓✓✓✓
+> H2––✓✓✓
+> H3–––✓✓
+> H4––––✓
+
+Table 7: Harness levels used in the outer curriculum. 
+
+sic information such as visual observations and task descriptions. 
+
+D.3 State-Scale Implementation Details 
+
+This section describes the implementation details of the inner curriculum. In our method, the inner curriculum progresses according to state-scale dif-ficulty levels, such as graph size, grid size, obstacle density, or the number of entities. Since different environments support different state-scale parame-ters, Table 8 summarizes the adjustable state-scale factors for the 30 selected environments. The pro-gression of the inner curriculum follows the imple-mentation strategy of RLVE (Zeng et al., 2025). 18 Environment Supported Scale Parameters 
+
+DoorKey Yes size : map size; e.g., size=5/6/8/16 .Tents-QA Yes grid_size ; num_trees ; e.g., grid_size=[8,8] ,
+
+num_trees=12 .PegJump No –Arc1D Yes min_size/max_size : sequence length; num_train : number of examples; e.g., min_size=10 , max_size=30 , num_train=3 .LavaGap Yes size : map size; e.g., size=5/6/7 .Minimum Spanning Tree Counting Yes max_n : number of graph nodes; edge_ratio : edge density; e.g., 
+
+max_n=14 , edge_ratio=2.5 .Othello Yes board_size : board side length; e.g., board_size=4/6/8/10 .Frozen Lake Yes size : grid size; num_holes ; e.g., size=4 , num_holes=5 .MultiRoom Yes min_num_rooms/max_num_rooms : room-count range; 
+
+max_room_size : maximum room size; e.g., min_num_rooms=2 ,
+
+max_num_rooms=6 , max_room_size=10 .Mini Sudoku Yes min_empty/max_empty : number of blank cells in a fixed 4 ×4grid; e.g., min_empty=8 , max_empty=12 .Tree Even Partitioning Yes max_n : number of tree groups; max_k : group size; e.g., 
+
+max_n=10 , max_k=6 .Sum Triangle Area Yes max_n : number of 2D points; e.g., max_n=9 .Matchstick Equation Yes break_moves : number of perturbation moves; 
+
+enforce_min_distance : minimum repair-distance constraint; e.g., break_moves=2 , enforce_min_distance=True .Knight Swap Yes min_nodes/max_nodes : board graph size; 
+
+min_steps/max_steps : solution depth; e.g., min_nodes=9 ,
+
+max_nodes=10 , min_steps=8 , max_steps=20 .Texas Holdem No –Hue-QA Yes board_size : color-board size; num_lines : number of gradient lines; e.g., board_size=8 , num_lines=6 .Circuit Logic Yes min_terms/max_terms : number of logic terms; 
+
+min_inputs/max_inputs : number of inputs; e.g., 
+
+min_inputs=4 , max_inputs=6 , min_terms=4 , max_terms=8 .Weighted Binarytree Yes max_n : number of tree nodes; max_score : weight range; e.g., 
+
+max_n=12 , max_score=20 .Nine Puzzle Yes max_n_m : grid size; steps : number of scrambling steps; e.g., 
+
+max_n_m=4 , steps=12 .Math Path Yes size : grid size; e.g., size=4 .Minimum Chromatic Number Yes max_n : number of graph nodes; edge_density : graph density; e.g., max_n=14 , edge_density=0.6 .Tree To Traversal Yes min_nodes/max_nodes : binary-tree node-count range; e.g., 
+
+min_nodes=12 , max_nodes=16 .Chess Ranger-QA Yes num_pieces : number of chess pieces on the board; e.g., 
+
+num_pieces=8 .Klo Blocks Yes N: array or board length; e.g., N=7 .Rush Hour Yes difficulty : predefined difficulty level; e.g., 
+
+difficulty=easy/medium/hard .
+
+Continued on next page 
+
+19 Table 8 continued from previous page. 
+
+Environment Supported Scale Parameters 
+
+Largest Island Yes min_num_islands/max_num_islands : number of islands; 
+
+max_island_size : maximum island size; e.g., 
+
+min_num_islands=4 , max_num_islands=8 ,
+
+max_island_size=20 .Grid Local Minimum Counting Yes max_n_m : maximum grid side length; e.g., max_n_m=5 .Binary Matrix Yes min_n/max_n : matrix size; e.g., min_n=5 , max_n=8 .Ultra TicTacToe-QA No –SkaRock Garden Yes max_n : number of points; e.g., max_n=7 .
+
+> Table 8: Scale controllability of selected environments.
+
+20 Method OOD-ST OOD-MT Rel.             
+
+> Base Model 13.8 9.5 0.0 Description Embedding 16.3 8.3 2.8 Code Embedding 18.6 9.9 19.5
+> AES 21.0 12.2 40.3
+> Table 9: Comparison with representation-based envi-ronment selection. Description Embedding selects envi-ronments based on embeddings of textual environment descriptions, while Code Embedding selects environ-ments based on embeddings of key environment code.
+
+0 20 40 60 80 100 120 140 160 
+
+Number of Training Environments 
+
+0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 
+
+> Success Rate
+
+## Scaling Multimodal Environments 
+
+> ID Envs OOD Envs
+> Figure 7: Multimodal environment scaling under an expanded training budget. We fix the number of training samples per environment to 256.
+
+E More Experimental Results 
+
+E.1 Expanded-Budget Experiments 
+
+Our main experiments use a fixed total training budget to ensure compute-matched comparisons across different environment-set sizes in Section2. However, under this setting, increasing the number of environments reduces the number of training samples allocated to each environment. To control for this potential confounding factor, we conduct additional expanded-budget experiments, where each environment is assigned 256 training samples and the total budget grows linearly with the number of training environments. As shown in Figure 7, performance remains non-monotonic even when the total training budget is expanded. The ID success rate peaks at 66.3% with 40 environments and decreases to 42.1% with 160 environments. Similarly, the OOD success rate peaks at 36.4% with 60 environments and decreases to 23.6% with 160 environments. Therefore, the scaling degradation observed in Section 2.1 cannot be explained solely by insufficient per-environment training samples.                      
+
+> Method # Envs. ID Envs. OOD Envs. ST MT ST MT Base Model –13.1 11.9 13.8 9.5 All Envs. 170 33.1 20.6 20.5 9.8
+> AES 30 37.7 25.4 21.0 12.2
+> Table 10: Main results under the expanded-budget set-ting. Each training environment contributes 256 sam-ples. ST denotes single-turn success rate and MT de-notes normalized return in multi-turn environments.
+
+We further compare training on all environments with AES under the same allocation of 256 samples per environment. As shown in Table 10, despite using approximately 5.7 times more data, All Envs performs worse than AES across all evaluation set-tings. These results further demonstrate that the im-provements of AES arise from constructing a more effective training distribution rather than from the fixed-budget setting. 
+
+E.2 Performance Transfer across Modalities 
+
+In the preliminary experiments 2.2, we analyze per-formance transfer across environments under both text-only and multimodal settings. Due to space limitations, the main text only reports a summa-rized table. Here, we provide the complete perfor-mance transfer matrices in Table 11 and Table 12. 
+
+E.3 Cross-Architecture Evaluation 
+
+To examine whether AES is overly dependent on the model used for annotation, we train InternVL3-8B using the environment subset selected with Qwen3-VL-4B in Section 5.2. We do not rerun trajectory collection, ability annotation, or environ-ment selection for InternVL3-8B. As shown in Ta-ble 13, AES substantially outperforms Random-K,improving OOD-ST from 13.4 to 18.3 and OOD-MT from 8.4 to 11.8. Under HDC, the AES sub-set also outperforms Random-K by 3.1 points on OOD-ST and 4.6 points on OOD-MT. These results provide evidence that the selected environment dis-tribution can transfer across model families. 
+
+E.4 More Results on AES 
+
+This section provides additional results for Sec-tion 3.2. Figure 8 shows the distribution of the selected environments in the t-SNE space of all environment profiles. The selected environments are well dispersed and cover different regions of the environment space. Our 200-environment pool is built from existing multimodal environment con-21 Train env. Text-symbolic evaluation environment Acc. (%) 
+
+addition_table mini_sudoku rectangle_count rotate_matrix spiral_matrix tictactoe_qa Base Model 16.5 55.2 11.0 72.5 76.2 47.6 addition_table 37.5 (+21.0) 59.3 (+4.1) 18.5 (+7.5) 79.5 (+7.0) 83.2 (+7.0) 48.1 (+0.5) 
+
+mini_sudoku 24.6 (+8.1) 82.1 (+26.9) 19.3 (+8.3) 81.3 (+8.8) 80.1 (+3.9) 45.3 (-2.3) 
+
+rectangle_count 17.6 (+1.1) 55.0 (-0.2) 61.0 (+50.0) 77.1 (+4.6) 79.6 (+3.4) 42.1 (-5.5) 
+
+rotate_matrix 21.5 (+5.0) 56.0 (+0.8) 21.0 (+10.0) 92.0 (+19.5) 93.0 (+16.8) 43.5 (-4.1) 
+
+spiral_matrix 22.1 (+5.6) 56.7 (+1.5) 19.8 (+8.8) 92.8 (+20.3) 93.7 (+17.5) 42.1 (-5.5) 
+
+tictactoe_qa 18.8 (+2.3) 54.5 (-0.7) 13.5 (+2.5) 75.7 (+3.2) 82.2 (+6.0) 55.8 (+8.2) 
+
+mixed6 36.1 (+19.6) 80.2 (+25.0) 60.0 (+49.0) 93.3 (+20.8) 94.9 (+18.7) 52.6 (+5.0) 
+
+∆ -1.4 -1.9 -1.0 +1.3 +1.2 -3.2 
+
+Table 11: Transfer matrix in the text-symbolic setting. Each row denotes the training environment, and each column denotes the evaluation environment. All values are reported as accuracy in percentage. Colored values in parentheses denote the absolute accuracy change relative to the Base Model on the same evaluation environment. Diagonal entries correspond to single-environment training performance. The last row reports the change from mixed training to the corresponding single-environment result, i.e., ∆j = Mj − Tj,j .
+
+Train env. Multimodal evaluation environment Acc. (%) 
+
+addition_table mini_sudoku rectangle_count rotate_matrix spiral_matrix tictactoe_qa Base Model 7.8 41.7 6.5 25.0 18.8 32.8 addition_table 27.8 (+20.0) 49.2 (+7.5) 17.0 (+10.5) 26.0 (+1.0) 20.0 (+1.2) 34.0 (+1.2) 
+
+mini_sudoku 12.5 (+4.7) 72.9 (+31.2) 16.7 (+10.2) 27.1 (+2.1) 21.1 (+2.3) 35.1 (+2.3) 
+
+rectangle_count 6.5 (-1.3) 40.0 (-1.7) 56.0 (+49.5) 24.5 (-0.5) 19.2 (+0.4) 33.2 (+0.4) 
+
+rotate_matrix 9.3 (+1.5) 43.5 (+1.8) 19.5 (+13.0) 45.0 (+20.0) 45.8 (+27.0) 31.7 (-1.1) 
+
+spiral_matrix 9.5 (+1.7) 43.0 (+1.3) 20.5 (+14.0) 47.3 (+22.3) 43.5 (+24.7) 31.0 (-1.8) 
+
+tictactoe_qa 8.1 (+0.3) 41.0 (-0.7) 5.3 (-1.2) 22.1 (-2.9) 17.0 (-1.8) 45.1 (+12.3) 
+
+mixed6 26.1 (+18.3) 59.1 (+17.4) 51.5 (+45.0) 42.5 (+17.5) 40.8 (+22.0) 39.3 (+6.5) 
+
+∆ -1.7 -13.8 -4.5 -2.5 -2.7 -5.8 
+
+Table 12: Transfer matrix in the multimodal setting. 
+
+Method OOD-ST OOD-MT Base Model 9.1 6.5 Random-K 13.4 8.4 AES 18.3 11.8 Random-K + HDC 15.8 10.1 
+
+AES + HDC 18.9 14.7 
+
+Table 13: Main results on InternVL3-8B. The AES subset is constructed using Qwen3-VL-4B. 
+
+struction works. Therefore, the colors in the figure denote the human-defined categories from the orig-inal sources. We observe that some regions contain points of different colors, suggesting that human-defined categories do not always align with envi-ronment similarity from the perspective of agent behavior and training dynamics. 
+
+E.5 Comparison with Existing Diversity Selection Method 
+
+In Section 3, we mention that prior works often an-alyze environment diversity through surface-level information, such as representations of environ-ment descriptions (Zhang et al., 2025b). In con-trast, we argue that environment diversity should be analyzed from the perspective of the model’s meta-abilities, which better reflect the underlying mechanisms required to solve the environments. In this section, we compare AES with representation-based environment selection meth-ods. Specifically, we consider two settings: one based on embeddings of textual environment de-scriptions, such as task descriptions and prompts, and the other based on embeddings of key environ-ment code. For both settings, we use BAAI/bge-m3 (Chen et al., 2024a) as the embedding model and apply a cosine-distance-based greedy k-center selection strategy over the candidate environment pool. We start from the environment closest to the global center, and iteratively add the environment that is farthest from the current selected set. Fi-nally, each method selects 30 environments, which are compared with the 30 environments selected by AES. We train Qwen3-VL-4B on each environ-ment subset. As shown in Table 9, description-22 15 10 5 0 5 10 15 
+
+## t-SNE 1 
+
+> 10.0
+> 7.5
+> 5.0
+> 2.5
+> 0.0 2.5 5.0 7.5 10.0
+> t-SNE 2
+
+# Selected Environments (30/200) 
+
+> Algorithmic Arc Cognition Games Geometry Graphs Logic Puzzles Spatial selected
+
+Figure 8: The distribution of the 30 environments selected by AES across the profile space of 200 environments. 
+
+embedding selection brings only limited improve-ment, achieving a relative gain of 2.8%. Code-embedding selection performs better, with a rela-tive gain of 19.5%. However, both methods are clearly worse than AES, which achieves a relative gain of 40.3%. These results suggest that surface representations are insufficient to capture the abil-ities required by multimodal agents. In contrast, AES selects environments from the model’s meta-ability perspective and constructs a more effective training environment distribution. 
+
+E.6 Comparison with Curriculum-Learning Baselines. 
+
+To isolate the contribution of HDC from general curriculum learning, we compare it with two recent curriculum-learning methods, RLVE (Zeng et al., 2025) and VCRL (Jiang et al., 2025). All methods use the same AES-selected environment subset and the same total training budget. As shown in Ta-ble 14, HDC achieves the best performance across all evaluation settings. The improvements are par-ticularly pronounced on multi-turn environments: HDC outperforms the strongest competing base-line by 5.9 points on ID-MT and 3.1 points on OOD-MT. These results demonstrate that harness                     
+
+> Method ID-ST ID-MT OOD-ST OOD-MT AES 37.7 25.4 21.0 12.2 AES + RLVE 39.9 28.2 21.2 13.7 AES + VCRL 42.5 30.3 21.6 12.8
+> AES + HDC 45.0 36.2 22.1 16.8
+
+Table 14: Comparison with curriculum-learning base-lines. All methods use the same AES-selected environ-ments and matched training budget. ST denotes single-turn success rate and MT denotes normalized return in multi-turn environments. 
+
+weakening provides additional benefits beyond con-ventional curriculum learning. 
+
+E.7 Training Curves of HDC 
+
+This section further illustrates the effectiveness of our bi-level curriculum. We train a model on the Frozen Lake environment alone and visualize the recent success rate as training progresses in Figure 9. The shaded regions represent different harness levels, corresponding to different stages of the outer curriculum. The curve shows an adaptive learning process. At a fixed difficulty level, the model per-formance gradually improves. Once the reward reaches the threshold, the curriculum advances to the next state-scale level. After the target scale is 23 completed, the harness level is reset to a harder setting, and the state-scale progression starts again. 
+
+E.8 Error Correction Analysis after HDC 
+
+To further analyze how HDC changes the model’s ability, we evaluate the trained model on the 200 samples used in our previous error analysis. We focus on whether the model can correct the pre-viously observed failure modes after training. As shown in Figure 10, HDC substantially reduces errors related to visual state extraction and world modeling, which are exactly the two major bottle-necks targeted by our curriculum design. These results provide additional evidence that HDC does not merely improve the final success rate, but also directly mitigates the key multimodal reasoning failures identified in our analysis. 
+
+Clarification on Human Annotation. The anal-ysis in this section and Section 2.3 was conducted manually by human annotators. The annotators were members of the research team or internal col-laborators. Before annotation, they received the necessary disclosures and provided consent, and the work was supported through institutional fund-ing. We provided clear guidelines, including the definition of each error category and representative examples. For ambiguous cases, the final labels were determined through internal discussion. 
+
+F Prompt for Atomic Ability Annotation 
+
+This appendix presents the prompt used to annotate model rollout trajectories into atomic behavioral steps and atomic abilities. The annotations are used to construct environment-level ability profiles and ability graphs. 24 0 20 40 60 80 100 120 140 160 180 200 
+
+Policy iteration step 
+
+0.0 0.2 0.4 0.6 0.8 1.0 
+
+> Recent success rate
+
+H0 H1 H2 H3 H4   
+
+> FrozenLake training success inner scale upgrade scale threshold τs= 0.80
+> current inner scale outer harness upgrade outer harness level
+
+Figure 9: The training curve of HDC on Frozen Lake. 30% 22% 23% 15% 5% 5% 
+
+## 37/60 28/44 21/46 14/30 4/10 7/10 
+
+# Visual State Extraction Error World Modeling Error Text Reasoning Error Action Format Invalid Output Formatting Error Others 
+
+# Original distribution Corrected area 
+
+Figure 10: Corrected error analysis when learning algorithm using HDC. 
+
+25 Table 15: System prompt for atomic behavioral step and atomic ability annotation. 
+
+Prompt for Atomic Ability Annotation SYSTEM PROMPT :
+
+You are an expert analyst for multimodal agent environment rollouts. Your task is to segment a model rollout episode into reusable atomic behavioral steps and infer solver-pattern-level atomic abilities. The annotations will be used to: 1. cluster common atomic steps across environments; 2. build an environment-level skill graph; 3. measure ability overlap and redundancy between environments; 4. support diverse environment selection. A rollout step is one interaction with the environment. However, an atomic behavioral step is not necessarily identical to one environment interaction. One atomic behavioral step may span multiple environment interactions, and one environment interaction may also involve multiple atomic behavioral steps. Segment the trajectory according to the model’s functional problem-solving process, rather than the simulator’s step granularity. Use solver-pattern-level labels. Each label should be abstract enough to transfer across environments, but concrete enough to distinguish different solution mechanisms. Good labels include: explore_unseen_area , extract_grid_or_matrix_state ,
+
+extract_graph_or_relation_state , solve_index_mapping_or_traversal , manipulate_object ,
+
+solve_constraint_satisfaction , solve_grid_propagation , simulate_rule_based_dynamics ,
+
+generate_legal_actions , update_belief_from_feedback , infer_visual_transformation_rule ,
+
+solve_combinatorial_counting , solve_graph_matching , solve_state_transformation , and 
+
+verify_goal_or_terminal_state .Do not use labels that are too coarse, such as perception , reasoning , planning , understanding , decision_making ,or memory .Do not use labels that are too fine-grained or environment-specific, such as compute_first_player_value ,
+
+infer_cellular_automaton_rule , read_arrow_at_current_cell , identify_sudoku_empty_cell ,
+
+map_cell_coordinates_under_rotation , maintain_spiral_boundary_indices ,
+
+count_live_neighbors_in_game_of_life , pick_Alice_move , or move_to_red_box_in_TMaze .Instead, map environment-specific behaviors to reusable solver-pattern labels. For example, 
+
+compute_first_player_value should be mapped to solve_adversarial_search ;
+
+infer_cellular_automaton_rule should be mapped to simulate_rule_based_dynamics ;
+
+read_arrow_at_current_cell should be mapped to model_transition_or_operation_rule ;
+
+identify_sudoku_empty_cell should be mapped to solve_constraint_satisfaction ;
+
+map_cell_coordinates_under_rotation and maintain_spiral_boundary_indices should be mapped to 
+
+solve_index_mapping_or_traversal ; and move_to_red_box_in_TMaze should be mapped to 
+
+solve_path_planning or explore_unseen_area .For Sudoku-like constraint puzzles, use verify_solution_constraints for both partial legality checks and final solution validation. Do not emit a separate detect_inconsistency label for Sudoku. An atomic behavioral step is a locally coherent functional segment in the rollout, such as extracting or updating structured state, building or updating a spatial map, modeling a rule, constraint, transition, or legal action set, choosing or executing a path-planning subgoal, satisfying an action precondition, manipulating an object, verifying success, failure, legality, or terminal state, or recovering from a wrong path or failed assumption. Follow these segmentation rules: 1. merge consecutive environment interactions if they serve the same immediate function; 2. split when the functional role changes; 3. split at key state-changing or informative events, such as pickup, drop, toggle, unlock, collision, death, goal reached, invalid action, feedback received, backtrack, or retry; 4. for failed trajectories, still segment by attempted functions; 5. prefer stable reusable labels over environment-specific labels; 6. use the same label for similar solver patterns across categories. Return exactly one valid JSON object only. Do not wrap the JSON in markdown fences. Each atomic step must contain 
+
+start_index and end_index referring to rollout indices. Each atomic step must include evidence from the rollout. Include failure modes for failed or mixed rollouts. Include an environment_skill_graph with nodes and directed edges. Also include cross_category_skill_tags for downstream clustering. Do not include any explanations outside the JSON object. 
+
+26
