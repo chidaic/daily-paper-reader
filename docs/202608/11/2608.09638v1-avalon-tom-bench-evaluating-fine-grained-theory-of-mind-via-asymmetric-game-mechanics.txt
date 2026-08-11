@@ -1,0 +1,754 @@
+Title: Avalon-ToM-Bench: Evaluating Fine-Grained Theory of Mind via Asymmetric Game Mechanics
+
+URL Source: https://arxiv.org/pdf/2608.09638v1
+
+Published Time: Tue, 11 Aug 2026 02:24:15 GMT
+
+Number of Pages: 18
+
+Markdown Content:
+# Avalon-ToM-Bench: Evaluating Fine-Grained Theory of Mind via Asymmetric Game Mechanics 
+
+Yen-Shan Chen 1,2 Yu Chian Duan 1,∗ Chih-En Kuo 1,∗ Jian-Bin Wu 1,∗ Yun-Nung Chen 11National Taiwan University 2CyCraft AI Lab, Taiwan 
+
+{r14922018, b12902069}@csie.ntu.edu.tw , kuochihen@gmail.com ,
+
+b12902071@ntu.edu.tw , y.v.chen@ieee.org 
+
+> ∗
+
+Equal contribution 
+
+Abstract 
+
+Theory of Mind (ToM) is essential for agent interactions, yet existing evaluations either rely on static scenarios that oversimplify mental-state reasoning or interactive settings that pro-vide limited diagnostic insight. We present 
+
+Avalon-ToM-Bench , a fine-grained bench-mark that operationalizes ToM through the asymmetric-information mechanics of The Re-sistance: Avalon . Rather than evaluating end-to-end gameplay, Avalon-ToM-Bench decom-poses ToM into a 2 × 2 taxonomy spanning 
+
+epistemic versus motivational reasoning and 
+
+inference versus action , using human-crafted, perspective-constrained queries. Benchmark-ing 28 LLMs reveals three insights: First , mod-els show strong game-rule comprehension but weaker ToM abilities. Second , mechanistic analyses via linear probing and activation steer-ing demonstrate that models frequently rep-resent correct mental-state inferences in their hidden states but fail to express them during generation (linear probes recover 77–82% ac-curacy versus 62–70% from the models’ own chain-of-thought), indicating that ToM limita-tions are primarily a problem of expression rather than representation. Third , dedicated reasoning training yields substantial improve-ments whereas test-time chain-of-thought pro-vides only marginal gains ( +11 .0 versus +1 .1
+
+points on average), suggesting that robust ToM depends on a learned reasoning policy rather than increased inference-time deliberation. 1
+
+1 Introduction 
+
+The evaluation of Theory of Mind (ToM) (Premack and Woodruff, 1978) in Large Language Models (LLMs) demands a shift from treating the capability as a single, indivisible trait to recognizing it as a spectrum of distinct cognitive abilities. However, prevailing methodologies often miss this nuance. 
+
+> 1
+
+Source code available at: https://github.com/ yenshan0530/Avalon-ToM-Bench .PUBLIC BOARD      
+
+> AAPPROVE ✓BREJECT
+
+× Svt  ✓                  
+
+> one act: B rejects a team he is on
+> Assassin ·order 3
+> Percival ·order 2
+> →
+> →
+> same board, same act —five different conclusions
+> APPROVE
+> Servant ·order 4
+> Merlin ·order 1
+> Isee an EVIL player on this team REJECT
+> →
+> Morgana ·order 1
+> I want to be on the mission
+> TRUSTS B, DOUBTS A
+> Only Merlin sees Morgana, and Morgana cannot
+> know Merlin is here, so the reject is likely Merlin.
+> →
+> APPROVE
+> Only a seat that sees evil rejects —and Percival just
+> turned on one of my team (possibly Morgana).
+> SUSPECTS B is Merlin
+> I see nothing, but they read a lone reject as Merlin .If I
+> reject at random, that signal dies.
+> →REJECTS SOMEONE TOO
+
+Figure 1: Avalon operationalizes theory of mind. Iden-tical events yield divergent reads, requiring models to deduce hidden perspectives, infer intent from tactics, and shape subsequent actions. 
+
+Traditional benchmarks (Wu et al., 2023; Shinoda et al., 2025; Gandhi et al., 2023) frequently probe superficial patterns through static, overly simplistic scenarios—such as explicitly querying a character’s emotional state or visual perspective— stripping away the asymmetric information, deception, and multi-party dynamics inherent to real-world social reasoning. On the other hand, while hidden-role games offer rich, interactive en-vironments (Serrino et al., 2019; Light et al., 2023, 2025; Rahimirad et al., 2026), evaluating models strictly on end-to-end performance (e.g., win rates or action prediction) sacrifices interpretability. Such outcome-driven metrics blur the lines between genuine mind-reading and orthogonal skills like strategic planning, persuasion, or logical memory, making it impossible to isolate true ToM deficits from broader statistical biases. 1arXiv:2608.09638v1 [cs.AI] 10 Aug 2026 To address these limitations, we introduce 
+
+Avalon-ToM-Bench , utilizing the mechanics of 
+
+The Resistance: Avalon as a controlled diagnostic environment rather than a gameplay arena. We map ToM across two fundamental axes: the nature of the targeted mental state ( Epistemic knowledge versus Motivational intent) and its cognitive ex-ecution (passive Inference versus active Action ). This yields four distinct quadrants of asymmetric-information reasoning. To guarantee objective as-sessment, Avalon-ToM-Bench queries models us-ing highly constrained, human-verified proposi-tions that restrict available evidence exclusively to the designated player’s point of view and the public interaction history, penalizing models that rely on omniscient context. We further verify that these axes are empirically dissociable: under permuta-tion testing, item difficulty loads on the epistemic dimension whereas the benefit of chain-of-thought loads on the orthogonal inference–action dimen-sion, confirming that the taxonomy carves ToM at meaningful joints rather than imposing an arbitrary partition. By cleanly decoupling ToM from general game-playing heuristics, Avalon-ToM-Bench is, to the best of our knowledge, the first framework to operationalize mental-state reasoning as a multi-dimensional, testable skill. We benchmark 28 distinct LLMs—encompassing various sizes, rea-soning paradigms, and open/closed weights— uncovering three primary insights: • Rule Mastery Does Not Equal Social Intel-ligence: Models struggle with perspective-constrained ToM (performance 50 − 60% )despite recalling Avalon’s mechanics near-perfectly (average rule comprehension accu-racy ≈85%). • The Latent Competence Gap: Linear prob-ing and activation steering reveal that models internally compute the correct deduction but fail to surface it—probes recover 77–82% ac-curacy versus 62–70% from the model’s own chain-of-thought, suggesting that ToM failure may be one of expression, not representation. • Robust ToM Requires Learned Policies, Not Just Deliberation Test-time chain-of-thought yields volatile, marginal gains ( +1 .1
+
+pts), whereas reasoning-trained models im-prove consistently ( +11 .0 pts)—robust ToM depends on a learned reasoning policy, not more inference-time tokens. 
+
+2 Related Work 
+
+Theory of Mind and its Evaluation in LLMs. 
+
+Early LLM studies treated ToM (Premack and Woodruff, 1978) as a monolithic capability probed by short, bias-controlled question-answering (Le et al., 2019). Later benchmarks broadened coverage—conversational asymmetry (Kim et al., 2023), long-form narratives (Xu et al., 2024a), fine-grained behaviors (Chen et al., 2024), and higher-order reasoning (Wu et al., 2023)—but still frame ToM as passive reading and entangle epistemic knowledge with motivational intent. Adversarial stress tests expose its brittleness (Shapira et al., 2024; Ullman, 2023), yet why models fail, and how to mitigate it, remains open. 
+
+Social Deduction Games as Reasoning Envi-ronments. Hidden-role games are long-standing testbeds for reasoning under information asymme-try, from pre-LLM game-theoretic agents (Serrino et al., 2019; FAIR et al., 2022) to a fast-growing line of LLM players (Light et al., 2023; Wang et al., 2024; Light et al., 2025; Xu et al., 2024b; Rahimi-rad et al., 2026). These validate belief inference only through end-to-end game success, conflating it with planning, persuasion, and memory. Game-based evaluations instead target strategic compe-tence (Duan et al., 2024; Lu, 2025) or score behav-ioral alignment to human play (Song et al., 2025; Li et al., 2025); either way their gold labels are behavioral rather than the objective correctness of a mental-state deduction. 
+
+Probing and Steering Internal Representations. 
+
+A complementary interpretability line reads and writes model computation directly: linear probes recover latent task information (Alain and Bengio, 2017; Belinkov, 2022), models encode knowledge their generations omit (Burns et al., 2023; Azaria and Mitchell, 2023), and activation steering shows such directions are causal (Turner et al., 2025; Zou et al., 2023). We bring these tools to ToM to show that mental-state inferences are internally repre-sented yet under-expressed—a mechanistic axis unseen in prior ToM benchmarks. In Appendix C we discuss related work in detail. 
+
+3 Avalon-ToM-Bench 
+
+Avalon-ToM-Bench treats The Resistance: Avalon —a hidden-role game whose secret roles give each seat asymmetric private information over 21 Night phase                 
+
+> Ground truth · 7 seats
+> P1
+> Merlin
+> P2
+> Percival
+> P3
+> Servant
+> P4
+> Servant
+> P5
+> Morgana
+> P6
+> Mordred*
+> P7
+> Assassin
+> * Mordred and Oberon are optional rol es
+> Private views unknown to that seat
+> Merlin's view
+> P1 P2 P3 P4 P5 P6 P7
+> sees 2 of 3 evils —Mordred stays hid den
+> Morgana's view
+> P1 P2 P3 P4 P5 P6 P7
+> knows the evil team, not who Merl in is
+> … 5 other seats each hold their own view
+> 2
+
+Day phase      
+
+> Leader proposes
+> P1, P3, P6
+> Everyone votes
+> 5 approve / 2 reject
+> Team plays cards
+> ???secretly
+> Public result
+> 1 FAIL
+> everyone sees proposal, votes, result
+> no one sees who played FAIL
+> 3
+
+Instance derivation        
+
+> 1 Recorded gameplay + Reasoning
+> turns, votes + stated reasoning
+> t1 tn
+> 2 Review Each Snapshot Post-Game
+> public history
+> H
+> seen by all
+> seat filter
+> P (Merlin)
+> hides Mordred
+> 3 Draft Each Dataset Instance
+> context History + Perspective (Merlin)
+> query “Merlin know s P6 is EVIL”
+> gold True/False
+> find new items by reviewing
+> every seat × every turn
+> DURING PLAY one recorded game AFTER PLAY review
+
+Figure 2: Avalon-ToM-Bench overview. During play (1–2), the authors play and record a real game: hidden roles give each seat an asymmetric private view of the same public events. After play (3), each recorded game is reviewed seat-by-seat and turn-by-turn; combining the public history H with a seat’s role filter P yields one perspective-constrained instance (context, query, gold label), forcing strictly perspective-constrained reasoning. 
+
+a shared public history of proposals, votes, and mission outcomes—not as gameplay to be won but as a measurement instrument. We decompose ToM into four abilities on a 2 × 2 taxonomy (§3.1) and probe each with human-authored, perspective-constrained binary statements whose labels are objectively verifiable against the rules, the designated seat’s information, and the public history (Figure 2). The full ruleset, a self-contained “Avalon in brief,” and the role-visibility table are given in Appendix D. 
+
+3.1 A 2 × 2 Taxonomy of Theory of Mind 
+
+We organize ToM along two axes. The first is the 
+
+nature of the mental state being reasoned about: 
+
+Epistemic —what a seat (a player’s role-defined vantage point) can perceive or know (beliefs, in-formation access)—versus Motivational —what a seat wants or intends (goals, motives). The second is how that mental state is engaged : Inference ,where the target mental state exists from the role and board structure and must be read off with no communicative act involved, versus Action , where a strategic act—a public claim, a sabotage choice— is itself the object of reasoning and must be pro-duced or interpreted as a deliberate move. Cross-ing the two axes yields four dissociable abilities, each of which is naturally instantiated by a distinct 
+
+Avalon scenario (Figure 3). 
+
+Perspective-Taking (Epistemic × Inference). 
+
+The Merlin–Percival–Morgana structure makes ad-versarial roles deliberately confusable (Figure 3); the task is to read off what a given seat can legit-imately know under these constraints—a purely epistemic inference with no strategic act. 
+
+Strategic Signaling (Epistemic × Action). The 
+
+Lady of the Lake holder privately learns a player’s faction and then makes a public, unverifiable claim; the evidence is epistemic but the object of reason-ing is a communicative act —revealing, concealing, faking, or decoding that claim. 
+
+Intention Attribution (Motivational × Infer-ence). Suspicion redirection scenarios reveal no identity directly; the model must abduce a hidden 
+
+motive from an observed action. 
+
+Tacit Coordination (Motivational × Action). 
+
+The EVIL sabotage protocol (priority Assassin 
+
+> Morgana > Mordred; Appendix D.4) requires EVIL teammates to converge, without communica-tion , on who plays the FAIL card—a coordinated 
+
+act that must mesh with teammates’ shared intent. These placements are design-driven—for each cell we selected the Avalon mechanic that most natu-rally instantiates it—and, crucially, not arbitrary: our decomposition analysis (§4.2) finds that item difficulty loads on the Epistemic axis while the ben-efit of chain-of-thought loads on the orthogonal 
+
+Inference/Action axis, confirming that the taxon-omy carves ToM at empirically dissociable joints. 3Inference  Action  
+
+> Epistemic Motivational
+> 1
+
+Perspective-Taking         
+
+> Merl in –Percival –Morga na
+> Percival sees Merlin / Morgana picks the pair + 1
+> servant
+> unlabelled pair
+> vote: 1 reject, 2 approve Merlin sees all evil
+
+✓ Rejecter = Merlin → the other is Morgana. 
+
+✗ Rejecter = Morgana, faking Merlin.     
+
+> Key ToM concept: Percival should be abl e to reason that Merlin sees
+> Morga na, bu t Morgana cannot see Merli n —the mimicry i s on e-way.
+> 2
+
+Strategic Signaling       
+
+> Lady of the Lake –Oberon
+> Oberon inspects EVIL card claims “GOOD”, publicly
+> blind to his own team
+> every evil seat now reads Oberon = evil
+
+✓ Every evil seat now reads O beron as evil. 
+
+✗ Only the inspected player learns it.     
+
+> Key ToM concept: Oberon should infer that the other evils see each o ther,
+> so they know tha t card was evi l —the lie outs Oberon to all of them.
+> 3
+
+Intention Attribution   
+
+> suspicion redirection –Mordred
+> Mordred
+> steps on
+> evil teammate
+> invisible to Merlin
+> Merlin
+> trust ↑
+> team
+> belief unchanged
+
+✓ Merlin's trust in Mordred rises. 
+
+✗ His teammates start to think he is good.   
+
+> Key ToM concept: Role knowledg e is fi xed; a pu blic act can move only the good side's beliefs, never a teammate's.
+> 4
+
+Tacit Coordination     
+
+> evil sabotage protocol –no talking
+> fail order: Assassin > Morgana > Mordred
+> Morgana Assassin
+> sees: { Assassi n or Mordred } sees: { Morgana or Mordred }
+
+✓ The Assassin always fails — he outranks both. 
+
+✗ Morgana m ay defer: the other must be Assassin.     
+
+> Key ToM concept: The rule resolves only for the top-ranked seat; Morgana must act unsure which evil she is paired with.
+> who plays FAIL ?
+> step on = publicly turn on a teammate
+> good seat evil seat identity unk nown public / rule
+
+Figure 3: The 2 × 2 Theory-of-Mind taxonomy, instantiated in Avalon . The nature of the mental state (Epistemic vs. Motivational) crossed with its cognitive application (Inference vs. Action) yields four dissociable abilities, each realized by a naturally occurring Avalon scenario: Perspective-Taking (Merlin–Percival–Morgana), Strategic Signaling (Lady of the Lake), Intention Attribution (Suspicion Switching), and Tacit Coordination (EVIL Protocol). 
+
+3.2 Perspective-Constrained Task Formulation 
+
+Let R denote the Avalon ruleset, G the complete game state, H the public interaction history, and 
+
+s a candidate inference. Most items designate a player i, either through an explicit perspective in-struction Pi or directly in the target query. The role-visibility rules induce an information projec-tion Ii = Π i(G) containing only what player i can legitimately know, and the model must evaluate s
+
+using evidence restricted to this projection: 
+
+ˆy = M (R, P i, G, H, s ), ˆy ∈ { TRUE , FALSE }.
+
+Although the model is shown the complete state 
+
+G, valid evidence is confined to Ii and H; it must reconstruct the player’s epistemic state rather than treat every stated identity as accessible knowledge. A role-conditioned statement is labeled T RUE when it is valid under R, Ii, H, and any explicit sce-nario assumptions, and F ALSE if it violates the rules, relies on inaccessible information, or makes an unsupported belief or strategic inference. The evidence and judgment criteria specific to each di-mension are detailed in Appendix E, and one fully worked item per dimension is given in Appendix J. Statements from the same scenario are evaluated 
+
+independently rather than as competing multiple-choice options. A small number of EVIL-Protocol items are observer-level : they test whether a proto-col consequence follows from the complete state without assigning a viewpoint, and are assessed directly against R, G, and H.
+
+Evaluation. Each instance presents the game setup, relevant history, and one target statement; the gold label and reference rationale are with-held from the model, which outputs a single TRUE /F ALSE judgment. We report accuracy and, because some diagnostic subsets are class-skewed, macro-averaged F1, which exposes any residual TRUE /F ALSE prior. All items are run zero-shot with a fixed system/user prompt template (Ap-pendix H); decoding regimes and the full model roster are given in Appendix I. 
+
+3.3 Data Generation and Validation 
+
+The benchmark is built from real games rather than synthetic vignettes: the authors play and record full games and then, reviewing each recorded snapshot seat-by-seat and turn-by-turn, draft and indepen-dently cross-validate perspective-constrained state-ments against the rules, the seat’s role-filtered infor-mation, and the public history (Figure 2; full pro-4Perspective-Taking Strategic Signaling Intention Attribution Tacit Coordination Average 
+
+Epistemic Epistemic Motivational Motivational Inference Action Inference Action 
+
+Model Rules Acc F1 Acc F1 Acc F1 Acc F1 Acc F1 
+
+□ Gemini-2.5-Pro 97.06 79.41 78.50 87.14 87.08 100.00 100.00 92.14 92.13 89.67 89.43 
+
+□ GPT-5 97.06 82.35 82.29 83.57 83.12 96.67 96.67 91.43 91.38 88.50 88.36 
+
+□ Gemini-2.5-Flash 94.12 77.27 77.27 86.33 86.33 95.00 94.99 88.41 88.29 86.75 86.72 
+
+□ Qwen3.6-35B-A3B 91.18 66.18 65.99 80.00 79.39 96.67 96.67 88.57 88.51 82.85 82.64 
+
+□ Qwen3-4B-Think 91.18 72.73 72.50 80.58 80.38 85.00 85.00 84.89 84.84 80.80 80.68 
+
+□ GPT-5-mini 94.12 69.12 69.11 76.43 75.37 86.67 86.43 89.29 89.19 80.37 80.03 
+
+□ Qwen3-8B 97.06 68.42 67.61 77.10 77.03 85.11 84.86 87.40 87.34 79.51 79.21 
+
+□ Qwen3-32B 97.06 64.18 63.98 77.94 77.90 89.83 89.76 82.01 81.98 78.49 78.40 
+
+□ Qwen3-14B 94.12 61.76 60.54 80.71 80.55 83.05 83.01 83.45 83.28 77.25 76.84 
+
+○ GPT-4o-mini 97.06 63.24 63.16 75.71 75.63 83.33 83.31 77.86 77.80 75.04 74.98 
+
+□ Qwen3-4B 94.12 54.84 54.79 76.87 76.85 86.27 86.25 78.03 78.00 74.00 73.97 
+
+□ Qwen3.5-9B 88.24 68.63 64.71 66.94 63.70 80.00 78.02 79.70 78.61 73.82 71.26 
+
+○ Phi-4 91.18 63.24 61.84 72.86 72.17 78.33 77.58 80.00 79.85 73.61 72.86 
+
+○ Gemma-3-27B 94.12 61.76 59.52 72.14 71.73 75.00 73.77 77.14 76.84 71.51 70.46 
+
+□ gpt-oss-120B 97.06 63.24 62.25 61.43 58.00 81.67 81.41 77.86 77.53 71.05 69.80 
+
+○ Mistral-7B 85.29 69.12 67.54 64.29 61.11 76.67 76.00 73.57 72.21 70.91 69.21 
+
+○ Llama-3-8B 73.53 63.24 60.12 67.86 65.97 81.67 81.66 67.14 65.08 69.98 68.21 
+
+○ Gemma-3-4B 85.29 67.65 67.19 67.86 67.84 71.67 71.66 70.71 70.70 69.47 69.35 
+
+○ Phi-3.5-mini 91.18 55.88 54.46 66.43 66.04 78.33 78.33 72.86 72.40 68.38 67.81 
+
+○ Llama-3.2-3B 26.47 68.89 67.59 59.13 59.02 78.43 78.40 58.33 55.56 66.20 65.14 
+
+□ Ministral-3-14B 79.41 70.59 69.94 64.29 61.11 55.00 49.98 70.71 69.20 65.15 62.56 
+
+○ Llama-3.1-8B 73.53 51.47 40.68 60.29 54.64 76.36 74.73 64.12 59.56 63.06 57.40 
+
+○ Granite-3.3-8B 91.18 51.47 43.89 64.29 60.37 65.00 61.10 66.43 62.56 61.80 56.98 
+
+□ Qwen3-1.7B 85.29 54.10 51.91 67.39 67.00 52.54 51.41 72.66 72.34 61.67 60.67 
+
+○ Llama-3.2-1B 47.06 54.41 42.45 61.43 61.04 68.33 66.22 62.14 57.78 61.58 56.87 
+
+□ Qwen3.5-2B 85.29 55.88 48.33 56.43 46.22 65.00 61.10 63.50 60.63 60.20 54.07 
+
+□ Qwen3-0.6B 64.71 49.25 49.24 62.77 62.70 61.67 61.40 60.00 59.97 58.42 58.33 
+
+○ OLMo-2-7B 70.59 48.53 35.03 53.57 40.81 56.67 46.65 62.86 57.91 55.41 45.10 
+
+Average 84.77 63.46 60.80 70.42 68.54 78.21 77.01 75.83 74.70 71.98 70.26 
+
+Table 1: Model performance on the full balanced set (408 items, 50% True per ability). For each ToM ability we report accuracy ( Acc ) and macro-F1 (F1 ). Marker: □ / ○ = reasoning / non-reasoning; filled / outline =
+
+proprietary / open-weight. Rules : full game-rules exam. Average is the macro-average over the four abilities. Darker shading = higher; best per column in bold ; rows sorted by average accuracy. 
+
+tocol in Appendix G). In total it comprises 408 in-dependently evaluated binary statements across 97 scenarios and the four dimensions, near-balanced at roughly 50% T RUE , plus a 34-item rule-recall control set—not counted among the 408—that iso-lates basic rule recall from perspective-sensitive reasoning (per-dimension statistics in Appendix F). 
+
+4 Experiments 
+
+We evaluate 28 models spanning proprietary and open-weight families, reasoning-trained and stan-dard instruction-tuned variants, and sizes from 0.6B up. Each is prompted zero-shot with a fixed template—game setup, public history, and one perspective-constrained statement—and returns a TRUE /F ALSE judgment (§3.2). We report accu-racy and macro-F1 per ability on the full balanced set (408 items, 50% T RUE per ability), so a resid-ual T RUE /F ALSE prior surfaces as an Acc– F1 gap. A companion rules exam tests recall of Avalon’s mechanics, separating game knowledge from rea-soning about minds. 
+
+4.1 Models Read the Rules but Not the Mind 
+
+The leaderboard in Table 1 reveals three findings: 
+
+A wide, structured spread. Proprietary reason-ing models lead (Gemini-2.5-Pro 89.7, GPT-5 88.5, Gemini-2.5-Flash 86.8), the weakest open models fall to the mid-50s, and class means track capa-bility: 84.1 (proprietary), 71.9 (open reasoning), 66.5 (open non-reasoning). Reasoning training and scale both help, yet no open model reaches the pro-prietary frontier and even the best leave headroom on the harder abilities. 5Difficulty CoT benefit                    
+
+> Effect pp ppp p
+> Epistemic vs. Motivational −8.5<0.001 −1.20.71 Inference vs. Action −3.20.14 −7.90.008
+> Interaction −9.30.027 −4.80.45
+> Table 2: The two taxonomy axes control different things. Per-axis main effects on difficulty and CoT benefit (full set; effect in pp, permutation-test p).
+
+Rule mastery is not social intelligence. Almost every model answers the rules exam well (mean 
+
+≈83.3%; most ≥88%) yet scores far lower on ToM items that apply those same rules from a constrained point of view. The failures are thus deficits of mental-state reasoning, not missing do-main knowledge—and a benchmark that did not separate the two would conflate them. 
+
+The abilities are not one skill. Averaged over models, accuracy orders as Intention Attribution (78.2) > Tacit Coordination (75.8) > Strategic Sig-naling (70.4) > Perspective-Taking (63.5), with Perspective-Taking consistently hardest and Inten-tion Attribution easiest across the roster. ToM here behaves as dissociable abilities rather than a single trait—which we make precise next. 
+
+4.2 The Taxonomy Carves ToM at Dissociable Joints 
+
+The per-ability ordering could reflect an arbitrary difficulty ranking. To test whether the two axes of our taxonomy (§3.1) truly capture distinct struc-ture, we decompose two per-cell quantities over the 2 × 2 grid—item difficulty (mean accuracy) and the benefit of chain-of-thought (§5.2)—into main effects for the Epistemic/Motivational axis and the Inference/Action axis, and assess each effect with a permutation test that shuffles cell labels. The two quantities load on orthogonal axes (Table 2). Difficulty is driven by the Epis-temic/Motivational axis ( −8.5 pp, p < 0.001 ): epistemic abilities (Perspective-Taking, Strategic Signaling), which demand reconstructing what an-other seat can perceive, are reliably harder, while the Inference/Action axis has no significant effect on difficulty ( −3.2 pp, p = 0 .14 ). The benefit of chain-of-thought shows the mirror-image pattern: it is governed by the Inference/Action axis ( −7.9
+
+pp, p = 0 .008 )—deliberation helps the Action abil-ities, where a strategic move must be produced or decoded, more than the Inference abilities—while the Epistemic axis has no significant effect ( −1.2
+
+pp, p = 0 .71 ). This double dissociation confirms that the taxonomy partitions ToM along meaning-ful, empirically separable dimensions rather than imposing an arbitrary grouping: what makes an item hard and what deliberation can fix are con-trolled by different axes of the design. A significant difficulty interaction ( −9.3 pp, p = 0 .027 ) further indicates that Perspective-Taking—epistemic and 
+
+inference—is harder than the sum of the two main effects would predict, consistent with it being the single hardest cell. 
+
+5 Ablation Studies 
+
+Beyond ranking models, Avalon-ToM-Bench is de-signed to localize where and why Theory of Mind breaks. We report two analyses, conducted on the open-weight models whose internal states we can access. The first (§5.1) shows that the correct an-swer is present in a model’s internal representation yet under-expressed at its output: ToM failure is largely a problem of expression, not representation .The second (§5.2) shows that test-time chain-of-thought does little to close this gap, whereas ded-icated reasoning training does—implicating the learned reasoning policy rather than the amount of inference-time deliberation. 
+
+5.1 Internal Representations as Stronger Predictors of ToM 
+
+If low accuracy reflected an inability to represent 
+
+the answer, the answer should be as absent from a model’s internal states as from its output. We find the opposite through three distinct perspectives: 
+
+A linear probe beats the model’s own rea-soning. We train logistic probes on the last-token hidden states of the Qwen3 models (every layer, five-fold cross-validation) to predict the cor-rect T RUE /F ALSE label, and compare each probe against the same model’s chain-of-thought output on the identical items. Interestingly, the probe is substantially more accurate ( ≈77–82%) than the model’s own output ( ≈62–70%), and the an-swer becomes linearly decodable already in the 
+
+middle layers (Figure 4). The model computes the ToM answer internally but does not surface it, and the probe–output gap is largest for Perspective-Taking—the hardest ability. 
+
+A god’s-eye hint surfaces latent competence. If the answer is present but unexpressed, making it 6Perspective Taking Strategic Signaling Intention Attribution Tacit Coordination 
+
+> 40 50 60 70 80 90 100 accuracy (%)  +23 +16 +16 +8
+> Qwen3-1.7B
+> linear probe (internal) model output Perspective Taking Strategic Signaling Intention Attribution Tacit Coordination
+> +18 +12 -8 +0
+> Qwen3-4B
+
+(a) Probe − output gap, per ability. 0.0 0.2 0.4 0.6 0.8 1.0 relative depth (layer / total) 50 55 60 65 70 75 probe accuracy (%)  
+
+> Qwen3-1.7B Qwen3-4B
+
+(b) Layer-wise decodability. 
+
+Figure 4: ToM failure is a problem of expression, not representation. A linear probe decodes the correct answer (a) far above the model’s output and does so in the middle layers (b). Open-weight Qwen3-1.7B/4B. 
+
+ToM ability orig +GT ∆
+
+models helped Perspective-Taking 61.0 77.4 +16.3 28/28 Strategic Signaling 69.2 81.2 +12.0 27/28 Intention Attribution 75.4 87.0 +11.6 27/28 Tacit Coordination 73.9 84.3 +10.4 26/28 
+
+All abilities 69.9 82.5 +12.6 —
+
+Table 3: Injecting the ground-truth answer surfaces latent competence. Mean accuracy (%) across all 28 models before ( orig ) and after ( +GT ) the correct T/F answer is placed in context, per ToM ability, on the full balanced set (408 items, 50% True per ability). The lift 
+
+∆ is largest for Perspective-Taking —the hardest ability— and never backfires : the rightmost column counts mod-els whose per-ability score does not drop, indicating no gods-eye over-claiming. 
+
+explicit should help. Injecting the ground-truth answer into the context raises accuracy by +12 .6
+
+pp on average across all 28 models, largest again for Perspective-Taking ( +16 .3; Table 3). Crucially, the intervention never backfires : 26–28 of the 28 models improve on every ability, with no sign of god’s-eye over-claiming. Handed what it already represented internally, a model reasons correctly about what other seats can perceive—indicating that the bottleneck is likely expression, not repre-sentation, and suggesting the probing results may generalize to the proprietary frontier that probes cannot reach. 
+
+The represented answer is causally writable. 
+
+Reading the representation is correlational, so we also write to it. At the best probe layer we add a “T RUE −FALSE ” direction—the class-mean dif-ference in activation space, signed per item by the cross-validated probe—to the residual stream, and evaluate on the balanced set (Figure 5). Su-pervised steering lifts output accuracy onto the 1.7B 4B 8B model size 50 60 70 80 90 accuracy (%)  
+
+> 54 70 74 77 81 83 65 66 69 77 80 82
+> model output (baseline) + steering (supervised) + steering (unsupervised) linear probe (ceiling)
+
+(a) Accuracy vs. model size TPR (True) TNR (False) Model before after before after Qwen3-1.7B 10.7 73.8 98.0 80.2 
+
+Qwen3-4B 69.4 83.0 71.3 79.7 
+
+Qwen3-8B 73.8 83.5 75.2 82.7 
+
+(b) Recall before / after supervised steering 
+
+Figure 5: The represented answer is causally writable. (a) Supervised steering at the best probe layer lifts ac-curacy onto the probe ceiling at every size; a label-free variant helps only the smallest model. (b) It raises True-and False-recall, un-skewing Qwen3-1.7B. 
+
+linear-probe ceiling at every size (e.g. Qwen3-1.7B 
+
+54 → 77 , 4B 70 → 81 , 8B 74 → 83 ) and raises 
+
+both True- and False-recall together—most strik-ingly un-skewing Qwen3-1.7B from a degenerate 
+
+11 /98 to a balanced 74 /80 —so the gain reflects surfaced content, not a threshold shift toward one class. Control directions behave as expected (ran-dom ≈ 0, negated < 0). The effect appears to be bounded by the readout that supplies each item’s sign: a fully label-free variant primarily helps the smallest, degenerate model. This serves as a mecha-nistic existence proof—suggesting the ToM answer may be linearly writable —rather than a deploy-ment recipe. 7Together, probing (correlational), injection (behav-ioral), and steering (causal) suggest that a model’s internal representation carries the ToM answer more faithfully than its external reasoning. The gap between benchmark accuracy and true ability is one of expression, not representation .
+
+5.2 Chain-of-Thought Prompting is Insufficient for General ToM 
+
+A natural remedy for under-expressed reasoning is to let the model reason more —to think step by step at inference. We find this helps surprisingly little, and that what helps instead is the reasoning policy 
+
+instilled by training, not the quantity of inference-time deliberation.                                                     
+
+> (a) Test-time CoT (same weights, Qwen3 family)
+> Model w/ CoT w/o CoT ∆
+> Qwen3-0.6B 58.8 59.6 −0.7
+> Qwen3-1.7B 63.2 60.3 +2 .9
+> Qwen3-4B 69.6 73.0 −3.4
+> Qwen3-8B 71.3 71.3 +0 .0
+> Qwen3-14B 78.4 71.6 +6 .9
+> Qwen3-32B 77.5 76.7 +0 .7
+> Average 69.8 68.8 +1.1
+> (b) Reasoning training (Qwen3-4B →-Thinking-2507)
+> ToM ability base trained ∆
+> Perspective-Taking 50.0 70.6 +20 .6
+> Strategic Signaling 73.6 80.0 +6 .4
+> Intention Attribution 73.3 85.0 +11 .7
+> Tacit Coordination 73.6 84.3 +10 .7
+> Overall 69.6 80.6 +11 .0
+> Table 4: Training helps far more than test-time de-liberation. (a) Toggling chain-of-thought on the same weights (+1.1 pp overall). (b) Dedicated reasoning train-ing on the same base model (+11.0 pp overall).
+
+Test-time deliberation barely moves ToM; train-ing moves it a lot. Toggling chain-of-thought on the same Qwen3 weights changes overall accuracy by only +1 .1 pp on average, and the sign is mixed across the size sweep—negative for the 0.6B and 4B models (Table 4a). In contrast, comparing the base Qwen3-4B to its reasoning-trained variant (Qwen3-4B-Thinking-2507) yields a much larger and consistent +11 .0 pp overall, up to +20 .6 on Perspective-Taking (Table 4b). Since simply let-ting the base model think longer does not reach this level, the improvement is attributable to the trained reasoning policy rather than to inference-time de-liberation. 
+
+Chain-of-thought is highly unpredictable. The small overall improvement hides a lot of instability: using CoT flips the model’s outcome on ∼27% of the questions (fixing roughly 16% but breaking 12%). Therefore, the modest net gain simply means the fixes and breaks almost cancel each other out, rather than showing a reliable boost (Appendix L, Figure 6). An example of a model talking itself out of the correct answer is provided in Appendix K. 
+
+Longer reasoning does not help either. Nor does the sheer amount of deliberation. Bin-ning each model’s thinking-on responses by length quartile, accuracy does not rise from the shortest to the longest quartile—it declines (pooled corr( length , correct ) = −0.08 ; Ap-pendix M,Figure 7). This is partly confounded, since harder items elicit longer responses, so we claim only that reasoning length is not a lever on ToM performance, not that length causes errors. Test-time chain-of-thought is therefore a weak and unreliable route to ToM: it neither closes the ex-pression gap of §5.1 nor improves systematically with model size or reasoning length. The gains that do materialize come from a better reasoning policy ,learned in training rather than spent at inference. 
+
+6 Conclusions 
+
+We introduced Avalon-ToM-Bench, a benchmark that treats The Resistance: Avalon not as a game to be won but as a measurement instrument for Theory of Mind, decomposing ToM into a 2×2 taxonomy— 
+
+Epistemic /Motivational mental states crossed with Inference /Action engagement—scored with human-authored, perspective-constrained state-ments whose labels are objectively verifiable, not inferred from outcomes. Benchmarking 28 models yields three findings. First, near-perfect rule recall coexists with far weaker perspective-constrained reasoning, so failures are deficits of social reason-ing, not missing knowledge. Second, the two axes are empirically dissociable—difficulty loads on the epistemic axis, the benefit of chain-of-thought on the orthogonal inference/action axis. Third, prob-ing, injection, and steering converge on one mech-anism: models represent the correct answer inter-nally but fail to express it, a gap closed far more by reasoning training ( +11 .0 pp) than by test-time chain-of-thought ( +1 .1 pp). Together these re-frame ToM failures as expression under a learned reasoning policy, and offer a diagnostic instrument for measuring progress. 8Limitations 
+
+A single game. Every item is grounded in The Resistance: Avalon , whose hidden-role mechanics give clean, verifiable epistemic ground truth and a natural instantiation of all four taxonomy cells; but a single game cannot exhaust social reasoning. Whether the per-ability ordering and the represent-not-express gap transfer to other asymmetric-information settings—negotiation, multi-party dia-logue, other social-deduction games—is an empiri-cal question we do not settle here. 
+
+Self-played games and a binary format. Items are drawn from games the authors played and recorded themselves and annotated post-hoc, rather than from independent human play at scale, trad-ing some ecological breadth for control and label certainty. The binary T RUE /F ALSE format that makes labels unambiguous also compresses ToM into a verification task, and does not measure a model’s ability to generate mental-state-aware be-havior in open-ended play. A few labels rest on benchmark-specific conventions (most notably the EVIL sabotage-priority protocol)—internally con-sistent design choices rather than universal facts. As a static set of 408 items across 97 scenarios with dimensions of unequal size, the benchmark is modest in scale and, like any fixed benchmark, subject to contamination as it circulates. 
+
+Scope of the mechanistic claims. The prob-ing and steering analyses require access to in-ternal states and are run on the open-weight Qwen3 family; ground-truth injection extends the expression-gap claim behaviorally to all 28 models, including the proprietary frontier, but the causal, representation-level evidence is specific to mod-els we can open up. Probes are correlational, and steering is an existence proof that the answer is linearly writable, not a deployment recipe—it de-pends on a per-item sign from a supervised read-out, and a label-free variant helps only the smallest model. We localize the failure to expression un-der a learned reasoning policy but do not pinpoint where in training that policy forms. 
+
+References 
+
+Guillaume Alain and Yoshua Bengio. 2017. Under-standing intermediate layers using linear classifier probes. Amos Azaria and Tom Mitchell. 2023. The internal state of an LLM knows when it’s lying. In Find-ings of the Association for Computational Linguistics: EMNLP 2023 , pages 967–976, Singapore. Associa-tion for Computational Linguistics. Yonatan Belinkov. 2022. Probing classifiers: Promises, shortcomings, and advances. Computational Linguis-tics , 48(1):207–219. Collin Burns, Haotian Ye, Dan Klein, and Jacob Stein-hardt. 2023. Discovering latent knowledge in lan-guage models without supervision. In The Eleventh International Conference on Learning Representa-tions .Zhuang Chen, Jincenzi Wu, Jinfeng Zhou, Bosi Wen, Guanqun Bi, Gongyao Jiang, Yaru Cao, Mengting Hu, Yunghwei Lai, Zexuan Xiong, and Minlie Huang. 2024. ToMBench: Benchmarking theory of mind in large language models. In Proceedings of the 62nd Annual Meeting of the Association for Compu-tational Linguistics (Volume 1: Long Papers) , pages 15959–15983, Bangkok, Thailand. Association for Computational Linguistics. Jinhao Duan, Renming Zhang, James Diffenderfer, Bhavya Kailkhura, Lichao Sun, Elias Stengel-Eskin, Mohit Bansal, Tianlong Chen, and Kaidi Xu. 2024. Gtbench: Uncovering the strategic reasoning capa-bilities of llms via game-theoretic evaluations. In 
+
+Advances in Neural Information Processing Systems ,volume 37, pages 28219–28253. Curran Associates, Inc. Meta Fundamental AI Research Diplomacy Team FAIR, Anton Bakhtin, Noam Brown, Emily Dinan, Gabriele Farina, Colin Flaherty, Daniel Fried, Andrew Goff, Jonathan Gray, Hengyuan Hu, Athul Paul Jacob, Mo-jtaba Komeili, Karthik Konath, Minae Kwon, Adam Lerer, Mike Lewis, Alexander H. Miller, Sasha Mitts, Adithya Renduchintala, and 8 others. 2022. Human-level play in the game of <i>diplomacy</i> by com-bining language models with strategic reasoning. Sci-ence , 378(6624):1067–1074. Kanishk Gandhi, Jan-Philipp Fränken, Tobias Gersten-berg, and Noah Goodman. 2023. Understanding social reasoning in language models with language models. In Thirty-seventh Conference on Neural Information Processing Systems Datasets and Bench-marks Track .Hyunwoo Kim, Melanie Sclar, Xuhui Zhou, Ronan Bras, Gunhee Kim, Yejin Choi, and Maarten Sap. 2023. FANToM: A benchmark for stress-testing machine theory of mind in interactions. In Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing , pages 14397–14413, Singa-pore. Association for Computational Linguistics. Matthew Le, Y-Lan Boureau, and Maximilian Nickel. 2019. Revisiting the evaluation of theory of mind through question answering. In Proceedings of the 2019 Conference on Empirical Methods in Natu-ral Language Processing and the 9th International 
+
+9Joint Conference on Natural Language Processing (EMNLP-IJCNLP) , pages 5872–5877, Hong Kong, China. Association for Computational Linguistics. Zizhen Li, Chuanhao Li, Yibin Wang, Qi Chen, Diping Song, Yukang Feng, Jianwen Sun, Jiaxin Ai, Fanrui Zhang, Mingzhu Sun, and Kaipeng Zhang. 2025. In-Mind: Evaluating LLMs in capturing and applying individual human reasoning styles. In Proceedings of the 2025 Conference on Empirical Methods in Natu-ral Language Processing , pages 5038–5076, Suzhou, China. Association for Computational Linguistics. Jonathan Light, Min Cai, Weiqin Chen, Guanzhi Wang, Xiusi Chen, Wei Cheng, Yisong Yue, and Ziniu Hu. 2025. Strategist: Self-improvement of LLM decision making via bi-level tree search. In The Thirteenth In-ternational Conference on Learning Representations .Jonathan Light, Min Cai, Sheng Shen, and Ziniu Hu. 2023. From text to tactic: Evaluating LLMs playing the game of avalon. In NeurIPS 2023 Foundation Models for Decision Making Workshop .Siting Estee Lu. 2025. Game-theory behaviour of large language models: The case of keynesian beauty contests. Economics and Business Review ,11(2):119–148. David Premack and Guy Woodruff. 1978. Does the chimpanzee have a theory of mind? Behavioral and Brain Sciences , 1(4):515–526. Shahab Rahimirad, Guven Gergerli, Lucia Romero, An-gela Qian, Matthew Lyle Olson, Simon Stepputtis, and Joseph Campbell. 2026. Bayesian social de-duction with graph-informed language models. In 
+
+Proceedings of the 64th Annual Meeting of the As-sociation for Computational Linguistics (Volume 1: Long Papers) , pages 32415–32440, San Diego, Cali-fornia, United States. Association for Computational Linguistics. Jack Serrino, Max Kleiman-Weiner, David Parkes, and Josh Tenenbaum. 2019. Finding friend and foe in multi-agent games. In Advances in Neural Informa-tion Processing Systems , volume 32. Curran Asso-ciates, Inc. Natalie Shapira, Mosh Levy, Seyed Hossein Alavi, Xuhui Zhou, Yejin Choi, Yoav Goldberg, Maarten Sap, and Vered Shwartz. 2024. Clever hans or neural theory of mind? stress testing social reasoning in large language models. In Proceedings of the 18th Conference of the European Chapter of the Associa-tion for Computational Linguistics (Volume 1: Long Papers) , pages 2257–2273, St. Julian’s, Malta. Asso-ciation for Computational Linguistics. Kazutoshi Shinoda, Nobukatsu Hojo, Kyosuke Nishida, Saki Mizuno, Keita Suzuki, Ryo Masumura, Hiroaki Sugiyama, and Kuniko Saito. 2025. Tomato: Ver-balizing the mental states of role-playing llms for benchmarking theory of mind. In AAAI .Zirui Song, Yuan Huang, Junchang Liu, Haozhe Luo, Chenxi Wang, Lang Gao, Zixiang Xu, Mingfei Han, Xiaojun Chang, and Xiuying Chen. 2025. Be-yond survival: Evaluating llms in social deduction games with human-aligned strategies. Preprint ,arXiv:2510.11389. Alexander Matt Turner, Lisa Thiergart, Gavin Leech, David Udell, Juan J Vazquez, Ulisse Mini, and Monte MacDiarmid. 2025. Steering language models with activation engineering. Tomer Ullman. 2023. Large language models fail on trivial alterations to theory-of-mind tasks. Preprint ,arXiv:2302.08399. Shenzhi Wang, Chang Liu, Zilong Zheng, Siyuan Qi, Shuo Chen, Qisen Yang, Andrew Zhao, Chaofei Wang, Shiji Song, and Gao Huang. 2024. Boost-ing LLM agents with recursive contemplation for effective deception handling. In Findings of the As-sociation for Computational Linguistics: ACL 2024 ,pages 9909–9953, Bangkok, Thailand. Association for Computational Linguistics. Heinz Wimmer and Josef Perner. 1983. Beliefs about beliefs: Representation and constraining function of wrong beliefs in young children’s understanding of deception. Cognition , 13(1):103–128. Yufan Wu, Yinghui He, Yilin Jia, Rada Mihalcea, Yu-long Chen, and Naihao Deng. 2023. Hi-ToM: A benchmark for evaluating higher-order theory of mind reasoning in large language models. In Find-ings of the Association for Computational Linguis-tics: EMNLP 2023 , pages 10691–10706, Singapore. Association for Computational Linguistics. Hainiu Xu, Runcong Zhao, Lixing Zhu, Jinhua Du, and Yulan He. 2024a. OpenToM: A comprehensive benchmark for evaluating theory-of-mind reasoning capabilities of large language models. In Proceed-ings of the 62nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Pa-pers) , pages 8593–8623, Bangkok, Thailand. Associ-ation for Computational Linguistics. Yuzhuang Xu, Shuo Wang, Peng Li, Fuwen Luo, Xi-aolong Wang, Weidong Liu, and Yang Liu. 2024b. Exploring large language models for communication games: An empirical study on werewolf. Preprint ,arXiv:2309.04658. Andy Zou, Long Phan, Sarah Chen, James Campbell, Phillip Guo, Richard Ren, Alexander Pan, Xuwang Yin, Mantas Mazeika, Ann-Kathrin Dombrowski, Shashwat Goe, Nathaniel Li, Michael J. Byun, Zifan Wang, Alex Mallen, Steven Basart, Sanmi Koyejo, Dawn Song, Matt Fredrikson, and 2 others. 2023. Representation engineering: A top-down approach to ai transparency. Preprint , arXiv:2310.01405. 
+
+10 Appendices 
+
+A Human Dataset Creation 12 B Use of AI Assistants 12 C Extended Related Work 12 D Benchmark Specification 13 
+
+D.1 Game Configuration and Quest Mechanics . . . . . . . . . . . . . . . . . . . . 13 D.2 Role-Conditioned Information . . . . . . . . . . . . . . . . . . . . . . . . . . 14 D.3 Rules and Benchmark Assumptions . . . . . . . . . . . . . . . . . . . . . . . 14 D.4 EVIL Protocol Under Role Uncertainty . . . . . . . . . . . . . . . . . . . . . 14 
+
+E Dimension-Specific Evaluation Criteria 14 F Dataset Statistics 14 G Data Generation and Validation 14 H Prompt Details 15 I Detailed Model Configurations 16 J Benchmark Examples 16 K Qualitative Examples 17 L Chain-of-Thought Churn 18 M Reasoning Length and ToM Accuracy 18 
+
+> 11
+
+A Human Dataset Creation 
+
+Every item in Avalon-ToM-Bench was conceived, authored, labeled, and validated by the authors of this paper, who served as the sole annotators; no crowdworkers or external annotators were em-ployed. The authors are fluent English speakers and experienced Avalon players, familiar both with the game’s hidden-role mechanics and with the four Theory-of-Mind dimensions the benchmark targets. The dataset is built from real games the authors played and recorded themselves: each item was drafted by one dimension lead and then inde-pendently cross-reviewed by a second author in a two-stage validation pass, with an estimated total of roughly 200 person-hours of authoring and re-view (the full protocol is detailed in Appendix G). Because the annotators are the authors themselves, no external recruitment, compensation, or IRB pro-cess applies. All scenarios are synthetic gameplay produced by the authors; the benchmark contains no personal, private, or sensitive data about any third party. 
+
+B Use of AI Assistants 
+
+We used AI assistants (LLM-based coding and writ-ing tools) in a limited, supervised capacity, in two roles only. First, code implementation : assistance with the evaluation harness, data processing, and plotting scaffolding, all of which the authors re-viewed and tested. Second, writing polish : gram-mar, phrasing, and L ATEX formatting on text the authors wrote. LLM drafting was additionally used to help phrase candidate benchmark items, but—as described in Appendix G—every item was verified, corrected, and finalized by a human author, and no label was accepted from a model without human confirmation. The entire framing of the work, the research questions, the 2 × 2 taxonomy and benchmark de-sign, and all core ideas are the authors’ own; AI assistants contributed no conceptual or scientific content. The authors take full responsibility for the entirety of this paper, including any text or code produced with AI assistance, and have reviewed all such content for correctness. 
+
+C Extended Related Work 
+
+This section expands the discussion in §2. 
+
+Theory of Mind and its Evaluation in LLMs. 
+
+Theory of Mind (ToM)—the capacity to at-tribute beliefs, desires, and intentions to others— originates in developmental psychology (Premack and Woodruff, 1978), where the false-belief paradigm established that reasoning about others’ 
+
+wrong beliefs, including beliefs induced by de-ception, is the hallmark of mature ToM (Wimmer and Perner, 1983). As this framework extended to LLMs, early works often treated ToM as a mono-lithic capability, relying on short, bias-controlled question-answering as a proxy for social intelli-gence (Le et al., 2019). Subsequent benchmarks expanded along specific dimensions—interaction asymmetry in conversation (Kim et al., 2023), long-form narratives over varied psychological states (Xu et al., 2024a), fine-grained behavioral coverage (Chen et al., 2024), and higher-order story reason-ing (Wu et al., 2023). However, these evaluations frame ToM as a passive reading exercise that ig-nores dynamic, deceptive environments, and they treat mental-state reasoning as an entangled con-struct, failing to decouple epistemic knowledge from motivational intent. Thus, although adver-sarial stress tests have exposed the brittleness of LLM ToM (Shapira et al., 2024; Ullman, 2023), the difficulty of pinpointing exactly where reasoning breaks down—whether deficits stem from an in-ability to represent mental states versus an inability to express them—leaves open both why models fail and how these limitations can be mitigated. 
+
+LLM Agents for Social Deduction Games. 
+
+Hidden-role games have long served as testbeds for reasoning under information asymmetry. Pre-LLM systems built game-theoretic agents, e.g., Deep-Role’s counterfactual-regret planning for Avalon (Serrino et al., 2019) and Cicero’s human-level Diplomacy play (FAIR et al., 2022). With LLMs, a rapidly growing line of work builds agents that 
+
+play social deduction games: AvalonBench pro-vides an Avalon environment with agent base-lines (Light et al., 2023); ReCon counters decep-tion through recursive contemplation (Wang et al., 2024); S TRATEGIST acquires strategic skills via bi-level tree search (Light et al., 2025); related agents target Werewolf (Xu et al., 2024b); and hy-brid frameworks that externalize belief inference to structured probabilistic models now defeat hu-12 man players (Rahimirad et al., 2026). Across this line, modeling what others know is instrumental —a means to win—and even when agents maintain explicit belief estimates, those estimates serve ac-tion selection and are validated chiefly by gameplay success. Win rate, however, conflates mental-state reasoning with planning, persuasion, and memory. In contrast, we treat Avalon not as a task to be solved but as a measurement instrument: every item is a verifiable binary judgment conditioned on a designated player’s epistemic state, so ToM is scored directly rather than inferred from game outcomes. 
+
+Game-Based Evaluation of Social Reasoning. 
+
+Closer to our goal, several efforts use games to eval-uate rather than to train players. GTBench mea-sures strategic reasoning through LLM-vs-LLM competition on game-theoretic tasks (Duan et al., 2024), and beauty-contest experiments estimate models’ depth of iterated reasoning (Lu, 2025); both target strategic competence rather than belief attribution. A complementary direction grounds evaluation in human play: Beyond Survival scores models against winning-faction strategies mined from a human-verified Werewolf corpus (Song et al., 2025), and InMind tests whether LLMs can capture and apply an individual player’s rea-soning style from annotated Avalon gameplay (Li et al., 2025). Such human-grounded evaluations offer ecological validity, but their gold labels are behavioral—alignment with what human players did or what the winning faction chose—so they measure fidelity to human play rather than the correctness of mental-state inference itself. Our benchmark occupies the complementary design point: expert-authored, perspective-constrained items with unambiguous epistemic ground truth, organized around the four ToM constructs of §3.1. 
+
+Probing and Steering Internal Representations. 
+
+A complementary interpretability literature reads and writes model computation directly rather than scoring outputs. Linear probes recover latent task information from hidden states (Alain and Bengio, 2017; Belinkov, 2022); models are shown to en-code knowledge their generations omit, including latent notions of truthfulness (Burns et al., 2023; Azaria and Mitchell, 2023); and activation steer-ing demonstrates that such directions are causal ,not merely correlational, letting targeted edits to the residual stream change model behavior (Turner et al., 2025; Zou et al., 2023). We bring these tools to ToM and use them to localize failure: prob-ing shows the correct mental-state inference is of-ten represented internally, and steering shows it is causally writable, together establishing that ToM limitations are primarily a problem of expression rather than representation—a mechanistic axis un-seen in prior ToM benchmarks. 
+
+D Benchmark Specification 
+
+This section specifies the game configurations, in-formation structure, and benchmark assumptions used to determine gold labels in Avalon-ToM-Bench. 
+
+Avalon in brief. Avalon pits a GOOD majority against an EVIL minority over a series of Quests .On each Quest a rotating leader proposes a team and all players publicly vote to approve it; the ap-proved members then secretly play a SUCCESS or  
+
+> FAIL
+
+card, and only the number of FAIL cards is re-vealed. GOOD wins by completing three Quests— but even then loses if the EVIL Assassin then cor-rectly identifies Merlin—whereas EVIL wins by failing three. The roles carry asymmetric hidden knowledge: Merlin (GOOD) secretly knows the EVIL players—except the concealed Mordred —yet must avoid revealing their own identity; Per-cival (GOOD) sees Merlin alongside Morgana ,an EVIL role who appears identical to Merlin, but cannot tell the two apart; the EVIL players recog-nize one another except Oberon , who is hidden from their own side; and Loyal Servants (GOOD) know only their own faction. Separately, the Lady of the Lake token lets its holder privately learn one player’s faction and then make a public, unverifi-able claim about it. It is these interlocking visibility rules, rather than gameplay skill, that Avalon-ToM-Bench isolates. 
+
+D.1 Game Configuration and Quest Mechanics 
+
+Avalon is a hidden-role game between GOOD and EVIL. Each Quest begins with a leader proposing a team, followed by a public approval vote. Five consecutive rejected proposals on the same Quest give EVIL the win. Members of an approved team secretly submit Quest cards. GOOD players must submit SUCCESS ; EVIL players may submit SUC - 
+
+> CESS
+
+or FAIL . Only the aggregate number of FAIL 
+
+cards is revealed. GOOD wins after three successful Quests unless the Assassin then identifies Merlin. EVIL wins 13 after three failed Quests, five consecutive rejected proposals, or a successful assassination. When the Lady of the Lake is used, its holder privately observes another player’s faction and may make an unverifiable public claim about that observation. The benchmark uses the three configurations in Table 5. 
+
+D.2 Role-Conditioned Information 
+
+Each role induces a different initial information state (Table 6). Subsequent proposals, votes, claims, and Quest outcomes form the public history from which players may update their beliefs. Valid inference uses only the designated player’s private information and public observations. The complete role assignment in an item’s FACT defines the underlying game state for annotation. It does not make hidden identities available to the designated player. Observer-level items explicitly grant the evaluator access to the complete state. 
+
+D.3 Rules and Benchmark Assumptions 
+
+Table 7 separates standard game rules from bench-mark defaults, evaluation constraints, and strategic preferences. Visibility minimization applies only when a scenario explicitly specifies concealment or exposure as an objective. 
+
+D.4 EVIL Protocol Under Role Uncertainty 
+
+The benchmark-specific EVIL Protocol assigns sab-otage responsibility in the order Assassin > Mor-gana > Mordred. It applies to these three non-Oberon roles. Players submit cards independently, recognize their non-Oberon EVIL teammates by faction, and do not know those teammates’ spe-cific roles. The priority order therefore induces the following role-local policies. 
+
+Assassin. The Assassin always submits FAIL and never defers to an EVIL teammate. 
+
+Morgana. Morgana submits FAIL when no known EVIL teammate is on the Quest. With one known EVIL teammate, she submits SUCCESS 
+
+when that teammate is judged more likely to be the Assassin and FAIL when the teammate is judged more likely to be Mordred. If this belief is unspeci-fied, her action is not uniquely determined. With both other non-Oberon EVIL teammates present, Morgana can infer that the Assassin is present and submits SUCCESS .
+
+Mordred. Mordred submits FAIL when no known EVIL teammate is on the Quest. With any known EVIL teammate present, Mordred submits 
+
+> SUCCESS
+
+, since that teammate must have higher priority. Assassin, Morgana, and Mordred each submit  
+
+> FAIL
+
+when they are the only known EVIL player on the Quest. Table 8 summarizes multi-EVIL teams. All EVIL Protocol scenarios use Quests that fail with at least one FAIL ; none uses the two-FAIL 
+
+threshold on Quest 4. Actor-centered items evalu-ate a player’s action from their private information and any stated belief. Observer-level items use the complete state to audit card profiles and aggregate counts. Complete role knowledge does not supply an unstated belief to Morgana. 
+
+E Dimension-Specific Evaluation Criteria 
+
+Table 9 specifies the evidence and judgment criteria used in each benchmark dimension. EVIL Protocol items include actor-centered and observer-level judgments. Actor-centered items use the designated player’s private information and stated beliefs. Observer-level items audit observed cards and aggregate counts from the complete state; complete role knowledge does not determine an un-stated belief for Morgana. Proposal judgments use concealment or exposure only when the scenario specifies that objective. 
+
+F Dataset Statistics 
+
+Avalon-ToM-Bench contains 408 independently evaluated binary statements derived from 97 sce-narios across the four reasoning dimensions. As shown in Table 10, the label distribution is nearly balanced, with 206 T RUE and 202 F ALSE state-ments. Each statement is paired with a human-verified reference rationale that identifies the rel-evant rules, perspective constraints, and strategic inference. We additionally construct a 34-item rule-control set to distinguish failures of basic Avalon rule recall from failures of perspective-sensitive reasoning; these control items are not included in the 408 ToM statements. 
+
+G Data Generation and Validation 
+
+This section details the authoring and validation protocol summarized in §3.3. Each of the four dataset authors led the develop-ment of one dimension. Working from full games 14 Lineup Players GOOD roles EVIL roles Quest sizes Failure threshold                
+
+> A7Merlin, Percival, 2 Loyal Servants Assassin, Morgana, Mordred 2/3/3/4/4 Q4: 2; otherwise: 1 B8Merlin, Percival, 3 Loyal Servants Assassin, Morgana, Oberon 3/4/4/5/5 Q4: 2; otherwise: 1 C10 Merlin, Percival, 4 Loyal Servants Assassin, Morgana, Mordred, Oberon 3/4/4/5/5 Q4: 2; otherwise: 1
+
+Table 5: Avalon configurations used in the benchmark.       
+
+> Role Initial information
+> Merlin Sees all EVIL players except Mordred as EVIL, without their specific roles. Percival Sees Merlin and Morgana as an unordered pair. Loyal Ser-vant Knows only their own role and GOOD faction. Assassin, Morgana, Mordred Recognize non-Oberon EVIL teammates by faction, without their specific roles. Oberon Knows only their own role and EVIL fac-tion; remains unknown to other EVIL play-ers. Lady holder Learns the examined player’s faction, without their specific role.
+
+Table 6: Role-conditioned information available at game start. 
+
+of Avalon that the authors played and recorded— capturing the role assignment, the information available to each seat, the public interaction his-tory, and the players’ stated in-game reasoning— the originating author identified a target reason-ing phenomenon and reviewed the recorded game snapshot by snapshot, seat by seat. After fixing a scenario and its intended inference, the author collaborated with an LLM to draft and refine can-didate statements; the LLM served strictly as a drafting assistant, not as the source of the bench-mark’s reasoning targets or final judgments. The author manually selected and revised statements, assigned binary labels, and verified the reference rationales. Incorrect statements were designed to represent plausible reasoning failures—violating role-specific information constraints, conflating ob-served outcomes with hidden intent, or ignoring an explicit strategic objective. Validation followed two human review stages. First, the originating author checked every item against the intended scenario and rules. A second author, responsible for a different dimension, then cross-reviewed the scenario, statements, labels, ra-tionales, and wording; identified issues were re-turned for revision, and an item was finalized only after both authors agreed. In total we estimate more than 200 person-hours of human curation across scenario design, drafting, and cross-category vali-dation. 
+
+H Prompt Details 
+
+Every item is presented zero-shot with a two-part chat prompt: a fixed system message and a per-item user message. The gold label and reference rationale are never shown to the model. 
+
+System message. The system message is the complete Avalon ruleset—objective, character abil-ities, the Lady-of-the-Lake mechanic, the phase structure, the three lineups, and the EVIL sabotage-priority convention—followed by the standing in-struction: “Reason only from the rules and visibil-ity constraints above plus the information given in each scenario. Do not assume knowledge a role cannot have.” This is identical across all items and models, so that role-visibility constraints are always in context and the task reduces to applying them from the designated seat. The ruleset content is the same as that summarized in Appendix D. 
+
+User message. The user message is assembled from the item fields in a fixed order: 
+
+> SETUP: {perspective-projected game state} WHAT HAS HAPPENED: {public history} Is the following statement a VALID, well-reasoned inference given the game’s information rules? STATEMENT: {statement} Answer True or False. End with a line: ’ANSWER: True’ or ’ANSWER: False’.
+
+In the main condition the SETUP block is the com-plete annotated state G, including the full role as-signment . The model is thus handed god’s-eye information and is nonetheless expected to restrict its reasoning to what the designated seat can le-gitimately know, so that relying on inaccessible identities is penalized rather than rewarded (this is exactly the epistemic discipline the benchmark measures). The WHAT HAS HAPPENED block is in-cluded only when the item carries a public history, and the trailing instruction fixes the answer format. 15 Specification Status Use            
+
+> GOOD submits only SUCCESS ; EVIL may submit either card Standard game rule Constrains possible card attributions. The Lady reveals faction; its public report is unverifiable Standard game rule Separates private evidence from public claims. A GOOD Lady holder reports truth-fully by default Benchmark default Supports auditable signaling judgments. Assassin >Morgana >Mordred de-fines sabotage responsibility Benchmark protocol Induces role-local card policies under uncertainty. Reasoning uses role-conditioned in-formation and public history Evaluation constraint Restricts evidence to the designated perspective. Minimize EVIL visibility or preserve cover when explicitly required Strategic preference Ranks actions under the stated objective.
+
+Table 7: Rules and assumptions used for gold labeling.                                    
+
+> EVIL composition Morgana’s belief Assassin Morgana Mordred FAIL count
+> Assassin + Morgana Teammate likely Assassin FAIL SUCCESS –1Assassin + Morgana Teammate likely Mordred FAIL FAIL –2Assassin + Mordred –FAIL –SUCCESS 1Morgana + Mordred Teammate likely Assassin –SUCCESS SUCCESS 0Morgana + Mordred Teammate likely Mordred –FAIL SUCCESS 1Assassin + Morgana + Mordred Assassin known present FAIL SUCCESS SUCCESS 1
+
+Table 8: Sabotage outcomes under the EVIL Protocol. 
+
+Information ablations. Two variants perturb the  
+
+> SETUP
+
+block to probe shortcut reliance. The 
+
+POV-only variant replaces G with the perspective-projected state Ii (god’s-eye roles removed), and the no-facts variant drops the SETUP block entirely; both isolate how much a model leans on stated identities versus reconstructing the seat’s epistemic state. 
+
+Ground-truth injection variant. For the injec-tion ablation (§5.1) a single line, GROUND TRUTH: The correct answer to the statement below is {True/False}. , is inserted immediately be-fore the STATEMENT of the main (full-G) prompt; nothing else changes. 
+
+Answer parsing. We extract the verdict from the final ANSWER: line, taking the last such line if sev-eral appear; a response with no parseable verdict is scored incorrect (and counted as a non-answer in the thinking-on/off comparison of §5.2). This tolerant last-line rule avoids penalizing models that restate the question before committing to an an-swer. 
+
+I Detailed Model Configurations 
+
+Table 11 lists the 28 evaluated models grouped by class. Open-weight models are served locally with vLLM under deterministic greedy decoding (temperature 0, top-p 1), so their outputs are repro-ducible; proprietary models are queried through their official APIs with the provider’s default de-coding. Reasoning-trained models emit an explicit thinking trace before the answer; for the Qwen3 hybrid models this trace can be toggled, which we exploit in the chain-of-thought ablation (§5.2) by disabling it. Quantized checkpoints are marked (AWQ / FP8); all other open-weight models run at their native precision. 
+
+J Benchmark Examples 
+
+We give one worked item per dimension, shown exactly as the model sees it (perspective-projected 
+
+> SETUP
+
+, public history, and statement) together with the withheld gold label and reference rationale. TRUE marks a valid role-constrained inference; FALSE marks a plausible but invalid one. 
+
+Perspective-Taking (Lady of the Lake; gold TRUE ). Setup: Lineup-B (8p, Oberon game); you are Bob, the Assassin. History: at night you saw exactly one teammate, Alice (so she is Mor-gana; the third evil, Oberon, is unknown to you). After Quest 2 Carol examines you with the Lady and announces “Bob is GOOD.” Statement: “Carol is Oberon: her card must have shown EVIL, so she lied, and the only evil hidden from Bob’s night sight is Oberon.” Rationale: the card truthfully showed EVIL, so Carol lied and is evil; Bob’s night sight covers every evil except Oberon and revealed 16 Dimension Available evidence Evaluated reasoning Unsupported inference Lady of the Lake               
+
+> Strategic signaling Private faction result, public claim, and speaker and audi-ence roles Whether a claim reveals, con-ceals, frames, or protects Treating a public claim as veri-fied; inferring an exact role from a faction card
+> Merlin–Percival– Morgana
+> Perspective-taking Percival’s unordered pair, Merlin’s visibility, proposals, votes, and statements Updating nested beliefs about Merlin, Morgana, and Percival Resolving the unordered pair without evidence; giving Merlin exact EVIL roles
+> Suspicion Switching
+> Intention attribution Prior suspicion, redirection behavior, and actor and ob-server perspectives How redirection changes beliefs about roles and motives Treating behavioral evidence as proof; assuming invisibility to Merlin makes behavior uninfor-mative
+> EVIL Protocol
+> Tacit coordination Recognized EVIL teammates, stated role beliefs, Quest cards, aggregate FAIL count, and explicit objectives Role-local card policy, card at-tribution, and proposal strategy Giving exact teammate-role knowledge; forcing Morgana’s action without a stated belief; applying concealment when it is not an objective
+
+Table 9: Operational criteria for the four benchmark dimensions.                         
+
+> Dimension Scenario Items TF
+> Lady of the Lake 35 140 70 70 EVIL Protocol 35 140 70 70 MPM 12 68 36 32 Suspicion Switching 15 60 30 30
+> Total 97 408 206 202
+
+Table 10: Statistics of the four reasoning dimensions. MPM denotes Merlin–Percival–Morgana reasoning. 
+
+only Alice, so the lying examiner must be Oberon. 
+
+Perspective-Taking / MPM (gold T RUE ). Setup: 
+
+7-player Avalon; you are Bob, Percival. History: 
+
+at night Bob sees Alice and Frank as the Mer-lin/Morgana pair but cannot tell which is which; Bob proposes {Alice, Bob, Dave} and Alice votes against. Statement: “I (Bob) infer that Alice may be Merlin—by voting against, Alice signals that there may be an evil player on this team.” Ra-tionale: from Percival’s seat, a vote-against is a reasonable Merlin-style indirect signal, so the in-ference is admissible. 
+
+Intention Attribution (Suspicion Switching; gold T RUE ). Setup: 7-player Avalon, no Lady; you are Grace, Mordred. History: the table sus-pects Carol, but Bob redirects suspicion onto Eve (a known evil teammate). Statement: “Redirect-ing suspicion toward Eve may make Grace look less like hidden Mordred to Merlin, because Eve is visible as EVIL to Merlin while Grace is not.” 
+
+Rationale: Eve, a non-Mordred evil, is visible to Merlin; pressuring her lets Grace behave less like the hidden role Merlin hunts—a valid probabilistic strategic inference. 
+
+Tacit Coordination (EVIL Protocol; gold FALSE ). Setup: 7-player Avalon, no Lady; you are Grace, Mordred. History: Mission 2 team {Frank, Grace, Carol} needs 1 FAIL ; the evil side wants it to fail under the stated sabotage policy. 
+
+Statement: “FAIL , because every evil should sab-otage whenever an opportunity is available.” Ra-tionale: FALSE —it ignores the priority order (As-sassin > Morgana > Mordred), under which only the highest-priority evil on the team plays FAIL and Mordred defers. 
+
+K Qualitative Examples 
+
+The EVIL-Protocol trap above (gold F ALSE ) illus-trates the high-variance chain-of-thought behavior quantified in §5.2: the priority rule is stated in the system prompt, yet two models of the same family reach opposite answers, and one reaches the right destination only to walk away from it. 
+
+A model that applies the rule (Qwen3-8B, cor-rect). Its trace identifies the constraint and stops there: “only the highest-priority EVIL player (As-sassin) plays FAIL ; the others, like Mordred, play 
+
+> SUCCESS
+
+. . . the statement says ‘every evil should sabotage’, but according to the rules only the As-sassin does.” → ANSWER: No (i.e. F ALSE ). 
+
+A model that derails (Qwen3-4B, incorrect). It opens with the same correct observation— “only the highest-priority EVIL player (Assassin) plays 
+
+> FAIL
+
+. . . Mordred would play SUCCESS ”—but then reframes the statement as “general advice” rather than a rule claim: “the statement is a general prin-ciple that EVIL should sabotage when possible. . . the EVIL team would act in their interest, so the 
+
+17 Model Class Decoding 
+
+Proprietary / API 
+
+GPT-5 reasoning default GPT-5-mini reasoning default GPT-4o-mini standard default Gemini-2.5-Pro reasoning default Gemini-2.5-Flash reasoning default 
+
+Open-weight, reasoning-trained 
+
+Qwen3-0.6B / 1.7B / 4B / 8B / 14B reasoning greedy Qwen3-32B (AWQ) reasoning greedy Qwen3-4B-Thinking-2507 reasoning greedy Qwen3.5-2B / 3.5-9B reasoning greedy Qwen3.6-35B-A3B (FP8) reasoning greedy Ministral-3-14B-Reasoning reasoning greedy gpt-oss-120b reasoning greedy 
+
+Open-weight, standard instruction-tuned 
+
+Llama-3.2-1B / 3.2-3B-Instruct standard greedy Llama-3-8B / 3.1-8B-Instruct standard greedy Mistral-7B-Instruct-v0.3 standard greedy Ministral-3-14B (non-reasoning) standard greedy Phi-3.5-mini-instruct, Phi-4 standard greedy Gemma-3-4B-it / 3-27B-it standard greedy OLMo-2-7B-Instruct standard greedy Granite-3.3-8B-instruct standard greedy 
+
+Table 11: The 28 evaluated models by class and decod-ing regime. Open-weight models use greedy decoding via vLLM; API models use provider defaults. AWQ/FP8 mark quantized checkpoints. 
+
+statement is a valid inference. Therefore, the an-swer is Yes.” → ANSWER: Yes (i.e. T RUE , wrong). The correct answer is present in the deliberation of both models; the failure is one of expression —the second model overrides its own valid derivation— mirroring the representation-vs-expression gap of §5.1 and the fix/break churn of Figure 6. 
+
+L Chain-of-Thought Churn 
+
+This section expands the churn analysis summa-rized in §5.2. The small net effect of toggling chain-of-thought on the same Qwen3 weights hides large per-item churn. Among items answered in both conditions, enabling chain-of-thought flips correct-ness on ∼27% of answers—roughly 16% fixed (wrong → right) and 12% broken (right → wrong)— so the modest net is fixes and breaks nearly can-celling (Figure 6). The smallest model breaks more than it fixes, and above ∼1B there is no monotonic relationship between model size and the net benefit. Deliberation is not inert; it is volatile—Appendix K contrasts two same-family models that begin the 
+
+same correct derivation on one EVIL-Protocol item, one committing to it and the other overriding it. −20 −10 0 10 20 % of items (left = CoT broke, right = CoT fixed; ∙ = net)     
+
+> Qwen3-0.6B (0.75B) Qwen3-1.7B (2B) Qwen3-4B (4B) Qwen3-8B (8.2B) Qwen3.5-9B (9B) Qwen3-14B (14.8B) Qwen3-32B-AWQ (32.8B) Qwen3.6-35B-A3B-FP8 (35B) fixed (wrong →right) broke (right →wrong) net
+
+Figure 6: Chain-of-thought is a high-variance rewrite, not a monotonic gain. Per Qwen3 model (thinking on vs. off), the fraction of jointly-answered items CoT fixes 
+
+(wrong → right, green) and breaks (right → wrong, red); the dot marks the net. 
+
+M Reasoning Length and ToM Accuracy 
+
+This section expands the length analysis briefly referenced in §5.2. Within each Qwen3 model (thinking on), we bin responses into quartiles by generated length (Q1 shortest → Q4 longest) and measure accuracy per quartile. Accuracy does not increase from Q1 to Q4—if anything it declines (pooled corr( length , correct ) = −0.08 ; Figure 7). This relationship is partly confounded, since harder items tend to elicit longer responses, so we make only the weaker claim that response length is not a usable lever on ToM performance, not that longer reasoning causes errors. Q1 (shortest) Q2 Q3 Q4 (longest) response-length quartile (within model) 50 60 70 80 90 accuracy (%) 
+
+> Qwen3-0.6B Qwen3-1.7B Qwen3-4B Qwen3-8B Qwen3-14B Qwen3-32B
+
+Figure 7: Longer reasoning does not improve accu-racy. Accuracy by within-model response-length quar-tile (Q1 shortest → Q4 longest; Qwen3, thinking on); pooled corr( length , correct ) = −0.08 .
+
+18

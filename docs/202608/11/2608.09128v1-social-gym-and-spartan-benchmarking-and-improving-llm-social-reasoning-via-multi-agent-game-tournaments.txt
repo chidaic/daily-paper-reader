@@ -1,0 +1,967 @@
+Title: Social Gym and SPaRTan: Benchmarking and Improving LLM Social Reasoning via Multi-Agent Game Tournaments
+
+URL Source: https://arxiv.org/pdf/2608.09128v1
+
+Published Time: Tue, 11 Aug 2026 01:51:25 GMT
+
+Number of Pages: 28
+
+Markdown Content:
+## Social Gym and SP ART AN : Benchmarking and Improving LLM Social Reasoning via Multi-Agent Game Tournaments 
+
+Keyu He Xuhui Zhou Maarten Sap 
+
+Carnegie Mellon University 
+
+keyuhe@cmu.edu 
+
+Abstract 
+
+LLM agents are increasingly deployed in multi-agent social settings where they must cooperate, negotiate, and adapt to other agents. Measur-ing and improving these social skills is hard because, unlike math or logic, social interac-tion offers no objective ground truth: evalua-tions fall back on LLM judges, which are costly, subjective, and noisy, and models get no reli-able signal to learn from. To address both, we first introduce Social Gym , an environment of 21 multi-agent social games (e.g., Werewolves, Resistance, Spyfall) whose rule-decided out-comes make agent performance verifiable and objective, with an Elo tournament that pro-duces a cross-game leaderboard. Benchmark-ing experiments show that while GPT-5-mini tops the leaderboard, no model excels at all games uniformly or in all game roles, pointing to limitations of social reasoning. Motivated by this, we additionally propose SP ART AN (Self-
+
+Play and Reflect-Tran sfer), a training-free self-improvement loop: a model plays a game, re-flects on its trajectories and their outcomes to produce a transferable playbook, and applies that playbook in subsequent games. Our results show that SP ART AN playbooks help GPT-5-mini agents level their performance on weaker roles, but largely do not improve Qwen3-32B’s performance. Together, Social Gym and SP AR-TAN offer a reproducible, verifiable foundation for measuring and improving LLM social rea-soning without weight updates. 
+
+1 Introduction 
+
+LLM-based agents are increasingly deployed and studied as social agents in multi-party interac-tions with humans or other agents: interacting with humans as group mediators and compan-ions (Tessler et al., 2024; De Freitas et al., 2026), collaborating on shared tasks through inter-agent dialogue (Li et al., 2023; Wu et al., 2023), role-playing as autonomous inhabitants of social sand-boxes (Park et al., 2023; Piao et al., 2025), and acting as persuaders or negotiators against other models (Bianchi et al., 2024). These settings re-quire social interaction capabilities that go beyond single-turn question answering; agents must nav-igate information asymmetry (Zhou et al., 2024a; YS et al., 2026), deception-utility tradeoffs (Su et al., 2025), and negotiations (Cohen et al., 2026), all while sustaining coherent role-play (Shao et al., 2023; Wang et al., 2024a). Yet, existing evaluations of LLM social rea-soning suffer from three core limitations. First, many evaluations rely on static benchmarks such as theory-of-mind questionnaires (Kim et al., 2023), which produce reproducible scores but cannot test sustained multi-turn behavior. Second, more recent open-ended interactive evaluations (Zhou et al., 2024b) have been developed; those assess multi-turn interaction skills but rely on LLM-as-judge scoring, which suffers from position, verbosity, and self-enhancement biases (Zheng et al., 2023) and is inherently variable and subjective (Zhou et al., 2024b). Finally, recent works evaluate social inter-action skills via verifiable rewards (Xu et al., 2023; Lan et al., 2024; Akata et al., 2025; Guertler et al., 2025; YS et al., 2026), but each targets a single game or domain in isolation, each covering only one aspect of social intelligence. A gap remains for evaluation that is simultaneously multi-turn, broad in domain coverage, and verifiable , i.e., determined by interaction rules rather than by subjective judg-ment. To bridge this gap, we introduce Social Gym 
+
+(Section 3), an environment of 21 multi-agent so-cial games (Werewolves, Resistance, Spyfall, Pris-oner’s Dilemma, and others) spanning compet-itive, cooperative, and mixed-motive structures. Games like these offer a richer testbed than single-turn probes because they require sustained role-playing, coalition management, deception, and strategic information control across many turns and interactions. Importantly, the unified Elo tourna-1arXiv:2608.09128v1 [cs.CL] 10 Aug 2026 Figure 1: Overview of Social Gym (left), an environment of 21 multi-agent social games in five categories, and SP ART AN (center), a training-free play–reflect–transfer loop. Right: the learned playbook lifts the structurally weaker side of asymmetric games, both via self-reflection and via distillation to smaller models. 
+
+ment that produces per-game win-rate tables and a cross-game leaderboard delivers a verifiable , multi-turn measure of LLM performance across the full breadth of social-game categories. We also pro-pose SP ART AN (Section 4), a training-free self-improvement loop, answering the question: can LLMs improve at social play without parameter updates? In SP ART AN , a model (i) plays self-play games, (ii) reads its own trajectories and writes a transferable strategic playbook, and (iii) injects this playbook into its system prompt for subsequent games. SP ART AN is analogous to in-context fine-tuning, but the “training data” is the model’s own gameplay and the “learned weights” are natural-language rules. Figure 1 shows the Social Gym 
+
+environment and the SP ART AN method. We benchmark seven LLMs on Social Gym and document substantial per-game ranking inver-sions: top-ranked models underperform on spe-cific games, and vice versa (Section 3). We also evaluate SP ART AN along four axes: within-game iterated reflection ( R1–R4), cross-game transfer from one source game to held-out games, hold-one-out multigame transfer, and distillation of strong-model playbooks to weaker students. Across all four setups, we find that GPT-5-mini-generated playbooks lift the model’s structurally weaker side of an asymmetric game and transfer across games and into weaker LLMs, but the effect is capacity-dependent, largely vanishing for an open-weights model (Qwen3-32B). 
+
+2 Related Work 
+
+LLM evaluations of social intelligence. Social intelligence is widely treated as a multi-faceted con-struct that combines social knowledge with strate-gies for applying it (Kihlstrom and Cantor, 2000), and LLM evaluations of it currently split into three regimes that each cover a complementary part of the space but together leave a gap. Static probes such as FANToM (Kim et al., 2023), ToMi (Le et al., 2019), and BigToM (Gandhi et al., 2023) produce reproducible question-answering scores against a fixed ground truth, but reduce social rea-soning to single-turn comprehension and cannot ex-ercise sustained behavior; the limits of this format are visible in the ongoing debate over whether pass-ing static ToM benchmarks reflects genuine mental-state attribution at all (Sap et al., 2022; Kosinski, 2023; Ullman, 2023). Open-ended interactive evaluations, of which Zhou et al. (2024b)’s SOTOPIA framework and its SOTOPIA-π fine-tuning extension (Wang et al., 2024b) are representative, preserve multi-turn dy-namics but score outcomes with LLM judges or human raters; LLM judges in particular carry doc-umented position, verbosity, and self-enhancement biases (Zheng et al., 2023). Single-game LLM stud-ies on Werewolf (Xu et al., 2023) and Avalon (Lan et al., 2024; Light et al., 2023) inherit verifiable game outcomes but each isolate one social dy-namic; broader text-game environments (Guertler et al., 2025; Duan et al., 2024; Wu et al., 2024) 2host many games but emphasize competitive strat-egy over the breadth of social-cognitive demands. Social Gym fills this gap with a multi-turn, rule-decided evaluation across 21 games organized along social-cognitive axes. 
+
+Self-improvement methods for LLMs. Self-improvement methods for LLMs broadly divide into two families. Prompt-only approaches have agents inspect their own outputs and revise, with Reflexion (Shinn et al., 2023) and Self-Refine (Madaan et al., 2023) as the canonical refer-ences, and have since been extended to skill-library construction, where an agent accumulates trans-ferable natural-language strategies across episodes (Voyager Wang et al., 2023; ExpeL Zhao et al., 2024). Weight-update approaches such as SPI-RAL (Liu et al., 2026) instead use multi-agent self-play with reinforcement learning to incen-tivize reasoning. SP ART AN sits in the prompt-only family and is closest in spirit to the skill-library line, but prior work in that line accumulates skills within a single domain (Minecraft for Voyager, in-dividual reasoning tasks for ExpeL); to the best of our knowledge, no prior work studies whether such playbooks transfer across games, which our iterated-rounds, multi-source, and strong-to-weak experiments in Section 5 investigate. 
+
+LLM agents in multi-player games. LLM agents in multi-player games have historically been studied one game at a time. Bakhtin et al. (2022) achieve human-level play in Diplomacy with CI-CERO by coupling a language model to a strate-gic planner, demonstrating that strong play in a complex social game is possible but at the cost of heavy game-specific scaffolding. Akata et al. (2025) study LLM behavior on iterated 2×2 matrix games (Prisoner’s Dilemma, Battle of the Sexes, Stag Hunt, Chicken), confined to canonical normal-form structures. Park et al. (2023) and Hagendorff (2024) probe individual behavioral skills, such as coherent role-playing and emergent deception, in isolated sandbox or single-task settings. The com-mon limitation is breadth: each existing line covers a single game, a single equilibrium class, or a single skill, leaving open how the same model performs across the social-cognitive spectrum. We address this directly: Social Gym aggregates 21 games into one environment, and SP ART AN is tested for cross-game transfer. 
+
+3 Social Gym Benchmark 
+
+We design Social Gym around two principles: (i) 
+
+every game must have an algorithmically verifiable 
+
+outcome (win/loss, score, survival), providing the unambiguous reward signal needed for both leader-boards and downstream RLVR training (Guo et al., 2025; Lewkowycz et al., 2022); and (ii) games must span the breadth of social intelligence, from atomic strategic primitives to long-horizon group deception, to expose distinct failure modes. 
+
+3.1 System Architecture 
+
+Social Gym extends the SOTOPIA environment loop (Zhou et al., 2024b) to support arbitrary N -agent interactions. 
+
+Finite State Machine (FSM) Engine. A flexi-ble FSM engine handles complex phase transitions (e.g., Night → Day in Werewolves; Discussion →
+
+Mission Vote → Mission Execute in Resistance). Discrete state transitions also enable downstream RL value-function estimation. 
+
+Partial Observability. A visibility layer filters every message under one of three scopes: (i) Pub-lic (all alive agents, e.g., day discussion, vote re-sults), (ii) Team-Private (faction members only, e.g., Werewolves see each other’s night-phase kill votes), or (iii) Private (single agent, e.g., Seer in-spections, role cards). This tests agents’ Theory-of-Mind reasoning, as they can only infer hidden states from permitted observations. 
+
+Game-Agnostic Engine. Each game implements a uniform interface (state, available actions, visible messages, reward function), so adding a new game requires only the game-specific FSM and reward, not changes to the core engine. Twenty-one games are implemented as extensions of this shared en-gine. The full engine specification, including the config schema, a Werewolves state-transition dia-gram, and scheduler and visibility pseudocode, is in Appendix D. 
+
+3.2 Game Suite 
+
+Our 21 games are organized along two orthogonal axes: information structure (complete information / hidden state / hidden roles) and communication mode (none / structured / free-form). This pro-duces five categories, each probing a complemen-tary facet of social intelligence, grounded respec-tively in strategic primitives (Axelrod and Hamil-ton, 1981; Schelling, 1980), prosocial behavior 3under collective-action problems (Ostrom, 1990; Fehr and Gächter, 2000; Rosenthal, 1981; Rubin-stein, 1982), deception production and detection (DePaulo et al., 2003; Wimmer and Perner, 1983), higher-order theory of mind (Perner and Wimmer, 1985; Baron-Cohen et al., 1985; Byrne and Whiten, 1988), and coalition/reputation tracking (Dunbar, 1998; Cialdini, 1984). 
+
+Normal-Form Games (6). Iterated matrix games with complete information and no communication. 
+
+Games: Prisoner’s Dilemma, Chicken, Battle of the Sexes, Stag Hunt, Minority Game, Rock-Paper-Scissors. The first four overlap with Akata et al. (2025)’s study of LLMs on repeated 2×2 matrix games; we extend the suite with Minority Game and Rock-Paper-Scissors and embed all six in a unified leaderboard. 
+
+Economic Games (3). Multi-round resource-allocation games requiring strategic reasoning and (optionally) negotiation. Games: Public Goods Game (free-riding vs. collective action), Centipede (sequential trust under growing stakes), Bargaining (structured negotiation over a divisible payoff). 
+
+Bluffing Games (4). Hidden-state games (no fixed factions) where agents must misrepresent or correctly infer private information. Games: Liar’s Dice (probabilistic reasoning with hidden dice), Skull (placement bluffing with no communication), Coup (structured action-claim bluffing), Sheriff of Nottingham (free-form negotiation under inspec-tion). 
+
+Hidden-Role Deduction (6). Games with hid-den role assignments where agents must iden-tify allies and enemies through dialogue. Games: 
+
+Chameleon, Insider, Spyfall, Undercover, Resis-tance, Werewolves. This category extends prior single-game work on Werewolf (Xu et al., 2023) to a unified evaluation across the social-deduction family. 
+
+Social Strategy (2). Complete-information games where outcomes depend on alliance formation, persuasion, and reputation rather than hidden information. Games: Survivor (jury-voted finals), Dead Last (elimination + final-round split). 
+
+3.3 Measuring success via Elo Tournament 
+
+We report Elo-scale ratings (Elo, 1978) esti-mated by a regularized Bradley–Terry maximum-likelihood fit, following the LMSYS Chatbot Arena methodology (Chiang et al., 2024; Bradley and Terry, 1952). Tournament rosters are generated by enumerating all model combinations per game and running a fixed number of episodes per com-bination, with role and seat assignments balanced across episodes. Within each completed episode we extract pairwise outcomes from the final score vector and aggregate them into per-pair win/tie counts, skipping same-model pairs. In free-for-all games (Skull, Liar’s Dice, Coup, Sheriff, Survivor, Dead Last, Minority Game), every cross-model agent pair (i, j ) contributes one outcome, with the higher-scoring agent counted as the winner. In 2-team games (Werewolves, Resistance, Spy-fall, Chameleon, Insider, Undercover), only cross-team pairs contribute outcomes, using each team’s shared score; same-team agents are not compared. Elo is fit on the 17 competitive games; the four co-operative games (Stag Hunt, Public Goods, Battle of the Sexes, Centipede) have no well-defined rank-ing and are scored by win rate instead (Table 2). Implementation details are in Appendix B. To cap-ture asymmetric role performance in hidden-role games, we additionally report Elo-Main (major-ity/cooperative role: Villager, Civilian, Non-Spy) and Elo-Alt (minority/deceptive role: Werewolf, Spy, Insider, Chameleon, Undercover). 
+
+3.4 Leaderboard Results 
+
+We benchmark seven models spanning closed- and open-weights access, three model families, and within-family scale: GPT-5-mini, GPT-4o, GPT-4o-mini, Qwen3-32B, Qwen3-4B, Qwen2.5-3B, and Gemma3-27B. The overall leaderboard roughly tracks general capability rankings of these models (Figure 2). GPT-5-mini, the newest and strongest model in our slate, tops the leaderboard at 1110 Elo; Qwen2.5-3B, the smallest (3B parameters) and oldest open checkpoint, places last at 926. However, while overall Elo and win rate (right panel of Figure 2) track general capability, the per-game Elos (left panel) show that no model is uniformly strong: per-game rankings invert sharply. The starkest case is Qwen3-32B, first on Chicken (1328) yet last on Werewolves (817); more broadly, top-ranked models have games where they fall below the 1000 anchor or behind much weaker peers, while the smallest model (Qwen2.5-3B) places near the top on others. These inversions reflect that different games reward fundamentally different behaviors, so a single scalar masks where 4PD Chicken RPS Minority Bargain Liar's Dice Skull Coup Sheriff Chameleon Insider Spyfall Undercover Resistance Werewolves Survivor Dead Last GPT-5-mini GPT-4o Gemma3-27B GPT-4o-mini Qwen3-32B Qwen3-4B Qwen2.5-3B                                                                                                                 
+
+> 1235 1199 1150 1045 1039 1105 1046 1135 1049 1101 983 1080 1188 1147 1203 1069 1099 1147 939 1069 975 1131 1032 989 1110 990 1016 1068 999 1015 1053 1227 991 977 885 943 1081 965 831 987 966 995 945 1016 1048 1015 1033 1036 1035 1030 1032 979 736 1025 1021 1067 975 1003 952 1046 1049 910 1047 953 1108 958 1013 992 878 1328 902 975 837 999 988 939 1012 1016 1053 984 953 947 817 986 969 1006 1045 1050 980 1031 1002 1001 946 958 881 961 935 998 873 926 958 988 865 807 718 1035 1060 896 1004 920 995 916 974 935 857 833 831 950 939
+> Overall Elo Win Rate 1110
+> [1099, 1120]
+> 63.5% 1030
+> [1021, 1039]
+> 47.5% 1004
+> [995, 1013]
+> 42.0% 998
+> [989, 1006]
+> 40.5% 968
+> [959, 976]
+> 33.9% 961
+> [952, 970]
+> 33.2% 926
+> [917, 935]
+> 25.6%
+> 020 40 60 80 100
+> Win Rate (%)
+> 700 800 900 1000 1100 1200 1300
+> Elo
+
+Figure 2: Social Gym results across the 17 competitive games. Left: per-game Elo, columns grouped by category (Normal-Form | Economic | Bluffing | Hidden-Role Deduction | Social Strategy, separated by black lines). Right: 
+
+overall Elo (BT-MLE, anchored mean 1000; 95% bootstrap CIs) and win rate; rows sorted by overall Elo. Win rate counts strict wins only (ties in denominator, not numerator). Overall stats span 560+ episodes for each model. 
+
+each model actually succeeds. This motivates the need to examine per-game model scores rather than a single scalar. We further disaggregate the leader-board into per-category and per-skill capability pro-files in Appendix C. These profiles show that rel-ative model strengths shift across categories: no model leads in all of them, and games involving hidden-role deduction draw the sharpest capability distinctions among models. 
+
+Role-conditioned analysis. For hidden-role games, we additionally examine separate Elos for the minority/deceptive role (Elo-Alt) and the ma-jority/cooperative role (Elo-Main). Across the six hidden-role games, with opponents drawn from the whole model slate, no model plays both sides at the same level, and the gap usually favors the mi-nority/deceptive role. For the strongest models this reverses under matched-capability self-play, where the minority side is the weaker one. Per-game, per-model gaps are tabulated in Appendix I. 
+
+Qualitative observation: parroting effect in small models. Inspecting trajectories, we find Qwen2.5-3B frequently parrots , i.e., paraphrases the previous speaker rather than producing an inde-pendent argument, which likely contributes to its last-place Overall Elo ( 926 ): agreeing with who-ever spoke last is a near-zero-information move that gives the deceptive side cover. Excerpts and counts are in Appendix J. 
+
+4 SP ART AN : Self-Play and Reflect-Transfer 
+
+The leaderboard in §3.4 shows that no single model dominates Social Gym: every top-ranked model has games where it underperforms peers, yet per-game ranks may invert. This motivates our next research question: can a model close its own per-game gaps without weight updates, by inspecting its own gameplay and extracting reusable strate-gies? To answer this, we introduce SP ART AN , a simple training-free self-improvement loop with three stages: play, reflect, and transfer. 
+
+SP ART AN method. Our method consists of the following three stages (illustrated in Figure 1): 1. Play. The model M plays N self-play games of game G, producing trajectories 
+
+{τ1, . . . , τ N }.2. Reflect. The model is shown its own trajecto-ries along with the final outcomes (win/loss per role) and asked to write a first-person strategic playbook covering deception, detec-tion, persuasion, information management, coalition dynamics, and timing. The model is instructed to keep the playbook game-agnostic (no references to specific game numbers). We denote this as R1 = Reflect( M, τ 1: N ).3. Transfer. The reflection is prepended to an agent’s system prompt for subsequent games. 
+
+Application setups. To test the effectiveness of SP ART AN , we select our strongest LLM (GPT-5-mini) and examine four different evaluation se-tups: (i) within-game iterated reflection, (ii) one-source → many-target cross-game transfer, (iii) many-source → one-target multigame transfer, and (iv) strong-to-weak distillation into 6 student mod-els on Resistance. 5Game Side BL/ R0 +R1 +R2 +R3 +R4                                                      
+
+> Werewolves Alt 23 50 46 63 46 Main 77 50 54 67 44 Spyfall Alt 20 36 46 26 23 Main 80 80 67 80 70 Resistance Alt 30 23 16 40 36 Main 70 67 57 54 74 Avg alt 24 36 36 43 35 Avg main 76 66 59 67 63
+> Table 1: GPT-5-mini within-game iterated self-reflection: R-armed side win rate (%, n=30 /cond) when
+> Rnis injected on the alt side vs. on the main side (alt/main as defined in §3.3). The alt side rises and the main side falls across rounds, peaking at different n
+> per game (alt: Werewolves R3, Spyfall R2, Resistance
+> R3).
+
+5 SP ART AN Experiments and Results 
+
+We evaluate SP ART AN on the asymmetric hidden-role games from Section 3, asking whether iter-ated self-play reflection can improve a model’s win rates without parameter updates. Following the role-conditioned convention from §3.3, we use alt 
+
+for the minority/deceptive role of a game (e.g., the Werewolves team in Werewolves or the Spies in Re-sistance) and main for the majority/cooperative role. In vanilla GPT-5-mini self-play the alt role’s win rate is consistently lower than the main role’s on Werewolves, Spyfall, Undercover, and Resistance (Table 7), establishing an imbalance in the vanilla baseline that motivates testing whether SP ART AN 
+
+can lift the weaker side. Unless noted, every condi-tion uses n=30 games, giving binomial 95% CIs of ≈ ± 18 pp. We probe how SP ART AN affects model perfor-mance through within-model reflection on a strong model (GPT-5-mini; §5.1), through within-model reflection on an open-weights model (Qwen3-32B; §5.3), and through across-model distillation (§5.2). We hypothesize that LLM agents armed with a SP ART AN playbook will gain on the structurally weaker side of an asymmetric game. 
+
+5.1 Same-model reflection 
+
+We evaluate SP ART AN when the model that gen-erates the reflection also consumes it, with GPT-5-mini as the primary model throughout this subsec-tion; supporting evidence from GPT-5 and Gemini 3.1 Pro self-play is reported in Appendix K. 
+
+Within-game iterated R1–R4. We evaluate on three hidden-role deduction games: Werewolves, Spyfall, and Resistance, chosen because both sides have headroom in the vanilla baseline and the alt side is the structurally weaker one (alt baselines 
+
+23% , 20% , 30% respectively). GPT-5-mini gener-ates an iterated chain of self-reflection playbooks 
+
+R1, R 2, R 3, R 4, where Rn = Reflect( M, τ Rn−1 
+
+> 1: N
+
+)
+
+distills N =30 self-play games played under the previous round’s playbook ( R0 denotes vanilla). Each Rn is injected on either the alt side or the main side, with vanilla GPT-5-mini on the other; 30 games per condition. 
+
+Result. Across rounds, the R-armed side trades win rate with the vanilla side: averaged over the three games, the alt side rises from 24% baseline to 36 , 36 , 43 , 35% under R1–4 (peak at R3), while the main side falls from 76% to 66 , 59 , 67 , 63% 
+
+(worst at R2; Table 1). Per-game peaks are non-monotonic and game-specific: Werewolves and Resistance peak on the alt side at R3 (63%, 40%), Spyfall at R2 (46%). 
+
+Interpretation. Self-reflection raises the weaker side and drops the stronger side; the optimal num-ber of reflection rounds varies by game. Contrary to iterated-reflection methods that assume more rounds yield more gain (Shinn et al., 2023; Madaan et al., 2023), the bulk of the gain arrives at R1
+
+(24% → 36% ), and additional rounds redistribute rather than accumulate. Excerpts from the Were-wolves playbooks across reflection rounds are in Appendix G. 
+
+Cross-game transfer ( 1 → n). We use Were-wolves, Spyfall, Chameleon, Undercover, and Re-sistance as both source and target games. For each game as source, we inject the source’s R1 playbook into one side of each of the other four as target, vs. vanilla GPT-5-mini. We report the ∆ (in pp) against the target’s vanilla self-play baseline, sepa-rately for alt and main injection. The Chameleon target column is degenerate (its alt-side baseline is already at 100% in vanilla GPT-5-mini self-play; see footnote below); we retain it in the heatmap for completeness rather than dropping it silently. 
+
+Result. The two heatmaps in Figure 3 are sign-flipped: excluding the saturated Chameleon target column, alt-side injection skews positive (median 
+
++7 , max +27 ) and main-side injection skews nega-tive (median −7, four cells below −20 ). 
+
+Interpretation. The cross-game pattern matches the within-game finding: R1 helps the disadvan-taged side and either has no effect or actively hurts the advantaged side. The match is striking because 6Werewolves Spyfall Chameleon Undercover Resistance Target Werewolves Spyfall Chameleon Undercover Resistance Source                       
+
+> +7 +0 -10 +10 +20 +0 -10 -13 +17+23 -13 -3 +10 +7 +0 +17 +27 +7 +0 -13
+> R on alt side
+> Werewolves Spyfall Chameleon Undercover Resistance Target
+> -20 +0 +3 -7 -33 +0 +3 +10 -20 -17 +3 +3 -43 -23 +0 -7 -13 +0 +0 +7
+> R on main side
+> 30
+> 20
+> 10
+> 010 20 30
+> pp
+
+Figure 3: GPT-5-mini cross-game transfer ( ∆ pp vs. vanilla self-play baseline, n=30 /cell) over five games (Werewolves, Spyfall, Chameleon, Undercover, Resis-tance). Left: R on the target’s alt side. Right: R on the target’s main side (alt/main as defined in §3.3). The alt panel is dominated by positive cells; the main panel is dominated by large negative cells. The Chameleon tar-get column is structurally zero because the alt baseline saturates at 100% .
+
+the source playbook was generated on a different game, so any useful content is not target-specific. 
+
+Multigame transfer ( n → 1). For K source games, the multigame playbook is Rmulti =Reflect( M, τ G1
+
+1: N , . . . , τ GK
+
+1: N ). We construct three multigame playbooks of increasing breadth: Rwcs 
+
+(Werewolves + Chameleon + Spyfall), Rwcsu (+ Undercover), Rwcsur (+ Resistance). 1 We evaluate each on its in-distribution targets and one held-out target (except Rwcsur , whose five source games leave no held-out target). We compare against (a) baseline and (b) the target’s own Single-R1 from the within-game results above. 
+
+Result. Multigame does not stack (Figure 4). On three of the four non-saturated targets (Werewolves, Spyfall, Undercover), broader source sets either do not beat the target’s own Single-R1 or degrade it; Chameleon stays pinned at the 100% alt-side ceiling under every condition; the only exception is held-out Resistance, where Rwcsu lifts the alt side from 23% (Single-R1) to 47%. 
+
+Interpretation. Learning from multiple training games does not improve transfer to a new game beyond what a single related training game already provides; the only exception, Resistance, is also the held-out game with the most baseline headroom 
+
+> 1
+
+GPT-5-mini’s vanilla Chameleon alt-side (Chameleon role) win rate is saturated at 100% , so the Chameleon panel in Figure 4 and the Chameleon target column in Figure 3 are at the ceiling for all conditions and carry no signal in the alt direction; we report them rather than dropping them silently. Chameleon’s self-play trajectories still contribute hidden-role deduction patterns to the source mix. Baseline Single  R1    
+
+> +Rwcsur
+> 020 40 60 80 100
+> Alt-side win rate (%)
+> 23 50 50
+> Werewolves
+> Baseline Single  R1
+> +Rwcsur
+> 020 40 60 80 100
+> 20 37 30
+> Spyfall
+> Baseline Single  R1
+> +Rwcsur
+> 020 40 60 80 100
+> 100 100 100
+> Chameleon
+> Baseline Single  R1
+> +Rwcs
+> +Rwcsur
+> 020 40 60 80 100
+> 17 10 70
+> Undercover
+> Baseline Single  R1
+> +Rwcs
+> +Rwcsu
+> +Rwcsur
+> 020 40 60 80 100
+> 30 23 30 47 37
+> Resistance
+
+Figure 4: GPT-5-mini multigame transfer: alt-side win rate (%, n=30 /condition) on five target games. Single-
+
+R1 uses the target’s own within-game playbook; Rwcs ,
+
+Rwcsu , Rwcsur are multigame playbooks of increasing breadth. Resistance is held out from Rwcs and Rwcsu .The Chameleon panel sits at the 100% alt-side ceiling under vanilla self-play and remains there under every 
+
+R.0 20 40 60 80 100       
+
+> Student win rate (%) Qwen3-32B Qwen3-4B Qwen2.5-3B Gemma3-27B GPT-4o GPT-4o-mini
+> 57 53 23 43 57 40 57 53 17 33 60 37
+> Student plays Resistance
+> 020 40 60 80 100
+> Student win rate (%)
+> 10 310 37 40 323 27 10 33 33 23
+> Student plays Spies
+> Baseline +R1(gpt-5-mini)
+
+Figure 5: GPT-5-mini Rwcsu (held-out multigame, trained on W+C+S+U) injected into six student models on Resistance ( n=30 /condition vs. vanilla GPT-5-mini opponent). Left: student plays the main (Resistance, majority/cooperative) side. Right: student plays the alt (Spies, minority/deceptive) side, which is structurally weaker in vanilla baseline; three students (Qwen3-32B, Qwen3-4B, GPT-4o-mini) gain +13 to +24 pp. 
+
+on the alt side, consistent with the lift-the-weaker-side pattern from the within-game and cross-game results. 
+
+5.2 Cross-model distillation Setup. In the distillation setting, a playbook gen-erated by a strong model Mstrong is injected into a weaker student model Mweak . We test whether the held-out multigame playbook from §5.1, Rwcsu 
+
+(trained on Werewolves + Chameleon + Spyfall + Undercover by Mstrong = GPT-5-mini, Resistance excluded), transfers when injected into weaker stu-dent models. Six students (Qwen3-32B, Qwen3-4B, Qwen2.5-3B-Instruct, Gemma3-27B, GPT-4o, GPT-4o-mini) each play one side of Resistance against vanilla GPT-5-mini, with and without the playbook. 
+
+Result. Distillation reproduces the same side asymmetry across both transfer axes (Figure 5). On the disadvantaged Spies side, three students gain 7+13 to +24 pp from the shared Rwcsu playbook; on the favored Resistance side, every student moves by at most ±5 pp. Two students (Qwen2.5-3B, Gemma3-27B) do not gain on either side. 
+
+Interpretation. The same playbook produces side-dependent rather than student-dependent ef-fects: it lifts whichever student is playing the struc-turally weaker role and leaves the other alone. Com-bined with the multigame result in §5.1, the same 
+
+Rwcsu playbook now lifts the underperforming side across three setups (within-model held-out target, across-model held-out target, both at once), all without ever having seen Resistance during reflec-tion. 
+
+5.3 Open-weights model replication 
+
+We test whether the patterns from Sections 5.1 and 5.2 carry over to an open-weights model. We use Qwen3-32B throughout, mirroring §5.1’s within-model setup in §5.3.1 and §5.2’s cross-model setup in §5.3.2. 
+
+5.3.1 Self-reflection (Open-weights model) Setup. Following the within-game protocol from §5.1, we run Qwen3-32B as the only model (re-flection generator, training self-play, and evalua-tion opponent) across six games: the three hidden-role games from §5.1 (Werewolves, Spyfall, Re-sistance) plus Chameleon, Undercover, and Pris-oner’s Dilemma. PD is included as a pure action-channel game (no chat phase) for contrast with the discussion-heavy games. We generate iterated playbooks R1–R4 from Qwen3-32B self-play and report the R-armed-side win rate per round. 
+
+Result. Only Prisoner’s Dilemma shows a clean R-armed-side lift ( 13% → 58% at R1, +45 pp). Resistance shows a smaller positive effect ( +34 pp on the Resistance side). The other four games (Werewolves, Chameleon, Spyfall, Undercover) are flat across all four iterated rounds and across both within-game and cross-game source playbooks. Full per-game R1–R4 and cross-game transfer ta-bles are in Appendix M. 
+
+Interpretation. The open-weights replication is largely a null result, with PD as the only clean exception. We attribute this to model capacity: at 32B parameters Qwen3-32B appears incapable of learning from the trajectories of long, complex social-deduction games, except when the required action collapses to a single discrete token (PD’s defect, Resistance’s private succeed/fail vote). One concrete symptom is that Qwen3-32B’s discussion-phase outputs frequently parrot or paraphrase the immediately prior speaker rather than producing in-dependent content. The model is in fact self-aware enough to identify this behavior, and iterated reflec-tion codifies it into the playbook itself (examples in Appendix M.4), but the model does not eliminate the parroting in subsequent play. 
+
+5.3.2 Distillation (Open-weights model) 
+
+We then test the distillation setup from §5.2 with Qwen3-32B as the teacher. The source playbooks are Qwen3-32B’s within-game R1 for PD and its held-out multigame Rwcsu for Resistance (the two games where Qwen3-32B’s own self-reflection pro-duced a measurable lift; see §5.3.1). We test trans-fer to Qwen3-4B, Qwen2.5-3B, and Gemma3-27B against vanilla Qwen3-32B (30 games per side per condition). 
+
+Result. PD shows clean positive distillation across all three students ( +17 to +77 pp with the reflection applied); Resistance is mixed (Qwen2.5-3B +10 pp, Qwen3-4B −20 pp, Gemma3-27B 
+
+−10 pp on the Resistance side). Per-student num-bers are in Appendix M. Distillation reinforces §5.3.1: the action-channel game (PD) transfers cleanly to smaller students, while the discussion-heavy game (Resistance) does not. 
+
+6 Conclusion and Discussion 
+
+We presented Social Gym, an environment of 21 multi-agent social games organized into five cate-gories (normal-form, economic, bluffing, hidden-role deduction, social strategy), with a unified Elo leaderboard that reveals large per-game ranking in-versions and role-conditioned imbalances beneath an overall ranking that tracks general capability. We then introduced SP ART AN , a training-free self-improvement loop, and evaluated it across within-model iteration, cross-game transfer, and cross-model distillation. A single regularity emerges from all three perspectives: the playbook lifts the structurally weaker side of an asymmetric game. Our findings yield two main implications. First ,Social Gym and SP ART AN jointly show that LLM social ability is not a single scalar capability: model rankings, role advantages, and reflection gains all depend strongly on the interaction structure of the game. By combining a broad game suite with targeted playbook interventions, we can separate structural properties of a social setting from model-specific failures such as weak deception, poor coali-tion tracking, or parroting behavior. Second , Social 8Gym provides a natural testbed for future work to explore reinforcement learning with verifiable rewards (RLVR): every episode produces an objec-tive, rule-computed outcome while still requiring rich language-based interaction. This would enable future research to train and evaluate social reason-ing skills at scale without LLM judges, while also testing whether learned strategies transfer across cooperation, negotiation, bluffing, and hidden-role deduction games. Future work includes testing whether playbooks learned in rule-based games carry into realistic deployment settings, such as professional nego-tiation, customer-service de-escalation, or collab-orative multi-agent work, extending SP ART AN ’s transfer evaluation from held-out games to held-out domains. 
+
+Limitations 
+
+External validity. All games in Social Gym have fixed rules, fixed role structures, and rule-decided outcomes. This is what lets us score every episode without an LLM judge, but many real social interac-tions, such as resolving a disagreement or building long-term trust, have no clear win/loss criterion and cannot be reduced to a single score. Whether the capabilities and playbooks measured in these games carry over to such settings remains open for future work to investigate. 
+
+Sample size per condition is modest. We use 30 evaluation games per condition, giving bino-mial 95% CIs of roughly ±18 pp for a single-coin observation. Several effects we report are within this range and should be replicated at larger sample sizes before strong conclusions are drawn. 
+
+No placebo-playbook control. We compare R-armed players against vanilla opponents but not against opponents armed with a content-matched placebo (scrambled or unrelated text of equal length). Without this control we cannot fully dis-entangle playbook-content effects from generic prompt-perturbation effects, though the structural patterns reported in §5.3 (action-channel vs. free-discussion games) and the Undercover monotonic regression toward 0% argue against a pure prompt-perturbation reading. 
+
+The reflection is constrained to natural-language prose. SP ART AN does not allow the model to update tools, retrieve external knowledge, or perform structured reasoning beyond what fits in the system-prompt text. Methods that combine reflection with retrieval or scratchpads may exhibit qualitatively different transfer behavior. 
+
+Ethics / Broader Impacts 
+
+Social Gym and SP ART AN measure and, in some settings, improve capabilities: deception, persua-sion, coalition manipulation. Thus, they may carry dual-use risk if transferred from games to real inter-actions involving humans. We note three mitigating factors: all experiments are confined to fully syn-thetic multi-agent games with no human subjects; the improvements are training-free, modest in size, and largely null for open-weights models; and the verifiable-reward framing is intended primarily as an evaluation tool for diagnosing such capabili-ties rather than a recipe for deploying manipulative agents. We release code to support reproducible measurement of these behaviors, and discourage use of the playbook-distillation procedure in adver-sarial human-facing applications. 
+
+Acknowledgments 
+
+This work was in part funded by the National Institute of Standards and Technology (ROR: 05xpvk416) under Federal Award ID Number 60NANB24D231 and Carnegie Mellon University (ROR: 05x2bcf33) AI Measurement Science and Engineering Center (AIMSEC). 
+
+References         
+
+> Elif Akata, Lion Schulz, Julian Coda-Forno, Seong Joon Oh, Matthias Bethge, and Eric Schulz. 2025. Playing repeated games with large language models. Nature Human Behaviour , 9(7):1380–1390. Robert Axelrod and William D Hamilton. 1981. The evolution of cooperation. science , 211(4489):1390– 1396. Anton Bakhtin, Noam Brown, Emily Dinan, Gabriele Farina, Colin Flaherty, Daniel Fried, Andrew Goff, Jonathan Gray, Hengyuan Hu, Athul Paul Jacob, and 1 others. 2022. Human-level play in the game of diplomacy by combining language models with strategic reasoning. Science , 378(6624):1067–1074. Simon Baron-Cohen, Alan M. Leslie, and Uta Frith. 1985. Does the autistic child have a “theory of mind”? Cognition , 21(1):37–46. Federico Bianchi, Patrick John Chia, Mert Yuksekgonul, Jacopo Tagliabue, Dan Jurafsky, and James Zou. 2024. How well can llms negotiate? negotiation-arena platform and analysis. In Proceedings of the
+
+941st International Conference on Machine Learning ,pages 3935–3951. Ralph Allan Bradley and Milton E Terry. 1952. Rank analysis of incomplete block designs: I. the method of paired comparisons. Biometrika , 39(3/4):324– 345. Richard W. Byrne and Andrew Whiten, editors. 1988. 
+
+Machiavellian Intelligence: Social Expertise and the Evolution of Intellect in Monkeys, Apes, and Humans .Clarendon Press, Oxford. Wei-Lin Chiang, Lianmin Zheng, Ying Sheng, Anasta-sios Nikolas Angelopoulos, Tianle Li, Dacheng Li, Banghua Zhu, Hao Zhang, Michael Jordan, Joseph E Gonzalez, and 1 others. 2024. Chatbot arena: An open platform for evaluating llms by human pref-erence. In International Conference on Machine Learning , pages 8359–8388. PMLR. Robert B. Cialdini. 1984. Influence: The Psychology of Persuasion . William Morrow. Myke C. Cohen, Mingqian Zheng, Neel Bhandari, Hsien-Te Kao, Xuhui Zhou, Daniel Nguyen, Laura Cassani, Maarten Sap, and Svitlana Volkova. 2026. Imperfectly cooperative human-ai interactions: Com-paring the impacts of human and ai attributes in sim-ulated and user studies. In Findings of ACL .Julian De Freitas, Zeliha O˘ guz-U˘ guralp, Ahmet Kaan U˘ guralp, and Stefano Puntoni. 2026. AI companions reduce loneliness. Journal of Consumer Research ,52(6):1126–1148. Bella M DePaulo, James J Lindsay, Brian E Mal-one, Laura Muhlenbruck, Kelly Charlton, and Harris Cooper. 2003. Cues to deception. Psychological bulletin , 129(1):74. J Duan, R Zhang, J Diffenderfer, B Kailkhura, L Sun, E StengelEskin, and 1 others. 2024. Gtbench: Un-covering the strategic reasoning limitations of llms via game-theoretic evaluations. arxiv. arXiv preprint arXiv:2402.12348 .Robin I. M. Dunbar. 1998. The social brain hypothe-sis. Evolutionary Anthropology: Issues, News, and Reviews , 6(5):178–190. Arpad E. Elo. 1978. The Rating of Chessplayers, Past and Present . Arco Pub. Ernst Fehr and Simon Gächter. 2000. Cooperation and punishment in public goods experiments. American Economic Review , 90(4):980–994. Kanishk Gandhi, Jan-Philipp Fränken, Tobias Gersten-berg, and Noah Goodman. 2023. Understanding social reasoning in language models with language models. Advances in Neural Information Processing Systems , 36:13518–13529. Leon Guertler, Bobby Cheng, Simon Yu, Bo Liu, Leshem Choshen, and Cheston Tan. 2025. Textarena. 
+
+Preprint , arXiv:2504.11442. Daya Guo, Dejian Yang, Haowei Zhang, Junxiao Song, Peiyi Wang, Qihao Zhu, Runxin Xu, Ruoyu Zhang, Shirong Ma, Xiao Bi, and 1 others. 2025. Deepseek-r1: Incentivizing reasoning capability in llms via reinforcement learning. arXiv preprint arXiv:2501.12948 .Thilo Hagendorff. 2024. Deception abilities emerged in large language models. Proceedings of the National Academy of Sciences , 121(24):e2317967121. John F. Kihlstrom and Nancy Cantor. 2000. Social in-telligence. In Robert J. Sternberg, editor, Handbook of Intelligence , 2 edition, pages 359–379. Cambridge University Press. Hyunwoo Kim, Melanie Sclar, Xuhui Zhou, Ronan Bras, Gunhee Kim, Yejin Choi, and Maarten Sap. 2023. Fantom: A benchmark for stress-testing machine theory of mind in interactions. In Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing , pages 14397–14413. Michal Kosinski. 2023. Theory of mind may have spon-taneously emerged in large language models. arXiv preprint arXiv:2302.02083 , 4(169):2. Yihuai Lan, Zhiqiang Hu, Lei Wang, Yang Wang, De-heng Ye, Peilin Zhao, Ee-Peng Lim, Hui Xiong, and Hao Wang. 2024. Llm-based agent society investi-gation: Collaboration and confrontation in avalon gameplay. arXiv preprint arXiv:2310.14985 .Matthew Le, Y-Lan Boureau, and Maximilian Nickel. 2019. Revisiting the evaluation of theory of mind through question answering. In Proceedings of the 2019 Conference on Empirical Methods in Natu-ral Language Processing and the 9th International Joint Conference on Natural Language Processing (EMNLP-IJCNLP) , pages 5872–5877. Aitor Lewkowycz, Anders Andreassen, David Dohan, Ethan Dyer, Henryk Michalewski, Vinay Ramasesh, Ambrose Slone, Cem Anil, Imanol Schlag, Theo Gutman-Solo, and 1 others. 2022. Solving quan-titative reasoning problems with language models. 
+
+Advances in neural information processing systems ,35:3843–3857. Guohao Li, Hasan Hammoud, Hani Itani, Dmitrii Khizbullin, and Bernard Ghanem. 2023. Camel: Communicative agents for" mind" exploration of large language model society. Advances in Neural Information Processing Systems , 36:51991–52008. Jonathan Light, Min Cai, Sheng Shen, and Ziniu Hu. 2023. Avalonbench: Evaluating llms playing the game of avalon. arXiv preprint arXiv:2310.05036 .Bo Liu, Leon Guertler, Simon Yu, Zichen Liu, Penghui Qi, Daniel Balcells, Mickel Liu, Cheston Tan, Weiyan Shi, Min Lin, Wee Sun Lee, and Natasha Jaques. 2026. Spiral: Self-play on zero-sum games incentivizes reasoning via multi-agent multi-turn re-inforcement learning. Preprint , arXiv:2506.24119. 
+
+10 Aman Madaan, Niket Tandon, Prakhar Gupta, Skyler Hallinan, Luyu Gao, Sarah Wiegreffe, Uri Alon, Nouha Dziri, Shrimai Prabhumoye, Yiming Yang, and 1 others. 2023. Self-refine: Iterative refinement with self-feedback. Advances in neural information processing systems , 36:46534–46594. Elinor Ostrom. 1990. Governing the Commons: The Evolution of Institutions for Collective Action . Cam-bridge University Press. Joon Sung Park, Joseph O’Brien, Carrie Jun Cai, Mered-ith Ringel Morris, Percy Liang, and Michael S Bern-stein. 2023. Generative agents: Interactive simulacra of human behavior. In Proceedings of the 36th an-nual acm symposium on user interface software and technology , pages 1–22. Josef Perner and Heinz Wimmer. 1985. “john thinks that mary thinks that. . . ” attribution of second-order beliefs by 5- to 10-year-old children. Journal of Experimental Child Psychology , 39(3):437–471. Jinghua Piao, Yuwei Yan, Jun Zhang, Nian Li, Junbo Yan, Xiaochong Lan, Zhihong Lu, Zhiheng Zheng, Jing Yi Wang, Di Zhou, Chen Gao, Fengli Xu, Fang Zhang, Ke Rong, Jun Su, and Yong Li. 2025. Agentsociety: Large-scale simulation of llm-driven generative agents advances understanding of human behaviors and society. Preprint , arXiv:2502.08691. Robert W Rosenthal. 1981. Games of perfect informa-tion, predatory pricing and the chain-store paradox. 
+
+Journal of Economic theory , 25(1):92–100. Ariel Rubinstein. 1982. Perfect equilibrium in a bar-gaining model. Econometrica: Journal of the Econo-metric Society , pages 97–109. Maarten Sap, Ronan Le Bras, Daniel Fried, and Yejin Choi. 2022. Neural theory-of-mind? on the limits of social intelligence in large lms. In Proceedings of the 2022 conference on empirical methods in natural language processing , pages 3762–3780. Thomas C Schelling. 1980. The Strategy of Conflict: with a new Preface by the Author . Harvard university press. Yunfan Shao, Linyang Li, Junqi Dai, and Xipeng Qiu. 2023. Character-llm: A trainable agent for role-playing. In Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing ,pages 13153–13187. Noah Shinn, Federico Cassano, Edward Berman, Ash-win Gopinath, Karthik Narasimhan, and Shunyu Yao. 2023. Reflexion: Language agents with verbal rein-forcement learning. Advances in Neural Information Processing Systems , 36. Zhe Su, Xuhui Zhou, Sanketh Rangreji, Anubha Kabra, Julia Mendelsohn, Faeze Brahman, and Maarten Sap. 2025. Ai-liedar: Examine the trade-off between util-ity and truthfulness in llm agents. In NAACL .Michael Henry Tessler, Michiel A Bakker, Daniel Jar-rett, Hannah Sheahan, Martin J Chadwick, Raphael Koster, Georgina Evans, Lucy Campbell-Gillingham, Tantum Collins, David C Parkes, Matthew Botvinick, and Christopher Summerfield. 2024. AI can help humans find common ground in democratic delibera-tion. Science , 386(6719):eadq2852. Tomer Ullman. 2023. Large language models fail on trivial alterations to theory-of-mind tasks. arXiv preprint arXiv:2302.08399 .Guanzhi Wang, Yuqi Xie, Yunfan Jiang, Ajay Man-dlekar, Chaowei Xiao, Yuke Zhu, Linxi Fan, and Anima Anandkumar. 2023. Voyager: An open-ended embodied agent with large language models. arXiv preprint arXiv:2305.16291 .Noah Wang, Z.y. Peng, Haoran Que, Jiaheng Liu, Wangchunshu Zhou, Yuhan Wu, Hongcheng Guo, Ruitong Gan, Zehao Ni, Jian Yang, Man Zhang, Zhaoxiang Zhang, Wanli Ouyang, Ke Xu, Wenhao Huang, Jie Fu, and Junran Peng. 2024a. RoleLLM: Benchmarking, eliciting, and enhancing role-playing abilities of large language models. In Findings of the Association for Computational Linguistics: ACL 2024 , pages 14743–14777, Bangkok, Thailand. As-sociation for Computational Linguistics. Ruiyi Wang, Haofei Yu, Wenxin Zhang, Zhengyang Qi, Maarten Sap, Yonatan Bisk, Graham Neubig, and Hao Zhu. 2024b. Sotopia-π: Interactive learning of socially intelligent language agents. In Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) ,pages 12912–12940. Heinz Wimmer and Josef Perner. 1983. Beliefs about beliefs: Representation and constraining function of wrong beliefs in young children’s understanding of deception. Cognition , 13(1):103–128. Qingyun Wu, Gagan Bansal, Jieyu Zhang, Yiran Wu, Beibin Li, Erkang Zhu, Li Jiang, Xiaoyun Zhang, Shaokun Zhang, Jiale Liu, Ahmed Hassan Awadallah, Ryen W White, Doug Burger, and Chi Wang. 2023. Autogen: Enabling next-gen llm ap-plications via multi-agent conversation. Preprint ,arXiv:2308.08155. Yue Wu, Xuan Tang, Tom Mitchell, and Yuanzhi Li. 2024. Smartplay: A benchmark for llms as intelligent agents. In International Conference on Learning Representations , volume 2024, pages 1543–1561. Yuzhuang Xu, Shuo Wang, Peng Li, Fuwen Luo, Xi-aolong Wang, Weidong Liu, and Yang Liu. 2023. Exploring large language models for communica-tion games: An empirical study on werewolf. arXiv preprint arXiv:2309.04658 .Yashwanth YS, Ruichen Wang, Shihua Zeng, Xuhui Zhou, Koichi Onoue, Vasudha Varadarajan, and Maarten Sap. 2026. Sotopia-tom: Evaluating infor-mation management in multi-agent interaction with theory of mind. 
+
+11 Andrew Zhao, Daniel Huang, Quentin Xu, Matthieu Lin, Yong-Jin Liu, and Gao Huang. 2024. Expel: Llm agents are experiential learners. In Proceedings of the AAAI Conference on Artificial Intelligence ,volume 38, pages 19632–19642. Lianmin Zheng, Wei-Lin Chiang, Ying Sheng, Siyuan Zhuang, Zhanghao Wu, Yonghao Zhuang, Zi Lin, Zhuohan Li, Dacheng Li, Eric Xing, and 1 others. 2023. Judging llm-as-a-judge with mt-bench and chatbot arena. Advances in neural information pro-cessing systems , 36:46595–46623. Xuhui Zhou, Zhe Su, Tiwalayo Eisape, Hyunwoo Kim, and Maarten Sap. 2024a. Is this the real life? is this just fantasy? the misleading success of simulating social interactions with llms. In EMNLP .Xuhui Zhou, Hao Zhu, Leena Mathur, Ruohong Zhang, Haofei Yu, Zhengyang Qi, Louis-Philippe Morency, Yonatan Bisk, Daniel Fried, Graham Neubig, and Maarten Sap. 2024b. Sotopia: Interactive evaluation for social intelligence in language agents. Preprint ,arXiv:2310.11667. 
+
+A Code and Data Release 
+
+All code is released at https://github.com/ Keyu-He/Social_Gym_Spartan . The repository contains: (i) the game engine layer and the 21 game implementations from Section 3, (ii) the Elo tour-nament infrastructure with the Bradley–Terry fit described in Appendix B, and (iii) the SP ART AN 
+
+pipeline scripts for roster generation, reflection gen-eration, and per-condition evaluation. A cost sum-mary for all experiments is in Appendix N. 
+
+Dependencies and licensing. The bundled 
+
+sotopia/ directory is a snapshot of an open-source dependency released under the MIT license; our use is consistent with its terms, and the contribution claimed here is limited to the game-engine layer, the games, and the experiments (see NOTICE.md in the repository). Our own code, game implementa-tions, and configuration files are released under the MIT license. The proprietary models we evaluate (GPT-5, GPT-5-mini, GPT-4o, GPT-4o-mini, Gem-ini 3.1 Pro) are accessed through their providers’ APIs under the respective terms of service, and the open-weights models (Qwen3, Qwen2.5, Gemma3) are used under their published licenses. 
+
+B Elo Aggregation Details 
+
+Bradley–Terry fit. The aggregated per-pair win/tie counts (§3.3) are fit via L2-regularized logistic regression ( C=0 .1, scale 400, anchored mean 1000), and 95% confidence intervals are obtained by multinomial bootstrap on the battle counts ( nbootstrap =1000 ). 
+
+Per-game vs. overall ratings. The overall Elo (right panel of Figure 2) and per-game Elos (left panel of Figure 2) are computed by independent BT fits, each anchored at a mean of 1000. Overall aggregates outcomes across the union of competi-tive games (560+ episodes per model, hundreds of pairwise outcomes), while each per-game fit only sees ∼30 episodes per model. Per-game ratings therefore have larger uncertainty and stay closer to the 1000 anchor, while Overall reflects the better-determined skill estimate. 
+
+Why BT-MLE rather than the online K-factor update. We adopt BT-MLE rather than the classi-cal online Elo update (Elo, 1978) for three reasons. First, BT is path-independent: the rating does not depend on the order in which episodes are pro-cessed. Second, with ∼30 episodes per pair, the online update would not converge. Third, BT is the standard for current LLM leaderboards (Chiang et al., 2024). 
+
+Same-score pairs. Many of our games emit ternary {+1 , 0, −1} scores by bucketing players (top-half vs. bottom-half in Public Goods and Sher-iff; winner-take-all in Skull, Liar’s Dice, and Sur-vivor). In such games, two co-winners or two co-losers share a score not because they competed and tied, but because they were assigned to the same outcome bucket by design. Treating these as draws (s = 0 .5) would otherwise cap the Elo of strong models, since a hypothetically dominant model would always tie with any peer who also reached the top bucket. We therefore exclude same-score pairs from the Bradley–Terry fit entirely. 
+
+Cooperative games. For cooperative games where rankings are ill-defined we report normal-ized win rates instead of Elo. 
+
+C Capability-Profile Elo 
+
+This appendix disaggregates the overall leader-board into capability profiles along the taxonomy axes of Table 5. For each group of games (a cat-egory, a skill tag, or a structural axis) we refit the Bradley–Terry model on the pooled pairwise out-comes of that group’s games only, with hyperpa-rameters and bootstrap identical to Appendix B. We refit per group rather than averaging per-game Elos because the per-game fits carry heteroscedas-12 Model BoS Stag Hunt Public Goods Centipede                             
+
+> GPT-5-mini 86.7 62.6 66.7 6.7 GPT-4o 28.6 47.0 50.0 57.1 GPT-4o-mini 37.1 12.5 38.9 45.7 Gemma3-27B 40.0 16.0 53.1 42.9 Qwen3-32B 37.1 22.2 2.5 20.0 Qwen3-4B 34.3 1.7 5.0 34.3 Qwen2.5-3B 25.7 42.7 23.9 51.4
+
+Table 2: Cooperative-game win rates (%). BoS = Battle of the Sexes. Win rate counts strict wins only (achiev-ing the cooperative payoff defined for each game’s me-chanic); ties are in the denominator but not the numer-ator. Per-game sample sizes range from n=30 (Battle of the Sexes, Centipede) to n=54 (Stag Hunt, Public Goods on the open-weights tier). 
+
+tic uncertainty. Only the 17 competitive games enter these fits (cooperative games are scored by win rate, Table 2). Note that skill tags overlap, so these axes are not independent measurements. 
+
+Findings. Three patterns stand out in Figure 6 (full numbers in Tables 3 and 4). First, the six games involving hidden-role deduction alone are enough to reproduce the overall ranking: of the 21 pairings among our seven models, the full 17-game tournament separates 19 at 95% confidence (non-overlapping bootstrap CIs), and a fit on these six games separates the same 19 pairs despite contain-ing only 43% of the tournament’s episodes (756 of 1,752). Second, bluffing preserves only the top of the ranking: GPT-5-mini and GPT-4o remain ranks 1 and 2, while the other five models sit within 32 Elo of one another, statistically indistinguishable. Third, the remaining categories reorder everything below the leader: ranks 2 through 7 span just 41 Elo on normal-form games, so matrix games mostly add episodes without adding discrimination, and the single competitive economic game (Bargain-ing) nearly reverses the ordering, with the overall leader falling to 4th and the smallest model ris-ing to 3rd. On the skill axes, coordination-tagged games barely separate the field at all, suggesting that current models are comparably mediocre at pure coordination. 
+
+Structural axes. Figure 7 repeats the refit along four structural axes of Table 5: information struc-ture, communication mode, player count, and itera-tion horizon. We find these two patterns. First, frontier mod-els gain Elo as information gets more hidden while small open models lose it (GPT-4o rises 994 →
+
+1025 → 1070 from complete information to hid-den state to hidden roles; Qwen2.5-3B ends 72 Elo lower, 952 → 964 → 880). Second, separation grows with interaction horizon: the standard devi-ation of the seven models’ Elos rises from 27 on single-round games to 39 on fixed-round games to 73 on open-ended games, and only the open-ended bucket separates most model pairs at 95% confi-dence (19 of 21, versus at most 9 in the other two buckets). 
+
+D Game Engine Details 
+
+This appendix documents the game engine behind the 21 games (§3.1). All games run on one shared interaction loop; each game supplies a declarative JSON configuration plus three thin Python com-ponents: an environment subclass that overrides engine hooks (e.g., reset and elimination checks), an ActionHandler that parses action arguments and updates the game’s internal state, and a rule-based end evaluator. Adding a game requires no en-gine changes; the engine contains no game-specific code. 
+
+Game configuration. The configuration declares the FSM and the role-level information (the assign-ment of agents to roles and teams comes from the per-episode roster): an initial state; a transition map from each state to its successor; and per-state prop-erties specifying which roles act ( acting_roles ;all alive agents if unspecified), which of the five action types are legal ( speak ; action , whose free-form argument the ActionHandler parses; 
+
+non-verbal communication ; none ; leave ), the turn scheduler ( simultaneous , round-robin , or 
+
+random ), and the message visibility scope ( public ,
+
+team , or private ). The configuration also carries the role goals and role secrets injected into each agent’s prompt; some games (e.g., Werewolves) declare their end conditions in the configuration as well, while others implement them directly in the evaluator. Figure 8 shows the Werewolves FSM as declared by its configuration. 
+
+Scheduler and state transitions. The scheduler (Algorithm 1) advances the FSM automatically. In a simultaneous state, every eligible agent acts in the same turn and the state transitions after that turn; in round-robin and random states, one eligi-ble agent acts per turn and the state transitions after 
+
+N turns, where N is the number of eligible agents. Eligibility is recomputed every turn: an agent is eligible if it is alive and, when the state restricts ac-13 Normal-Form Economic Bluffing Hidden-Role Deduction Social Strategy       
+
+> 850 900 950 1000 1050 1100 1150
+> By game category
+> Strategic Deception ToM Persuasion Negotiation Coordination Probabilistic
+> 850 900 950 1000 1050 1100 1150
+> By skill tag
+> GPT-5-mini GPT-4o GPT-4o-mini Gemma3-27B Qwen3-32B Qwen3-4B Qwen2.5-3B
+
+Figure 6: Capability-profile Elo: independent Bradley–Terry refits per game category (left) and per skill tag (right; tags from Table 5), with the same hyperparameters and bootstrap as the overall fit. Both panels share the same radial scale. 
+
+Model Normal-Form (4) Economic (1) Bluffing (4) Hidden-Role (6) Social Strategy (2) 
+
+GPT-5-mini 1105 [1074, 1139] 1039 [966, 1112] 1080 [1062, 1099] 1132 [1114, 1150] 1086 [1065, 1109] 
+
+GPT-4o 999 [975, 1025] 1131 [1074, 1198] 1025 [1010, 1040] 1070 [1053, 1088] 984 [968, 998] 
+
+Gemma3-27B 966 [942, 990] 831 [758, 902] 973 [960, 985] 1032 [1015, 1051] 1031 [1016, 1046] 
+
+GPT-4o-mini 989 [963, 1013] 1067 [996, 1148] 996 [983, 1007] 998 [980, 1014] 1002 [987, 1018] 
+
+Qwen3-32B 981 [958, 1007] 837 [769, 904] 982 [971, 994] 949 [932, 966] 977 [962, 993] 
+
+Qwen3-4B 999 [973, 1026] 1031 [965, 1096] 976 [964, 988] 935 [917, 952] 973 [957, 990] 
+
+Qwen2.5-3B 958 [931, 981] 1060 [985, 1134] 964 [951, 977] 880 [861, 897] 944 [929, 959] 
+
+Table 3: Per-category Bradley–Terry Elo (95% bootstrap CIs in brackets, nbootstrap =1000 ); rows sorted by overall Elo, bold marks each column’s leader, and parenthesized counts are the number of games per category. Hidden-Role Deduction reproduces the overall ordering with a wider spread; Economic (a single game, Bargaining) nearly reverses it. 
+
+tors, its role is listed in acting_roles ; eliminated agents are masked to the no-op action and drop out of the count. A transition resets the state’s turn counter and the round-robin pointer. The configu-ration map assigns each state exactly one successor (possibly itself); games whose flow branches on outcomes, such as Resistance’s mission votes, im-plement the branch in the game subclass, either by setting the next state directly or by overriding the transition hook. 
+
+Visibility filtering. Messages are filtered at deliv-ery time (Algorithm 2). Each agent holds a private message buffer, and a message is appended to a buffer only if that agent may see it under the cur-rent state’s visibility scope. Environment messages are public unless explicitly targeted at a receiver list; targeted delivery is how private information, such as a Seer inspection result, reaches exactly one agent. An agent’s observation each turn is the flush of its own buffer, so an agent never observes a message it was not entitled to see. 
+
+End evaluation and rewards. The end evaluator runs after every turn and checks the game’s rule-based end conditions. For example, in Werewolves these are team elimination and parity: the village wins once both werewolves are eliminated, and the werewolves win once they are at least as numer-ous as the surviving village team (Seer and Witch included). On termination it emits a rule-decided outcome score for every agent, and the tournament pipeline derives pairwise wins and losses by com-paring these scores within an episode (§3.3). The prompt template through which agents observe the game is in Appendix E. 14 Model Strategic (7) Deception (10) ToM (10) Persuasion (5) Negotiation (4) Coordination (3) Probabilistic (2)                                                                                                   
+
+> GPT-5-mini 1144 [1122, 1169] 1117 [1104, 1131] 1115 [1102, 1129] 1119 [1101, 1139] 1074 [1055, 1094] 1032 [1003, 1058] 1070 [1041, 1102]
+> GPT-4o 1077 [1060, 1096] 1054 [1042, 1066] 1035 [1025, 1046] 994 [980, 1008] 992 [979, 1006] 1007 [983, 1030] 1006 [981, 1030]
+> Gemma3-27B 994 [975, 1012] 1006 [995, 1017] 1020 [1010, 1030] 1027 [1013, 1041] 1005 [991, 1019] 993 [971, 1018] 960 [938, 982]
+> GPT-4o-mini 1010 [992, 1028] 997 [985, 1008] 996 [986, 1005] 999 [986, 1013] 1014 [1002, 1028] 963 [938, 985] 1018 [995, 1040]
+> Qwen3-32B 925 [906, 943] 964 [953, 975] 962 [952, 971] 976 [963, 988] 981 [966, 994] 1024 [1001, 1048] 1006 [984, 1028]
+> Qwen3-4B 948 [931, 967] 950 [939, 962] 953 [944, 963] 962 [949, 976] 973 [958, 987] 980 [958, 1002] 976 [950, 1002]
+> Qwen2.5-3B 899 [879, 916] 909 [898, 920] 915 [905, 925] 919 [905, 933] 958 [945, 971] 997 [973, 1018] 960 [935, 986]
+
+Table 4: Per-skill-tag Bradley–Terry Elo (95% bootstrap CIs, nbootstrap =1000 ); tags from Table 5 (parenthesized counts: games per tag), so a game contributes to every tag it carries. GPT-5-mini leads every axis, but its margin collapses on Coordination, the axis where the whole field is most compressed. 
+
+E Game-Play Prompt 
+
+Each agent receives a prompt at every turn it is asked to act. The template is shared across all 21 games; per-game variation lives in the 
+
+description , action vocabulary, and format in-structions. When an agent’s roster entry has 
+
+include_reflection: true , the playbook gen-erated by the reflection step (Appendix F) is loaded once and prepended via the {reflection} slot; otherwise the slot is empty. 
+
+{reflection} Imagine you are playing the game as {agent}. Here is the description of the game: {description} Your ({agent}’s) goal: {goal} {secret} Here is the context of the interaction: {history} Your available action type(s): [{action_list}]. {action_instructions} Please only generate a JSON string including the action type and the argument. Your action should follow the given format: {format_instructions} 
+
+Slot semantics. 
+
+• {reflection} : full text of the playbook (e.g. 
+
+Rt for some round t), or empty for the vanilla baseline. • {agent} : the agent’s display name (e.g. “Stephen”). • {description} : the game-specific scenario string (e.g. Werewolves’ phase rules and win conditions). • {goal} : the role-conditioned goal (e.g. “Iden-tify werewolves” for a Villager). • {secret} : any private information the role is given at game start (Werewolf identities, Spyfall location, etc.); empty for roles without secrets. • {history} : visible message log filtered by the partial-observability layer (see §3.1). • {action_list} , {action_instructions} ,
+
+{format_instructions} : the actions avail-able in the current FSM state and the JSON schema the agent must output. 
+
+F Reflection Prompt 
+
+The reflection model is given the full trajectories of N self-play games and asked to produce a first-person strategic playbook. For iterated rounds ( t ≥
+
+2) the prompt additionally includes the previous-round playbook Rt−1 and asks the model to revise rather than rewrite. The exact prompt template (omitting the bulleted list of capability axes for brevity) is: 
+
+{prior_section} Below are the full trajectories of all {num_games} games, showing every player’s actions and the outcome: {game_summaries} Write an internal monologue of transferable social reasoning skills. Frame your insights around general capabilities that apply across many social games, such as: Deception, Detection, Persuasion, Information management, Coalition dynamics, Timing and patience. 
+
+Requirements: 
+
+- Write in first person (“I should. . . ”, “When I need to hide information. . . ”, “A pattern I noticed is. . . ”) - Derive insights from the games above, but write the rules so they apply beyond any specific game - Focus on actionable lessons, not abstract observations - Do NOT reference specific game numbers (e.g., “Game 3”, “Games 5-8”). Your future self will not have access to these transcripts, so such references would be meaningless This monologue will be prepended to 
+
+15 Complete info Hidden state Hidden roles       
+
+> 900 950 1000 1050 1100 1150
+> By information
+> No comm Structured comm Free-form comm
+> 900 950 1000 1050 1100 1150
+> By communication
+> 2 players 3-4 players 5-6 players
+> 900 950 1000 1050 1100 1150
+> By players
+> Fixed rounds Single round Until win-cond
+> 900 950 1000 1050 1100 1150
+> By iteration horizon
+> GPT-5-mini GPT-4o GPT-4o-mini Gemma3-27B Qwen3-32B Qwen3-4B Qwen2.5-3B
+
+Figure 7: Bradley–Terry Elo refit along four structural axes from Table 5: information structure, communication mode, player count, and iteration horizon. All panels share the same radial scale. 
+
+your system prompt in future social games. Write it so that reading it once before any social strategy game will meaningfully improve your play. 
+
+The prior_section for t = 1 is: You just played {num_games} games across the following game(s): {games_desc}. Each player was an independent instance of you and only saw its own role’s private information; the transcripts below reveal the hidden moves of every role, but the players themselves did not have this view during play. For t ≥ 2 it instead reads: You previously wrote the follow-ing strategic playbook for yourself: {prior_reflection}. You then played {num_games} more games using this playbook across: {games_desc}. Based on these new games, revise your play-book. Keep rules that worked, remove or modify rules that didn’t help, and add new insights. Output the complete revised playbook (not just the changes). 
+
+Design choices. (i) The first-person framing is meant to encourage the model to treat the playbook as advice to itself, which empirically produces more actionable rules than third-person observa-tions. (ii) Forbidding game-number references pre-16 Night_werewolf 
+
+> acts: Werewolf scheduler: round-robin visibility: team
+> Night_seer
+> acts: Seer scheduler: round-robin visibility: private
+> Night_witch
+> acts: Witch scheduler: round-robin visibility: private
+> Day_discussion
+> acts: all alive (speak) scheduler: round-robin visibility: public
+> Day_vote
+> acts: all alive (vote) scheduler: simultaneous visibility: public
+
+Figure 8: The Werewolves FSM: five states in a fixed cycle, each annotated with which roles act, the turn scheduler, and the message visibility scope. States and visibility scopes are declared in the JSON configuration; the three night states leave the scheduler unspecified and inherit the environment’s round-robin default. End conditions are checked every turn under a 40-turn cap: Villagers win when no werewolves remain; Werewolves win when they reach parity with the village. 
+
+vents the model from writing rules that would be uninterpretable at deployment, when only the play-book (not the source transcripts) is available. 
+
+G Reflection Examples 
+
+This appendix illustrates how the reflection content evolves across iterations, with excerpts from the GPT-5-mini and GPT-5 Werewolves playbooks. 
+
+G.1 GPT-5-mini Werewolves Playbooks 
+
+To illustrate the relative stability of GPT-5-mini’s iterated reflection (consistent with the within-game finding in §5.1 that the bulk of the gain arrives at 
+
+R1), we reproduce the Deception section of the Werewolves playbook across four rounds. The bul-let structure is preserved across rounds; later rounds tighten wording and add tactical refinements rather than restructuring strategy. 
+
+R1. “...Deception: how I lie and stay credible - I should pick a single, believable persona and commit to it. Every action (what I say, when I speak, how I vote) must fit that persona. Small con-tradictions are fatal; plan my story so it explains the behavior I will need later. - When I bluff, I should combine one verifiable true fact with the lie. Mixing a small truthful observa-tion into my statement makes the whole claim feel anchored and increases believability. - I should avoid over-detailing fabrications. Plausi-ble vagueness is better than a wrong precise detail that can be disproved. - I should time my fabrications to the game’s incen-tives: lie early only if necessary (to survive or to seed a plausible alternate narrative); lie late only if I have a clear plan to leverage the deception into a win. - I should never retroactively invent reasons for past actions unless I can plausibly frame them as hon-est uncertainty. If I must justify earlier behavior, I will do so with motives consistent with my persona (e.g., “I listened to gather info” rather than “I was asleep”). - When I adopt a risky public role claim, I must be ready to prove it through behavior (predicting a future fact, coordinating with known events) or accept the likely target it creates. Detection: finding liars and inconsistencies... ”
+
+R2 (revising R1). Structure preserved. Adds an explicit “exit plan if exposed” to the timing rule; renames the truthful-fragment technique as the “an-chor.” 
+
+R3 (revising R2). Adds: “Don’t over-prepare quotes a liar could plausibly mimic — pair ver-batim claims with contextual details.” Sharpens the role-claim rule into an explicit (a)/(b) commitment. 
+
+R4 (revising R3). Adds: “When bluffing a role, consider offering a low-cost, verifiable trade (e.g., ‘I’ll reveal Night 1 result if you commit to protect me’) to buy survivability.” Otherwise wording-level edits. 
+
+G.2 GPT-5 Werewolves Playbooks 
+
+R1 (after self-play, no prior). “Build a consis-tent, proactive persona from the start. Pre-commit to falsifiable stances (top suspect, backup, 1 town-read) and stick to them unless new info arrives. Calibrate specificity: early/first, stay moderately specific; later, add a unique but safe detail. Avoid ‘heads-I-win’ frames. ”
+
+R2 (revising R1). “Hunt for agenda over solve: pre-setting easy miselims, parking ‘placeholders’ 
+
+17 Algorithm 1 Turn scheduling and state transition  
+
+> 1:
+
+P ← STATE PROPS (s) ▷ s : current FSM state  
+
+> 2:
+
+E ← alive agents, filtered by P. roles if set  
+
+> 3:
+
+if P. scheduler = simultaneous then  
+
+> 4:
+
+unmask every a ∈ E; T ← 1 
+
+> 5:
+
+else if P. scheduler = round-robin then  
+
+> 6:
+
+unmask the next agent of E cyclically  
+
+> 7:
+
+T ← | E| 
+
+> 8:
+
+else ▷ random  
+
+> 9:
+
+unmask one random a ∈ E; T ← | E| 
+
+> 10:
+
+end if  
+
+> 11:
+
+(after the turn) ts ← ts + 1  
+
+> 12:
+
+if ts ≥ T then  
+
+> 13:
+
+s ← transition [s]; reset counters  
+
+> 14:
+
+end if Algorithm 2 Visibility filtering when delivering message m from sender u, with optional receiver list R 
+
+> 1:
+
+procedure DELIVER (u, m, R) 
+
+> 2:
+
+v ← STATE PROPS (s).visibility  
+
+> 3:
+
+for all agents a do  
+
+> 4:
+
+if R is specified then  
+
+> 5:
+
+see ← (a ∈ R) ▷ targeted  
+
+> 6:
+
+else if u = Environment then  
+
+> 7:
+
+see ← true  
+
+> 8:
+
+else if v = public then  
+
+> 9:
+
+see ← true  
+
+> 10:
+
+else if v = team then  
+
+> 11:
+
+see ← (team (u) = team (a))  
+
+> 12:
+
+else ▷ private  
+
+> 13:
+
+see ← (u = a) 
+
+> 14:
+
+end if  
+
+> 15:
+
+if see then append m to buffer [a] 
+
+> 16:
+
+end if  
+
+> 17:
+
+end for  
+
+> 18:
+
+end procedure 
+
+without intent to move, echoing popular takes with-out new reasons, or misrepresenting others’ words. Compare process vs. action: if someone talks con-solidation but seeds multiple soft outs, that’s a tell. Watch vote timing. ” R2 visibly shifts to detec-tion/process focus. 
+
+R3 (revising R2). “Score claims by: timing (proactive vs. reactive), specificity (who/when), tar-get rationale (why them before), and fit with public events. Mechanics > talk. Track talk-to-vote: push-ing A all day but voting B without new receipts is high-signal. ” R3 begins to combine detection rigor with mechanical scoring rather than push purely on persona consistency or behavior, foreshadowing the balanced playbook of R4.
+
+H Game Suite Details 
+
+Table 5 summarizes the 21 games along the axes used to define our five categories: number of play-ers, information structure, communication mode, iteration horizon, and primary skills exercised. Full FSM specifications, payoff matrices, and reward functions are released with the code repository alongside the unified game engine. 
+
+Modifications from published versions. A few of our commercial-game implementations adopt a slightly modified version of the base game, typ-ically to keep the focus on social reasoning and avoid bookkeeping that the engine would have to track but that does not exercise additional social skills. We note these here for clarity: • Coup (Tahta, 2012). Block claims resolve automatically rather than being themselves challengeable, and the exchange action is streamlined so that the Ambassador returns the drawn cards instead of choosing 2 of 4 to keep. The full block matrix and successful-challenge card swap-back are preserved. • Skull (Marly, 2011). A round win ends the game ( wins_needed = 1 ) rather than 2, short-ening the match while keeping the place–bid– flip cycle intact. • Sheriff of Nottingham (Halaban & Zatz, 2014). Goods are summarized as a binary hon-est /smuggle choice with fixed payoffs; the in-ventory layer of the published game (multiple legal goods, royal-goods bonuses) is folded into a single payoff parameter so that the ne-gotiation/inspection dynamic is what drives play. • Insider (Oink Games, 2016). The environ-ment answers yes/no questions directly, re-placing the published Master role; the Insider 18 Game Category Pl. Information Comm. Iteration Skills                                                                                                                               
+
+> Prisoner’s Dilemma Normal-Form 2Complete None 5 rounds Strategic, Cooperation Chicken Normal-Form 2Complete None 10 rounds Strategic, Coordination Battle of the Sexes Normal-Form 2Complete Free-form 10 rounds Strategic, Coordination Stag Hunt Normal-Form 4Complete None 10 rounds Strategic, Cooperation, Coordination Minority Game Normal-Form 5Complete None 12 rounds Strategic, Coordination Rock-Paper-Scissors Normal-Form 2Complete None 10 rounds Strategic Public Goods Economic 4Hidden state None 10 rounds Strategic, Cooperation Centipede Economic 2Complete None 4 rounds Strategic, Cooperation Bargaining Economic 2Complete None 10 rounds Strategic, Negotiation Liar’s Dice Bluffing 3Hidden state Structured Until elim. Deception, Probabilistic Skull Bluffing 4Hidden state None 1 round Deception, ToM Coup Bluffing 4Hidden state Structured Until elim. Deception, ToM Sheriff of Nottingham Bluffing 4Hidden state Free-form 4 rounds Deception, Negotiation, Probabilistic Chameleon Deduction 5Hidden roles Free-form 1 round Deception, Persuasion, ToM Insider Deduction 5Hidden roles Free-form 1 round Coordination, Deception, ToM Spyfall Deduction 4Hidden roles Free-form Until elim. Deception, Persuasion, ToM Undercover Deduction 6Hidden roles Free-form Until elim. Deception, Persuasion, ToM Resistance Deduction 5Hidden roles Free-form ≤5 missions Strategic, Deception, ToM Werewolves Deduction 6Hidden roles Free-form Until elim. Strategic, Deception, ToM Survivor Social Strategy 6Complete Free-form Until 2–3 left Negotiation, Persuasion, ToM Dead Last Social Strategy 6Complete Free-form Until 2–3 left Negotiation, Persuasion, ToM
+
+Table 5: Game taxonomy across the 21 games in Social Gym. Pl. : number of players; Comm. : Communication (Format); ToM : Theory of Mind. “Complete” information means no private state at game start; “Hidden state” means each agent has private state (cards, dice) but no factional roles; “Hidden roles” means agents are assigned secret allegiances at game start. Cooperation skills involve overcoming the temptation to defect for collective benefit (PD-style); Coordination skills involve aligning on one of multiple equilibria (Chicken/BoS-style). The 
+
+Iteration column uses each game’s natural unit: rounds (one independent play of the base game; for matrix games each round is one simultaneous move per player, for Centipede each round is one full traversal of the take-or-pass tree), missions (Resistance has up to 5 mission proposals), and Until elim. (game ends when a win condition is met, e.g., one team eliminated or last survivor remaining). 
+
+role itself (a Citizen who covertly knows the word and steers questioning) is unchanged. • Spyfall (Ushan, 2014). The round ends by vote rather than by a real-time clock, and the Spy does not pre-empt the vote with a mid-round location guess. The remaining games follow their canonical or pub-lished mechanics: Werewolves, Resistance, Liar’s Dice, Chameleon, Undercover, Bargaining (iterated ultimatum), and the textbook normal-form games (PD, Chicken, Stag Hunt, Battle of the Sexes, Centipede, Public Goods, Minority Game, Rock-Paper-Scissors). Setup choices such as fixed player counts, the specific role roster in Werewolves, the absence of “wild ones” in Liar’s Dice, and two Undercovers without Mr. White sit within the con-figuration space of the published games. 
+
+I Role-Conditioned Performance and Game Balance 
+
+This appendix expands on the role-conditioned analysis pointed to from §3.4. We first present the per-model cross-play role gap (Table 6), then use same-model self-play (Figure 9) to strip the capability-gap confound from those values and re-cover intrinsic role-balance estimates. 
+
+I.1 Cross-play role gaps 
+
+For each hidden-role game we estimate a separate Elo for the minority/deceptive role ( Elo-Alt : Were-wolf, Spy, Insider, Chameleon, Undercover) and for the majority/cooperative role ( Elo-Main : Vil-lager, Civilian, Non-Spy). The gaps in Table 6 are large and pervasive: |∆| exceeds 100 Elo in 29 of the 42 (model, game) cells, with a median of 194, and every model has at least one game whose two sides differ by more than 200 Elo. They also lean one way overall. The mean ∆ is +73 Elo, six of the seven row means and four of the six column means are positive, so against a mixed pool of op-19 ponents the minority/deceptive role is the easier side to hold. Their direction is shared across mod-els as well. Five of the six games point the same way for every model with a non-negligible gap: the minority side is advantaged in Chameleon, In-sider, and Werewolves, and disadvantaged in Spy-fall and Undercover. Resistance is the one gen-uine exception, ranging from −223 (GPT-5-mini) to +508 (Qwen2.5-3B). The row means show that models also differ in how role-skewed they are overall: GPT-5-mini is the most balanced across roles, while Gemma3-27B and Qwen3-32B lean hardest toward the deceptive side.                                                               
+
+> Model Werew. Resist. Spyfall Cham. Underc. Insider Mean
+> GPT-5-mini +159 −223 −144 +252 −398 +317 −6
+> GPT-4o +90 +37 +7 +625 −525 +20 +42
+> Gemma3-27B +96 +197 −227 +625 +33 +245 +162
+> GPT-4o-mini −20 +116 −339 +460 −236 +170 +25
+> Qwen3-32B +217 +246 −228 +417 −9+210 +142
+> Qwen3-4B +190 −113 −96 +217 −84 +105 +37
+> Qwen2.5-3B −38 +508 −2+338 −138 −7+110
+> Mean +99 +110 −147 +419 −194 +151
+
+Table 6: Cross-play role gap ∆ = Elo-Alt − Elo-Main in Elo points (positive = minority/deceptive role over-performs), computed from the same per-game Bradley– Terry fits as Figure 2; rows sorted by overall Elo. Col-umn means (bottom) show how systematically models as a class favor one side of each game; row means (right) show each model’s average skew across games. Which role a model is weaker at is set by the game: in every col-umn except Resistance, all models with a non-negligible gap share the same sign. 
+
+Where the sign is consistent across models, the observation is compatible with two distinct causes: an intrinsic game-balance bias (one role is struc-turally advantaged regardless of the player) or a shared model-class bias (all current LLMs share a similar deception-vs-detection asymmetry on this game). Additionally, cross-play ∆ confounds these structural effects with the capability gap between this model and its tournament opponents: Ap-pendix I.2 below uses same-model self-play to strip that confound and recover the intrinsic balance es-timates. 
+
+I.2 Separating role balance from capability 
+
+The role-gap table in Table 6 reports ∆ =
+
+Elo-Alt − Elo-Main from cross-model tournament data, where every game pairs one model on the alt slot against a (typically different) model on the main slots. This Elo gap conflates two dis-tinct effects: (i) the intrinsic role asymmetry of the game, and (ii) the capability gap between this model and its tournament opponents. A frontier model that is generally stronger than its tournament opponents will accumulate alt-slot wins on every game it plays, inflating its ∆ in a way that has noth-ing to do with whether the alt role is intrinsically advantaged. To strip the capability axis, we ran baseline same-model self-play for all seven leaderboard models on the five asymmetric hidden-role games (Were-wolves, Spyfall, Chameleon, Undercover, Resis-tance), with n = 30 episodes per (model, game) cell. In self-play, alt and main are the same model, so capability is held constant and any deviation of the alt-side win rate from 50% reflects the intrinsic role balance for that model. Per-model, per-game self-play alt-win rates are reported in Table 7.                                         
+
+> Model Werew. Spyfall Cham. Underc. Resist.
+> GPT-5-mini 23 20 100 17 30 GPT-4o 30 30 100 063 GPT-4o-mini 77 50 100 10 67 Qwen3-32B 57 37 90 53 87 Gemma3-27B 80 33 100 37 97 Qwen3-4B 87 23 77 53 43 Qwen2.5-3B 20 57 87 40 90
+
+Table 7: Same-model self-play: alt-side win rate (%) per (model, game), n = 30 episodes per cell. The Chameleon column saturates at or near 100% for medium-or-stronger models, reflecting the ceiling dis-cussed in §5.1. 
+
+Result. Figure 9 shows ∆self =(tournament alt-win rate )−(self-play alt-win rate )
+
+per (model, game). The two frontier models (GPT-5-mini, GPT-4o) have ∆self ≫ 0 on nearly every asymmetric game (e.g., GPT-5-mini on Werewolves: 89% tournament alt-win vs. 23% 
+
+self-play, ∆self = +66 pp). The five weaker models show the opposite sign on balance ( ∆self < 0
+
+in most cells, and negative on average for every one of them): their alt side performs worse in cross-model tournament than in self-play. The paired raw values for each (model, game) cell are in Figure 10. 
+
+Interpretation. The pattern is the expected con-sequence of capability gap: strong models accu-mulate wins regardless of role, while weak models lose alt-side battles against stronger alien oppo-nents. We report the decomposition for two reasons. First, it shows that the cross-play role-gap signs in Table 6 should not be read as direct estimates of in-trinsic role balance. Second, the self-play numbers are the cleaner estimates and are the ones Section 5 builds on: on the four non-saturated games, GPT-20 5-mini’s alt side wins only 17 –30% under matched capability, which is the imbalance SP ART AN is asked to close. The Chameleon column is uniformly at or near 
+
+100% for every medium-or-stronger model in both settings, reflecting the saturation discussed in §5.1; we exclude Chameleon from the alt-direction anal-yses in §5.1 for this reason. 
+
+Why the two settings disagree. On some games the two settings point in opposite directions. In Werewolves, cross-play puts GPT-5-mini’s were-wolf side 159 Elo above its villager side (Table 6), yet in self-play that same werewolf side wins only 
+
+23% of episodes (Table 7). The two measurements answer different questions: cross-play asks which side better exploits a weaker opponent, self-play asks which side wins when both are equally capa-ble. They come apart when a role’s advantage does not require skill to collect. In Werewolves the mi-nority side’s edge is largely mechanical, since the werewolves eliminate one villager every night and know each other from the start, whereas the major-ity side’s edge is informational, resting on numbers and deduction that only pay off if the villagers can actually deduce. Against weaker opponents this favors the werewolf seats: GPT-5-mini wins 89% 
+
+of Werewolves episodes holding the werewolf slots against another model’s villagers, but only 67% 
+
+holding the villager slots against another model’s werewolves, because weak werewolves still land their kills. The tournament roster gives each model the same distribution of opponents in both roles, so this comparison is not an artifact of who it hap-pened to face; in cross-play no model does better from the villager seats than from the werewolf seats, which is why the Werewolves column of Table 6 is almost uniformly positive. Under matched ca-pability the ordering is no longer fixed. It reverses for the two frontier models, whose werewolves win 
+
+23 and 30% , while among the mid-tier models the werewolves still take 57 to 87% of episodes (Ta-ble 7). Turning the villagers’ numeric advantage into wins requires both deduction and agreement on whom to vote out, and only the strongest models supply enough of either. 
+
+J Qualitative Trajectory Examples 
+
+This appendix gives verbatim trajectory excerpts for the qualitative observations discussed in §3.4 and Appendix K.4. Brackets indicate the speaking model and player name. We chose representative Werewolves Spyfall Chameleon Undercover Resistance GPT-5-mini GPT-4o GPT-4o-mini Qwen3-32B Gemma3-27B Qwen3-4B Qwen2.5-3B +66 +24 +0 +39 +37 +56 +13 +0 +14 -6 -34 -26 +0 +4 +5 -19 -18 +0 -30 -25 -18 -5 +0 +1 -30 -30 -4 -24 -25 -15 +4 -33 -20 -30 -47 60 
+
+> 40
+> 20
+> 020 40 60
+> pp = tournament alt-win  self-play alt-win
+
+Figure 9: ∆self = tournament alt-win rate − self-play alt-win rate (pp), per (model, game), n = 30 episodes per cell in each setting. Rows ordered frontier → small. Positive cells (green) mean alt wins more in cross-model tournament than in same-model self-play; nega-tive (brown) the reverse. Only the two strongest models have ∆self > 0, consistent with capability-gap inflation rather than intrinsic role asymmetry. The Chameleon column is uniformly ≈ 0 because both settings are at the ≈ 100% ceiling. 
+
+episodes; counterexamples exist and we leave sys-tematic prevalence measurement to future work. 
+
+J.1 Parroting Effect (Qwen2.5-3B) 
+
+In a Chameleon match (5 players, secret cate-gory “fruits”, secret word “banana”), Gemma3-27B speaks first with a substantive accusation; the next two Qwen2.5-3B agents each paraphrase the same accusation rather than offering an indepen-dent argument. The pattern is consistent across multiple episodes: Qwen2.5-3B’s discussion-phase outputs frequently mirror the structure and content of the immediately preceding speaker.     
+
+> [Gemma3-27B, James]: “I think George might be the Chameleon. His clue ‘yellow’ is a bit vague since it’s not specific to any fruit, and it could apply to many things. The other clues like strawberry, banana, and peach are quite direct and common fruit names, so it stands out.”
+> [Qwen2.5-3B, Stephen]: “I think George seems like he might be the Chameleon. His clue ‘yellow’ is quite vague and could easily apply to multiple fruits, unlike the more specific terms used by the other players.”
+> [Qwen2.5-3B, Laura]: “Based on the clues pro-vided, I notice that George’s clue ‘yellow’ stands out as somewhat ambiguous compared to the oth-ers. While ‘banana’ is clearly the correct answer,
+
+21 GPT-5-mini GPT-4o GPT-4o-mini Qwen3-32B Gemma3-27B Qwen3-4B Qwen2.5-3B 
+
+> 020 40 60 80 100
+> Alt-side win rate (%)
+> Werewolves
+> GPT-5-mini GPT-4o GPT-4o-mini Qwen3-32B Gemma3-27B Qwen3-4B Qwen2.5-3B
+> 020 40 60 80 100
+> Spyfall
+> GPT-5-mini GPT-4o GPT-4o-mini Qwen3-32B Gemma3-27B Qwen3-4B Qwen2.5-3B
+> 020 40 60 80 100
+> Chameleon
+> GPT-5-mini GPT-4o GPT-4o-mini Qwen3-32B Gemma3-27B Qwen3-4B Qwen2.5-3B
+> 020 40 60 80 100
+> Undercover
+> GPT-5-mini GPT-4o GPT-4o-mini Qwen3-32B Gemma3-27B Qwen3-4B Qwen2.5-3B
+> 020 40 60 80 100
+> Resistance
+> Self-play Tournament (vs alien main)
+
+Figure 10: Raw alt-side win rate (%) per (model, game) in same-model self-play (light bars) and cross-model tournament (dark bars), n = 30 each. Same data as the heatmap in Figure 9 without the difference operation. 
+
+‘yellow’ could refer to other yellow fruits like bananas, lemons, or daffodils. . . ” 
+
+The two Qwen2.5-3B turns share more than 60% 
+
+word overlap with the preceding Gemma3-27B ar-gument and add no new evidence. Aggregated across 6 hidden-role games, ∼280 such Qwen2.5-3B turns met a > 0.55 word-overlap threshold against the immediately preceding cross-model speaker. This pattern likely contributes to Qwen2.5-3B’s weak Overall Elo: in social-deduction games, agreeing with whoever spoke last is a near-zero-information move. 
+
+K Earlier Results on GPT-5 
+
+K.1 Iterated Reflection on Werewolves 
+
+We run SP ART AN on Werewolves with GPT-5 self-play for four rounds (R1–R4). Each round has two phases: (i) training games (10 per round) used to generate Rt, with both sides armed with Rt−1 for 
+
+t ≥ 2 (R1 is generated from baseline self-play with no reflection on either side); and (ii) eval games 
+
+(30 per condition, Table 8) that place Rt on one side and a vanilla GPT-5 with no reflection on the other, reporting the win rate by role. The eval is therefore always Rt vs. vanilla, to isolate the marginal effect of injecting the playbook into one side. Results (Table 8): R1 strongly boosts the Were-wolf side ( 37% → 70% , +33 pp). R2, generated from games where R1 was on both sides, instead boosts the Villager side ( 63% → 87% , +24 pp) and returns wolves to baseline. 
+
+Condition Wolf win % Villager win % 
+
+Baseline (no R) 37 63 
+
++R1 70 60 
+
++R2 37 87 
+
++R3 43 60 
+
++R4 50 63 
+
+Table 8: Iterated reflection on Werewolves (GPT-5 vs. GPT-5, 30 evaluation games per condition). R1 boosts Werewolves; R2 boosts Villagers; R3/R4 dampen to-ward a balanced playbook. 
+
+K.2 Cross-Game Transfer to a Held-Out Game 
+
+We generate a combined social-deduction reflection from GPT-5 self-play on Werewolves, Chameleon, and Spyfall (10 games each), then test it on the held-out game Resistance. Results (Table 9): For same-model GPT-5, the reflection improves the Resistance team by +10 pp (37% → 47% ); the Spies side is unchanged. Cross-model transfer behavior varies dramatically across student models. Qwen3-32B is inconsistent: Qwen Spies improves +13 pp against GPT-5 but degrades 
+
+−13 pp against GPT-4o, and Qwen self-play with the reflection degrades by −13 pp on the Resistance side. Gemini 3.1 Pro transfers cleanly: self-play gains +10 pp on Resistance ( 67% → 77% , match-ing the same-model GPT-5 gain), the cross-model rows are within noise or ceiling-out positive, and Gemini never loses from adopting the playbook. 
+
+GPT-5-mini is the most pathological case: self-play sign-flips the Resistance/Spies effect ( −7pp Resistance, +17 pp Spies, opposite of GPT-5’s own self-play pattern), and against the weaker GPT-22 Setup Role Baseline +Rmulti ∆                                                                                
+
+> GPT-5 vs. GPT-5 Resistance 37 47 +10
+> GPT-5 vs. GPT-5 Spies 63 63 0Qwen vs. Qwen Resistance 43 30 −13
+> Qwen vs. Qwen Spies 57 53 −4Qwen vs. GPT-5 Resistance 000Qwen vs. GPT-5 Spies 10 23 +13
+> Qwen vs. GPT-4o Resistance 13 13 0Qwen vs. GPT-4o Spies 30 17 −13
+> Gemini vs. Gemini Resistance 67 77 +10
+> Gemini vs. Gemini Spies 33 30 −3Gemini vs. GPT-5 Resistance 53 57 +3 Gemini vs. GPT-5 Spies 47 47 0Gemini vs. GPT-4o Resistance 93 100 +7
+> Gemini vs. GPT-4o Spies 93 100 +7
+> GPT-5-mini vs. GPT-5-mini Resistance 70 63 −7GPT-5-mini vs. GPT-5-mini Spies 30 47 +17
+> GPT-5-mini vs. GPT-5 Resistance 330GPT-5-mini vs. GPT-5 Spies 13 10 −3GPT-5-mini vs. GPT-4o Resistance 73 53 −20
+> GPT-5-mini vs. GPT-4o Spies 53 43 −10
+
+Table 9: Cross-game transfer of a multi-game reflection 
+
+Rmulti (trained on Werewolves+Chameleon+Spyfall self-play, GPT-5) evaluated on the held-out game Resistance. 30 evaluation games per condition. Win rates in %. “Gemini” = Gemini 3.1 Pro. 
+
+4o opponent both sides regress sharply ( −20 pp, 
+
+−10 pp). 
+
+K.3 Distillation Across Model Strengths 
+
+The Qwen-vs-GPT-5 and Qwen-vs-GPT-4o rows in Table 9 show that the same reflection produces opposite effects depending on opponent strength: Qwen as Spies gains +13 pp against the stronger opponent (GPT-5) but loses −13 pp against the weaker one (GPT-4o). Two hypotheses are con-sistent with this pattern: (a) the reflection overfits to GPT-5’s playstyle , encoding strategies that ex-ploit GPT-5-specific defaults; or (b) the reflection encodes strategies effective against stronger op-ponents in general , which inadvertently misfire against weaker, less rational opponents. Gemini ab-sorbs the playbook without sign-flips. Qwen sign-flips across opponent strengths. GPT-5-mini, the closest student to the playbook’s author (it shares an OpenAI training lineage with GPT-5), does not 
+
+inherit the GPT-5 playstyle cleanly: it sign-flips the Resistance/Spies asymmetry in self-play and regresses sharply against GPT-4o. 
+
+K.4 Qualitative Observation: Multi-Level ToM in GPT-5 Self-Play 
+
+Inspecting the GPT-5 self-play trajectories pro-duced during the SP ART AN pipeline, we find re-curring instances of multi-level Theory-of-Mind reasoning that go beyond rule-following or pattern matching. Three patterns recur across multiple episodes; verbatim trajectory excerpts are in Ap-pendix L. 
+
+(i) Common-suspect coordination from in-tersected private information. In Resistance endgames, GPT-5 agents publicly reason over what each other player privately knows in order to iden-tify a coordination point. For example: “from Jacob’s POV the spy is Melissa or Scott; from Melissa’s POV it’s Jacob or Scott; the only com-mon suspect you both share is Scott; therefore the only pair you can both rationally trust is Ja-cob+Melissa. ” Two independent agents in the same game derive this argument from their re-spective vantage points, structurally identical to a common-knowledge-of-rationality argument from epistemic game theory. 
+
+(ii) Counterfactual-revealed-preference accu-sations. GPT-5 agents accuse opponents based on what their behavior would have been under a counterfactual identity. “ If G+D were the spy pair, spy-Gary wouldn’t keep preferring N+B+E (which would auto-win for Resistance); he’d push harder for B+D+E. He hasn’t—he keeps centering Emily. ”The reasoning is not pattern-matching; it requires modeling what an alternative-faction Gary’s incen-tives would be and contrasting them with observed play. 
+
+(iii) Constructed deniability vs. external diag-nosis. In Werewolves, a GPT-5 wolf builds a post-hoc justification for behavior that protected her part-ner (“ my pre-red bracketing was a town-motivated precommitment test, not partner shielding ”), while a different GPT-5 agent on the village side indepen-dently diagnoses the same partner-shielding pattern using kill-benefit logic, before the wolf’s defense is offered. Both sides explicitly model the audience: the wolf constructs a plausible alternative narrative; the villager identifies the lane-shaping signature. These patterns appear in GPT-5 self-play in the SP ART AN reflect logs. Cross-model tournament logs (GPT-4o, Gemma3-27B, Qwen variants) show meta-talk about deception (“ classic werewolf tac-tic to accuse others ”) but the multi-level structure above appears specific to GPT-5 self-play, where opponents’ reasoning capacity is high enough to make the arguments worth articulating. 23 L Multi-Level ToM Examples (GPT-5 Self-Play) 
+
+The following three excerpts illustrate the patterns described in Appendix K.4. All come from SP AR-TAN reflect logs at logs/reflect/ where GPT-5 plays both sides. 
+
+L.1 Common-Suspect Coordination from Intersected Private Information (Resistance) 
+
+Game state: 2-2 score; Mission 3 had 1 fail among {Stephen, Susan}; Mission 4 had 1 fail among {Ja-cob, Melissa, Scott}. The team must commit to a 3-person Mission 5.   
+
+> [GPT-5, Stephen] (turn 32): “Key coordination point for Jacob and Melissa: you each know your own card. From Jacob’s POV the J/M/Sc spy is either Melissa or Scott; from Melissa’s POV it’s either Jacob or Scott. The only common suspect you both share is Scott. Therefore the only pair from J/M/Sc you can both rationally trust is Jacob + Melissa. Exclude Scott on M5.”
+> [GPT-5, Jacob] (turn 33, independently): “. . . the only common suspect Melissa and I share is Scott, so the J/M/Sc pair we can both rationally trust is Jacob + Melissa.”
+
+Stephen reasons explicitly over what each other player privately knows and uses the intersection of their uncertainty as a public coordination device. Jacob then re-derives the same argument from his own vantage point. The reasoning is structurally identical to a common-knowledge-of-rationality ar-gument from epistemic game theory; the rules of Resistance do not prescribe it. 
+
+L.2 Counterfactual-Revealed-Preference Accusation (Resistance)  
+
+> [GPT-5, Brandon] (turn 36): “Gary and Emily have been aligned pushing to seat Emily (N+B+E, B+D+E). . . That coordination points to G+E as the spy pair. . . . If it were G+D instead, spy-Gary wouldn’t keep preferring N+B+E (which would auto-win for Resistance); he’d push harder for B+D+E. He hasn’t—he keeps centering Emily.”
+
+Brandon constructs a counterfactual: if Gary’s part-ner were Diane (rather than Emily), then under spy-Gary’s incentives we would observe a different proposal pattern. The observed pattern is incon-sistent with that counterfactual, so the alternative partnership is more likely. This is genuine coun-terfactual ToM about a teammate’s incentives, not pattern-matching. 
+
+L.3 Constructed Deniability vs. External Diagnosis (Werewolves) 
+
+In a single Werewolves R4 self-play game, an ac-cusation against a wolf is met with a carefully con-structed defense, while a different agent on the village side independently diagnoses the partner-shielding signature.   
+
+> [GPT-5, Elizabeth (Witch, town)] (turn 14, be-fore any defense is offered): “Pre-flip lane-set excluding the eventual red: Barbara (T5) origi-nated the Cynthia push and bracketed the table to ‘Rebecca vs Cynthia,’ conspicuously omitting Ronald entirely before any red. That’s agenda shaping toward a Cynthia miselim while protect-ing a partner. . . . Ronald (T7) echoed Barbara’s exact frame . . . and then tried to park the miselim by voting Cynthia at EoD. That’s classic prewire: partner lays groundwork, wolf echoes, then leaves a Cynthia vote on record for today.”
+> [GPT-5, Barbara (Wolf)] (turn 15, defending): “Why I bracketed Rebecca vs Cynthia pre-red and excluded Ronald: I was stress-testing the two lat-est seats. . . That’s a town-motivated precommit-ment test, not partner shielding. . . . Why Ronald echoed my frame then parked on Cynthia: That echo wasn’t unique to him—Lisa echoed it too before the red. After the live red, Ronald’s vanity park on Cynthia at 5-1 is NAI. . . ”
+
+Elizabeth (town) names the partner-shielding pat-tern using kill-benefit logic and lane-shaping signa-tures. Barbara (wolf) responds with a specifically tailored alternative explanation for each piece of evidence (“stress-testing the two latest seats,” “Lisa echoed it too,” “vanity park. . . NAI”), constructing a deniable narrative rather than a generic denial. Both sides explicitly model the audience: the wolf needs the village’s evidence to admit a benign read-ing; the witch needs her accusation to survive an articulate counter. 
+
+M Open-Model SP ART AN with Qwen3-32B (Full Results) 
+
+This appendix supports §5.3 with the full per-condition tables, the multigame transfer figure, and verbatim parroting examples. All runs use Qwen3-32B as the reflection generator, training self-player, and evaluation opponent across six games: Were-wolves, Chameleon, Spyfall, Undercover, Resis-tance, and Prisoner’s Dilemma. 
+
+M.1 Within-game iterated reflection ( R1–R4)
+
+For each of the 6 games we generated R1–R4 via Qwen3-32B self-play (10 training games per round, 24 Game (alt/main) Baseline +R1 +R2 +R3 +R4                              
+
+> Werewolves (Wolf/Vlg) 57/43 50/47 60/40 53/47 67/40 Chameleon (Cham/Cit) 90/10 93/7 87/3 90/7 90/13 Spyfall (Spy/NS) 37/63 47/63 40/60 40/57 37/67 Undercover (U/C) 53/47 53/57 57/57 50/53 43/50 Resistance (Spy/Res) 87/13 67/47 60/33 63/27 57/30 PD (R/vanilla/tie) ∗13/13/74 58/0/42 63/8/29 57/2/41 30/5/65
+
+Table 10: Qwen3-32B within-game iterated reflection. Each cell reports the alt-side % / main-side % (R on the named side vs. vanilla opponent on the other; 30 games each). Resistance and PD show clean positive effects; the four free-discussion games stay near baseline across all four rounds. ∗For PD (symmetric 2-player game) we pool the two side-conditions ( n = 60 per +R column).                                                                
+
+> Source \Target WCSURWerewolves —−3/−3+10 /−10 −3/−3−13 /+ 20
+> Chameleon −20 /+ 0 —−3/+ 0 +0 /−17 −13 /+ 20
+> Spyfall −10 /−10 +0 /−3—+3 /−10 −17 /+ 10
+> Undercover +3 /+ 0 +3 /−10 +3 /+ 0 —−7/+ 30
+> Resistance +0 /+ 7 +7 /−7+20 /−10 −3/−3—
+
+Table 11: Qwen3-32B cross-game transfer (alt-∆/main-
+
+∆ pp vs. each target’s within-game baseline). Most cells are within the ±18 pp 95% CI noise band; the largest movements are in the Resistance column. 
+
+both teams armed with Rt−1); each Rt was evalu-ated by placing Rt on one team vs. a vanilla Qwen3-32B opponent on the other, 30 games per side. Two within-game findings are worth flagging. First, the strongest single positive effect is on Pris-oner’s Dilemma : baseline self-play is heavily co-operative (74% mutual-cooperate ties), and R1 lifts the R-armed side’s win rate to 58% by prescribing a concrete final-round defection clause ( “cooper-ate for several rounds to establish credibility, then defect at the final opportunity” ) that Qwen3-32B executes in roughly half of the episodes. Second, 
+
+R4 on PD regresses to 30%: the iterated playbook over-corrects toward unconditional cooperation. It-erated reflection is therefore not monotonic in this setup. 
+
+M.2 Cross-game transfer ( 1 → n)
+
+We apply each game’s single-game R1 playbook to every other game (5 sources × 4 targets × 2sides, 30 games per side; PD excluded due to lack of role asymmetry). Table 11 reports the deltas vs. within-game baseline. The notable cell is the rightmost column: ev-ery source’s playbook helps the cooperative Re-sistance team and hurts the deceptive Spies team symmetrically. We attribute this to Resistance’s vote-mechanic insulation (see the parroting discus-sion below).                                                
+
+> Source Target alt+R% main+R% ∆alt ∆main
+> wcsu Resistance 67 40 −20 +27
+> wcs Undercover 60 43 +7 −3
+> wcs Resistance 70 33 −17 +20
+> wcsur Werewolves 40 60 −17 +17
+> wcsur Chameleon 93 13 +3 +3
+> wcsur Spyfall 37 67 +0 +3
+> wcsur Undercover 53 43 +0 −3
+> wcsur Resistance 67 23 −20 +10
+
+Table 12: Qwen3-32B multigame source → target (alt+R % and main+R %, and deltas vs. each target’s within-game baseline from Table 10; 30 games per side). The three Resistance rows show consistent Spies ↓/Resistance ↑ direction across all sources; wcsu 
+
+(+27 ) actually beats both wcs (+20 ) and wcsur (+10 )on Resistance main-side. 
+
+M.3 Multigame source → held-out / in-distribution ( n → 1)
+
+We additionally tested three multigame sources (Ta-ble 12 and fig. 11), each generated by running the reflection step on the combined R1 training-game logs of its constituent games (capped at 6 episodes per source game to fit Qwen3-32B’s 40K context window): • wcs (Werewolves + Chameleon + Spyfall) →
+
+tested on Undercover and Resistance (both held out) • wcsu (+ Undercover) → tested on Resistance (held out) • wcsur (+ Resistance, all five social-deduction games) → tested on each constituent game (in-distribution) 
+
+M.4 Verbatim parroting examples Quantitative evidence. The mean 5-gram Jac-card overlap between consecutive speak-utterances is high on Undercover ( 0.27 –0.49 ) and low on Chameleon ( 0.05 –0.09 ) and Resistance ( 0.06 –
+
+0.13 ); PD has no chat phase. Higher overlap indi-cates more paraphrasing of the prior speaker rather than independent content. The null effects on Werewolves, Chameleon, Spyfall, and Undercover reflect a measurable model-behavioral pathology rather than a pipeline bug (verified by three independent audit agents cov-ering rosters, logs, and code). We observed three concrete manifestations: • Identity-paste in Werewolves. On one R1
+
+training episode, three different agents in a 25 Baseline Single-R              
+
+> +R_{wcsur} 020 40 60 80 100
+> Win rate (%)
+> 57 50 40 43 47 60
+> Werewolves
+> Werewolves Villagers
+> Baseline Single-R
+> +R_{wcsur}
+> 90 93 93 10 713
+> Chameleon
+> Chameleon Citizens
+> Baseline Single-R
+> +R_{wcsur}
+> 37 47 37 63 63 67
+> Spyfall
+> Spy Non-Spies
+> Baseline Single-R
+> +R_{wcs} +R_{wcsur}
+> 53 53 60 53 47 57 43 43
+> Undercover
+> Undercover Civilians
+> Baseline Single-R
+> +R_{wcs} +R_{wcsu} +R_{wcsur}
+> 87 67 70 67 67 13 47 33 40 23
+> Resistance
+> Spies Resistance
+> Qwen3-32B: Within-game baseline vs. single-game R vs. multigame R (R applied to alt side / R applied to main side, 30 games each)
+
+Figure 11: Qwen3-32B within-game baseline (no R) vs. within-game R1 vs. multigame R1 sources, broken out per target game and per team-side. Bars report alt-side win % (warm) and main-side win % (cool); the dotted line marks 50%. Resistance shows the largest multigame transfer effect, with Spies dropping from 87% baseline to 57–70% across all source-sets and Resistance rising 13% →23–47%; the four free-discussion targets remain near baseline. 
+
+row open with “I’m Lisa, and I want to clar-ify some things. First, I didn’t vote for Larry because I don’t believe he’s a werewolf. . . ” :the second speaker pastes the first’s full open-ing, and the third pastes again, with auto-regressive name substitution corrupting the grammar (the second speaker actually emits 
+
+“he’m a werewolf” ). Identity-swap cases also occur in eval: in r4/qwen_R_wolf_vs_qwen ,a Villager (Laura) pastes Werewolf Ken-neth’s intro paragraph including the self-incriminating line “Robert and I both targeted her,” effectively confessing to a kill she did not commit. • Byte-identical accusations in Chameleon. 
+
+In a R1 R_cham_vs_qwen episode (secret word glacier ), four players including the Citizen who originally said “glacier” all emit the byte-identical sentence “Larry’s clue was exactly the secret word, so he must be the Chameleon because that’s not how the game works.” Four of five then vote Larry; the ac-tual Chameleon wins. Across 30 baseline Chameleon episodes, a Citizen says the se-cret word outright in 9 episodes, and the Chameleon still wins 8 of those 9 because the accusation-paraphrase register suppresses use of the leaked information. • Template lock-in in Undercover. In one R1 R_civ_vs_qwen episode (Citi-zens=basketball, Undercover=soccer), the byte-identical sentence “My word involves a ball and is played with two teams, often in a stadium with passionate fans” appears 19 times across 42 turns: 7 from the R-armed Undercover (who copy-pastes the template every round), 4 each from three R-armed Citizens, and 2 from a fourth. The R-armed Citizen template is generic enough that the Undercover blends perfectly by verbatim duplication. 
+
+Resistance still gains despite echo because the load-bearing channel is the mission-vote action rather than free dialogue: even when 4/5 players say byte-identical agreement sentences, each in-dependently casts a private succeed/fail card. PD is structurally immune : it has no public speak phase, and the playbook prescribes a concrete one-token action (defect on the final round) that the agent emits regardless of any discussion-register pathology. 
+
+M.5 Distillation to student models 
+
+We test whether the Qwen3-32B playbooks dis-till to smaller / different student models on the two games where Qwen3-32B itself showed a measurable R1 effect (Resistance, PD). Three stu-dents (Qwen3-4B, Qwen2.5-3B, Gemma3-27B) each play against a vanilla Qwen3-32B opponent (30 games per side per condition; Table 13). The PD column is the cleanest distillation effect anywhere in this section: Qwen2.5-3B’s R-armed Player_A side jumps from 7% to 77% against vanilla Qwen3-32B; Gemma3-27B’s R-armed side jumps from 0% to 77% . The playbook prescribes a single concrete action (cooperate until the final round, then defect), and even sub-4B-parameter students execute that action reliably enough to flip the outcome against a much larger opponent. By contrast, the Resistance column shows that the same wcsu playbook does not translate downwards: Qwen3-4B regresses sharply on both sides ( −20 pp as Resistance, −37 pp as Spies); Qwen2.5-3B im-proves slightly ( +10 /+7 ); Gemma3-27B is null-to-negative. The pattern matches the within-model 26 Resistance Prisoner’s Dilemma Student BL Res % +R Res % BL Spy % +R Spy % BL pA +R pA BL pB +R pB Qwen3-4B 43 23 ( −20) 60 23 ( −37) 77 97 (+20) 70 87 (+17) Qwen2.5-3B 13 23 ( +10) 53 60 ( +7) 7 77 (+70) 7 73 (+67) Gemma3-27B 37 27 ( −10) 97 97 ( +0) 0 77 (+77) 10 70 (+60) 
+
+Table 13: Distillation of Qwen3-32B-generated playbooks to smaller/different students, all playing vs. a vanilla Qwen3-32B opponent (30 games per side per condition; BL = baseline, +R = with playbook, pA/pB = the two PD player seats). Resistance uses the held-out multigame R (wcsu); PD uses the within-game R1. PD shows a clean, large positive distillation effect across all three students ( +17 to +77 pp); Resistance is mixed (one slight positive, two negative). Pattern matches the within-model finding (Table 10): action-channel games distill cleanly, free-discussion-channel games don’t. 
+
+finding: the playbook’s load-bearing content has to map to a decision channel that the student can actually execute. 
+
+N Compute and API Cost 
+
+At Table 14 we provide approximate API expen-ditures so that future work can budget similar ex-periments. Numbers are estimates from per-token pricing at the time of running. 27 Component Approx. cost (USD) 
+
+Leaderboard tournament (7 models, all 21 games) ∼$200 Open-weights inference (Qwen, Gemma served locally) local GPU only GPT-5-mini within-game R1–R4 (§5.1) ∼$100 GPT-5-mini cross-game transfer (§5.1) ∼$100 GPT-5-mini multigame transfer (§5.1) ∼$50 Cross-model distillation: Rwcsu → 6 students (§5.2) ∼$30 Open-weights self-reflection (Qwen3-32B, §5.3) local GPU only Per-model self-play baselines (Appendix I.2) ∼$50 Reflection generation (all GPT-5-mini playbooks) ∼$10 Earlier results on GPT-5, with distillation to GPT-5-mini and Gemini 3.1 Pro (Appendix K) ∼$600 
+
+Total spend ∼$1140 
+
+Table 14: Approximate API cost by experiment phase. The open-weights component runs on local GPUs and is excluded from the dollar total. 
+
+28

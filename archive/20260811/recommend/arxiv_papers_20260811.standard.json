@@ -1,0 +1,653 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-11T21:04:23.838973+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 5,
+    "deep_cap": 6,
+    "deep_selected": 5,
+    "quick_candidates": 12,
+    "quick_skim_target": 11,
+    "quick_selected": 11
+  },
+  "deep_dive": [
+    {
+      "id": "2608.09128v1",
+      "source": "arxiv",
+      "title": "Social Gym and SPaRTan: Benchmarking and Improving LLM Social Reasoning via Multi-Agent Game Tournaments",
+      "abstract": "LLM agents are increasingly deployed in multi-agent social settings where they must cooperate, negotiate, and adapt to other agents. Measuring and improving these social skills is hard because, unlike math or logic, social interaction offers no objective ground truth: evaluations fall back on LLM judges, which are costly, subjective, and noisy, and models get no reliable signal to learn from. To address both, we first introduce Social Gym, an environment of 21 multi-agent social games (e.g., Werewolves, Resistance, Spyfall) whose rule-decided outcomes make agent performance verifiable and objective, with an Elo tournament that produces a cross-game leaderboard. Benchmarking experiments show that while GPT-5-mini tops the leaderboard, no model excels at all games uniformly or in all game roles, pointing to limitations of social reasoning. Motivated by this, we additionally propose SPaRTan (Self-Play and Reflect-Transfer), a training-free self-improvement loop: a model plays a game, reflects on its trajectories and their outcomes to produce a transferable playbook, and applies that playbook in subsequent games. Our results show that SPaRTan playbooks help GPT-5-mini agents level their performance on weaker roles, but largely do not improve Qwen3-32B's performance. Together, Social Gym and SPaRTan offer a reproducible, verifiable foundation for measuring and improving LLM social reasoning without weight updates.",
+      "authors": [
+        "Keyu He",
+        "Xuhui Zhou",
+        "Maarten Sap"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI",
+        "cs.MA"
+      ],
+      "published": "2026-08-10T05:12:56+00:00",
+      "link": "https://arxiv.org/pdf/2608.09128v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Benchmarking and improving LLM social reasoning in multi-agent games",
+      "llm_evidence_cn": "在多智能体游戏锦标赛中评测和提升LLM社会推理能力",
+      "llm_evidence": "在多智能体游戏锦标赛中评测和提升LLM社会推理能力",
+      "canonical_evidence": "在多智能体游戏锦标赛中评测和提升LLM社会推理能力",
+      "llm_tldr_en": "Introduces Social Gym, an environment of 21 multi-agent social games with rule-decided outcomes and Elo tournaments, plus SPaRTan, providing objective benchmarks and training signals for LLM social reasoning.",
+      "llm_tldr_cn": "针对LLM社会推理缺乏客观评估信号的问题，构建包含21个多智能体社交游戏（如狼人杀、抵抗组织、间谍危机）的Social Gym环境，以规则决定的结果作为客观胜负依据，并利用Elo锦标赛生成跨游戏排行榜。实验显示GPT-5-mini等模型表现优异，并基于该环境提出SPaRTan方法改善社会推理能力。该工作为LLM智能体在游戏化多智能体环境中的评估与学习提供了标准基准。",
+      "llm_tldr": "针对LLM社会推理缺乏客观评估信号的问题，构建包含21个多智能体社交游戏（如狼人杀、抵抗组织、间谍危机）的Social Gym环境，以规则决定的结果作为客观胜负依据，并利用Elo锦标赛生成跨游戏排行榜。实验显示GPT-5-mini等模型表现优异，并基于该环境提出SPaRTan方法改善社会推理能力。该工作为LLM智能体在游戏化多智能体环境中的评估与学习提供了标准基准。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.09638v1",
+      "source": "arxiv",
+      "title": "Avalon-ToM-Bench: Evaluating Fine-Grained Theory of Mind via Asymmetric Game Mechanics",
+      "abstract": "Theory of Mind (ToM) is essential for agent interactions, yet existing evaluations either rely on static scenarios that oversimplify mental-state reasoning or interactive settings that provide limited diagnostic insight. We present Avalon-ToM-Bench, a fine-grained benchmark that operationalizes ToM through the asymmetric-information mechanics of The Resistance: Avalon. Rather than evaluating end-to-end gameplay, it decomposes ToM into a 2$\\times$2 taxonomy -- epistemic versus motivational reasoning crossed with inference versus action -- using human-crafted, perspective-constrained queries. Benchmarking 28 LLMs reveals three insights: 1) Reasoning, not knowledge. Models show strong game-rule comprehension but markedly weaker ToM abilities, isolating failures to social reasoning rather than missing domain knowledge. 2) Expression, not representation. Mechanistic analyses via linear probing and activation steering show that models frequently represent correct mental-state inferences in their hidden states but fail to express them during generation -- linear probes recover 77-82% accuracy versus 62-70% from the models' own chain-of-thought. 3) Policy, not deliberation. Dedicated reasoning training yields substantial improvements whereas test-time chain-of-thought provides only marginal gains (+11.0 versus +1.1 points on average), suggesting that robust ToM depends on a learned reasoning policy rather than increased inference-time deliberation.",
+      "authors": [
+        "Yen-Shan Chen",
+        "Yu Chian Duan",
+        "Chih-En Kuo",
+        "Jian-Bin Wu",
+        "Yun-Nung Chen"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CL",
+        "cs.CY",
+        "cs.GT"
+      ],
+      "published": "2026-08-10T14:19:08+00:00",
+      "link": "https://arxiv.org/pdf/2608.09638v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "LLM agents evaluated in the Avalon game for theory of mind",
+      "llm_evidence_cn": "在阿瓦隆游戏中评估LLM智能体的心智理论",
+      "llm_evidence": "在阿瓦隆游戏中评估LLM智能体的心智理论",
+      "canonical_evidence": "在阿瓦隆游戏中评估LLM智能体的心智理论",
+      "llm_tldr_en": "Avalon-ToM-Bench operationalizes Theory of Mind through asymmetric game mechanics in The Resistance: Avalon, benchmarking 28 LLMs with a 2x2 epistemic/motivational taxonomy, revealing stronger rule comprehension than ToM reasoning.",
+      "llm_tldr_cn": "现有心智理论评估要么过于静态简化，要么在交互场景中缺乏诊断细度。本文提出Avalon-ToM-Bench，借助《抵抗：阿瓦隆》的非对称信息机制，将心智理论分解为认知/动机与推断/行动构成的2x2分类，并设计人工构造的视角受限问题。对28个LLM的评测显示，模型普遍对游戏规则理解良好，但心智推理能力明显不足，说明推理而非规则知识才是瓶颈。该基准为游戏AI的心智理论能力提供了细粒度诊断工具。",
+      "llm_tldr": "现有心智理论评估要么过于静态简化，要么在交互场景中缺乏诊断细度。本文提出Avalon-ToM-Bench，借助《抵抗：阿瓦隆》的非对称信息机制，将心智理论分解为认知/动机与推断/行动构成的2x2分类，并设计人工构造的视角受限问题。对28个LLM的评测显示，模型普遍对游戏规则理解良好，但心智推理能力明显不足，说明推理而非规则知识才是瓶颈。该基准为游戏AI的心智理论能力提供了细粒度诊断工具。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.08160v1",
+      "source": "arxiv",
+      "title": "Can LLM Agents Stick to the Script? A Benchmark for Long-Horizon Consistency in Interactive Narratives",
+      "abstract": "The rapid advancement of Large Language Models (LLMs) is revolutionizing AI for Games by enabling open-ended and fluid interactive storytelling. However, existing research has largely overlooked the critical challenge of maintaining long-horizon logical consistency and narrative integrity against unconstrained user interventions. To address this, we formulate this challenge as Narrative Commitment Preservation (NCP), and take interactive narrative as our testbed. We introduce NCP-Bench, a benchmark of 100 narrative environments derived from movie synopses. Each environment includes a structured narrative specification (trajectory, commitments, and initial facts) that we can automatically check throughout the interaction between the player agent and the narrator agent. Experiments across state-of-the-art LLMs reveal a substantial long-horizon consistency gap: high linguistic quality does not guarantee commitment preservation; even strong models frequently generate logically conflicting content under adversarial interventions, with the best-performing model (GPT-5.2) achieving only 42% survival rate after 20 turns and fact conflict rates ranging from 40% to 68% across models, and only isolated runs satisfying all achievement commitments within the 100-turn limit.",
+      "authors": [
+        "Yingpeng Ma",
+        "Jianhao Yan",
+        "Bei Shi",
+        "Ka Hou Kam",
+        "Runnan Wang",
+        "Xuebo Liu",
+        "Yulong Chen",
+        "Yue Zhang",
+        "Derek F. Wong"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-08-08T14:38:18+00:00",
+      "link": "https://arxiv.org/pdf/2608.08160v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Benchmark for LLM agents in interactive narrative game environments",
+      "llm_evidence_cn": "面向交互叙事游戏环境的LLM智能体长程一致性基准",
+      "llm_evidence": "面向交互叙事游戏环境的LLM智能体长程一致性基准",
+      "canonical_evidence": "面向交互叙事游戏环境的LLM智能体长程一致性基准",
+      "llm_tldr_en": "NCP-Bench evaluates narrative commitment preservation for LLM agents in 100 interactive narrative environments, addressing the overlooked challenge of long-horizon logical consistency in AI for games.",
+      "llm_tldr_cn": "LLM为AI游戏带来开放式叙事潜力，但面对用户干预时难以维持长程逻辑一致性和叙事完整性。本文将这一问题形式化为叙事承诺保持（NCP），并提出NCP-Bench基准，包含100个来源于电影摘要的叙事环境及结构化叙事规范。基准可在交互过程中自动检查一致性，为评估游戏叙事智能体提供标准。",
+      "llm_tldr": "LLM为AI游戏带来开放式叙事潜力，但面对用户干预时难以维持长程逻辑一致性和叙事完整性。本文将这一问题形式化为叙事承诺保持（NCP），并提出NCP-Bench基准，包含100个来源于电影摘要的叙事环境及结构化叙事规范。基准可在交互过程中自动检查一致性，为评估游戏叙事智能体提供标准。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "artificial intelligence in games",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.09132v1",
+      "source": "arxiv",
+      "title": "You Are Not My Teammate: Behavioral Fingerprint-based Detection of Suspicious Account Misuse",
+      "abstract": "Online games have been continuously affected by cyber threats such as game bots and gold farming. Game bots, which are automated programs that play on behalf of human users, significantly accelerate character progression and reduce the engagement of legitimate players, potentially leading to user churn. In addition, gold farming enables the monetization of in-game currency into real-world money, resulting in unfair profits. For these reasons, prior studies have primarily focused on detecting game bots and gold farming. However, in competitive Multiplayer Online Battle Arena (MOBA) games such as League of Legends, match outcomes and rankings are the primary objectives, where individual performance is more critical than in-game economic factors. Accordingly, account misuse such as account sharing and boosting has emerged as a major threat to fair competition. In this study, we propose a behavioral fingerprint-based detection method. Our approach analyzes and quantifies changes between a player's historical and recent in-game behaviors. Consequently, it enables the robust identification of suspicious account sharing and boosting, even in label-scarce environments. Experimental results show that behavioral fingerprints within the same account are distinguishable from those across different accounts, supporting rapid detection of suspicious account misuse even with limited labeled data.",
+      "authors": [
+        "Dong Hwan Lee",
+        "Huy Kang Kim"
+      ],
+      "primary_category": "cs.CR",
+      "categories": [
+        "cs.CR"
+      ],
+      "published": "2026-08-10T05:23:07+00:00",
+      "link": "https://arxiv.org/pdf/2608.09132v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "behavioral fingerprinting of game players to detect bots and account misuse, directly relevant to virtual player modeling",
+      "llm_evidence_cn": "利用行为指纹对游戏玩家建模以检测脚本与账号滥用，直接契合虚拟玩家建模",
+      "llm_evidence": "利用行为指纹对游戏玩家建模以检测脚本与账号滥用，直接契合虚拟玩家建模",
+      "canonical_evidence": "利用行为指纹对游戏玩家建模以检测脚本与账号滥用，直接契合虚拟玩家建模",
+      "llm_tldr_en": "The paper proposes behavioral fingerprint-based detection of game bots and gold farming in MOBA games, distinguishing automated accounts from human players using individual performance and behavioral patterns.",
+      "llm_tldr_cn": "在线游戏长期受到游戏脚本和金币农场的威胁，它们自动化代替人类玩家、破坏公平性。该论文提出基于行为指纹的检测方法，在MOBA类游戏（如英雄联盟）中利用个体操作与行为模式区分自动化账号与真实玩家，重点针对竞技对局中的表现差异。实验表明该方法能有效识别可疑账号滥用，为维护游戏生态和玩家体验提供了新的防护手段。",
+      "llm_tldr": "在线游戏长期受到游戏脚本和金币农场的威胁，它们自动化代替人类玩家、破坏公平性。该论文提出基于行为指纹的检测方法，在MOBA类游戏（如英雄联盟）中利用个体操作与行为模式区分自动化账号与真实玩家，重点针对竞技对局中的表现差异。实验表明该方法能有效识别可疑账号滥用，为维护游戏生态和玩家体验提供了新的防护手段。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "virtual game player modeling",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.09848v1",
+      "source": "arxiv",
+      "title": "CEAA: A Cognitive Embodied Agents Architecture for Interactive Computing Systems",
+      "abstract": "The development of embodied Intelligent Virtual Agents (IVAs) that have cognitive capabilities in real-time interactive virtual environments remains a challenge, even with today's advancements in technology. Existing architectures are often focused on either the implementation of low-level reactive control systems that are constrained by commercial game engines, or high-level representations of reasoning models that can be difficult to implement in virtual worlds. This paper builds on that notion and proposes a modular cognitive architecture for deploying embodied IVAs. This architecture builds on existing, pre-established frameworks such as the Sense-Think-Act paradigm and the Belief-Desire-Intention cognitive model, among others, and aims to provide a reusable implementation-oriented framework as a template for deploying IVA \"brains\" in interactive 3D computing systems. The proposed architecture contributes by providing a modular, implementation-oriented framework for the deployment of embodied, cognitive-capable IVAs and bridges the gap between high-level agent reasoning models with real-time embodied execution, for scalable, adaptive, and explainable agents in complex interactive virtual environments.",
+      "authors": [
+        "Aimilios Hadjiliasi",
+        "Louis Nisiotis"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-08-10T17:07:41+00:00",
+      "link": "https://arxiv.org/pdf/2608.09848v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Cognitive embodied agents architecture for real-time interactive virtual environments",
+      "llm_evidence_cn": "面向实时交互虚拟环境的认知具身智能体架构，适用于游戏AI",
+      "llm_evidence": "面向实时交互虚拟环境的认知具身智能体架构，适用于游戏AI",
+      "canonical_evidence": "面向实时交互虚拟环境的认知具身智能体架构，适用于游戏AI",
+      "llm_tldr_en": "CEAA proposes a modular cognitive architecture for embodied intelligent virtual agents in real-time interactive virtual environments, integrating sense-think-act and belief-desire-intention models for deployable game-like AI.",
+      "llm_tldr_cn": "在实时交互虚拟环境中部署具认知能力的智能体仍具挑战，现有架构或在游戏引擎中局限于底层反应控制，或难以在虚拟世界实现高层推理。CEAA基于感知-思考-行动范式和信念-愿望-意图模型，提出模块化认知架构，将高层认知与低层控制结合。该架构可支持具备认知能力的虚拟代理在游戏或交互系统中进行自主行动。",
+      "llm_tldr": "在实时交互虚拟环境中部署具认知能力的智能体仍具挑战，现有架构或在游戏引擎中局限于底层反应控制，或难以在虚拟世界实现高层推理。CEAA基于感知-思考-行动范式和信念-愿望-意图模型，提出模块化认知架构，将高层认知与低层控制结合。该架构可支持具备认知能力的虚拟代理在游戏或交互系统中进行自主行动。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2608.03223v1",
+      "source": "arxiv",
+      "title": "Agentic Reinforcement Learning with Self-Distilled Reward Shaping",
+      "abstract": "Agentic reinforcement learning enables LLM agents to learn through interaction, but sparse trajectory-level rewards reveal success without identifying which intermediate decisions deserve credit. Training-only privileged skills can provide denser supervision by allowing the same frozen policy snapshot to rescore fixed tokens from skill-free trajectories while conditioned on task-matched procedural skills. Existing methods, however, do not jointly calibrate teacher scores across interaction steps, relate teacher confidence to realized returns, and integrate the resulting signal into native reward-to-advantage construction. We introduce Agentic Reinforcement Learning with Self-Distilled Reward Shaping (ADRS), a framework for constructing return-associated token-level credit for multi-turn language agents. ADRS centers and normalizes privileged token scores within each step, modulates them with a return-associated Teacher Value Advantage (TVA) gate based on within-group confidence--return association, and incorporates the gated token signal into native RL credit construction. Together, these components determine what the teacher prefers, when that preference is return-relevant, and how it enters the native reinforcement-learning credit path, while keeping rollouts and inference skill-free. Finally, experiments across three interactive benchmarks show that ADRS consistently improves performance on long-horizon tasks, with gains persisting across RL backbones, reduced-data settings, unseen tasks, and extended training. For anonymous review, our code is available at the following the link: https://github.com/gitrxh/ADRS-arxiv",
+      "authors": [
+        "Ranxu Zhang",
+        "Guinan Chen",
+        "Chenshaodong",
+        "Jinghao Lin",
+        "Xiaozhou Xu",
+        "Sunzhe",
+        "Yanyong Zhang",
+        "Chao Wang"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-08-04T06:56:47+00:00",
+      "link": "https://arxiv.org/pdf/2608.03223v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Reward shaping for agentic reinforcement learning of LLM agents in interaction",
+      "llm_evidence_cn": "通过自蒸馏奖励塑形增强LLM智能体交互学习",
+      "llm_evidence": "通过自蒸馏奖励塑形增强LLM智能体交互学习",
+      "canonical_evidence": "通过自蒸馏奖励塑形增强LLM智能体交互学习",
+      "llm_tldr_en": "Presents ADRS, a framework that uses frozen policy snapshots to rescore tokens against task-matched skills, producing return-associated token rewards that improve credit assignment in agentic reinforcement learning.",
+      "llm_tldr_cn": "针对智能体强化学习中稀疏轨迹奖励无法归因中间决策的问题，提出ADRS框架，利用冻结策略快照结合过程化技能对无技能轨迹逐token重打分，并联合校准教师分数与真实回报。该自蒸馏奖励塑形为每个交互步骤提供密集监督，改善了LLM智能体在交互环境中的学习效率与最终策略质量。",
+      "llm_tldr": "针对智能体强化学习中稀疏轨迹奖励无法归因中间决策的问题，提出ADRS框架，利用冻结策略快照结合过程化技能对无技能轨迹逐token重打分，并联合校准教师分数与真实回报。该自蒸馏奖励塑形为每个交互步骤提供密集监督，改善了LLM智能体在交互环境中的学习效率与最终策略质量。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.01822v1",
+      "source": "arxiv",
+      "title": "SearchMaster: Grounded and Regulated Self-Play for Search Agents",
+      "abstract": "Training LLM-based search agents requires high-quality search data: tasks that demand genuine multi-hop retrieval and trajectories that use search tools effectively. Existing pipelines often depend on human-written tasks, expert demonstrations, or stronger teacher models. We present SearchMaster, a self-play framework that trains a single LLM from search tasks it generates, solves, and verifies in a local search environment. The key challenge is that self-generated tasks and rollouts can yield misleading signals: pseudo multi-hop questions, success-rate difficulty estimates that ignore search depth, and rollouts with excessive opening but little targeted evidence acquisition. SearchMaster addresses these failure modes with three controls. An Evidence-Chain Generator (ECG) grounds task generation in explicit cross-document evidence chains to reduce pseudo multi-hop questions. A Search-Depth Reward (SDR) scores task difficulty by the search depth of successful rollouts rather than success rate alone, keeping retained tasks search-intensive. An Over-Opening Penalty (OOP) regulates tool use by discouraging excessive document opening, avoiding long but shallow browsing. Verified Proposer and Solver rollouts are then jointly optimized with GRPO. Across six deep-search benchmarks, SearchMaster improves a Qwen3.5-9B backbone from 38.19% to 51.52% average accuracy, with a 30.1-point gain on BrowseComp-Plus. These results show that grounded and regulated self-play can provide effective search-agent training data without human-labeled QA pairs or expert demonstrations. The code is available at https://github.com/WentaoTan/SearchMaster.",
+      "authors": [
+        "Wentao Tan",
+        "Qiong Cao",
+        "Jiaqi Wang",
+        "Nan Duan"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-08-03T07:29:11+00:00",
+      "link": "https://arxiv.org/pdf/2608.01822v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Self-play training framework for LLM-based search agents",
+      "llm_evidence_cn": "面向搜索智能体的自博弈训练框架",
+      "llm_evidence": "面向搜索智能体的自博弈训练框架",
+      "canonical_evidence": "面向搜索智能体的自博弈训练框架",
+      "llm_tldr_en": "SearchMaster trains a single LLM search agent via self-play, generating, solving, and verifying its own tasks in a local search environment, while addressing misleading signals and improving multi-hop retrieval.",
+      "llm_tldr_cn": "针对LLM搜索智能体训练中依赖人工任务或教师模型的问题，提出SearchMaster自博弈框架，使单个模型在本地搜索环境中自主生成、求解并验证任务。框架针对伪多跳问题、忽视搜索深度的难度估计和过度打开但缺乏证据收集等失败模式设计了三种控制机制。实验表明该方法能有效提升多跳检索与搜索工具使用能力，减少对人工标注的依赖。",
+      "llm_tldr": "针对LLM搜索智能体训练中依赖人工任务或教师模型的问题，提出SearchMaster自博弈框架，使单个模型在本地搜索环境中自主生成、求解并验证任务。框架针对伪多跳问题、忽视搜索深度的难度估计和过度打开但缺乏证据收集等失败模式设计了三种控制机制。实验表明该方法能有效提升多跳检索与搜索工具使用能力，减少对人工标注的依赖。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.03644v1",
+      "source": "arxiv",
+      "title": "Is Inter-Seed Cross-Play Enough? Evaluating the Robustness of Zero-Shot Coordination Algorithms to Implementation Details",
+      "abstract": "AI agents deployed in real-world settings must be capable of coordinating with humans and other AI agents they have not encountered before. Zero-shot coordination (ZSC) algorithms aim to achieve this by specifying high-level learning rules such that independently engineered agents can coordinate with each other at test time. Rigorous evaluation of ZSC algorithms remains difficult: ideally, multiple independent implementations of each proposed algorithm must be used, reflecting the variation that arises when independent parties interpret and implement the same specification. In practice, however, ZSC algorithms have almost exclusively been evaluated using a single implementation trained across different random seeds, with only a handful of works additionally varying the neural network architecture. This leaves open questions about robustness to specification ambiguities and implementation details. In this work, we provide the first systematic evaluation of this robustness. We introduce a new evaluation scheme, cross-implementation cross-play, varying implementation details that prior work has shown to affect the performance of multi-agent reinforcement learning (MARL) algorithms, and we evaluate Other-Play, a popular ZSC algorithm, with this scheme. Our findings are encouraging and suggest that, for Other-Play, the standard ZSC evaluation is, in fact, a reasonable proxy for this more thorough cross-implementation evaluation.",
+      "authors": [
+        "Maksymilian Wolski",
+        "Nicholas Hoernle",
+        "Johannes Forkel",
+        "Jakob Foerster"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.MA"
+      ],
+      "published": "2026-08-04T13:29:00+00:00",
+      "link": "https://arxiv.org/pdf/2608.03644v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "evaluates zero-shot coordination algorithms for AI agents, typically benchmarked in collaborative game environments",
+      "llm_evidence_cn": "评估零样本协作算法在不同实现下的鲁棒性，其典型基准为协作类游戏环境",
+      "llm_evidence": "评估零样本协作算法在不同实现下的鲁棒性，其典型基准为协作类游戏环境",
+      "canonical_evidence": "评估零样本协作算法在不同实现下的鲁棒性，其典型基准为协作类游戏环境",
+      "llm_tldr_en": "This paper highlights flaws in evaluating zero-shot coordination algorithms by relying on a single implementation, using inter-seed cross-play to assess robustness to implementation details.",
+      "llm_tldr_cn": "零样本协作算法旨在让独立设计的智能体在测试时与未见过的伙伴协作，但现有评估几乎都基于单一实现，忽视了实现细节带来的影响。论文指出仅用跨种子互玩不足以反映真实世界中的实现差异，并对此进行系统性实验分析。研究结果为该领域提出了更严格的评估协议，对提升AI智能体在协作游戏环境中的泛化能力具有重要意义。",
+      "llm_tldr": "零样本协作算法旨在让独立设计的智能体在测试时与未见过的伙伴协作，但现有评估几乎都基于单一实现，忽视了实现细节带来的影响。论文指出仅用跨种子互玩不足以反映真实世界中的实现差异，并对此进行系统性实验分析。研究结果为该领域提出了更严格的评估协议，对提升AI智能体在协作游戏环境中的泛化能力具有重要意义。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.04037v1",
+      "source": "arxiv",
+      "title": "Reconstructing Persistent Worlds from Narratives for Narrative-Grounded Interactive Experiences",
+      "abstract": "Designing narrative-grounded interactive experiences remains labor-intensive because interactive content must align with the underlying world implied by the narrative. Existing approaches formulate problems such as narrative planning, scene generation, and gameplay generation, each constructing computational representations tailored to specific downstream tasks rather than explicitly reconstructing and maintaining the persistent world that grounds them.   We investigate reconstructing explicit persistent worlds from narrative descriptions as the central computational objective for narrative-grounded interactive realization. Rather than treating the world as an implicit by-product of downstream generation, our approach reconstructs and maintains persistent entities, locations, semantic relationships, and evolving world states while inferring only the contextual information required to support coherent interactive experiences.   To investigate this perspective, we develop a reference prototype that reconstructs structured persistent world representations from narrative descriptions and subsequently instantiates playable tile-based environments. Through three representative case studies spanning a procedural scenario, an original fantasy narrative, and an adapted public-domain story, we demonstrate the feasibility of reconstructing persistent worlds and show how a shared world representation supports coherent gameplay while remaining grounded in the source narrative.   By explicitly reconstructing persistent worlds prior to interactive realization, this work bridges computational narrative understanding and interactive content generation, providing a semantic foundation for AI-assisted game authoring, mixed-initiative design, educational simulations, and narrative-grounded interactive experiences.",
+      "authors": [
+        "Yi-Chun Chen"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI",
+        "cs.GR",
+        "cs.HC"
+      ],
+      "published": "2026-08-03T20:06:13+00:00",
+      "link": "https://arxiv.org/pdf/2608.04037v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Reconstruct persistent worlds from narratives for interactive game experiences",
+      "llm_evidence_cn": "从叙事中重建持久世界以支持交互式游戏体验",
+      "llm_evidence": "从叙事中重建持久世界以支持交互式游戏体验",
+      "canonical_evidence": "从叙事中重建持久世界以支持交互式游戏体验",
+      "llm_tldr_en": "Proposes reconstructing explicit persistent worlds from narrative descriptions as the core objective for narrative-grounded interactive experiences, enabling coherent scene and gameplay generation.",
+      "llm_tldr_cn": "叙事驱动的交互体验设计劳动密集，现有工作常为具体下游任务构造世界表示，而未维护支撑它们的持久世界。本文提出将“从叙事描述中重建显式持久世界”作为叙事交互实现的核心目标，而非生成的下游副产物。相比分别做叙事规划、场景生成或玩法生成，该方法能使交互内容与叙述保持一致。该工作为游戏世界的自动构建与动态响应提供了新视角。",
+      "llm_tldr": "叙事驱动的交互体验设计劳动密集，现有工作常为具体下游任务构造世界表示，而未维护支撑它们的持久世界。本文提出将“从叙事描述中重建显式持久世界”作为叙事交互实现的核心目标，而非生成的下游副产物。相比分别做叙事规划、场景生成或玩法生成，该方法能使交互内容与叙述保持一致。该工作为游戏世界的自动构建与动态响应提供了新视角。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "artificial intelligence in games",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.04905v1",
+      "source": "arxiv",
+      "title": "PRIMAL3: Pathfinding via Reinforcement and Imitation Multi-Agent Learning - Leveraging LaCAM3",
+      "abstract": "We present PRIMAL3, an ultra-large-scale learning-based framework for multi-agent pathfinding (MAPF) that integrates reinforcement learning, topology-aware communication, LaCAM3-guided training, and PIBT-based action refinement. PRIMAL3 targets failures at topologically critical states, where agents must coordinate decisively around bottlenecks, dead ends, and persistent conflicts. Each agent is represented using features derived from cut vertices, dead-end regions, shortest-path distances, and blocking estimates. Two complementary graphs capture agent interactions: a same-direction following graph propagates multihop context along compatible paths, while a different-direction conflict graph differentiates agents competing for shared space through masked attention and relative features. During training, we propose to let policy entropy identify uncertain agents, for which LaCAM3 provides confidence-triggered action interventions and label-smoothed imitation targets. During execution, a priority-aware PIBT module refines the proposed joint actions using persistent, learned, and distance-aware priorities together with policy-aware fallback preferences while maintaining collision-free execution. The resulting framework combines learned exploration with structured expert guidance without requiring LaCAM3 at inference. Experiments demonstrate that PRIMAL3 substantially outperforms state-of-the-art learning-based baselines and scales to ultra-large instances with up to city-level 100,000 agents. Real-world experiments further demonstrate the feasibility of deploying PRIMAL3 on physical robotic systems and ablation studies validate the individual contributions the components we proposed. Project page: https://marmotlab.github.io/PRIMAL3/",
+      "authors": [
+        "Chengyang He",
+        "Tanishq Duhan",
+        "Gadiel Sznaier Camps",
+        "Fangyuan Wang",
+        "Yuhong Cao",
+        "Jiankai Sun",
+        "Ge Sun",
+        "Mac Schwager",
+        "Guillaume Sartoretti"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-08-05T14:33:59+00:00",
+      "link": "https://arxiv.org/pdf/2608.04905v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Large-scale reinforcement learning framework for multi-agent pathfinding",
+      "llm_evidence_cn": "大规模多智能体路径规划强化学习框架",
+      "llm_evidence": "大规模多智能体路径规划强化学习框架",
+      "canonical_evidence": "大规模多智能体路径规划强化学习框架",
+      "llm_tldr_en": "PRIMAL3 presents an ultra-large-scale learning-based multi-agent pathfinding framework combining RL, imitation learning, LaCAM3-guided training and PIBT action refinement to resolve coordination at critical bottlenecks.",
+      "llm_tldr_cn": "多智能体路径规划(MAPF)是许多实时系统（包括游戏NPC）的核心问题。PRIMAL3提出一个超大规模学习框架，整合强化学习、拓扑感知通信、LaCAM3引导训练和基于PIBT的动作优化，专门改进智能体在瓶颈、死角和冲突密集区等关键状态的协调。每个智能体依据割点、死区等拓扑特征建模，并用图结构传播多跳交互。该框架在规模化和成功率上较以往方法有明显提升，可支撑游戏等场景中的移动智能体决策。",
+      "llm_tldr": "多智能体路径规划(MAPF)是许多实时系统（包括游戏NPC）的核心问题。PRIMAL3提出一个超大规模学习框架，整合强化学习、拓扑感知通信、LaCAM3引导训练和基于PIBT的动作优化，专门改进智能体在瓶颈、死角和冲突密集区等关键状态的协调。每个智能体依据割点、死区等拓扑特征建模，并用图结构传播多跳交互。该框架在规模化和成功率上较以往方法有明显提升，可支撑游戏等场景中的移动智能体决策。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.08545v1",
+      "source": "arxiv",
+      "title": "Curriculum Generation under Structured Parametric Environments for Robust Navigation Policies",
+      "abstract": "Robust navigation policies for autonomous agents must generalize across continuously varying environmental conditions such as turn rates, obstacles, friction, pits, and slopes. Curriculum generation provides a principled mechanism for improving generalization by progressively adapting training environments, but designing such curricula in a sample-efficient and automated manner remains challenging. This paper proposes a reparameterized curriculum generation framework for structured continuous environment parameters using unidirectional gradient-based optimization. To improve robustness in multimodal observation spaces consisting of image-based and scalar inputs, a distribution-shift regularization objective is incorporated to encourage the learning of finer-grained latent representations. The proposed method is evaluated across two continuous-control OpenAI Gym environments: a 2D obstacle-based Car Racing variant and Bipedal Walker variant, where coupled environment parameters jointly influence policy performance. Across five random seeds, our method consistently outperforms vanilla policy training, random parameter sampling, manual curricula, frontier-based methods, Self-Paced Reinforcement Learning (SPRL), Absolute Learning Progress with Gaussian Mixture Models (ALP-GMM), and reverse curriculum learning baselines. Ablation studies further demonstrate the effectiveness of the reparameterized curriculum mechanism across both environments, while highlighting environment-dependent benefits of the auxiliary regularization objective.",
+      "authors": [
+        "Prishita Ray"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.LG"
+      ],
+      "published": "2026-08-09T07:45:21+00:00",
+      "link": "https://arxiv.org/pdf/2608.08545v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Curriculum generation for training robust policies in structured parametric environments, transferable to game environments",
+      "llm_evidence_cn": "面向结构化参数环境训练的课程生成方法，可迁移至游戏环境",
+      "llm_evidence": "面向结构化参数环境训练的课程生成方法，可迁移至游戏环境",
+      "canonical_evidence": "面向结构化参数环境训练的课程生成方法，可迁移至游戏环境",
+      "llm_tldr_en": "Proposes a reparameterized curriculum generation framework using gradient-based optimization to train navigation policies that generalize across continuous environment parameters, with distribution-shift regularization.",
+      "llm_tldr_cn": "机器人在变化的环境条件(如转弯率、障碍、摩擦等)下保持鲁棒导航仍具挑战。本文提出重参数化的课程生成框架，基于单向梯度优化逐步调整连续环境参数，并引入分布偏移正则化以应对图像和标量组成的多模态观测。该方法能高效自动化地生成训练课程，显著提升导航策略在新环境中的泛化能力。这种课程生成思想可迁移到游戏AI训练中的程序化环境生成。",
+      "llm_tldr": "机器人在变化的环境条件(如转弯率、障碍、摩擦等)下保持鲁棒导航仍具挑战。本文提出重参数化的课程生成框架，基于单向梯度优化逐步调整连续环境参数，并引入分布偏移正则化以应对图像和标量组成的多模态观测。该方法能高效自动化地生成训练课程，显著提升导航策略在新环境中的泛化能力。这种课程生成思想可迁移到游戏AI训练中的程序化环境生成。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.06257v2",
+      "source": "arxiv",
+      "title": "MASS: Multiplayer World Models with Authoritative Shared State",
+      "abstract": "Current video world models struggle in multiplayer environments because they entangle world state with view-dependent visual latents, leading to redundant compute, view inconsistencies, and poor scalability. We propose MASS (Multiplayer world models with Authoritative Shared State) to resolve this limitation. Inspired by multiplayer game architectures, MASS disentangles world dynamics and view rendering. A learned Logic Engine advances a global, authoritative typed state from joint actions without any hand-written transition function, acting as the sole recurrent memory and synchronization reference. From this shared state, a learned Rendering Engine generates independent and consistent views for any requested camera on demand. This explicit disentangling allows MASS to achieve superior state accuracy and lower cross-view inconsistency compared to state-of-the-art multi-view baselines on a matched multiplayer Snake benchmark. It advances predicted worlds with 1,024 concurrent players for 10,000 recurrent steps. Our results show that explicit, authoritative state modeling provides a practical foundation for scalable and consistent multi-agent world simulation.",
+      "authors": [
+        "Ziqi Cai",
+        "Siqi Yang",
+        "Yimu Wang",
+        "Zixian Gao",
+        "Yunheng Liu",
+        "Shuchen Weng",
+        "Erwin Wu",
+        "Kaipeng Zhang",
+        "Boxin Shi"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.HC"
+      ],
+      "published": "2026-08-06T16:47:24+00:00",
+      "link": "https://arxiv.org/pdf/2608.06257v2",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Multiplayer video game world model for AI agents",
+      "llm_evidence_cn": "多人视频游戏世界模型，面向AI智能体",
+      "llm_evidence": "多人视频游戏世界模型，面向AI智能体",
+      "canonical_evidence": "多人视频游戏世界模型，面向AI智能体",
+      "llm_tldr_en": "MASS introduces a multiplayer world model that separates shared world state from view rendering, enabling efficient and consistent multi-view simulation for video game environments.",
+      "llm_tldr_cn": "目标：现有视频世界模型在多玩家环境中将世界状态与视角相关的视觉潜在变量耦合，导致冗余计算、视角不一致且难以扩展。方法：MASS受多人游戏架构启发，将世界动态与视角渲染解耦，用学习到的逻辑引擎从联合动作推进全局权威类型化状态，无须手写转移函数，再由渲染引擎按需生成任意视角独立一致视图。结果：通过解耦，模型可复用全局状态同步多名玩家视角，显著降低冗余计算并提升视角一致性。意义：为视频游戏中的智能体训练、多人世界模拟提供更可扩展的基础模型。",
+      "llm_tldr": "目标：现有视频世界模型在多玩家环境中将世界状态与视角相关的视觉潜在变量耦合，导致冗余计算、视角不一致且难以扩展。方法：MASS受多人游戏架构启发，将世界动态与视角渲染解耦，用学习到的逻辑引擎从联合动作推进全局权威类型化状态，无须手写转移函数，再由渲染引擎按需生成任意视角独立一致视图。结果：通过解耦，模型可复用全局状态同步多名玩家视角，显著降低冗余计算并提升视角一致性。意义：为视频游戏中的智能体训练、多人世界模拟提供更可扩展的基础模型。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "artificial intelligence in games",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.08604v1",
+      "source": "arxiv",
+      "title": "Multi-Agent Reinforcement Learning via Agent-Specific Preference",
+      "abstract": "Multi-agent reinforcement learning (MARL) is a powerful framework for solving complex collaborative tasks, but it relies heavily on well-defined global reward functions. Designing such rewards is challenging, especially in systems with heterogeneous agents, where a single scalar objective may fail to capture diverse behaviors. In this paper, we introduce Multi-AGent Preference-Integrated lEarning (MAGPIE), which addresses these challenges through agent-specific preference modeling. Each agent is evaluated by a dedicated expert through preference signals, eliminating the need for global evaluation. We theoretically prove that optimizing these decentralized preferences converges to a Nash equilibrium policy. To integrate local preferences into a coherent global objective, we construct agent-specific reward models from preference data and combine them via a monotonic aggregation mechanism. We further prove that optimizing this aggregate reward model is equivalent to training the Nash equilibrium policy. Extensive experiments on benchmark multi-agent tasks and a sequential production line task show that MAGPIE achieves performance comparable to reward-engineered baselines, demonstrating its potential to facilitate policy learning in scenarios where precise reward engineering is impractical.",
+      "authors": [
+        "Ni Mu",
+        "Yao Luan",
+        "Yiqin Yang",
+        "Qing-Shan Jia"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-08-09T09:38:41+00:00",
+      "link": "https://arxiv.org/pdf/2608.08604v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Multi-agent reinforcement learning with agent-specific preferences for collaborative tasks",
+      "llm_evidence_cn": "通过智能体特定偏好建模解决多智能体协作学习，可应用于游戏多智能体训练",
+      "llm_evidence": "通过智能体特定偏好建模解决多智能体协作学习，可应用于游戏多智能体训练",
+      "canonical_evidence": "通过智能体特定偏好建模解决多智能体协作学习，可应用于游戏多智能体训练",
+      "llm_tldr_en": "MAGPIE replaces global rewards with agent-specific preference models, proving convergence to Nash equilibrium and showing that decentralized preferences can form a coherent global objective in MARL.",
+      "llm_tldr_cn": "多智能体强化学习依赖精心设计的全局奖励函数，但在异质智能体系统中单一标量目标难以刻画多样行为。MAGPIE为每个智能体引入专属偏好建模，由独立专家提供偏好信号，免除全局奖励设计。理论证明优化这些去中心化偏好可收敛至纳什均衡策略，并进一步整合为一致的全局目标，为多智能体游戏协作训练提供新思路。",
+      "llm_tldr": "多智能体强化学习依赖精心设计的全局奖励函数，但在异质智能体系统中单一标量目标难以刻画多样行为。MAGPIE为每个智能体引入专属偏好建模，由独立专家提供偏好信号，免除全局奖励设计。理论证明优化这些去中心化偏好可收敛至纳什均衡策略，并进一步整合为一致的全局目标，为多智能体游戏协作训练提供新思路。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.08600v1",
+      "source": "arxiv",
+      "title": "Population-Scalable Multi-Agent World Modeling",
+      "abstract": "World models have recently achieved impressive progress in visual prediction and interactive generation, but extending them to multi-agent environments introduces a fundamental scalability challenge. Existing methods generally assume a fixed number of agents during training and inference, which ties the model to a pre-determined agent population and limits inference-time scalability. Our key insight is that cross-view consistency should arise from a shared world state whose evolution does not assume a predefined number of agents, while agent-specific observations should be generated by querying this state through a unified rendering interface. Based on this insight, we propose Khora, a scalable multi-agent world model that supports inference-time expansion to arbitrary numbers of agents without retraining. Our framework decouples world-state evolution from visual rendering and introduces a population-agnostic rendering mechanism for incorporating other agent information. This design maintains cross-view consistency through the shared world state rather than through dense interactions among observation streams inside the expensive video generator, enabling approximately linear practical scaling with the number of queried views. Qualitative experiments demonstrate that our approach generalizes to unseen numbers of agents while maintaining visual quality and multi-agent consistency. We further implement a real-time interactive system to demonstrate scalable open-world simulation.",
+      "authors": [
+        "Renjie Zhao",
+        "Yuxiang Wu",
+        "Mingyu Zhang",
+        "Jiaxin Li",
+        "Sisi Li",
+        "Yimin Sheng",
+        "Tianxi Tan",
+        "Zhenkai Zhang",
+        "Jianyi Zhu",
+        "Yong-Lu Li"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-08-09T09:26:15+00:00",
+      "link": "https://arxiv.org/pdf/2608.08600v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "scalable multi-agent world models supporting arbitrary agent populations, useful for game environment simulation and agent training",
+      "llm_evidence_cn": "支持任意智能体数量的可扩展多智能体世界模型，适用于游戏仿真与智能体训练",
+      "llm_evidence": "支持任意智能体数量的可扩展多智能体世界模型，适用于游戏仿真与智能体训练",
+      "canonical_evidence": "支持任意智能体数量的可扩展多智能体世界模型，适用于游戏仿真与智能体训练",
+      "llm_tldr_en": "This paper proposes Khora, a multi-agent world model that supports inference-time expansion to arbitrary numbers of agents via a shared world state and unified rendering interface, addressing the scalability challenge.",
+      "llm_tldr_cn": "世界模型在视觉预测和交互生成上取得显著进展，但扩展到多智能体环境时面临固定智能体数量的限制。论文提出跨视图一致性来源于共享世界状态的演化，并通过统一渲染接口查询该状态生成个体观测。基于这一思想设计Khora模型，支持推理时扩展到任意智能体数量，解决了现有方法对预定义智能体数量的依赖。该模型为多智能体游戏仿真和智能体决策训练提供了可扩展的世界建模基础。",
+      "llm_tldr": "世界模型在视觉预测和交互生成上取得显著进展，但扩展到多智能体环境时面临固定智能体数量的限制。论文提出跨视图一致性来源于共享世界状态的演化，并通过统一渲染接口查询该状态生成个体观测。基于这一思想设计Khora模型，支持推理时扩展到任意智能体数量，解决了现有方法对预定义智能体数量的依赖。该模型为多智能体游戏仿真和智能体决策训练提供了可扩展的世界建模基础。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.09256v1",
+      "source": "arxiv",
+      "title": "Distributed Team Orchestration via Supervisor Networks: Convergence, Optimality, and Resilience",
+      "abstract": "In this paper, we study zero-sum potential team games with a supervisor network, where agents rely on supervisor-provided belief information rather than accurate common beliefs. The main challenge is that such belief information can be inaccurate because of supervisors' belief-estimation errors and the misreporting of joint actions by Byzantine teams. We propose the distributed team-orchestrating algorithm (DTOA), which combines team fictitious play with supervisor-based distributed belief learning. We prove the convergence of supervisors' belief estimates and establish that the induced learning dynamics converge to a near team-Nash equilibrium (TNE) in terms of the team-Nash gap (TNG). In the Byzantine setting, we consider a misreporting attack model and develop a Byzantine-resilient DTOA. We further provide probabilistic guarantees for Byzantine-team identification and establish an asymptotic bound on the honest TNG. Numerical experiments illustrate the theoretical findings, compare DTOA with baseline learning methods, and evaluate its performance in a Markov decision process setting.",
+      "authors": [
+        "Juntian Zhu",
+        "Guanpu Chen",
+        "Tongtian Zhu",
+        "Miguel de Carvalho",
+        "Zhouwang Yang",
+        "Fengxiang He"
+      ],
+      "primary_category": "cs.MA",
+      "categories": [
+        "cs.MA"
+      ],
+      "published": "2026-08-10T08:14:46+00:00",
+      "link": "https://arxiv.org/pdf/2608.09256v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Distributed learning algorithm for team games with convergence guarantees",
+      "llm_evidence_cn": "面向团队博弈的分布式学习算法与收敛性分析",
+      "llm_evidence": "面向团队博弈的分布式学习算法与收敛性分析",
+      "canonical_evidence": "面向团队博弈的分布式学习算法与收敛性分析",
+      "llm_tldr_en": "DTOA combines team fictitious play with supervisor-based belief learning, proving convergence to near team-Nash equilibria in zero-sum potential team games while remaining resilient to Byzantine agents that misreport joint actions.",
+      "llm_tldr_cn": "在监督者网络中，智能体依赖监督者提供的信念信息，但信念估计误差和拜占庭团队的错误报告会造成不准确。为此提出分布式团队编排算法DTOA，将团队虚拟对局与基于监督者的分布式信念学习结合。理论证明监督者信念估计收敛，学习动力学在团队纳什差距意义上收敛至近似团队纳什均衡，并对拜占庭错误具有鲁棒性。该方法为多智能体团队博弈中的去中心化学习提供了理论基础。",
+      "llm_tldr": "在监督者网络中，智能体依赖监督者提供的信念信息，但信念估计误差和拜占庭团队的错误报告会造成不准确。为此提出分布式团队编排算法DTOA，将团队虚拟对局与基于监督者的分布式信念学习结合。理论证明监督者信念估计收敛，学习动力学在团队纳什差距意义上收敛至近似团队纳什均衡，并对拜占庭错误具有鲁棒性。该方法为多智能体团队博弈中的去中心化学习提供了理论基础。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.09389v1",
+      "source": "arxiv",
+      "title": "Regret, equilibrium, and learning in games: A guided tour",
+      "abstract": "This note aims to serve as an entry point to the literature on learning in games, a topic with significant theoretical appeal and a wide range of applications -- from machine learning and data science to economics and beyond. Our presentation is structured around two complementary viewpoints: We first consider a single agent -- the learner -- engaged in a sequential decision process in an unknown, non-stationary, and possibly adversarial environment. We then examine what happens when the environment is shaped by the decisions of several interacting agents, not necessarily aware of each other's actions or goals, and all seeking to improve their individual rewards. In this general context, we examine a family of regularized learning policies based on best-responding to the past history of play, up to a regularization penalty intended to encourage exploration and prevent over-commitment to suboptimal choices. In the single-agent setting, we present some basic regret bounds for regularized learning in adversarial multi-armed bandits; in the multi-agent setting, we describe an ergodic equilibrium convergence result for zero-sum games in the spirit of classical results on fictitious play, as well as a \"folk theorem\" linking strategic and dynamic notions of stability -- Nash equilibria and attracting points of regularized learning, respectively. We pay special attention to the information available to the players and, through a unified analysis framework, we study both oracle- and payoff-based (bandit) methods. Our goal is to provide a coherent and comprehensible -- albeit, by necessity, not comprehensive -- account of some recent ideas in the field, and to discuss their implications for the study of rationality.",
+      "authors": [
+        "Panayotis Mertikopoulos"
+      ],
+      "primary_category": "cs.GT",
+      "categories": [
+        "cs.GT",
+        "cs.LG",
+        "math.OC"
+      ],
+      "published": "2026-08-10T10:14:50+00:00",
+      "link": "https://arxiv.org/pdf/2608.09389v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Survey of learning algorithms and game-theoretic concepts for AI decision-making in games",
+      "llm_evidence_cn": "博弈中学习算法与均衡概念的综述，属于游戏人工智能基础",
+      "llm_evidence": "博弈中学习算法与均衡概念的综述，属于游戏人工智能基础",
+      "canonical_evidence": "博弈中学习算法与均衡概念的综述，属于游戏人工智能基础",
+      "llm_tldr_en": "This note is an entry point to the literature on learning in games, covering a single learner in adversarial environments and multiple interacting agents, with regularized learning policies based on best-responding.",
+      "llm_tldr_cn": "博弈中的学习是机器学习与经济学交汇的重要课题。这篇导览从两个视角展开：先讨论单个学习者在未知、非平稳甚至对抗环境中的序贯决策，再考虑多个相互作用的智能体共同追求个体奖励的情形。综述还介绍了一族基于最优应对的正则化学习策略，为博弈智能体设计提供统一视角。作为入门文献，它对游戏场景中的智能体学习有重要的参考价值。",
+      "llm_tldr": "博弈中的学习是机器学习与经济学交汇的重要课题。这篇导览从两个视角展开：先讨论单个学习者在未知、非平稳甚至对抗环境中的序贯决策，再考虑多个相互作用的智能体共同追求个体奖励的情形。综述还介绍了一族基于最优应对的正则化学习策略，为博弈智能体设计提供统一视角。作为入门文献，它对游戏场景中的智能体学习有重要的参考价值。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "artificial intelligence in games",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

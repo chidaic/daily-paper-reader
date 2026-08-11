@@ -1,0 +1,239 @@
+Title: You Are Not My Teammate: Behavioral Fingerprint-based Detection of Suspicious Account Misuse
+
+URL Source: https://arxiv.org/pdf/2608.09132v1
+
+Published Time: Tue, 11 Aug 2026 01:51:33 GMT
+
+Number of Pages: 12
+
+Markdown Content:
+# You Are Not My Teammate: Behavioral Fingerprint-based Detection of Suspicious Account Misuse 
+
+Dong Hwan Lee and Huy Kang Kim 
+
+School of Cybersecurity, Korea University, Republic of Korea 
+
+{20-10076, cenda}@korea.ac.kr 
+
+Abstract. Online games have been continuously affected by cyber threats such as game bots and gold farming. Game bots, which are automated programs that play on behalf of human users, significantly accelerate character progression and reduce the engagement of legitimate players, potentially leading to user churn. In addition, gold farming enables the monetization of in-game currency into real-world money, resulting in un-fair profits. For these reasons, prior studies have primarily focused on de-tecting game bots and gold farming. However, in competitive Multiplayer Online Battle Arena (MOBA) games such as League of Legends, match outcomes and rankings are the primary objectives, where individual per-formance is more critical than in-game economic factors. Accordingly, account misuse such as account sharing and boosting has emerged as a major threat to fair competition. In this study, we propose a behavioral fingerprint-based detection method. Our approach analyzes and quanti-fies changes between a player’s historical and recent in-game behaviors. Consequently, it enables the robust identification of suspicious account sharing and boosting, even in label-scarce environments. Experimental results show that behavioral fingerprints within the same account are distinguishable from those across different accounts, supporting rapid detection of suspicious account misuse even with limited labeled data. 
+
+Keywords: Behavioral fingerprint · Account misuse · Anomaly detec-tion · Game security · Boosting · League of Legends 
+
+## 1 Introduction 
+
+Online games have evolved beyond entertainment into major social and economic platforms, giving rise to diverse cheating behaviors including game bots and gold farming [1]. However, in competitive Multiplayer Online Battle Arena (MOBA) games such as League of Legends, individual skill and rank are more critical than in-game economic assets, making account misuse such as account sharing and boosting major concerns [2]. In particular, when a player with abnormally high skill intervenes in a matchmaking environment intended for similarly skilled players, the balance of the game is disrupted. This inflicts repeated, unfair losses on legitimate players, directly degrading user engagement and accelerating churn arXiv:2608.09132v1 [cs.CR] 10 Aug 2026 2 Dong Hwan Lee and Huy Kang Kim 
+
+[3]. Thus, detecting and mitigating account misuse is critical in MOBA games from the perspective of game’s security and fairness. To address these issues, Riot Games explicitly prohibits account misuse in its terms of service and states that violations may result in penalties such as service restrictions [4]. This indicates that the threats posed by boosting are recognized not as a regional concern, but as a universal challenge to competitive fairness in online gaming. Conventional login-based security mechanisms primarily focus on authentication of users and detection of abnormal login activities. However, after authentication, it is difficult to directly verify whether the actual player is the legitimate account owner. Furthermore, since boosting is performed by human players rather than game bots, it is difficult to detect using conventional approaches such as social profiling. To address these challenges, we propose an approach that detects suspicious account misuse based on players’ gameplay fingerprints, focusing on the fact that a player’s gameplay style and strategy shift when a different player controls the account. Fig. 1 illustrates the process of detecting suspicious activities based on changes in behavioral fingerprints caused by a player change. We apply a normalization technique that accounts for structural differences across positions, thereby reducing bias and effectively capturing detailed behavioral variations within the same position. Furthermore, by comparing past and recent behavioral fingerprints of a player, we can effectively identify suspicious accounts even in a label-scarce environment. The main contributions of this paper are as follows: 
+
+– We propose a behavioral fingerprint-based method that enables rapid triage of suspicious account misuse using only server-side match logs. 
+
+– We apply role-based normalization to reduce structural bias across positions and enable fair behavioral comparison. 
+
+– We show that intra-account behavioral fingerprints are distinguishable from inter-account fingerprints, supporting detection in label-scarce environments. 
+
+## 2 Related Work 
+
+2.1 Online Game Security and Cheating 
+
+With the growth of online games, various forms of cheating have continuously increased, leading to the development of diverse detection methods. Early stud-ies systematically categorized cheating in online games and defined fairness as a core element of game security [5], followed by research that further classified cheating in MMORPG environments into game bots, account theft, and gold farming, along with corresponding detection methods [6]. Subsequent studies detected game bots using multimodal behavioral features [7] and self-similarity [8], and identified gold farming networks via trade graph analysis [9]. These studies primarily focus on detecting cheating behaviors driven by automation or economic profit. However, beyond cheating driven by automation or economic profits, account misuse such as account sharing and boosting has also been iden-tified as a critical threat to game fairness, and prior studies have analyzed the Behavioral Fingerprint-based Detection of Suspicious Account Misuse 3
+
+Fig. 1: Overview of the proposed approach for detecting suspicious account mis-use based on behavioral fingerprint analysis. concept of boosting and its negative impacts, including unfair matchmaking and the degradation of ranking system integrity [2, 10]. Nevertheless, studies that directly detect boosting using gameplay data remain limited. In MOBA games, particularly in League of Legends, prior research has explored matchmaking fairness and rank system design [10, 11], and player performance evaluation and match outcome prediction [12, 13]. However, despite this breadth of League of Legends research, no prior study has directly addressed the detection of account misuse such as account sharing and boosting using server-side match logs alone. This gap motivates the present work. 
+
+2.2 Behavioral and Biometric-based Approaches 
+
+Research aimed at identifying individuals based on players’ behavioral patterns has also been continuously conducted. Early studies showed that player-specific characteristics could be captured through idle-time distributions during game-play [14]. Subsequently, an approach was proposed that modeled the process of identity theft step by step and detected anomalous behavior by combining behav-ioral patterns with economic activities [15] or by analyzing server-side action se-quences [16]. In FPS environments, behavioral fingerprints such as aim accuracy and movement patterns have been used to detect cheating [17], demonstrating that server-side behavioral analysis is feasible. User authentication using mouse and keystroke dynamics has also been explored, including account owner iden-tification in League of Legends [18]. However, such approaches are constrained in real-world service deployment because they require client-side data collection. Accordingly, we complement prior work by detecting suspicious account misuse using only server-side match logs. 4 Dong Hwan Lee and Huy Kang Kim 
+
+## 3 Background 
+
+3.1 Account Misuse 
+
+Account misuse refers to the use of a game account by an individual other than the legitimate owner, in violation of the platform’s Terms of Service [4]. Two primary forms exist in competitive MOBA environments: account sharing, where another individual uses someone else’s account, and boosting, where a highly skilled player plays on behalf of another user’s account to artificially increase its rank. Both behaviors are distinct from account theft and cause a noticeable shift in the account’s behavioral fingerprint regardless of motivation. Since the goal of this work is to detect accounts that show such a shift, our method does not need to distinguish between the two cases. 
+
+3.2 Position-based Game Structure and Early Game 
+
+In League of Legends, each player is assigned one of five positions — Top, Jungle, Mid, Bottom, and Support — per match, each with distinct roles and behavioral patterns. For example, Bottom and Jungle tend to focus on Creep Score (CS), whereas Support emphasizes vision control and team combat [12]. Due to these structural differences, position-based bias must be accounted for when analyzing behavioral fingerprints. Similarly, the gameplay evolves over time from an early phase focused on individual play to a late phase dominated by team combat. The period up to approximately 10 minutes after the start of a match is defined as the early game, and it can have a significant impact on match outcomes [19]. During this phase, players primarily engage in individual play, allowing their personal play styles to be directly reflected. Due to these characteristics, early game data are suitable for analyzing players’ distinctive behavioral features. 
+
+3.3 Behavioral Fingerprint 
+
+A behavioral fingerprint refers to a quantitative representation of a player’s distinctive play style and strategy, based on the concept that individuals can be distinguished through their in-game behavior. In MOBA environments, this encompasses aspects such as champion selection preferences, farming behavior, and combat participation patterns, which inherently change when the actual player changes. 
+
+## 4 Method 
+
+4.1 Data Collection 
+
+We collected match data via the Riot Games API by randomly selecting seed accounts from ranked players on the Korean server and iteratively expanding the account set through match participant information. Since our proposed Behavioral Fingerprint-based Detection of Suspicious Account Misuse 5
+
+approach analyzes behavioral patterns by comparing windows of consecutive matches within each account, sufficient per-account match records are essential to construct both the baseline and recent windows reliably. Because the number of available matches varied considerably across accounts, we selectively collected additional matches for accounts with insufficient records in later stages. We ex-cluded accounts with fewer than 35 matches, yielding 100 accounts for analysis. 
+
+4.2 Feature Design 
+
+To design behavioral features, we extracted server-side match and timeline met-rics from the Riot Games API and constructed derived features to capture behav-ioral changes within an account. Based on prior MOBA and League of Legends studies [10, 12, 13, 19], we extracted 12 derived features from server-side match logs and organized them into five categories: champion selection pattern, position distribution, farming behavior, vision score, and combat participation behavior. We computed farming behavior from the first 10 minutes of each match to cap-ture individual early-game behavior. For features that vary significantly across positions, we applied role-based Z-score normalization. 
+
+Champion Selection Pattern Champion selection pattern captures a player’s champion preference using Champion Pool Size and Champion Usage Entropy. Champion Pool Size measures the number of distinct champions used, while Champion Usage Entropy captures how evenly champion selections are dis-tributed: 
+
+ChampionPoolSize = |{ Champion k : k = 1 , . . . , N }| , H = −
+
+> C
+
+X
+
+> i=1
+
+pi log pi (1) where Champion k denotes the champion played in the k-th match, and N is the total number of matches in the window. C denotes the number of distinct cham-pions, pi denotes the proportion of matches in which the i-th distinct champion was played, and H denotes the champion usage entropy. 
+
+Position Distribution Unlike champion selection, which spans a large and variable set of options, position is drawn from a small fixed set of five roles, allowing a direct proportion-based formulation. Position Distribution represents a player’s position preference as a five-dimensional vector, where each dimension corresponds to the proportion of matches played in one of the five positions: 
+
+Pr = 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+I(pos i = r) (2) where N is the total number of matches, pos i denotes the position selected by the player in the i-th match, r ∈ { TOP, JUNGLE, MIDDLE, BOTTOM, SUPPORT },and I is the indicator function. 6 Dong Hwan Lee and Huy Kang Kim 
+
+Farming Behavior We selected CS-based features to represent a player’s farm-ing ability. To more accurately capture individual behavior, we used CS per minute at 10 minutes. Since CS distributions differ substantially across posi-tions, we applied role-based Z-score normalization: 
+
+CS 10 = CS at 10 min 
+
+10 , CS role _z = CS 10 − μrole 
+
+σrole 
+
+(3) To capture both performance and consistency across matches, we used CS role _z _mean 
+
+and CS role _z _std as derived features. 
+
+Vision Score Vision Score captures vision control behavior, including ward placement and removal. To remove the effect of match duration and position-based differences, we first divided the raw Vision Score V by the match duration 
+
+t (in minutes) and then normalized it within each position: 
+
+Vision role _z = (V /t ) − μrole 
+
+σrole 
+
+(4) 
+
+Combat Participation Behavior Combat Participation Behavior was rep-resented using Kill Participation (KP) and Damage Share (DS). KP measures a player’s involvement in team kills, while DS measures the proportion of to-tal team damage dealt by the player. We normalized both features within each position to reduce position-based bias: 
+
+KP = Kills + Assists Team Kills , DS = Damage Dealt Team Total Damage (5) 
+
+KP role _z = KP − μrole 
+
+σrole 
+
+, DS role _z = DS − μrole 
+
+σrole 
+
+(6) 
+
+4.3 Behavioral Fingerprint Modeling 
+
+To quantitatively model player behavior, we constructed behavioral fingerprints for each account based on match data ordered chronologically. We generated windows consisting of a fixed number of matches, each represented as a single 12-dimensional vector. For example, we summarized kill participation and damage share as their mean across matches in the window. We defined a baseline window to represent a stable gameplay style and a recent window to capture changes in behavioral fingerprints. The baseline window used a relatively larger window size to reflect long-term behavioral patterns, whereas the recent window used a smaller window size to sensitively capture short-term shifts in gameplay style. We set candidate window sizes to 5, 10, 20, 25, and 30 matches, and the selection criteria are described in Section 5.3. Behavioral Fingerprint-based Detection of Suspicious Account Misuse 71 2 3 4 5 6 7Anomaly Score 020 40 60 80 100 Cumulative Proportion (%) 
+
+> Empirical CDF Smoothed CDF (Spline) Knee point: score=4.62 (Top 15%)
+
+Fig. 2: Empirical CDF of anomaly scores. The Kneedle threshold is detected at score 4.62. 
+
+4.4 Anomaly Detection 
+
+To identify suspicious account misuse, we defined the change in behavioral fin-gerprints between the baseline and recent windows as an anomaly score [20], computed as the Euclidean distance between their feature vectors: 
+
+d = ∥vbaseline − vrecent ∥2 (7) where vbaseline and vrecent denote the feature vectors of each window. Prior to computation, we applied StandardScaler to ensure that no single feature dispro-portionately influences the distance. To determine the threshold in a data-driven manner, we applied the Kneedle algorithm [21] to the empirical CDF of anomaly scores, which identifies the knee point marking the boundary between the con-centrated normal region and the sparse upper tail directly from the data without requiring an arbitrarily chosen percentile. We fitted a cubic smoothing spline to the CDF with the initial value set to zero to satisfy the boundary condition. We set the sensitivity parameter S to 1 to avoid premature knee detection, con-firming consistency for S = 2 and S = 3 . The resulting threshold at score 4.62 corresponded to the top 15%, as shown in Fig. 2. We therefore classified accounts with anomaly scores above this threshold as suspicious [22]. 
+
+## 5 Experimental Design and Analysis 
+
+5.1 Experimental Setup 
+
+We collected data from January to March 2026 using the Riot Games API, tar-geting ranked solo queue matches on the League of Legends Korean server. We selected the Korean server because it provides an active and highly competitive ranked environment, and a prior study has also reported account sharing sanc-tions in the Korean competitive gaming context [2]. We excluded accounts with fewer than 35 matches to ensure sufficient data for simultaneously construct-ing candidate baseline windows of up to 30 matches and a recent window of 5 8 Dong Hwan Lee and Huy Kang Kim 
+
+Table 1: Intra-account and Inter-account Distance Comparison                          
+
+> Distance Type Window Pair Mean Median
+> Intra-account distance (maximum per anchor window) 5 vs 35 3.293 3.025 10 vs 35 2.285 2.197 20 vs 35 1.282 1.243 25 vs 35 0.875 0.796 30 vs 35 0.509 0.444 Inter-account distance 5 vs 5 5.179 5.105 10 vs 10 4.747 4.791 20 vs 20 4.496 4.521 25 vs 25 4.492 4.513 30 vs 30 4.489 4.488 35 vs 35 4.513 4.500
+
+matches, yielding 100 accounts for analysis. To examine whether the proposed method responds to behavioral changes, we conducted a controlled behavioral-change validation using 10 accounts. In each case, the original account owner intentionally altered their gameplay style and strategy across a minimum of 5 consecutive ranked matches while playing the account personally. For example, we instructed participants to adopt a more passive combat style than usual while focusing more aggressively on farming. This validation does not constitute actual account sharing or boosting, but serves to examine whether the proposed be-havioral fingerprint can detect controlled behavioral changes within an account. 
+
+5.2 Validity Verification 
+
+We conducted validity verification to confirm the core assumption underlying the proposed detection approach — namely, that distances between behavioral fingerprints within the same account are significantly smaller than those between different accounts. For each account, we set the most recent 35 matches as the ref-erence interval and constructed nested windows of sizes 5, 10, 20, 25, 30, and 35 matches, all anchored at the most recent match within the reference interval. We represented each window as a 12-dimensional behavioral fingerprint vector com-prising features such as champion selection diversity and position distribution. We compared intra-account distances and inter-account distances, following the same standardization procedure described in Section 4.4. Table 1 summarizes the representative intra- and inter-account distances. Even the largest intra-account distance (3.293 for 5 vs. 35) remained substantially below the smallest inter-account distance (4.489 for 30 vs. 30), confirming a clear separation between the two distributions. These findings demonstrate that behavioral fingerprints stably capture account-level patterns and are applicable to detecting suspicious account misuse. 
+
+5.3 Baseline Window Size Selection 
+
+To determine the optimal window sizes, we measured two criteria for each can-didate window. Stability ( Snorm ) measures how consistently a behavioral finger-Behavioral Fingerprint-based Detection of Suspicious Account Misuse 90.0 0.2 0.4 0.6 0.8 1.0 S_norm 0.0 0.2 0.4 0.6 0.8 1.0 D_norm 
+
+> W5 W10 W20 W25 W30
+> TOPSIS Decision Plane
+> Ideal (1, 1) Anti-ideal (0, 0)
+
+(a) Decision Plane 5 10 20 25 30 Window size 0.0 0.2 0.4 0.6 0.8 1.0 C 
+
+> Selected W20
+> TOPSIS Closeness Coefficient
+
+(b) Closeness coefficient Cw per window 
+
+Fig. 3: TOPSIS-based baseline window size selection. (a) Each candidate window is plotted in the normalized criterion space. (b) The 20-match window achieves the highest closeness coefficient and is selected as the baseline window. print is maintained when transitioning to an adjacent larger window, measured as the Euclidean distance between adjacent window pairs, with inverted Min-Max normalization applied so that higher scores correspond to greater stability. Sensitivity ( Dnorm ) measures how well a window captures the difference be-tween short-term and long-term behavioral patterns, measured as the Euclidean distance between each window and the maximum-size window of 35 matches, normalized via standard Min-Max normalization. To objectively select the opti-mal baseline window size, we employed TOPSIS [23] with normalized stability and sensitivity as evaluation criteria. Letting vw = ( Snorm ,w , D norm ,w ) denote the criterion vector of window w, we defined the ideal solution v+ = (1 , 1) and anti-ideal solution v− = (0 , 0) . We computed the distance to each reference point and the closeness coefficient Cw as: 
+
+d± 
+
+> w
+
+= ∥vw − v±∥2, Cw = d−
+
+> w
+
+d+ 
+
+> w
+
++ d−
+
+> w
+
+(8) As shown in Fig. 3, the 20-match window achieved the highest closeness coeffi-cient ( C = 0 .558 ), so we selected it as the baseline window. Since we considered fewer than 5 matches likely to compromise statistical stability, we established 5 matches as the minimum for the recent window. 
+
+## 6 Results and Discussion 
+
+6.1 Suspicious Account Detection Results 
+
+We computed anomaly scores based on a 20-match baseline window and a 5-match recent window, with the baseline constructed from the 20 matches imme-diately preceding the recent window. We present the score distribution across 100 accounts in Fig. 4(a), ranging from 1.11 to 7.55 with a mean of 3.19 and a 10 Dong Hwan Lee and Huy Kang Kim 1 2 3 4 5 6 7
+
+> Anomaly Score
+> 0246810 12
+> Account Count
+> Accounts (n=100) Threshold (score=4.62, Top 15%)
+
+(a) Anomaly scores (100 accounts) 1 2 3 4 5 6 7 
+
+> Anomaly Score
+> 0246810 12
+> Account Count
+> Unlabeled accounts (n=100) Controlled account detected (n=8) Controlled account undetected (n=2) Threshold (score=4.62, Top 15%)
+
+(b) Anomaly scores (Controlled accounts) 
+
+Fig. 4: Distribution of anomaly scores with threshold at score 4.62 (dashed line). (a) Most accounts concentrate in the lower region with few in the upper tail. (b) Among 10 controlled accounts (red triangles), 8 are detected and 2 are not. median of 3.01. Applying the threshold of 4.62, we classified 15 accounts (the top 15%) as suspicious. To validate detection capability, we introduced 10 controlled behavioral-change accounts into the pipeline. As shown in Fig. 4(b), 8 of the 10 controlled accounts (80%) exceeded the threshold. The two undetected accounts recorded scores of 4.27 and 3.85, which may reflect a relatively moderate de-gree of behavioral change compared to more pronounced real-world cases. Our feature-level analysis of the detected accounts revealed that CS role _z _std and position distribution consistently exhibited the largest variation, emerging as primary indicators of a gameplay style shift. These results indicate that our ap-proach can effectively identify suspicious accounts in a label-scarce environment, demonstrating its potential as a rapid triage tool for further analysis. 
+
+6.2 Discussion 
+
+While our proposed approach demonstrated the ability to effectively identify suspicious account misuse, several limitations warrant consideration. First, we conducted experiments on 100 accounts, which may not be sufficient to validate generalizability, and future work should construct larger-scale datasets. We in-stantiated our framework using League of Legends features, and testing it on other games remains future work as well. Second, since we explicitly instructed participants to alter specific behaviors, the observed changes may partly reflect these instructions, and this controlled setting may not fully capture the degree of gameplay style shifts observed in actual misuse cases. Finally, we defined the baseline window as the 20 matches immediately preceding the recent window. If account misuse persists over an extended period, behavioral patterns from the misuse period may be incorporated into the baseline window, diluting the de-tectable change and limiting the method to short-term or sporadic misuse rather than long-term, persistent cases. Future research may consider dynamically con-figuring the baseline window to mitigate this issue. While false positives cannot be fully excluded, we designed the proposed approach to serve as a rapid triage Behavioral Fingerprint-based Detection of Suspicious Account Misuse 11 
+
+tool, and we treat accounts exceeding the threshold as suspicious candidates for further analysis, not as confirmed misuse cases. 
+
+## 7 Conclusion 
+
+We proposed a behavioral fingerprint-based detection method for identifying sus-picious account misuse such as account sharing and boosting in MOBA game environments. Unlike prior studies focused on game bot detection or player identification, we addressed the problem of detecting behavioral changes within the same account using a sliding-window framework and an unsupervised ap-proach to ensure applicability in label-scarce environments. Our experimental results confirmed that intra-account distances were significantly smaller than inter-account distances, and the data-driven threshold derived from the Kneedle algorithm identified 15 suspicious accounts in the upper tail of the score distribu-tion. Our validation using 10 controlled accounts further demonstrated an 80% detection rate. These results suggest that our proposed approach can serve as a rapid triage tool, enabling early detection of suspicious accounts. Among the fea-tures, we identified CS role _z _std and position preference as primary indicators of play style shift. However, the detection results on unlabeled accounts remain at the level of suspicion, as verified labels for real-world misuse cases were unavail-able. Future work will validate detection performance using larger datasets with verified labels and extend the framework to handle long-term misuse scenarios. 
+
+Acknowledgements. This work was supported by Korea Internet & Security Agency (KISA) grant funded by the Korea government (PIPC) (No. 2780000036, Masters and Doctoral Program for Advanced Talent Development in Personal Data Protection and Responsible Use). 
+
+## References           
+
+> 1. Kim, J.E., Tsvetkova, M.: Cheating in online gaming spreads through observation and victimization. Network Science 9(4), 425–442 (2021) 2. Conroy, E., Kowal, M., Toth, A.J., Campbell, M.J.: Boosting: Rank and skill de-ception in esports. Entertainment Computing 36 , 100393 (2021) 3. Kang, H., Suh, C., Kim, H.K.: Match experiences affect interest: Impacts of match-making and performance on churn in a competitive game. Heliyon 10 (3), e24891 (2024) 4. Riot Games: Terms of Service. https://www.riotgames.com/en/ terms-of-service , last accessed 2026/06/27 5. Yan, J., Randell, B.: An investigation of cheating in online games. IEEE Security & Privacy 7(3), 37–44 (2009) 6. Han, M.L., Kwak, B.I., Kim, H.K.: Cheating and detection method in massively multiplayer online role-playing game: Systematic literature review. IEEE Access
+> 10 , 49050–49063 (2022) 7. Kang, A.R., Jeong, S.H., Mohaisen, A., Kim, H.K.: Multimodal game bot detection using user behavioral characteristics. SpringerPlus 5(1), 523 (2016)
+
+12 Dong Hwan Lee and Huy Kang Kim 8. Lee, E., Woo, J., Kim, H., Mohaisen, A., Kim, H.K.: You are a game bot!: Uncover-ing game bots in MMORPGs via self-similarity in the wild. In: Proceedings of the Network and Distributed System Security Symposium (NDSS), pp. 1–15 (2016) 9. Kwon, H., Mohaisen, A., Woo, J., Kim, Y., Lee, E., Kim, H.K.: Crime scene recon-struction: Online gold farming network analysis. IEEE Transactions on Information Forensics and Security 12 (3), 544–556 (2016) 10. Fan, G., Zhang, C., Wang, K., Li, Y., Chen, J., Xu, Z.: CUPID: Improving battle fairness and position satisfaction in online MOBA games with a re-matchmaking system. Proceedings of the ACM on Human-Computer Interaction 8(CSCW2), 1–39 (2024) 11. Claypool, M., Decelle, J., Hall, G., O’Donnell, L.: Surrender at 20? Matchmaking in League of Legends. In: Proceedings of the IEEE Games Entertainment Media Conference (GEM), pp. 1–4. IEEE (2015) 12. De Bois, M., Parmentier, F., Puget, R., Tanti, M., Peltier, J.: PandaSkill-player performance and skill rating in esports: Application to League of Legends. IEEE Transactions on Games 17 (4), 989–1002 (2025) 13. Hojaji, F., McIlroy, R.E., Dupuy, A., Pedroni, G., Toth, A.J., Campbell, M.J.: Deep learning techniques for identifying KPIs in League of Legends: Win prediction, map navigation, and vision control. Computers in Human Behavior Reports 19 , 100718 (2025) 14. Chen, K.T., Hong, L.W.: User identification based on game-play activity patterns. In: Proceedings of the ACM SIGCOMM Workshop on Network and System Sup-port for Games (NetGames), pp. 7–12 (2007) 15. Woo, J., Choi, H.J., Kim, H.K.: An automatic and proactive identity theft detection model in MMORPGs. Applied Mathematics & Information Sciences 6(1S), 291S– 302S (2012) 16. Kim, H., Yang, S., Kim, H.K.: Crime scene re-investigation: A postmortem analysis of game account stealers’ behaviors. In: 2017 15th Annual Workshop on Network and Systems Support for Games (NetGames), pp. 1–6. IEEE Computer Society (2017) 17. Alayed, H., Frangoudes, F., Neuman, C.: Behavioral-based cheating detection in online first person shooters using machine learning techniques. In: Proceedings of the IEEE Conference on Computational Intelligence and Games (CIG), pp. 1–8 (2013) 18. Beserra, I.D.S., Camara, L., da Costa-Abreu, M.: Using keystroke and mouse dy-namics for user identification in the online collaborative game League of Legends. In: Proceedings of the International Conference on Imaging for Crime Detection and Prevention (ICDP), pp. 1–6 (2016) 19. Gaina, R., Nordmoen, C.: League of Legends: A study of early game impact. School of Electronic Engineering and Computer Science, Queen Mary University of Lon-don, London (2018) 20. Chandola, V., Banerjee, A., Kumar, V.: Anomaly detection: A survey. ACM Com-puting Surveys 41 (3), 1–58 (2009) 21. Satopaa, V., Albrecht, J., Irwin, D., Raghavan, B.: Finding a “Kneedle” in a haystack: Detecting knee points in system behavior. In: Proceedings of the 31st In-ternational Conference on Distributed Computing Systems Workshops (ICDCSW), pp. 166–171 (2011) 22. Hodge, V., Austin, J.: A survey of outlier detection methodologies. Artificial In-telligence Review 22 (2), 85–126 (2004) 23. Tzeng, G.-H., Huang, J.-J.: Multiple Attribute Decision Making: Methods and Applications. CRC Press (2011)
