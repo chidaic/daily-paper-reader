@@ -1,0 +1,69 @@
+{
+  "label": "2026-08-13",
+  "date": "2026-08-13",
+  "generated_at": "2026-08-13T19:45:02",
+  "count": 4,
+  "papers": [
+    {
+      "paper_id": "202608/13/2608.12216v1-pharos-night-crown-pursuit-an-ai-native-deck-building-and-tactical-arena-game-design-based-on-multi-agent-systems",
+      "section": "deep",
+      "title_en": "\"Pharos Night: Crown Pursuit\": An AI-Native Deck-Building and Tactical Arena Game Design Based on Multi-Agent Systems",
+      "authors": "Ting-Chen Hsu, Jueyao Liu, Yanzi Zhou, Jiangxu Lin, Haoyu Xu, Yuwen Liu, Yanjia Liu, Bangjing Xu",
+      "date": "2026-08-12",
+      "pdf": "https://arxiv.org/pdf/2608.12216v1",
+      "score": "9.0",
+      "evidence": "基于大模型多智能体系统的AI原生游戏设计，直接驱动游戏玩法与NPC决策",
+      "tldr": "随着生成式AI技术发展，AI原生游戏成为探索方向，本文基于多智能体系统设计卡牌构筑与战术竞技游戏。系统利用大语言模型生成素材和卡牌、支持NPC决策及自然语言交互，并通过结构化JSON和预定义机制限制生成内容。13人试玩显示该游戏能提供有战略意义且吸引人的AI驱动体验，但也暴露了可预测性、透明度和玩家控制方面的挑战。研究展示了多智能体生成式AI在创造涌现式数字游戏方面的潜力。",
+      "tags": "query:player-ai",
+      "abstract_en": "With advancements in generative AI technology, an increasing number of researchers have begun exploring AI-native games in which gameplay rules are directly driven by generative AI. This paper presents \"Pharos Night: Crown Pursuit,\" an AI-native deck-building and tactical arena game based on a multi-agent system. The game uses large language models to generate materials and cards, support NPC decision-making, and mediate natural-language interactions. During play, players collect materials, describe desired card effects in natural language, and choose whether to negotiate or fight with NPCs in the arena. To constrain model-generated outcomes, the system parses responses as structured JSON, constructs card effects from predefined mechanics, and maps qualitative effect levels to designer-specified numerical values. A small-scale playtest with 13 participants suggests that the system can provide strategically meaningful and engaging AI-driven gameplay, while also revealing challenges related to predictability, transparency, and player control. This work demonstrates the potential of multi-agent generative AI systems for creating more emergent digital game experiences.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/13/2608.12253v1-one-frozen-simulator-is-not-enough-simulator-collapse-in-multi-agent-rl",
+      "section": "deep",
+      "title_en": "One Frozen Simulator Is Not Enough: Simulator Collapse in Multi-Agent RL",
+      "authors": "Simon Yu, Nicholas Tomlin, Marwa Abdulhai, Ximing Lu, Derek Chong, Abe Hou, Dilara Soylu, Sergey Levine, Christopher D. Manning, Weiyan Shi",
+      "date": "2026-08-12",
+      "pdf": "https://arxiv.org/pdf/2608.12253v1",
+      "score": "8.0",
+      "evidence": "研究LLM模拟用户行为时的模拟器崩溃问题并提出解决方案",
+      "tldr": "多智能体强化学习通常用单个大语言模型模拟用户，但该模拟器存在模式坍缩，导致策略过拟合窄策略，难以泛化到真实用户。本文提出推理时的Verbalized Sampling和训练时的Co-Training两种互补方案，分别通过采样语言化响应分布和联合优化策略与模拟器群体来缓解坍缩。在三个多轮基准上，两方案将留出成功率提升最高14%，人类研究也验证了实际收益。",
+      "tags": "query:player-ai",
+      "abstract_en": "Multi-agent reinforcement learning for human-AI interaction typically relies on a single large language model to simulate user behavior. We show that this approach systematically fails to generalize, and trace the failure to simulator collapse: because the simulator LLM is mode-collapsed, an LLM policy trained against it overfits to narrow strategies that exploit the simulator's dominant mode, and such a policy transfers poorly to unseen simulators and real users. We formalize this collapse theoretically and propose two complementary solutions, one at inference time and one at training time. The inference-time solution, Verbalized Sampling, broadens the simulator's behavior by sampling from a verbalized response distribution, reducing mode collapse. The training-time solution, Co-Training, jointly optimizes the policy against a population of trainable simulators, preventing it from overfitting to any single simulator's mode. We validate both solutions on three multi-turn benchmarks: Persuasion for Good, $τ^2$-bench, and CooperBench. Verbalized Sampling improves held-out success by up to 9% over single-simulator RL, and Co-Training pushes gains further to 14%; the human study shows similar gain on real users. Both solutions preserve the policy diversity that collapses under single-simulator RL. To support further work in this direction, we release SCOPE, an open-source framework for Population Co-Training multi-agent RL. More broadly, our results suggest that the diversity of the training environment, not only the policy, is critical to the generalization of multi-turn RL to real-world deployment.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/13/2608.12195v1-ifcargo-llm-based-semantic-compilation-for-al-native-rule-programming-games",
+      "section": "quick",
+      "title_en": "IF:CARGO: LLM-Based Semantic Compilation for Al-Native Rule Programming Games",
+      "authors": "Ting-Chen Hsu, Lianye Zhang, Jiangxu Lin, Zhaoyi Yu, Fei Qin, Zihao Chen",
+      "date": "2026-08-12",
+      "pdf": "https://arxiv.org/pdf/2608.12195v1",
+      "score": "7.0",
+      "evidence": "AI原生游戏，使用大语言模型作为语义编译器，玩家编写规则并与AI交互。",
+      "tldr": "CARGO创新地将LLM用作语义编译器，而非游戏代理：玩家编写的自然语言IF/THEN规则被翻译成受限命令，由游戏引擎确定性执行，从而形成表达、执行、观察、修正的调试循环。二十四名玩家的混合测试显示，他们多将模型视为翻译中介，能通过反馈改进策略，但周期性指令、多机器人协调与规则优先级机制带来更高认知诊断负担。该工作提炼出AI原生游戏设计范式：约束自然语言输入、保留玩家作者身份、确保确定性执行。",
+      "tags": "query:player-ai",
+      "abstract_en": "This case study presents IF: CARGO, an experimental puzzle game that uses a large language model as a semantic compiler rather than an autonomous game-playing agent. Players author IF/THEN rules in natural language, which the model translates into a constrained command schema for deterministic validation and execution by the game engine. This architecture creates a playable loop of expression, execution, observation, and revision, framing AI interaction as semantic debugging. A mixed-methods playtest with 24 participants across eight levels examined player attempts, thinking time, perceived controllability, adjustability, and interpretations of the AI's role. Results suggest that players generally understood the model as a translation intermediary and could revise their strategies through feedback, while periodic commands, multi-robot coordination, and rule-priority mechanics created greater cognitive and diagnostic demands. The study proposes a practical pattern for AI-native gameplay: constrain natural-language input, preserve player authorship, and ensure deterministic execution.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/13/2608.10618v1-toward-the-cognitive--physical-limits-of-embodied-intelligence-through-a-world-model-centric-autonomous-racing-agent",
+      "section": "quick",
+      "title_en": "Toward the Cognitive--Physical Limits of Embodied Intelligence through a World-Model-Centric Autonomous Racing Agent",
+      "authors": "Zitong Shan, Baichuan Lou, Yanxin Zhou, Shuge Wu, Xianqi He, Bolin Zhao, Sheng Zhao, Zhouheng Li, Chee Kiong Ong, King Ho Holden Li, Chen Lv",
+      "date": "2026-08-11",
+      "pdf": "https://arxiv.org/pdf/2608.10618v1",
+      "score": "6.0",
+      "evidence": "以世界模型为中心的自主赛车智能体，可应用于类游戏赛车环境",
+      "tldr": "具身智能体多在保守安全范围内评测，极端工况下的能力边界尚不明确。自动驾驶赛车为探索认知与物理极限提供了严格测试平台。本文提出以世界模型为中心的智能体，通过学习近极限成功与失败数据，联合建模世界状态、未来推理与极限控制，并经闭环精化不断提升能力边界利用率。在真实车辆数据（时速达256.3 km/h）和全尺寸仿真中，交互成功率88.3%，展现良好泛化与安全性。",
+      "tags": "query:player-ai",
+      "abstract_en": "Embodied artificial intelligence aims to develop agents that perceive, reason, and act through continuous interaction with the physical world. However, most embodied systems are still evaluated within conservative safety margins or moderate interaction regimes, leaving their capability boundaries under extreme conditions insufficiently understood. Autonomous racing provides a stringent testbed by combining high-frequency localization and perception, adversarial interaction, near-saturated vehicle dynamics, and strict safety constraints. Existing systems push high-speed performance but rarely model and refine cognitive and physical limits jointly. Here we show that a world-model-centric autonomous racing agent provides a concrete step toward exploring these coupled limits. The framework learns predictive world models from near-limit successes and failures to capture interaction evolution, ego dynamics, and feasible-motion boundaries, coupling world-state construction, future-aware reasoning, and near-limit control in a closed-loop refinement process. Training data were collected from real-vehicle autonomous racing, where the onboard system maintained robust localization and perception at speeds up to 256.3 km/h and peak lateral acceleration of 26.8 m/s$^2$. In full-scale simulated racing, the well trained world-model-centric agent achieves an 88.3% interaction success rate across various challenging simulated racing scenarios. Closed-loop refinement of the world model and policy further improved utilization of cognitive-physical limits, recovery from failure modes, and generalization across varying conditions and unseen circuits. These results suggest a boundary-aware methodology in which world models help embodied agents represent, predict, and continually refine their capability boundaries for safer real-world deployment.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
