@@ -1,0 +1,1387 @@
+Title: A Finite Automaton Approach to Combinatorial Games
+
+URL Source: https://arxiv.org/pdf/2608.13273v1
+
+Published Time: Fri, 14 Aug 2026 01:03:32 GMT
+
+Number of Pages: 54
+
+Markdown Content:
+# A Finite Automaton Approach to Combinatorial Games 
+
+Kai Liang ∗
+
+August 14, 2026 
+
+Abstract 
+
+This study applies finite automata to the automatic solving of a variety of combinatorial games. For games whose positions and moves can be represented as regular languages and their operations, we design a two-stage automatic solving algorithm: first, construct a candidate finite automaton to determine the P- and N -positions, and then per-form rigorous formal verification on this automaton; once verified, a complete solution of the game is obtained. For partizan octal games, we introduce a generalized mis` ere quo-tient, overcoming the limitation that traditional theory applies only to impartial games. Using the above algorithm, we successfully solve the majority of two-digit partizan octal games, and based on these results, we propose a partizan version of Guy’s conjecture. We also success-fully solve a considerable number of partizan octal games under mis` ere play, and give a conjecture on the structure of those games exhibiting “algebraic periodicity” among them. For Kotzig’s nim, we resolve the most important related conjec-ture: we prove that the outcomes and SG values are periodic under both normal and mis` ere play (including their partizan versions). Our algorithm successfully solves several small-scale cases, including mis` ere play and partizan versions. This study pioneers a new theoretical tool and algorithmic paradigm for the automatic solving of combinatorial games, and has broad prospects for further extension and application in the field of combinatorial game theory. 
+
+> ∗
+
+School of Mathematics and Statistics, Xidian University, 266 Xinglong Section, Xifeng Road, 710126 Xi’an, Shaanxi, China 24071213197@stu.xidian.edu.cn 
+
+1arXiv:2608.13273v1 [math.CO] 13 Aug 2026 1 Introduction 
+
+In combinatorial game theory, the use of finite automata for theorem proving has seen significant progress in recent years. Wythoff’s game, owing to the deep connection between its P-positions and the Fibonacci sequence, has become the most typical application sce-nario of this approach. Fraenkel proved that the P-positions of Wythoff’s game can be directly characterised by Fibonacci representations [12]. Build-ing on this, Landman used finite automata to prove the arithmetic period-icity of the SG values of Wythoff’s game [19]. Duchˆ ene et al. systematically studied the problems of adding and restricting moves while preserving the 
+
+P-positions of Wythoff’s game; their proofs rely on Fibonacci words, auto-matic sequences, and related numeration systems, and they gave methods for generating P-positions and encodings of addable moves via two-dimensional morphisms [27]. In recent years, the automatic proof tool Walnut, based on the B¨ uchi–Bruy` ere theorem, has been introduced into this field, providing a powerful supplement to traditional methods. Mignoty, Renard, Rigo, and Whiteland were the first to systematically apply Walnut to combinatorial game theory; they not only automatically reproved several known results on variants of Wythoff’s game, but also proved a conjecture of Duchˆ ene et al. concerning redundant moves and proposed several new conjectures [22, 26]. Building on previous work that mainly focused on Wythoff’s game as a specific impartial game, this study proposes a systematic algorithm that extends the finite-automaton method to a broader class of games, achieving notable breakthroughs at both the theoretical and computational levels. First, for partizan octal games and Kotzig’s nim, we encode positions and moves as strings and operations on strings, respectively. Such a representa-tion is not only suitable for these two classes of games but also enjoys good extensibility, and can be generalized to more combinatorial games whose po-sitions are based on multiple heaps or one-dimensional boards, thus laying the foundation for subsequent automaton modelling. Based on the above representation, we design a two-stage automatic solving algorithm: In the first stage, the algorithm attempts to construct a finite automaton that can determine the positions with each outcome or SG value; in the second stage, the algorithm automatically performs rigorous formal verification of the constructed automaton using automaton operations. If verification succeeds, the automaton constitutes a complete solution of the game: for any position, by scanning its encoding from left to right, one can determine its outcome or SG value in O(n) time and O(1) space, where n is the length of the position encoding. 2For partizan octal games, we overcome the difficulty that the traditional mis` ere quotient theory applies only to impartial games, and introduce the notion of a generalized mis` ere quotient based on the action of a semigroup on a set. This construction can be fully generated automatically from the results of the above automatic solving algorithm, thus for the first time filling the theoretical gap for non-dicotic partizan octal games under mis` ere play. Through analysis of the computational results, we propose a strengthened version of Guy’s conjecture. Meanwhile, for a class of mis` ere octal games exhibiting “algebraic periodicity” that the algorithm cannot yet handle, we also give a conjecture on their structure. For Kotzig’s nim, by using finite-automaton methods to study their linear variants, we prove the most crucial related conjecture: under both normal and mis` ere play, the outcomes and SG values of all impartial and partizan Kotzig’s nim are (ultimately) periodic. Our algorithm successfully solves several new small-scale Kotzig’s nim, including for the first time cases under mis` ere play and partizan versions, filling a gap in previous research. 
+
+# 2 Definitions and Notation 
+
+2.1 Combinatorial Games 
+
+The games studied in this paper are combinatorial games satisfying the following conditions: (1) Two players alternate : the two players take turns moving. (2) Perfect information : all rules, the current state, and all possible moves are public and transparent to both players. (3) No randomness : the game involves no randomness such as dice rolling or card shuffling; the outcome is entirely determined by the players’ deci-sions. Sometimes we also require combinatorial games to satisfy the following conditions: (1) Normal play : the player who makes the last move wins; equivalently, the player who cannot move loses. The opposite of this is mis` ere play , where the player who cannot move wins. (2) Impartiality : the two players have exactly the same legal moves avail-able in any given position (i.e., determined solely by the position, not by the identity of the player). Games satisfying impartiality are called impartial games ; otherwise they are called partizan games .In this paper, we generally denote by U the set of all possible positions of a given game. For a position u ∈ U , we denote by next( u) the set of all 3its (reachable in one move) options, and prev( u) := {u′ | u′ ∈ U , u ∈ next( u′)}
+
+the set of all its predecessors, i.e., the inverse of next( ·). Furthermore, the outcome of a position u is defined as follows: if the current player has a winning strategy, then u is an N -position (denoted 
+
+o(u) = N ); otherwise it is a P-position (denoted o(u) = P). We denote by 
+
+P and N the sets of all P-positions and N -positions, respectively, and by T
+
+the set of all terminal positions (positions with no legal moves). All games considered in this paper are acyclic , i.e., from any position, no matter how one moves, a terminal position is always reached in finitely many steps. In this setting, the outcome of a game can be defined recursively as follows: 
+
+Definition 2.1. For any u ∈ U :
+
+o(u) = P ⇔ ∄u′ ∈ next( u), o (u′) = N ;
+
+o(u) = N ⇔ ∃ u′ ∈ next( u), o (u′) = P.
+
+We denote by o−(u) the outcome of u under mis` ere play. Its definition is obtained from the above definition by flipping the outcome of terminal positions: 
+
+Definition 2.2. 
+
+o−(u) = P ⇔ (∄u′ ∈ next( u), o −(u′) = N ) and u / ∈ T ;
+
+o−(u) = N ⇔ (∃u′ ∈ next( u), o −(u′) = P) or u ∈ T .
+
+For impartial games, the SG value (also called Sprague–Grundy value or Nim-value) provides a more refined characterisation of the eventual outcome of positions; it is defined as follows: 
+
+Definition 2.3. For any position u ∈ U ,
+
+G(u) := 
+
+(
+
+0, u ∈ T ;mex( {G (u′) | u′ ∈ next( u)}), u / ∈ T .
+
+where the mex function mex( S) := min( N \ S)denotes the smallest nonnegative integer not appearing in a given set S of nonnegative integers. 4For two impartial games G1, G 2 (with position sets U1, U2, respectively), we define their disjunctive sum G1 + G2, whose positions are combinations of positions from the two games: 
+
+u1 + u2, u1 ∈ U 1, u 2 ∈ U 2,
+
+and whose move rule is: choose one component ui and make a move in Gi
+
+according to its rules, leaving the other component unchanged; the whole po-sition is terminal if and only if both components are terminal. The following Sprague–Grundy theorem is a cornerstone of combinatorial game theory: 
+
+Theorem 2.1. (Sprague–Grundy theorem) For any impartial game G under normal play: (1) For any position u ∈ U ,
+
+o(u) = 
+
+(
+
+P, G(u) = 0; 
+
+N , G(u) > 0.
+
+(2) For any positions u1, u 2 of impartial games G1, G 2 under normal play, 
+
+G(u1 + u2) = G(u1) ⊕ G (u2),
+
+where ⊕ denotes the bitwise XOR (nim-sum), i.e., the bitwise exclusive or of the binary expansions of two natural numbers. 
+
+2.2 Finite State Automata 
+
+An alphabet Σ is a finite set of symbols. A sequence of symbols of the form 
+
+w = c1c2 . . . c n, ci ∈ Σ
+
+is called a word , and its length n is denoted by |w|. The word of length 0 is called the empty word , denoted by ϵ.We denote by Σ∗ the set of all words over Σ of arbitrary length (including the empty word ϵ), and subsets thereof are called languages . For words 
+
+w, v ∈ Σ∗, we write wv for the word obtained by concatenating them. We write wn for the word consisting of n repetitions of w, and stipulate that 
+
+w0 = ϵ for every word w. Clearly Σ∗ forms a monoid under concatenation (called the free monoid generated by Σ), with identity element the empty word ϵ, which when concatenated with any word yields the original word. A nondeterministic finite automaton (NFA) is a quintuple 
+
+A = ⟨Σ, Q, δ, Q 0, Q F ⟩,
+
+5where (1) Σ is a finite set of symbols , called the alphabet .(2) Q is a finite set of states , called the state set .(3) δ is a mapping from Q×Σ to the power set of Q, called the transition mapping .(4) Q0 ⊆ Q is called the initial state set .(5) QF ⊆ Q is called the final state set (also referred to as accepting states in some literature). If the transition mapping δ is deterministic (each state q and symbol c
+
+corresponds to a unique next state δ(q, c )), and Q0 contains exactly one state (in which case this state is usually denoted by q0), then the automaton is called a deterministic finite automaton (DFA). We refer to DFAs and NFAs collectively as FAs. For convenience, in this paper we relax the definition of a DFA so that the next state corresponding to ( q, c ) is either unique or empty. This makes no difference in practice, since we may introduce a sink state q∅, treat 
+
+δ(q, c ) = ∅ as δ(q, c ) = q∅, with all subsequent transitions staying in q∅ and never reaching a final state, thereby achieving the same effect. In actual implementation, we do not need to record the sink state or transitions into it; hence it will be ignored in the remainder of this paper when discussing DFAs. For any P, P ′ ⊆ Q, c ∈ Σ, w ∈ Σ∗, we write: 
+
+P · cw = P ′w ⇔ P ′ = [
+
+> p∈P
+
+δ(p, c ).
+
+Every FA A defines a language over Σ∗. The languages defined by a DFA and an NFA are respectively 
+
+L(A) := {w | q0 · w ∈ QF };
+
+L(A) := {w | Q0 · w ∩ QF̸ = ∅}.
+
+In other words: read the symbols of the word w = c1 . . . c n one by one, applying them on the right to the initial state (or set of states), and repeatedly perform state transitions according to the mapping δ, until all symbols are consumed (requiring exactly |w| transitions). For a DFA, the word w is accepted if and only if the final state is a final state; whereas for an NFA, both the initial state and the states reached at each step are not unique, and w is accepted if and only if the resulting set of states intersects the final state set (i.e., there exists some path reaching a final state). 6For example, the following automaton can be used to recognise all words over Σ = {x, o} that contain an odd number of o’s: 
+
+Σ = {x, o};
+
+Q = {0, 1};
+
+δ = {0 · x = 0 , 1 · x = 1 , 0 · o = 1 , 1 · o = 0 };
+
+Q0 = {0};
+
+QF = {1}.
+
+The idea is to read the symbols from left to right, using the state to record the parity of the number of o’s, and accept when the final count is odd. It is easy to see that for a DFA, the effect of δ is nothing but a right action of the monoid Σ∗ on the set Q.A language W ⊆ Σ∗ is called regular if it can be recognised by some NFA over the alphabet Σ. This paper will make use of many theorems about regular languages and FAs; proofs of these theorems can be found in standard textbooks on formal languages and automata, and we will not elaborate on them here. 
+
+Theorem 2.2. Every regular language (recognisable by an NFA) can also be recognised by some DFA. Given an NFA, there exists an algorithm that constructs an equivalent DFA (recognising the same language). 
+
+Theorem 2.3. Every language consisting of only finitely many words is regular. 
+
+Regular languages are closed under many language operations in a very robust way, meaning that when the inputs are regular languages, the output is again regular, and there exist finite-step algorithms that construct a DFA or NFA recognising the output. For example: 
+
+Theorem 2.4. Regular languages are closed under the following operations, and these closures are effective: (1) Concatenation of regular languages: 
+
+W1W2 := {w1w2 | w1 ∈ W1, w 2 ∈ W2}.
+
+(2) Basic set operations, including intersection ∩, union ∪, and set dif-ference −. Note that here we do not use \ for set difference, in order to distinguish it from left quotient defined below. 
+
+7(3) Kleene plus and star: 
+
+W + := {w1w2 . . . w n | w1, w 2, . . . , w n ∈ W, n ∈ N+};
+
+W ∗ := {ϵ} ∪ W +.
+
+(4) Substitution of a factor v by v′, where v, v ′ ∈ Σ∗, defined as 
+
+Sub v7 →v′ (W ) := {xv ′y | ∃ x, y ∈ Σ∗, xvy ∈ W }.
+
+(5) Left and right quotients of words, defined as 
+
+x \ W := {y | xy ∈ W };
+
+W / x := {y | yx ∈ W }.
+
+# 3 Partizan Octal Games 
+
+3.1 Background 
+
+Octal games are an important class of “taking and breaking” games in combinatorial game theory, discovered and introduced by Richard Guy in 1956 [16]. The game is played on several heaps of tokens. Two players al-ternate moves; on each turn, according to the rules encoded by the game’s code, a player removes a certain number of tokens from one heap, and may sometimes split the remaining tokens into two nonempty heaps. The player who cannot move loses, and the other player wins. Standard octal games are among the most classical impartial games, i.e., the two players have exactly the same move options; partizan octal games , in contrast, assign different move rules to the two players (usually called Left and Right) [6]. Fraenkel and Kotzig first introduced this class of games in 1982 [11], and proved that their special form, partizan subtraction games, always have periodic outcomes. In 2004, Plambeck first systematically proposed the mis` ere quotient method for localised analysis of impartial games under mis` ere play [25]. Siegel later developed the full theory and suggested that “a partizan gen-eralization exists” [28]. Allen attempted to directly extend the notions of indistinguishability and the mis` ere monoid theory from impartial games to the partizan setting [2]. However, Allen proved that once the game universe contains simple partizan games such as 1 = {0 |} ,
+
+8this property no longer holds, which constitutes a fundamental obstacle to generalising the mis` ere quotient method to the partizan case [3]. Subsequent research on partizan octal games has focused on restricting the game universe to allow for a smooth generalization. Allen’s doctoral thesis and subsequent work found that if the game universe is restricted to “all-small games”, then the property 
+
+∗ + ∗ ≡ 0still holds, providing a viable breakthrough for the generalization [3]. Milley and Renault studied the universe of “dead-end games” and computed its mis` ere monoid [23]; Siegel also published a systematic study of this universe in 2023 [29]. Nowakowski and Ottaway studied a class of vertex-deletion games on graphs and pointed out that these are a special case of partizan octal games [24]. That paper explicitly noted that the periodicity study of partizan octal games was still a gap at the time: “nothing is known about partizan octal games”, and used this as a motivation for studying their graph-theoretic model. In this chapter, we will define a more general mis` ere quotient by relaxing the algebraic structure, which can overcome the limitations of the game uni-verse and directly perform mis` ere analysis on general partizan octal games. Using relevant knowledge from automata theory, we design algorithms for searching and verifying mis` ere quotients of games, which, after validation, can determine the mis` ere quotients of most partizan octal games with rela-tively simple codes, thereby providing complete solutions to the games. The remaining unsolved partizan octal games are also expected to be solvable with further increases in computational power. Based on observations from our results, we propose a “partizan version of Guy’s conjecture”. 
+
+3.2 Definitions and Notation 
+
+We represent a position of an octal game with n heaps by a sequence u =(a1, a 2, . . . , a n) of natural numbers, where each ai ∈ N denotes the size (number of tokens) of the i-th heap. We denote H∗ the set of all positions with an arbitrary number of heaps (including the empty position with 0 heaps). Octal games are represented by codes of the form 
+
+d0.d 1d2d3 . . . 
+
+in octal notation (which gives the games their name), where each ds indicates the legal moves when removing s tokens: 9ds Move 0 no legal move removing s tokens 1 remove an entire heap of exactly s tokens 2 remove s tokens, leaving a nonempty remainder 3 both 1 and 2 are legal 4 remove s tokens, split the remainder into two nonempty heaps 5 both 1 and 4 are legal 6 both 2 and 4 are legal 7 1, 2, and 4 are all legal 
+
+The rules of the game are that the two players alternate taking tokens according to the legal moves encoded; the player who cannot move loses, and the other wins. We require that the first digit d0 of the code can only be 0 or 4 (splitting a heap into two heaps without removing any tokens), since “removing 0 tokens” without splitting is meaningless. From the rules of octal games, it is easy to see that the order of heaps in a position does not affect the game, i.e., heaps can be regarded as commuta-tive. Moreover, empty heaps of size 0 are always unable to move, and adding or removing any number of empty heaps has no effect on the position. In this paper, we need to introduce a game equivalent to octal games, which we call the ox -word representation of octal games, where positions are represented by strings over the alphabet {o, x}. Here, o denotes a token, and x denotes a separator between heaps; a maximal block of a consecutive 
+
+o’s surrounded by x’s (of the form xo ax) represents a heap of size a. To avoid ambiguity, we require that the first and last symbols of a position string must be x. For example: 
+
+ox -word Position ox -word Position 
+
+x ↔ () xoox ↔ (2) 
+
+xx ↔ (0) xoxoox ↔ (1 , 2) 
+
+xox ↔ (1) xooxxox ↔ (2 , 0, 1) Such a representation uses only 2 symbols to encode all positions of octal games. At the same time, by expressing token removal and splitting as deleting o’s and inserting x’s, every legal move of an octal game can conveniently be represented as a factor substitution (as defined in 2.4), which will be useful for our later proofs: 10 Move Factor substitution Move Factor substitution                                                             
+
+> 4.oo 7→oxo 0.001 xooox 7→x0.1xox 7→x0.002 xoooo 7→xo 0.2xoo 7→xo 0.004 ooooo 7→oxo 0.4ooo 7→oxo . . . . . .
+> 0.01 xoox 7→x0.0s1xo sx7→x0.02 xooo 7→xo 0.0s2xo so7→xo 0.04 oooo 7→oxo 0.0s4osoo 7→oxo
+
+Note that under these rules, the two heaps resulting from a split are always adjacent, which breaks the order-independence of heaps, but does not affect the outcome of the position. Partizan octal games are obtained from the octal games described above by assigning to the two players different legal moves given by two separate octal codes. We generally call the player who moves first in a game Left (denoted L), and the other player Right (denoted R). In this paper, we will use 
+
+dL0.d L1dL2 . . . : dR0.d R1dR2 . . . 
+
+as the code for such a game, with the codes on the left and right of the colon being the move rules for Left and Right, respectively. Here we give a general method for reducing partizan games to impartial games: define the label set 
+
+Θ := {L, R},
+
+whose two labels denote the move rules of Left and Right, respectively. For each position 
+
+u = ( a1, a 2, . . . , a n)in the game, we attach a label θ ∈ Θ, obtaining a labelled position 
+
+(θ; u) = ( θ; a1, a 2, . . . , a n),
+
+whose move rule is: move according to the rule corresponding to the label, while simultaneously flipping the label to the other one. This definition ensures that the resulting game is impartial, and the effect of the partizan game is achieved simply by letting Left always receive positions labelled L
+
+and Right always receive positions labelled R. The set of all such labelled positions is denoted by ΘH∗.Note that the partizan games considered in this paper are still required to be acyclic. In this setting, every position in an arbitrary partizan game has four possible outcomes. The following table gives the correspondence between these and the outcomes of labelled positions: 11 Unlabelled Labelled Meaning 
+
+o(u) = L
+
+(
+
+o(L; u) = N ;
+
+o(R; u) = P Left has a winning strategy 
+
+o(u) = R
+
+(
+
+o(L; u) = P;
+
+o(R; u) = N Right has a winning strategy 
+
+o(u) = N
+
+(
+
+o(L; u) = N ;
+
+o(R; u) = N the next player has a winning strategy 
+
+o(u) = P
+
+(
+
+o(L; u) = P;
+
+o(R; u) = P the previous player has a winning strategy We also give the ox -word representation for labelled positions, by placing the label as a symbol at the beginning of the position string: 
+
+ox -word Position ox -word Position 
+
+Lxoox ↔ (L; 2) Rxxoxoox ↔ (R; 1 , 2) 
+
+3.3 Mis` ere Quotients and Their Generalization 
+
+The nim-sum decomposition given by the Sprague–Grundy theorem (part (2) of 2.1) requires games to be played under normal play. The original motivation for introducing the mis` ere quotient was to analyse the outcomes of disjunctive sums of impartial games under mis` ere play, and it has also been successfully used to solve many (though still only a minority of) mis` ere-play octal games. We first recall the original definition of the mis` ere quotient (from [25]): 
+
+Definition 3.1. Let a game G have positions closed under disjunctive sum (i.e., G + G = G), and let u1, u 2 ∈ U be two positions of G, and V ⊆ U 
+
+be a set of positions also closed under disjunctive sum + (sometimes also required to be closed under next( ·)). If for every v ∈ V we have 
+
+o−(u1 + v) = o−(u2 + v),
+
+then u1, u 2 are said to be equivalent modulo V, denoted 
+
+u1 ≡V u2.
+
+The relation ≡V thus defined is always an equivalence relation, and the set of equivalence classes U/ ∼=V of all positions under this relation always forms a commutative monoid, called the mis` ere quotient of U modulo V.12 Clearly, positions in the same equivalence class must have the same out-come under mis` ere play (taking v to be the empty heap suffices to prove this), so the equivalence classes can also be divided into N -classes and P-classes according to their outcomes. In general, the mis` ere quotient we most wish to obtain is the one with V taken to be the whole U (in which case 
+
+≡V is usually denoted simply by ≡), because such a mis` ere quotient often provides a comprehensive characterisation of the outcomes of all positions of the game. Taking mis` ere-play octal games as an example, we can re-peatedly decompose a position into the form u1 + v, then find a simpler u2
+
+equivalent to u1 and reduce the position to u2 + v; by continuing this reduc-tion, the position can eventually be reduced to the simplest representative of its equivalence class, thereby revealing its equivalence class. If we have characterised the structure of U/ ≡V and the outcome associated with each equivalence class in sufficient detail, then the outcome of any position can be determined, and the game can be regarded as completely solved. For unlabelled positions of partizan octal games under normal play, the above definition can also directly yield a mis` ere quotient (simply by replacing 
+
+o−(·) with o(·)). However, as Allen pointed out [2], for most partizan octal games, the structure of such a mis` ere quotient is too unwieldy to yield a solution of the game. For labelled positions, the addition above is not closed: the rule label of a game must be global , but a position obtained by adding two positions has the form (θa; a1, . . . , a m) + ( θb; b1, . . . , b n),
+
+whose two components each belong to a label; flipping the label only changes that component rather than the global rule, so this is not a legal position. Therefore, in this paper we define a more general mis` ere quotient: we re-lax the structure directly from a commutative monoid to a noncommutative monoid acting on a set: 
+
+Definition 3.2. Let U be a set and V a monoid (with multiplication as the operation). We say that V acts (on the right) 1 on U if each v ∈ V
+
+corresponds to a self-map δv : U → U on V , satisfying (1) ∀v1, v 2 ∈ V, ∀u ∈ U, δ v2 (δv1 (u)) = δv1v2 (u); (2) the identity of V corresponds to the identity map. We write δv(u) as u · v, and δv2 (δv1 (u)) as u · v1v2.
+
+> 1In other literature, monoid actions on sets are usually defined as left actions; in this paper we define them as right actions for convenience. The two differ only in the order of writing.
+
+13 Definition 3.3. Let u1, u 2 ∈ U be two positions of a game, and let a monoid 
+
+V act (on the right) on U. If for every v ∈ V we have 
+
+o(u1 · v) = o(u2 · v),
+
+then u1, u 2 are said to be equivalent modulo V , denoted 
+
+u1 ∼=V u2.
+
+It is easy to see that ∼=V thus defined is always an equivalence relation, and the set of equivalence classes U/ ∼=V of all positions under this relation is the generalized mis` ere quotient of U modulo V .Note that at this point U has no semigroup operation defined internally, so such a generalized mis` ere quotient is no longer a semigroup. However, by definition, its elements are closed under the right action of elements of 
+
+V (the · operation), which can be seen as a weakening of the closure under semigroup multiplication. For the labelled positions of partizan octal games as defined above, we can naturally define a right action of unlabelled positions on them. Take 
+
+U = ΘH∗ and V = H∗ above; for any ( θ; u1, . . . , u m) ∈ U and ( v1, . . . , v n) ∈
+
+V , the right action is naturally defined as concatenation of heaps: (θ; u1, . . . , u m) · (v1, . . . , v n) := ( θ; u1, . . . , u m, v 1, . . . , v n),
+
+which yields a generalized mis` ere quotient for labelled positions of partizan octal games. 
+
+3.4 Algorithmic Principles 
+
+The key to our approach for solving partizan octal games lies in the fol-lowing assumption: we assume that the ox -words of all N -positions (or all 
+
+P-positions) among the labelled positions always form a regular language. On this basis, we design two algorithms using relevant principles from au-tomata theory, one for searching for a possible DFA recognising this regular language, and the other for proving that the DFA we find is indeed cor-rect. We call the DFA recognising all N -positions the N -DFA, and the one recognising all P-positions the P-DFA; together they are referred to as the 
+
+outcome DFA of the game. 14 3.4.1 Searching for the Outcome DFA 
+
+In this section we discuss how to search for such a DFA. We set Σ = {x, o}. Since we use a labelled character representation, the first symbol of a position is always a label; hence the label set Θ = {L, R}
+
+must also be included in the alphabet of the DFA. Thus the alphabet of the DFA is Σ ∪ Θ.The difficulty, of course, lies in setting up the states and transitions. If we already knew the full structure of some regular language W , we could use the following theorem to construct the corresponding DFA: 
+
+Lemma 3.1. For an alphabet Σ and a regular language W ⊆ Σ∗, define an equivalence relation for w1, w 2 ∈ Σ∗ by 
+
+w1 ∼= w2 ⇔ ∀ v ∈ Σ∗, (w1v ∈ W ↔ w2v ∈ W ),
+
+then a DFA recognising W can be given as follows (where w denotes the equivalence class of w): 
+
+Q = W/ ∼=; 
+
+δ(q, c ) = {wqc | wq ∈ q, c ∈ Σ};
+
+Q0 = ϵQF = {w | w ∈ W }.
+
+Moreover, for any language W ⊆ Σ∗, the DFA thus constructed is always minimal (has the fewest states). 
+
+However, we do not have direct access to the outcomes of all positions; we can only compute the outcomes of small positions. Therefore, we need to take V ⊆ Σ∗ and weaken the above ∼= to ∼=V defined as follows: 
+
+u1 ∼=V u2 ⇔ ∀ v ∈ V, (u1v ∈ W ↔ u2v ∈ W ),
+
+and still construct the corresponding DFA in the same way. Clearly, the larger V is, the more likely the resulting DFA is the correct one. In the concrete algorithm, we take one representative word from each equivalence class of Q (so that such words are in bijection with states), and determine whether another word belongs to that equivalence class by testing its equivalence with the representative. Since we have stipulated that only positions of the form ΘxΣ∗x are legal, we can directly discard prefixes that cannot form legal positions. The three prefixes ϵ, L, R are special (since they do not themselves form positions), and we treat them as three separate 15 equivalence classes; we only need to partition the remaining words beginning with Lx or Rx into equivalence classes. As for the choice of V , first we may restrict it to words ending in x to ensure legality of positions. Although this means V no longer covers the whole Σ∗, the practical effect is simply to discard certain illegal positions whose outcomes are meaningless anyway. On this basis, since positions differing by a permutation or by any number of empty heaps are naturally equivalent, we can omit such positions to save computation. Specifically, we choose words of the following form from Σ∗ as elements of V :
+
+v = oaxo b1 xo b2 x . . . xo bn x,b1 ≥ b2 ≥ . . . ≥ bn > 0, |v| ≤ nv,
+
+where nv is the maximum length we select for V . A larger nv makes it more likely to obtain the correct DFA, but the computational cost grows exponentially with it. At the start of the procedure, we initialise the state table as 
+
+{ϵ, L, R, Lx , Rx },
+
+where the first three are special states. Moreover, if the positions corre-sponding to the last two states (both of which are clearly terminal) satisfy the prescribed outcome, they are marked as final states. Then we set up a queue of words to be reduced: 
+
+{Lxx , Lxo , Rxx , Rxo }.
+
+As the procedure runs, it repeatedly pops the first word q = θxwc (where 
+
+c is the last character of the word) from the queue and tests whether it is equivalent to some existing non-special representative q′:(1) If such an existing state exists, the reduction succeeds; the word does not correspond to a new state, and we merely add a transition given by this equivalence: 
+
+θxw · c = q′.
+
+No further reduction is needed for words having this state as a prefix. (2) If the reduction fails, the word corresponds to a new state and is added to the state table. If this state also ends with x and the corresponding position satisfies the prescribed outcome, it is marked as a final state. In this case, words having q as a prefix still need to be reduced, so we append 
+
+qx and qo to the end of the queue, and add the trivial transitions 
+
+(
+
+q · x = qx;
+
+q · o = qo.
+
+16 When the queue of words to be reduced becomes empty, all words have been assigned to equivalence classes represented by the words currently in the state table, and the procedure terminates. If the number of states be-comes too large and the procedure has still not terminated, it is treated as an overflow. From the above process, it is not hard to see that the state tables and transition mappings of the N -DFA and the P-DFA are identical, differing only in their final states: the two sets of final states are disjoint and together contain all states ending with x. Accordingly, once we have the N -DFA, we can immediately obtain the corresponding P-DFA. 
+
+3.4.2 Verification of the Outcome DFA 
+
+For both normal and mis` ere play, we only need to check whether the candi-date outcome DFA is correct according to Definition 2.1 and Definition 2.2, respectively. For a set of positions W ⊆ U , we define next( W) := {w′ | w ∈ W , w ′ ∈ next( w)};prev( W) := {w | ∃ w′ ∈ next( w), w ′ ∈ W} ,
+
+Then we can rewrite the definitions of P- and N -positions in set-theoretic form, yielding: 
+
+Corollary 3.1. For any sets of positions WP , WN ⊆ U of an impartial game under normal play, they are exactly the sets of all P- and N -positions of the game if and only if all of the following conditions hold: (1) T ⊆ W P .(2) next( WP ) ⊆ W N .(3) WN ⊆ prev( WP ).
+
+To verify whether the found DFA is correct, it suffices to use automaton operations to check whether the above conditions hold. Under our ox -word representation, both next( ·) and prev( ·) can be ex-pressed as factor substitutions on languages, from which one can construct FAs recognising next( WP ) and prev( WP ). Furthermore, the set of terminal positions T is given by all positions that contain no movable factor (i.e., no factor that can be substituted). Denoting the set of all such factors by Vm,we have 
+
+T = U − (Σ∗VmΣ∗),
+
+where Vm contains only finitely many words; hence by Theorems 2.3 and 2.4, this is clearly a regular language. In summary, it is feasible to use automaton operations to check whether the conditions in Corollary 3.1 hold. 17 For mis` ere play, we simply replace (1) and (3) in Corollary 3.1 with, respectively: (1 −) T ⊆ W N .(3 −) ( WN − T ) ⊆ prev( WP ). That is, terminal positions are N -positions, and they need not have a 
+
+P-position as a successor. 
+
+3.5 Computational Results 
+
+3.5.1 0.04 : 0 .03 as an Example 
+
+We first take 0.04 : 0 .03 as an example to illustrate what information can be obtained from the outcome DFA produced by our algorithm. In this game, Left’s legal move is to remove two tokens from a heap and split the remainder into two nonempty heaps; Right’s legal move is to remove two tokens (possibly leaving nothing) without splitting. Traditional methods are powerless against this game, but our Python implementation of the algorithm successfully searches for and verifies the N -DFA of this game within 2.4 seconds, yielding 
+
+AN = ⟨Q, Σ ∪ Θ, δ, ϵ, Q N ⟩,
+
+where: (1) The state set Q contains 25 states (excluding the sink state). Grouped by their first and last symbols, they are:                         
+
+> Special: ϵ, L,R;
+> Lx -class: Lx ,Lxo 2x,Lxo 4x;
+> Lo -class: Lxo ,Lxo 2,Lxo 3,Lxo 2xo ,Lxo 4,Lxo 5,
+> Lxo 4xo ,Lxo 4xo 2,Lxo 4xo 3,Lxo 4xo 4,Lxo 4xo 5;
+> Rx -class: Rx ,Rxo 2x;
+> Ro -class: Rxo ,Rxo 2,Rxo 3,Rxo 2xo ,Rxo 4,Rxo 5.
+
+Each state in the Lx-class and Rx-class corresponds to an irreducible labelled position; all other positions are eventually reduced via transitions to one of these irreducible positions. Therefore, each state in the Lx-class and Rx-class corresponds to an equivalence class in the generalized mis` ere quotient, and the word of the state itself is a shortest representative of that class. Thus, the generalized mis` ere quotient of 0.04 : 0 .03 contains 5 classes. Rewriting them back to the position format gives: (U/ ∼=) = {(L; ) , (L; 2) , (L; 4) , (R; ) , (R; 2) }.
+
+18 The DFA AN has 2 final states: 
+
+QN = {Lxo 4x, Rxo 2x}.
+
+So among the above 5 classes, 2 are N -classes: (N / ∼=) = {(L; 4) , (R; 2) }.
+
+The remaining 3 are P-classes. (2) The transition mapping δ contains 48 transitions in total, of which 30 are trivial transitions of the form 
+
+p · x = p or p · o = po.
+
+The remaining 18 non-trivial transitions (i.e., reduction transitions) are also grouped by class as follows: 
+
+Lx -class: Lxo · x = Lx , Lxo 3 · x = Lxo 2x, Lxo 5 · x = Lxo 2x,
+
+Lxo 4xo · x = Lxo 4x, Lxo 4xo 2 · x = Lxo 2x, Lxo 4xo 3 · x = Lxo 2x,
+
+Lxo 4xo 4 · x = Lxo 2x, Lxo 4xo 5 · x = Lxo 2x, Lxo 2xo · x = Lxo 2x;
+
+Lo -class: Lxo 5 · o = Lxo , Lxo 4xo 5 · o = Lxo 4xo , Lxo 2xo · o = Lxo 2xo ;
+
+Rx -class: Rxo · x = Rx , Rxo 4 · x = Rxo 2x, Rxo 5 · x = Rxo 2x,
+
+Rxo 2xo · x = Rxo 2x;
+
+Ro -class: Rxo 5 · o = Rxo , Rxo 2xo · o = Rxo 2xo .
+
+These reduction transitions completely characterise the equivalence relation of the generalized mis` ere quotient. It is worth noting that our program does not require each word to reduce to a word with the same label; however, from the actual results, only a very few partizan octal games (e.g., 4.7 | 0.75 )have positions with different labels that are equivalent to each other. We can also rewrite the ox -words in the above transitions back to the po-sition format. In doing so, each θx-class gives a pair of equivalent positions, while each θo-class gives a family of one-to-one equivalences: 
+
+Lx -class: (L; 1) ∼= ( L; ) , (L; 3) ∼= ( L; 2) , (L; 5) ∼= ( L; 2) ,
+
+(L; 4 , 1) ∼= ( L; 4) , (L; 4 , 2) ∼= ( L; 2) , (L; 4 , 3) ∼= ( L; 2) ,
+
+(L; 4 , 4) ∼= ( L; 2) , (L; 4 , 5) ∼= ( L; 2) , (L; 2 , 1) ∼= ( L; 2); 
+
+Lo -class: (L; 5 , 1+ i) ∼= ( L; 1+ i), (L; 4 , 6+ i) ∼= ( L; 5+ i), (L; 2 , 2+ i) ∼= ( L; 2 , 1+ i); 
+
+Rx -class: (R; 1) ∼= ( R), (R; 4) ∼= ( R; 2) , (R; 5) ∼= ( R; 2) ,
+
+(R; 2 , 1, v ) ∼= ( R; 2 , v ); 
+
+Ro -class: (R; 6+ i) ∼= ( R; 1+ i), (R; 2 , 2+ i) ∼= ( R; 2 , 1+ i).
+
+where i ∈ N is an arbitrary natural number. 19 Proposition 3.1. If a partizan octal game (or any similar partizan game with multi-heap positions) admits an outcome DFA, then its generalized mis` ere quotient is finite. Proof. From the correspondence shown above, the final states of the P- and 
+
+N -DFAs are in bijection with the P- and N -classes in the generalized mis` ere quotient; hence finiteness of the former implies finiteness of the latter. The converse of this proposition need not hold, since one can imagine a game whose outcome cannot be determined by a DFA, but can be deter-mined by an automaton resembling a DFA with infinitely many states yet only finitely many final states. Moreover: 
+
+Proposition 3.2. If a partizan octal game (or any similar partizan game with multi-heap positions) admits an outcome DFA, then its outcomes are ultimately periodic, i.e.: there exist s, t ∈ N+, s ≥ t, such that for every 
+
+(θ; a1, a 2, . . . , a n) ∈ ΘH∗ with a1 > s , we have 
+
+o(θ; a1, a 2, . . . , a n) = o(θ; a1 − t, a 2, . . . , a n).
+
+The same holds under mis` ere play. Proof. Since the outcome DFA has finitely many states, for any state q ∈ Q,the sequence of states 
+
+q · ϵ, q · o, q · oo , q · ooo , . . . , q · on, . . . 
+
+must be ultimately periodic, i.e., there exist sq, t q ∈ N+, sq ≥ tq, such that 
+
+q · osq +1 = q · osq +1 −tq ,
+
+and hence for every positive integer a > s q we have 
+
+q · oa = q · oa−tq .
+
+It suffices to take 
+
+t = lcm {tq | q ∈ Q};
+
+s = max( tθ, max {sq | q ∈ Q})to ensure that for every a > s ,
+
+q · oa = q · oa−t
+
+holds for every state q ∈ Q, so that oa and oa−t are completely equivalent in the outcome DFA, yielding periodic outcomes. 20 Figure 1: Results for two-digit partizan octal games 
+
+3.5.2 Other Results 
+
+Research on impartial octal games generally focuses on three-digit octal games of the form 0.xxx or 4.xx . However, when partizan games are in-cluded, the number of such games (excluding those where one player has no legal moves) amounts to 165,600 up to symmetry, making the computational cost prohibitive. Therefore, we attempt only to solve all two-digit games, i.e., those whose Left and Right codes are both of the form 0.xx or 4.x.There are 2,556 such impartial and partizan octal games up to symmetry. To eliminate symmetry, we consider only those where Left’s octal code is lexicographically no smaller than Right’s. We set the maximum number of states to 500 and the maximum length of test suffixes to 30, and applied our algorithm to each of these 2,556 games one by one. The results are shown in Figure 1. Among them, 258 games failed to yield an outcome DFA due to state count or memory overflow, 78 games produced DFAs that failed verification, and the remaining 2,220 games were successfully solved (86.85%). It is worth noting that some impartial games among them (lying on the diagonal of the figure) actually have complete solutions via the Sprague– Grundy theorem, yet our program failed to solve them. This suggests that 21 some of the unsolved partizan octal games may also be solvable with suffi-cient computational power. We group games with equivalent outcome DFAs into outcome equivalence classes , obtaining 456 classes in total. We adopt the shorthand notation for octal game codes from [25]: ˙d := d, d + 1; ¨d := d, d + 2; ¯d := d, d + 1 , d + 2 , d + 3 .
+
+The following table lists the mis` ere quotient statistics for the top 10 outcome equivalence classes with the largest state count |Q|:Code |P L| |N L| |P R| |N R| |U| |Q|
+
+0.74 : 0 .31 52 21 21 52 146 443 
+
+0.76 : 0 .31 52 22 21 51 146 439 
+
+0.7 : 0 .17 17 21 21 17 76 375 
+
+4.7 : 0 .73 4 15 12 12 43 316 
+
+0.44 : 0 .12 4 7 3 3 17 310 
+
+0.72 : 0 .13 , 0.76 : 0 .13 29 22 22 29 102 309 
+
+4.¨0 : 0 .4¨ 1 14 15 15 14 58 285 
+
+0.6¨ 3 : 0 .1, 0.67 : 0 .1 29 15 15 29 88 261 
+
+0.4¨ 4 : 0 .4¨ 0 1 4 9 10 24 251 
+
+0.74 : 0 .54 1 4 8 10 23 232 The following table lists the 10 outcome equivalence classes with the smallest state count 2:  
+
+> 2The ellipses . . . indicate partizan games included in the class; the number following is the total count of games in that outcome equivalence class.
+
+22 Code |P L| |N L| |P R| |N R| |U| |Q|
+
+0.13 : 0 .02 , . . . (296 games) 1 1 1 0 3 8
+
+0.2 : 0 .13 , . . . (198 games) 1 0 1 1 3 8
+
+0.02 : 0 .02 2 1 2 1 3 10 
+
+0.03 : 0 .03 2 1 2 1 3 10 
+
+0.12 : 0 .12 2 1 2 1 3 10 
+
+0.13 : 0 .13 2 1 2 1 3 10 
+
+0.1 : 0 .1 2 1 2 1 3 10 
+
+0.01 : 0 .01 2 1 2 1 3 12 
+
+0.11 : 0 .11 2 1 2 1 3 12 
+
+0.32 : 0 .01 , . . . (224 games) 1 1 2 1 5 12 
+
+0.41 : 0 .32 , . . . (32 games) 2 1 1 1 5 12 
+
+0.75 : 0 .75 , 4.7 : 0 .75 , 4.7 : 4 .7 2 3 2 3 5 12 From these results, we observe that most partizan octal games have fi-nite generalized mis` ere quotients, and in comparison, they seem to tend to have smaller (generalized) mis` ere quotients than their impartial counter-parts. One possible explanation is that asymmetric rules are likely to give one player an advantage, making positions easier to reduce. Based on this, we propose the following “partizan version of Guy’s conjecture”: 
+
+Problem 3.1. Do all impartial or partizan octal games admit an outcome DFA? It is worth noting that the impartial case of this problem does not imply the original Guy’s conjecture, since it only yields periodicity of outcomes rather than periodicity of SG values. We also attempted to solve the corresponding games under mis` ere play. As in the impartial case, the behaviour of partizan octal games under mis` ere play is significantly worse than under normal play. The results are shown in Figure 2. Among 2,485 games, 607 failed to yield an outcome DFA, 182 produced DFAs that failed automatic verification, and only 1,696 games were successfully solved (68.25%). 
+
+3.5.3 Algebraic Periodicity 
+
+Concerning mis` ere octal games, it is worth discussing the phenomenon of “algebraic periodicity” mentioned in [25]: “ When this regularity continues indefinitely, the full quotient can be deduced from a finite number of partial quotients; but unlike in the “stable” case, the full quotient is infinite, whereas every partial quotient is finite. 23 Figure 2: Results for two-digit partizan octal games under mis` ere play We’ve christened this behavior “algebraic periodicity,” but we can’t give a precise definition because we don’t fully understand how to describe it in general. ” That reference gives the following examples of impartial games exhibiting “algebraic periodicity”: 
+
+0.26 , 4.7, 0.54 , 0.145 , 0.157 , 0.175 , 0.355 , 0.357 , 0.516 , 0.724 , 0.734 .
+
+Among these, 0.26 and 4.7 have been successfully solved by Allemang [1] (with some errors corrected in [25]), while 0.54 and 0.145 are observed to have more complex behaviour than the other examples. Here we attempt to give a rigorous definition of “algebraic periodicity”; based on results from smaller-scale computations, it can encompass all of the above examples except the two more complex cases 0.54 and 0.145 :
+
+Definition 3.4. We say that a game is algebraically periodic if there exist natural numbers p1, p 2 ∈ N and positive integers t1, t 2 ∈ N+, such that for every position (with heaps sorted in non-increasing order) with largest heap 
+
+a1 sufficiently large, i.e., a1 ≥ p1 + t1,
+
+u = ( a1, a 2, . . . , a n) ∈ U , a1 ≥ a2 ≥ . . . ≥ an,
+
+24 it can always be reduced to a smaller position in one of the following two ways: (1) Single-heap reduction : if the second-largest heap a2 < p 2 + t2 (in particular, when n = 1 we regard a2 = 0 < p 2 + t2), then 
+
+o−(u) = o−(a1 − t1, a 2, . . . , a n).
+
+(2) Two-heap reduction : if a2 ≥ p2 + t2, then 
+
+o−(u) = o−(a1 − t2, a 2 − t2, a 3 . . . , a n).
+
+We call the lexicographically smallest tuple ( p1, t 1, p 2, t 2) the parameters 
+
+of algebraic periodicity, where ( p1, t 1) and ( p2, t 2) can be viewed as the (preperiod , period) under the two reduction schemes, respectively. It is easy to see that any position can be reduced by repeatedly applying the two reductions until every heap is smaller than p1 +t1. According to [25], such positions always have a finite mis` ere quotient, and hence are solvable. Figure 3 shows outcome images for some algebraically periodic octal games, where the red and cyan shaded regions indicate positions to which the single-heap reduction and the two-heap reduction apply, respectively. For a position u = ( a1, a 2, . . . , a n), we define the difference between its largest heap and the sum of the remaining heaps as ∆( u) := a1 − a2 − . . . − an, where a1 = max( u).
+
+If this difference is sufficiently large, then no matter how one applies the two-heap reduction, the largest heap will always retain too many tokens, forcing a subsequent single-heap reduction; conversely, only two-heap reductions are needed. Thus, positions in algebraically periodic games can often be divided into the following three categories, each with different patterns: (1) “Corner” positions: max( u) is sufficiently small. (2) “Inner” positions: max( u) is sufficiently large and ∆( u) is sufficiently small. (3) “Outer” positions: max( u) is sufficiently large and ∆( u) is sufficiently large. Taking the simplest of these, 0.73 ˙ 4, as an example (its image is shown 25 Figure 3: Outcomes of smaller three-heap positions for 0.26, 0.512, 0.57 and 0.734 26 in Figure 3), the P-positions in its three categories are respectively: 
+
+Pcor := (1 , 1, . . . , 1) 
+
+| {z }
+
+> odd number
+
+;
+
+Pinn := {u | u ∈ U , max( u) > 2,
+
+∆( u) ≤ 1, 2 | Σ( u), 4 | (Σ( u) + Ω( u)) };
+
+Pout := {u | u ∈ U , max( u) > 2,
+
+∆( u) > 1, 2 | ∆( u), 4 | (∆( u) + Ω( u)) }.
+
+Here Σ( u) denotes the sum of all heaps, Ω( u) denotes the number of odd-sized heaps in u, and the vertical bar | after the numbers denotes divisibility. The correctness of the P-positions thus given can be proved by case analysis, but even for the simplest case 0.73 ˙ 4 it is quite tedious, and for the other algebraically periodic games it is even more difficult. The following tables list all algebraically periodic impartial octal games we have found together with their parameters, as well as the periodicity 3 of outcomes of single-heap positions (starting from size 1, assuming algebraic periodicity holds): Code p1 t1 p2 t2 Code p1 t1 p2 t2
+
+0.157 22 6 1 3 0.57 ˙ 4 19 4 1 2
+
+0.175 19 4 1 2 0.71 ˙ 6 22 2 2 1
+
+0.2 ˙ 6¯ 0 19 4 1 2 0.72¯ 4 19 4 1 2
+
+0.32 ˙ 6 17 4 1 2 0.73 ˙ 2 20 4 0 2
+
+0.337 22 4 0 2 0.73 ˙ 4 4 4 0 2
+
+0.355 20 2 1 1 0.73 ˙ 6 19 4 0 2
+
+0.357 28 2 1 3 0.75 ˙ 4 17 2 1 1
+
+0.51 ˙ 2 16 6 3 6 0.75 ˙ 6 24 2 1 3
+
+0.51 ˙ 6 20 6 1 3 4.¨0 ˙ 6 16 4 1 2
+
+0.53 ˙ 4 19 4 1 2 4.1 ˙ 6 16 4 1 2
+
+0.55 ˙ 2 16 6 1 3 4.5 ˙ 2 17 4 1 2
+
+0.55 ˙ 6 20 6 1 3 4.7 ˙ 0 16 2 1 1
+
+0.57 ˙ 0 20 4 1 2
+
+> 3Given as a pair (preperiod, period).
+
+27 Code Outcomes Period 
+
+0.157 P N N N N N N N N N N N N N N N N N N N N N P P P N N N P P P N N N P ... (19 , 6) 
+
+0.175 P N N N N N N N N N N N N N N N P P N N P P N N P P N N P P N N P P N ... (14 , 4) 
+
+0.2 ˙ 6¯ 0 N N P N N N P N N N N P N N N P N N N P N N N P N N N P N N N P N N N ... (8 , 4) 
+
+0.32 ˙ 6 P N P N N N P N N N N N N N N N N P N N N P N N N P N N N P N N N P N ... (14 , 4) 
+
+0.337 P N N N P N N N N N N N N N N P N N N P N N N P N N N P N N N P N N N ... (12 , 4) 
+
+0.355 P N N N N N N N N N N N N N P N P N P N P N P N P N P N P N P N P N P ... (13 , 2) 
+
+0.357 P N N N N N N N N N N N N N P N P N P N P N P N P N P N P N P N P N P ... (13 , 2) 
+
+0.51 ˙ 2 P N N N N N N N N N N N N P N N N N N P N P N N N P N P N N N P N P N ... (16 , 6) 
+
+0.51 ˙ 6 P N N N N N N N N N N N N N N N N N N N P P P N N N P P P N N N P P P ... (17 , 6) 
+
+0.53 ˙ 4 P N N N N N N N N N N N N N N N P P N N P P N N P P N N P P N N P P N ... (14 , 4) 
+
+0.55 ˙ 2 P N N N N N N N N N N N N N P N N N N P P P N N N P P P N N N P P P N ... (16 , 6) 
+
+0.55 ˙ 6 P N N N N N N N N N N N N N N N N N N N P P P N N N P P P N N N P P P ... (17 , 6) 
+
+0.57 ˙ 0 P N N N N N N N N N N N N N N P P N N P P N N P P N N P P N N P P N N ... (13 , 4) 
+
+0.57 ˙ 4 P N N N N N N N N N N N N N N N P P N N P P N N P P N N P P N N P P N ... (14 , 4) 
+
+0.71 ˙ 6 P N N N P N P N N N N N N N N N N P N N N N N P N P N P N P N P N P N ... (22 , 2) 
+
+0.72¯ 4 P N P N N N P N N N N N N N N N N P N N N P N N N P N N N P N N N P N ... (14 , 4) 
+
+0.73 ˙ 2 P N N N P N N N N N N P N N N P N N N P N N N P N N N P N N N P N N N ... (8 , 4) 
+
+0.73 ˙ 4 P N N N N N N P N N N P N N N P N N N P N N N P N N N P N N N P N N N ... (4 , 4) 
+
+0.73 ˙ 6 P N N N P N N N N N N N N P N N N P N N N P N N N P N N N P N N N P N ... (10 , 4) 
+
+0.75 ˙ 4 P N N N N N N N N N P N P N P N P N P N P N P N P N P N P N P N P N P ... (9 , 2) 
+
+0.75 ˙ 6 P N N N N N N N N N P N P N P N P N P N P N P N P N P N P N P N P N P ... (9 , 2) 
+
+4.¨0 ˙ 6 N N P N N N N N N N N P N N N P N N N P N N N P N N N P N N N P N N N ... (8 , 4) 
+
+4.1 ˙ 6 P N N N N N N N N N N P N N P P N N P P N N P P N N P P N N P P N N P ... (11 , 4) 
+
+4.5 ˙ 2 P N N N N N N N N P N N P P N N P P N N P P N N P P N N P P N N P P N ... (9 , 4) 
+
+4.7 ˙ 0 P N N N N N N N P N P N P N P N P N P N P N P N P N P N P N P N P N P ... (7 , 2) 
+
+The above results all come from observations of computations on smaller positions; we have not yet found a method for rigorously proving such alge-braic periodicity. To obtain complete solutions to these games, the remain-ing problem is: 
+
+Problem 3.2. How can one rigorously prove the algebraic periodicity that has been found? In fact, we observe that a considerable number of unsolved partizan octal games under mis` ere play also appear to exhibit non-trivial algebraic periodicity (i.e., beyond the case where an outcome DFA exists and ordinary periodicity is present), but the situation is more complex, and sometimes it is difficult to distinguish whether they have ordinary periodicity or algebraic periodicity; hence we will not discuss this further here. Moreover, although partizan octal games under normal play do not sat-isfy the conditions of the Sprague–Grundy theorem, we have not found any among them that exhibit non-trivial algebraic periodicity. 28 Figure 4: Outcomes of smaller three-heap positions for 0.145 and 0.54 
+
+Problem 3.3. Do normal-play partizan octal games admit no non-trivial algebraic periodicity? If so, does this suggest some specific structure of the partizan setting under normal play that distinguishes it from mis` ere play (analogous to the Sprague–Grundy theorem in the impartial case)? As for the two exceptional cases 0.145 and 0.54 , we observe that their outcome images (Figure 4) appear very close to those of algebraically pe-riodic games, but not exactly identical. In fact, there are a small number of “interference positions” that break algebraic periodicity, yet the regions in which these interference positions occur seem to be unbounded, making them difficult to eliminate. 
+
+Problem 3.4. Can one define a notion of “weak algebraic periodicity” that encompasses the two exceptional cases 0.145 and 0.54 ?
+
+# 4 Kotzig’s Nim 
+
+4.1 Background 
+
+Kotzig’s nim , also known as modular nim , is one of the most classical im-partial games, invented by Anton Kotzig in 1946. The rules of the game are as follows: Given a circular board with n cells, two players alternate moving a single token clockwise, where the number of steps moved on each turn is taken from a fixed finite set S of positive integers (called the move set ), and the token may not be moved to any cell that has already been visited. 29 Under normal play, the player who cannot move loses and the other wins; under mis` ere play, the player who cannot move wins. Prior research on Kotzig’s nim has mainly focused on establishing and proving the periodicity of outcomes and SG values for games with small move sets under normal play: (1) [13] gave the outcomes for S = {1, 2} and {2, 3}, as well as the outcomes for most lengths (those not congruent to 3 or 4 modulo 7) for 
+
+S = {3, 4}.(2) [7] included the outcomes for S = {1, 3} due to Nowakowski. (3) [30] gave the outcomes for S = {1, 4} and proposed a series of con-jectures on outcomes. (4) [17] gave the SG values for S = {1, 2} and {1, 3}, as well as the SG values for a small subset of lengths (those congruent to 2 a modulo 2 a + 1) for S = {a, a + 1 } with a > 1. In addition, [5] studied the computational complexity of Geography games ,proving that solving Geography games on bipartite graphs or directed acyclic graphs in the general case is NP-hard. That paper studied Kotzig’s game as a special case of Geography games, and partially resolved a conjecture of Tan and Ward from [30] concerning a particular move set. GONC [15] included this game and posed the following questions: “A6. (17) Extend the analysis of KOTZIG’S NIM. Is the game eventually periodic in terms of the length of the circle for every finite move set? Analyze the mis` ere version of KOTZIG’S NIM.” In this chapter, we will prove this periodicity conjecture for outcomes — in fact, we generalise it to broader settings including mis` ere play and partizan versions. We will also provide periodicities of outcomes for some new unresolved cases. 
+
+4.2 Line Games and Their Variants 
+
+4.2.1 Line Games 
+
+In this chapter, we always denote the move set by S, and write smax = max S
+
+for the maximum step size. We first study the line game mentioned in [17]. It is equivalent to Kotzig’s nim with the restriction that the token may not move far enough around the board to complete a full circle; in other words, the circular board is cut open at the starting point and straightened into a line: 30 T
+
+c1
+
+c2
+
+c3
+
+c4
+
+cn−1 . . . c5 . . . 
+
+starting point 
+
+⇒ M c1 c2 c3 . . . cn−1
+
+We denote the token by T; o and x denote an empty cell and an obstacle ,respectively: the token cannot move to a cell occupied by the latter. We represent a position of a line game of board length n by a word of the form 
+
+w = Tc1c2 . . . c n−1, ci ∈ Σ := {o, x}
+
+(note that the cell occupied by the token is also counted in the board length). A legal move consists of moving the token T to the right by s ∈ S cells, with the condition that the destination cell must be an empty cell o; after the move, the s characters to the left of the token are all deleted: 
+
+Tc1c2 . . . c s−1ocs+1 . . . c n−1 7 → Tcs+1 . . . c n−1.
+
+In fact, under the rules of Kotzig’s nim, the empty cell o originally occupied by the token would become an obstacle x; however, in the line game, all characters to the left of the token play no further role, so they can simply be deleted. It is easy to see that if the initial position contains no obstacles, the game is equivalent to the subtraction game with move set S (see [20]); hence the line game can also be viewed as a generalisation of subtraction games with obstacles. By means of the “label-flipping” method mentioned in the previous chap-ter, we can readily define a partizan version of Kotzig’s nim and its labelled positions: define the label set Θ := {L, R}, assign two different move sets 
+
+SL and SR to the two players Left and Right, respectively; labelled positions are of the form 
+
+w = θc 1c2 . . . c n−1, ci ∈ Σ, θ ∈ Θ. 
+
+A position with label θ is moved according to the step set Sθ corresponding to that label, and the label is flipped to the other one after the move. We denote the resulting game rules by SL : SR.Line games have a nice property: we can determine not only their out-comes but also their SG values using DFAs. In fact, [17] already provided the idea for constructing such a DFA. We give a proof of this, since we will subsequently prove the stronger results 4.1 and 4.2. 31 4.2.2 FA-Line Games 
+
+As can be seen, if we regard labels as states and the remaining characters as alphabet symbols, the move rules of such a line game closely resemble the transitions of an FA with only two states. We can further generalise this game by imitating the structure of an FA, yielding FA-line games : the labels are no longer restricted to two, and the label after a move is determined by the current label and the characters crossed. Specifically, the structure is a quadruple 
+
+G = ⟨Σ, Θ, ∆, θ 0, γ ⟩,
+
+where (1) Σ is the alphabet . In this paper we only consider 
+
+Σ = {o, x}.
+
+(2) Θ is a finite set of labels , called the label set (analogous to the state set of an FA). The token carries one of these labels at any time. For brevity, we directly use the label symbol to denote the token. (3) ∆ is a mapping from Θ × Σ∗o to the power set of Θ, called the 
+
+move mapping (analogous to the transition mapping of an FA), where a pair ( θ, v o) 7 → θ′ means: if the token carries label θ, and to its right there is a factor vo, it may cross over v, land on the empty cell o, and change its label to θ′.To ensure finiteness, we require that the move mapping has a finite 
+
+maximum step size smax , defined as: 
+
+S := {| wo| | ∃ θ ∈ Θ, ∆ (θ, w o)̸ = ∅},smax := max S. 
+
+(4) θ0 ∈ Θ is the initial label , i.e., the label carried by the token in the initial position (analogous to the designated initial state of an FA). (5) γ is a seed 4 , consisting of smax mappings 
+
+γi : Θ → { x, P, N}, i = 1 , 2, . . . , s max ,
+
+which artificially assign outcomes to the smax positions beyond the right end of the board (analogous to the designated final states of an FA). When the token attempts to enter the i-th position among the last smax cells according to the move mapping and changes its label to θ, the mapping 
+
+γi(θ) ∈ Im( γ) := {x, oP , oN }
+
+> 4This term comes from [17]; what we define here is in fact a labelled variant thereof.
+
+32 gives the result of this move: x means the move is illegal (the destination cell is an obstacle x); oP means the destination cell is empty, but after landing there the moving player immediately loses; oN means the destination cell is empty and the moving player immediately wins. We require that whether each cell is an obstacle must be consistent across all labels: for every label 
+
+θ ∈ Θ, either γi(θ) = x for all θ, or γi(θ)̸ = x for all θ. We define ¯γi := 
+
+(
+
+x, γi(θ) = x, i.e., the i-th cell is an obstacle x;
+
+o, γi(θ)̸ = x, i.e., the i-th cell is an empty cell o.
+
+¯γ := ¯ γ1 ¯γ2 . . . ¯γsmax .
+
+We denote the set of all seeds satisfying these requirements by Γ .We can represent a seed as a matrix whose rows correspond to labels and columns to positions: 
+
+γ =
+
+θ1 :
+
+θ2 :
+
+. . . θ|Θ| :
+
+
+
+γ1(θ1) γ2(θ1) . . . γsmax (θ1)
+
+γ1(θ2) γ2(θ2) . . . γsmax (θ2)... ... ...
+
+γ1(θ|Θ|) γ2(θ|Θ|) . . . γsmax (θ|Θ|)
+
+
+
+where the i-th column is either all x (in which case ¯ γi = x) or none are x
+
+(in which case ¯ γi = o). A position of an FA-line game consists, from left to right, of a labelled token, a sequence of symbols from Σ, and a seed 5:
+
+θc 1c2 . . . c n−1γ1γ2 . . . γ smax ,
+
+where θ ∈ Θ, c i ∈ Σ, γ ∈ Γ. 
+
+The token θ moves from left to right and changes labels according to the characters crossed, until after some move it enters the seed portion (where the characters in ¯ γ that are crossed are also used for label transitions), at which point the outcome of the game is given by the seed. That is, the seed effectively extends the board by an additional smax cells, except that once the token lands on an empty cell within it, the game ends immediately and the winner is determined according to the (changed) label. It is easy to see that if the seed contains no empty cells, it is equivalent to the original rule without a seed. On this basis, the original impartial line 
+
+> 5Although by our definition the seed is fixed for the entire game, we include it as part of the position for intuitive clarity.
+
+33 game can be seen as a special case of FA-line games with 
+
+Θ = {T};
+
+∆ = {(T, v o) 7 → T′ | v ∈ Σs−1, s ∈ S},
+
+while the partizan game is the special case with 
+
+Θ = {L, R};
+
+∆ = {(L, v o) 7 → R | v ∈ Σs−1, s ∈ SL}∪ { (R, v o) 7 → L | v ∈ Σs−1, s ∈ SR}.
+
+4.2.3 Related DFAs 
+
+Despite the more complex rules, FA-line games retain the property that the outcomes of positions can be determined by a DFA: 
+
+Theorem 4.1. For any FA-line game, any seed γ ∈ Γ , and any label θ0 ∈ Θ,the set of character parts of all N -positions with that seed and label, 
+
+W = {w | w ∈ Σ∗, γwθ 0 ∈ N } ,
+
+is a regular language over Σ. The same holds for P-positions. Proof. Unlike the usual direction, the DFA constructed in this proof reads characters from right to left. To obtain an equivalent left-to-right DFA, one simply reverses all state transitions and then determinises. We take the set of all seeds Γ as the state set of the DFA, and construct the transition mapping according to the recursive outcome relations, so that starting from the initial state γ, it reads characters one by one from right to left, and after all characters are read, the outcome is given according to the token label. The key point that guarantees finiteness of the state set is that the legal move lengths are bounded: since a seed γ contains smax positions (the length of the seed), after a new position is recorded by γ, the number of positions becomes smax +1, but the rightmost position is unreachable by any legal move and can therefore be deleted, keeping the number of positions bounded by smax .If the position is θ0γ, i.e., there are no characters between the token and the seed, then any legal move of the token enters the seed directly, and the outcome can be computed immediately: 
+
+o(θ0γ) = 
+
+(
+
+N , ∃s ∈ S, γ s(∆(¯ γ1 . . . ¯γs−1o, θ 0)) = N;
+
+P, otherwise .
+
+34 This gives the final states of the DFA: γ is a final state if and only if θ0γ
+
+has the corresponding outcome. For the transition mapping, if an obstacle x is encountered, we simply delete the rightmost column and add a column of obstacles x on the left: 
+
+x ·
+
+
+
+γ1(θ1) . . . γsmax (θ1)
+
+γ1(θ2) . . . γsmax (θ2)... ...
+
+γ1(θ|Θ|) . . . γsmax (θ|Θ|)
+
+ =
+
+
+
+x γ1(θ1) . . . γsmax −1(θ1)
+
+x γ1(θ2) . . . γsmax −1(θ2)... ... ...
+
+x γ1(θ|Θ|) . . . γsmax −1(θ|Θ|)
+
+ .
+
+If an empty cell o is encountered, we delete the rightmost column and add a column on the left whose entries are computed according to the legal moves for each label: 
+
+o ·
+
+
+
+γ1(θ1) . . . γsmax (θ1)
+
+γ1(θ2) . . . γsmax (θ2)... ...
+
+γ1(θ|Θ|) . . . γsmax (θ|Θ|)
+
+ =
+
+
+
+oo(θ1γ) γ1(θ1) . . . γsmax −1(θ1)
+
+oo(θ2γ) γ1(θ2) . . . γsmax −1(θ2)... ... ...
+
+oo(θ|Θ|γ) γ1(θ|Θ|) . . . γsmax −1(θ|Θ|)
+
+ .
+
+This gives the complete structure of a DFA satisfying the requirements. Although this proof is constructive, the resulting outcome DFA has an enormous number of states, namely the total number of possible seeds: 
+
+|Γ | = (2 |Θ| + 1) smax .
+
+This grows super-exponentially with the number of labels |Θ|. In fact, games always have outcome DFAs with far fewer states; hence we do not use this construction to build DFAs, but only employ this result for subsequent proofs. For mis` ere play, the same conclusion holds by replacing the outcome o(·)in the above proof with o−(·). Moreover, if we replace it with G(·), we can also give NFAs (which can be called SG-value DFAs ) for determining the positions of an FA-line game with any given SG value: the number of legal moves from any position of Kotzig’s nim is always bounded by 
+
+mmax := 
+
+(
+
+|S|, impartial; max {| SL|, |SR|} , partizan .
+
+By definition, the mex of a set of at most mmax numbers cannot exceed 
+
+mmax , so the SG value of any position u ∈ U is also bounded: 
+
+G(u) ≤ mmax .
+
+35 We need only change the codomain of the seed γ to 
+
+{x, o0, o1, . . . , ommax }
+
+to obtain an SG-value version of the seed. Denoting the set of all such seeds by ΓG , we can prove, analogously to 4.1: 
+
+Theorem 4.2. For any FA-line game, any SG-value seed γ− ∈ ΓG , any label θ0 ∈ Θ, and any SG value g ∈ N, the set of character parts of positions with that seed and label whose SG value is g,
+
+W = {w | w ∈ Σ∗, G(γ−wθ 0) = g},
+
+satisfies: (1) When g ≤ mmax , W is a regular language over Σ.(2) When g > m max , W = ∅.
+
+Since positions are themselves words, we can naturally define a right action of Σ∗ on all positions of an FA-line game as concatenation of words (keeping the seed and label unchanged): (θwγ −) · c := ( θwcγ −), θ ∈ Θ, w ∈ Σ∗.
+
+Then we can define a generalized mis` ere quotient under this right action. Unlike before, since the SG values are bounded, we can also define an equiv-alence relation for SG values: for any positions u1, u 2 ∈ U ,
+
+u1 ∼=G u2 ⇔ ∀ v ∈ Σ∗, G(u1 · v) = G(u2 · v),
+
+which yields the generalized mis` ere quotient for SG values 
+
+U := U/ ∼=G .
+
+Proposition 4.1. For any FA-line game (under normal or mis` ere play), the generalized mis` ere quotient and the generalized mis` ere quotient for SG values defined above are both finite. Proof. Analogous to Proposition 3.1, it suffices to note that the final states of the outcome DFA of an FA-line game are in bijection with the equivalence classes of the generalized mis` ere quotient; similarly, the final states of its SG-value DFA correspond to the equivalence classes of the generalized mis` ere quotient for SG values. 36 Proposition 4.2. For any FA-line game (under normal or mis` ere play), the outcome or SG value of the empty board is periodic. Proof. The proof is similar in principle to 3.2 (but simpler): it suffices to note that the finiteness of the state set of the outcome DFA makes the sequence of states 
+
+q0 · ϵ, q 0 · o, q 0 · oo , q 0 · ooo , . . . , q 0 · on, . . . 
+
+in the outcome DFA ultimately periodic, which yields periodic outcomes. The same argument applies to the SG-value DFA. 
+
+4.3 Kotzig’s Nim 
+
+Similar to line games, we can represent a position of Kotzig’s nim of board length n + 1 by a word of the form 
+
+w = Tc1c2 . . . c n−1, ci ∈ Σ. 
+
+When the move set is S, a legal move consists of moving the token T to the right by s ∈ S cells, with the destination cell required to be empty o; after the move, the cell originally occupied by the token becomes an obstacle x.When the board length n > s max , a legal move has the form 
+
+Tc1c2 . . . c s−1ocs+1 . . . c n−1 7 → xc1c2 . . . c s−1Tcs+1 . . . c n−1.
+
+Since the board is circular, we cyclically rotate all characters to the left of 
+
+T to the right end, so that T is always the first character: 
+
+xc1c2 . . . c s−1Tcs+1 . . . c n−1 ≡ Tcs+1 . . . c n−1xc1c2 . . . c s−1.
+
+However, when n ≤ smax (the board length does not exceed the maxi-mum step size), some difficult cases arise; hence in the following we will only discuss the sufficiently long case n > s max . We denote the set of all such sufficiently long positions by U> (with the token as the first character by convention), and the sets of P-positions, N -positions and terminal positions within it by P>, N >, T >, respectively. It is easy to see that U> is closed under the right action of Σ∗, so the (SG-value) generalized mis` ere quotient we defined can be restricted to U>,yielding U> and its subsets P>, N >.We can generalise Kotzig’s nim to FA-Kotzig’s nim in a manner similar to the previous section; the only point requiring discussion is the placement 37 of the seed. For a linear board, it suffices to place the seed at the end of the board. For a circular board such as Kotzig’s nim, we need to introduce an additional parameter, the number of laps r: the token may circle the board at most r − 1 times, after which the seed appears in front of the starting position, and the token enters the seed when it attempts to cross the starting position to complete the r-th lap. As illustrated below: 
+
+γ1γ2. . . γsmax T
+
+c1
+
+c2
+
+c3
+
+c4
+
+cn−1 . . . c5 . . . 
+
+starting point completed r − 1 laps not yet completed We now extend the conclusions of the previous section from FA-line games (which correspond to FA-Kotzig’s nim with zero laps) to FA-Kotzig’s nim. This requires two important facts: first, even without a lap restriction, the token can make only finitely many laps around the board; second, if all FA-Kotzig’s nim games with r laps have finite mis` ere quotients, then for any FA-Kotzig’s nim with r + 1 laps, we can construct an equivalent FA-line game, thereby showing that it also has a finite mis` ere quotient. The former is quite intuitive: 
+
+Proposition 4.3. For FA-Kotzig’s nim with maximum step size smax , the token can make at most smax − 1 full laps on any board of length n > s max 
+
+(i.e., it cannot complete smax full laps). Proof. Since each cell can be visited at most once, the token can make at most n−1 moves; each move has maximum length smax , so the total distance travelled is at most ( n − 1) smax . When n > s max , it can travel at most 
+
+ (n − 1) smax 
+
+n
+
+
+
+= smax −
+
+j smax 
+
+n
+
+k
+
+= smax 
+
+full laps. 38 For the latter, we construct an equivalent FA-line game according to the following principle: use an FA-line game to simulate the first lap, during which the token records, using its label, all characters of the cells it has passed (including the obstacles it leaves behind); when the token approaches the initial position, the recorded characters are “unrolled” to the right of the initial position to simulate the remaining r laps of the token. It suffices to take the outcomes of all positions obtained by such “unrolling” as the seed of the FA-line game; then the token need not continue moving to yield the same outcome. The recorded sequence of characters has infinitely many possible arrangements, but as long as the mis` ere quotient is finite, only its equivalence class needs to be recorded to achieve the same effect, hence only finitely many labels are needed. 
+
+Proposition 4.4. Fix a label set Θ, a move mapping ∆, and a seed γ.If for every initial label θ0 ∈ Θ, FA-Kotzig’s nim with r laps always has an outcome DFA (or SG-value DFA), then for every initial label θ′ 
+
+> 0
+
+∈ Θ,FA-Kotzig’s nim with r + 1 laps also has an outcome DFA (or SG-value DFA). Proof. Denote the FA-Kotzig’s nim with r laps by Gr. Since an outcome DFA (SG-value DFA) exists, by analogy with 4.1 we can show that its (SG-value) generalized mis` ere quotient is finite. To compress the recorded string of passed cells into finitely many states, we define an equivalence relation ≡ on strings: for any w1, w 2 ∈ Σ∗,
+
+w1 = c1,1c1,2 . . . c 1,n 1 , n1 ≥ smax ;
+
+w2 = c2,1c2,2 . . . c 2,n 2 , n2 ≥ smax ,
+
+define 
+
+w1 ≡ w2
+
+⇔ c1,1 . . . c 1,s max = c2,1 . . . c 2,s max and ∀θ ∈ Θ, θw 1γ = θw 2γ. 
+
+That is, we require that their first smax characters agree, and that for every choice of initial label, the resulting positions in Gr are equivalent. Since there are only finitely many prefixes of length smax , and both the labels and equivalence classes of Gr are finite, the equivalence classes under ≡
+
+thus defined are also finite (though the actual number may be very large). Moreover, we additionally define that any string 
+
+w = c1c2 . . . c n−1, n < s max 
+
+39 of insufficient length always forms an isolated equivalence class containing only that string under ≡. This still does not destroy finiteness. We now construct an FA-line game equivalent to Kotzig’s nim restricted to at most r + 1 laps, with the given initial label and seed. We still consider only positions of board length n > s max .We set the labels of the new label set Θ′ to be pairs (θ, w ),
+
+where the first component θ ∈ Θ records the original label and changes according to the original move mapping; the second component records the equivalence class under ≡ of the string w consisting of all characters that the token has passed so far. With this setup, the initial label is clearly (θ′, ϵ ).
+
+It remains to set the seed so as to achieve the effect described above. We require the board length to be greater than smax , so when the token enters the seed it has already passed at least smax − 1 characters; we only need to define the seed for cases where the passed characters are 
+
+w = c1c2 . . . c n−1, n ≥ smax .
+
+(Other cases do not affect the construction and can be chosen arbitrarily.) For its equivalence class w, set 
+
+γi(( θ, w )) = 
+
+(
+
+x, ci = x;
+
+oo(u), where u = θc i+1 . . . c n−1wγ ci = o.
+
+By the definition of ≡, the value o(θc i+1 . . . c n−1wγ ) is always well-defined, which realises the effect of “unrolling” the recorded characters to simulate the circular board. Therefore, positions of length n > s max have outcome DFAs and SG-value DFAs. The remaining positions of insufficient length are only finitely many; by Theorem 2.3, the sets of positions with any given outcome or SG value among them are also regular, and by Theorem 2.4 it suffices to take the union with the above DFA. Thus we resolve the conjecture about this game from GONC [15], in a form that is even far more general than the original conjecture: 
+
+Theorem 4.3. Every FA-Kotzig’s nim (under both normal and mis` ere play) has an outcome DFA. This includes all impartial and partizan classical Kotzig’s nim games. 
+
+40 Proof. By the finiteness of the number of laps (Proposition 4.3), it suffices to induct on the number of laps: for r = 0 laps, the game is precisely an FA-line game, which is covered by Proposition 4.1; then apply Proposition 4.4 inductively. 
+
+4.4 Algorithmic Principles 
+
+4.4.1 General Principles 
+
+The algorithm for searching for outcome DFAs for Kotzig’s nim is essentially the same as the algorithm for octal games described in the previous chapter; we only need to point out the differences: (1) For simplicity, we only consider positions with board length greater than smax (outcomes of shorter positions are easy to compute). For this purpose, the initial state queue contains all states of length smax .(2) Legal positions no longer have the restriction that “the first and last characters must be x”; hence the words in the initial queue are no longer required to have x as the second character, and words corresponding to final states of the DFA are no longer required to end with x.More crucially, to prove the correctness of the resulting outcome DFA, the game rules must be expressed in terms of regular language operations (i.e., FA operations). For impartial Kotzig’s nim, next( ·) can be imple-mented by first deleting a prefix (using left quotient as defined in 2.4), then adding prefixes and suffixes; prev( ·) is obtained by reversing the order of operations. For a move set S, for any set of positions W ⊆ ΘΣ ∗,next( W) = [
+
+> s∈S
+
+[
+
+> v∈Σs−1
+
+R(Lvo \ W )xv;prev( W) = [
+
+> s∈S
+
+[
+
+> v∈Σs−1
+
+Rvo(L \ (W / xv)) .
+
+For partizan games, the above operations are performed for both labels while flipping the label, and then the union is taken. For Left and Right move 41 sets SL, S R,next( W) = 
+
+ [
+
+> s∈SL
+
+[
+
+> v∈Σs−1
+
+R(Lvo \ W )xv
+
+
+
+∪
+
+ [
+
+> s∈SR
+
+[
+
+> v∈Σs−1
+
+L(Rvo \ W )xv
+
+ ;prev( W) = 
+
+ [
+
+> s∈SL
+
+[
+
+> v∈Σs−1
+
+Rvo(L \ (W / xv)) 
+
+
+
+∪
+
+ [
+
+> s∈SR
+
+[
+
+> v∈Σs−1
+
+Lvo(L \ (W / xv)) 
+
+ .
+
+By Theorem 2.4, all operations involved are closed for regular languages. In addition, we need to determine the FA for the set of all terminal positions of the game. When the board length n ≥ smax , the game reaches a terminal position if and only if all next positions under legal step sizes are obstacles x; this can be decided by inspecting the first smax characters ahead of the token. For a move set S, the set of all terminal positions is 
+
+T = {Tc1c2 . . . c n−1w | w ∈ Σ+, c i
+
+(
+
+= x, i ∈ S;
+
+∈ Σ, i / ∈ S, },
+
+while for the partizan version it is 
+
+T = {θc 1c2 . . . c n−1w | θ ∈ { L, R}, w ∈ Σ+, c i
+
+(
+
+= x, i ∈ Sθ;
+
+∈ Σ, i / ∈ Sθ. }
+
+All of these are regular languages. 
+
+4.4.2 Restriction to Quasi-Reachable Positions 
+
+The proof in the previous section actually constructed outcome DFAs, but they contain far too many redundant states, and the number of states grows super-exponentially with smax . Moreover, from the actual computational results, even without redundant states, the growth rate of the number of states is very fast. However, we are most concerned with games starting from the empty board, which only requires discussing all reachable positions from the empty board. Therefore, we may ignore some unimportant positions 42 and only use DFAs to determine the outcomes of a class of positions that covers all reachable positions. We call a position u ∈ ΘΣ ∗ quasi-reachable if every run of consecutive 
+
+o’s following any x has length less than smax . The set of all quasi-reachable positions can be expressed as 
+
+Uqr := Θo∗
+
+ [
+
+> 0<s ≤smax
+
+xo s−1
+
+
+
+> ∗
+
+.
+
+Clearly any non-quasi-reachable position is unreachable, because a non-quasi-reachable position either contains 
+
+xo s−1x, s > s max ,
+
+or ends with 
+
+xo s−1, s > s max ,
+
+both of which imply that the token has made at least one move of length s > smax , violating the game rules. In fact, the quasi-reachability defined here corresponds to considering only cases that are unreachable due to exceeding the maximum step size. For example, when S = {1, 3}, the positions 
+
+Tooooooxoox o|{z} 
+
+> 1
+
+x, Toooooox ooo |{z} 
+
+> 3
+
+xx ,
+
+are both unreachable, since the gaps of 1 and 3 empty cells respectively can only be produced by moves of lengths 2 and 4, neither of which is in S.But the first position is quasi-reachable (2 is illegal but does not exceed the maximum step size), while the second is not. Our algorithm for proving correctness of the outcome DFA still works under the quasi-reachability restriction, for the following two reasons: First, if a position u ∈ U is quasi-reachable, then all positions in next( u) are also quasi-reachable. This is easy to see from the definition of quasi-reachability and the game rules. Second, from the expression we gave for Uqr , it is clearly a regular language. Likewise, the set obtained by removing the finitely many insufficiently long positions, 
+
+U> 
+
+> qr
+
+:= Uqr ∩ U >,
+
+is of course also regular. To construct outcome DFAs for quasi-reachable positions, we need to make the following modifications to the algorithm: 43 (1) Clearly every prefix of a quasi-reachable position is quasi-reachable. Therefore, if a word to be added to the queue is not quasi-reachable, it need not be enqueued. (2) To shield the algorithm from the complexity of non-quasi-reachable positions, we modify the game rules: any non-quasi-reachable position has no legal moves. Thus its outcome is uniformly P (or N under mis` ere play). (3) The outcome DFA directly obtained in this way may still contain some non-quasi-reachable positions. To filter these out, we must intersect it with the set of all quasi-reachable positions Uqr ; otherwise it would affect subsequent verification. 
+
+4.4.3 Verification of SG-Value DFAs 
+
+For impartial Kotzig’s nim under normal play, we can also use the same algorithm to search for SG-value DFAs. The SG value is meaningful because it gives the outcome of the disjunctive sum of two or more such games (equivalent to choosing one token on either of two boards and moving it). In contrast, verifying the obtained SG-value DFA is more involved. We need to rewrite the definition of SG values in Definition 2.3 in set-theoretic form, analogously to Corollary 3.1: 
+
+Corollary 4.1. For any sets of positions 
+
+W0, W1, . . . , Wmmax ⊆ U 
+
+of an impartial game under normal play, they are exactly the sets of all positions with SG values 0, 1, . . . , m max if and only if all of the following conditions hold: (1) T ⊆ W 0.That is, under normal play, terminal positions have SG value 0. (2) next( W0) ⊆ S 
+
+> 0<g ≤mmax
+
+Wg.That is, every successor of a position with SG value 0 has positive SG value. (3) For any two SG values g′ < g ≤ mmax , Wg ⊆ prev( Wg′ ).That is, every successor of a position with positive SG value has SG values covering every smaller value. 
+
+All of these conditions can also be checked using FA operations. Al-though this may involve many DFAs ( mmax + 1 DFAs in total), they differ only in their final states; all other structure is shared. If the number of states still overflows, we may also restrict the positions to quasi-reachable ones as before; the resulting SG-value DFA is then sufficient to determine the SG values of all positions reachable from the empty board. 44 4.5 Computational Results 
+
+4.5.1 Results for {1, 2}
+
+If one requires DFAs that determine the outcomes of all positions, our algo-rithm can only produce outcome DFAs for the case S = {1, 2} under both normal and mis` ere play. The former already has sufficiently detailed results in the literature [13, 17], so here we will focus on the mis` ere-play case. The outcome DFA we obtained has 52 states, which can be classified as follows: 
+
+U≤ :ϵ, T, Tx , To ;
+
+P> :Txo , Tox , Toxx , To 3, Txo 3, Toxo 2, To 2xo , To 4x, To 3xox , To 3xo 2,
+
+To 6, To 2xoxo 2, To 3xoxo , To 3xo 3, To 7, To 6xo , To 6xox , To 6xo 2, To 9, To 4xoxo 3,
+
+To 6xoxo , To 6xo 3, To 6xoxo 2;
+
+N > :Txx , To 2, Txo 2, Toxo , To 2x, Txo 2x, To 3x, To 4, Toxo 3, To 2xox ,
+
+To 2xo 2, To 3xo , To 5, To 2xoxo , To 4xo , To 4xox , To 4xo 2, To 6x, To 3xoxo 2, To 4xoxo ,
+
+To 4xo 3, To 8, To 3xoxo 3, To 4xoxo 2, To 6xoxo 3.
+
+Note that the outcome DFA presented here only determines the outcomes of sufficiently long positions ( n > s max = 2); hence the first 4 states correspond to insufficiently long positions, while the remaining states are in bijection with the classes of the generalized mis` ere quotient U>, consisting of 23 P-classes and 25 N -classes. The equivalence relation on positions is still generated by all transitions (103 in total). The non-trivial transitions (53 in total) are: 
+
+Tx 2 · x = Tx 2, Tx 2 · o = Tx 2, Txo · x = Tox , Tox · x = Tox 2,
+
+Tox 2 · x = Tox 2, Tox 2 · o = Tox 2, Toxo · x = Txo 2x, To 2x · x = Tx 2,
+
+Txo 2x · x = Tx 2, Txo 2x · o = Txo , Txo 3 · x = Tox 2, Txo 3 · o = Txo ,
+
+Toxo 2 · x = Tox , To 3x · x = Tx 2, Toxo 3 · x = Tx 2, Toxo 3 · o = Toxo ,
+
+To 2xox · x = Tx 2, To 2xo 2 · x = To 2x, To 2xo 2 · o = To 2x, To 4x · x = Tox 2,
+
+To 5 · x = Tx 2, To 2xoxo · x = To 2x, To 3xox · x = Tox 2, To 3xo 2 · x = To 3x,
+
+To 2xoxo 2 · x = To 2xox , To 2xoxo 2 · o = To 2xox , To 3xoxo · x = To 3x, To 3xo 3 · x = Tox 2,
+
+To 3xo 3 · o = To 3xo , To 4xox · x = Tx 2, To 4xo 2 · x = To 4x, To 6x · x = Tx 2,
+
+To 7 · x = Tox , To 3xoxo 2 · x = To 3xox , To 4xoxo · x = To 4x, To 4xo 3 · x = Tx 2,
+
+To 4xo 3 · o = To 4xo , To 8 · x = Tx 2, To 3xoxo 3 · x = Tx 2, To 3xoxo 3 · o = To 3xoxo ,
+
+To 4xoxo 2 · x = To 4xox , To 6xox · x = Tox 2, To 6xo 2 · x = To 6x, To 9 · x = To 3x,
+
+To 9 · o = To 7, To 4xoxo 3 · x = Tox 2, To 4xoxo 3 · o = To 4xoxo , To 6xoxo · x = To 6x,
+
+To 6xo 3 · x = Tox 2, To 6xo 3 · o = To 6xo , To 6xoxo 2 · x = To 6xox , To 6xoxo 3 · x = Tx 2,
+
+To 6xoxo 3 · o = To 6xoxo .
+
+In fact, we can also give the SG-value DFA for this game; its structure is more complex, with 71 states and 141 transitions. The classification of 45 its states is as follows:                                                                   
+
+> U≤:ϵ, T,Tx ,To ;
+> U>
+> 0:Txo ,Tox ,Tox 2,To 3,Txo 3,Toxo 2,To 2xo ,To 4x,To 3xox ,To 3xo 2,
+> To 6,To 2xoxo 2,To 3xoxo ,To 3xo 3,To 7,To 6xo ,To 6xox ,To 6xo 2,To 9,To 4xoxo 3,
+> To 6xoxo ,To 6xo 3,To 10 ,To 6xoxo 2,To 10 x,To 12 ,To 10 xo 2,To 13 ,To 10 xoxo ,To 10 xoxo 3;
+> U>
+> 1:Tx 2,To 2,Txo 2,Toxo ,Txo 2x,To 3x,Toxo 3,To 2xo 2,To 3xo ,To 2xoxo ,
+> To 4xox ,To 6x,To 3xoxo 2,To 4xo 3,To 8,To 3xoxo 3,To 8xo 2,To 6xoxo 3,To 8xoxo ,To 10 xox ,
+> To 10 xo 3;
+> U>
+> 2:To 2x,To 2x2,To 4,To 2xox ,To 5,To 4xo ,To 4xo 2,To 4xoxo ,To 4xoxo 2,To 8x,
+> To 8xo ,To 8xox ,To 11 ,To 10 xo ,To 8xoxo 2,To 10 xoxo 2.
+
+Hence in the generalized mis` ere quotient U/ ∼=G for SG values of this game, there are respectively 30 , 21 , 16 equivalence classes for SG values 0 , 1, 2. 
+
+4.5.2 Outcome DFAs for Quasi-Reachable Positions 
+
+If we restrict positions to quasi-reachable ones, then the outcome DFA must additionally distinguish quasi-reachability, which requires introducing new states; however, since fewer positions need to be solved, the number of states also decreases accordingly, especially when S is large. In our computa-tional results, the outcome DFAs restricted to quasi-reachable positions are generally much simpler than those for all positions, with the exception of 
+
+S = {1, 2}, where the number of states actually increases. Nevertheless, even when only determining outcomes of all quasi-reachable positions, our algorithm can only produce outcome DFAs for cases with smax ≤ 3; it still fails for non-trivial games with larger smax .The following table lists the complexity of outcome DFAs for non-trivial games successfully solved by our algorithm 6:
+
+> 6
+
+In the table, games are denoted by their move sets; those with a superscript − are mis` ere play, otherwise normal play; |QF | lists the number of final states of each DFA in order. 
+
+46 Game |K| |δ| |QF |{1, 2} 91 139 15,25 
+
+{1, 2}− 91 139 19,21 
+
+{1, 3} : {1, 2} 351 602 58,97 
+
+{1, 3} : {1, 2}− 705 1226 156,113 
+
+{1, 3} 248 427 48,66 
+
+{1, 3}− 426 739 90,113 
+
+{2, 3} : {1, 2} 261 450 42,68 
+
+{2, 3} : {1, 2}− 575 976 107,160 
+
+{2, 3} 280 469 61,69 
+
+{2, 3}− 349 591 73,92 
+
+{1, 2, 3} : {1, 2} 123 220 22,21 
+
+{1, 2, 3} : {1, 2}− 531 924 88,157 
+
+{1, 2, 3} : {1, 3} 647 1118 150,157 
+
+{1, 2, 3} : {2, 3} 718 1258 158,184 From these results, one can see that even when restricted to quasi-reachable positions, the number of states of the outcome DFA grows very rapidly with the move set (very likely still super-exponentially). Moreover, during our solving process we did not impose the restriction that positions in the same equivalence class must share the same rule label ( L or R); unlike the case of partizan octal games in the previous chapter, it occurs frequently that positions with different labels are equivalent to each other. The following table gives the outcomes of the empty board (starting from 
+
+n = 1) and their periods for all cases with smax ≤ 3 (those marked with ? are conjectured periods): 47 Game Outcomes (p, t )
+
+{1, 2} P N P N N N P N N N N N N N N N ... (7 , 1) 
+
+{1, 2}− N P N P N N P P N P P N P P N P ... (5 , 3) 
+
+{1, 3} : {1, 2} P N RN N N N RN N N N RN N N ... (1 , 5) 
+
+{1, 3} : {1, 2}− N P N P R P R R R R R R R R R R ... (6 , 1) 
+
+{1, 3} P N P N N N P N P N N N P N P N ... (0 , 6) 
+
+{1, 3}− N P N P N N N P N P N N N P N P ... (0 , 6) 
+
+{2, 3} : {1, 2} P N RN L N RN L N RN L N RN ... (1 , 4) 
+
+{2, 3} : {1, 2}− N P N N N P N N N P N N N P N N ... (0 , 4) 
+
+{2, 3} : {1, 3} P N N N P N N N N N RN N N N N ... (5 , 6)? 
+
+{2, 3} : {1, 3}− N P P P N P N P P P P P N P P P ... (5 , 6)? 
+
+{2, 3} P N P N P N P P N N P P P N N N ... (11 , 5) 
+
+{2, 3}− N P N P N N N N N N N N N N N N ... (4 , 1) 
+
+{1, 2, 3} : {1, 2} P N P N L L L L L L L L L L L L ... (4 , 1) 
+
+{1, 2, 3} : {1, 2}− N P N P N P N L N L L L L L L L ... (9 , 1) 
+
+{1, 2, 3} : {1, 3} P N L N L N L L L L L L L L L L ... (7 , 1) 
+
+{1, 2, 3} : {1, 3}− N P N P N L N L L L L L L L L L ... (7 , 1)? 
+
+{1, 2, 3} : {2, 3} P N L N P N L L L L L L L L L L ... (7 , 1) 
+
+{1, 2, 3} : {2, 3}− N P N P N L N P N L L L L L L L ... (9 , 1)? 
+
+{1, 2, 3} P N P N P N N N N N P N N N P N ... (7 , 4)? 
+
+{1, 2, 3}− N P N P N P N P N N N P N N N N ... (12 , 1)? 
+
+In fact, the case S = {1, 4} has known results for all reachable posi-tions [30], but our algorithm failed to produce them. This is likely because our quasi-reachable condition still includes too many unreachable positions (especially when the move set is more “sparse”), leading to an increase in the number of states. However, further tightening the restriction may cause the set of positions to fail to be closed under next( ·), or to fail to be a regular language, which would invalidate our verification algorithm. 
+
+4.5.3 SG Values for Quasi-Reachable Positions 
+
+If we restrict positions to quasi-reachable ones, our algorithm can also pro-duce outcome DFAs for the cases S = {1, 3} and {2, 3}. These are shown below: Game |Q| |δ| |QF |{1, 2} 49 81 14,21,20 
+
+{1, 3} 177 313 64,79,34 
+
+{2, 3} 200 350 61,73,65 
+
+Game SG sequence (p, t )
+
+{1, 2} 0,1,0,1,2,2,0,1,2,1,2,2,1,1,2,1,1,2,1,1,2,1,1,2,1,1... (11 , 3) 
+
+{1, 3} 0,1,0,1,2,1,0,1,0,1,2,1,0,1,0,1,2,1,0,1,0,1,2,1,0,1... (0 , 6) 
+
+{2, 3} 0,1,0,1,0,1,0,0,2,2,0,0,0,2,2,2,0,0,2,2,2,0,0,2,2,2... (11 , 5) 
+
+48 Finally, it is worth mentioning that for some move sets of larger size, the SG values appear to exhibit very simple periodicity: when the board is sufficiently long, positions of even length have SG value 1, and otherwise 0. For example: Game SG sequence 
+
+{2, 3, 4, 6} 0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,... 
+
+{1, 2, 3, 4, 6} 0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,... 
+
+{1, 2, 3, 5, 6} 0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,... 
+
+{1, 2, 3, 4, 7} 0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,... 
+
+There is a simple but not rigorous explanation: if the available step sizes are sufficiently abundant that neither player can block the other’s moves, then the token will visit every cell, and the parity of the number of cells determines which player makes the last move. We also attempted to solve such cases, but all of them failed due to state-count overflow. We suspect that Kotzig’s nim exhibiting such periodicity are in fact still extremely complex, and that this apparent periodicity may be spurious: longer boards beyond the computable range may break the pattern. 
+
+# 5 Open Problems 
+
+In addition to the problems already listed above, in this chapter we present some further open problems that we consider suitable for future research directions. 
+
+5.1 More Games 
+
+The most obvious question is of course: 
+
+Problem 5.1. Besides the games mentioned in this paper, what other games can be solved using finite-automaton methods? Our algorithm can be attempted on virtually any game whose positions are based on multi-heaps or one-dimensional boards, as long as its rules can be expressed using operations that are closed on regular languages; it is just not guaranteed to always succeed in producing an outcome DFA. In the chapter on Kotzig’s nim, we noted that if the SG values of a game are bounded, it may be possible to determine the SG values of positions using finitely many DFAs. For games with unbounded SG values, if their SG values exhibit sufficiently strong regularities, solving them with finite 49 automata is not hopeless; one only needs to find a way to compress the SG values according to their patterns. For example, hexadecimal games , which are octal games extended by allowing a heap to be split into three nonempty parts, include special cases whose SG values, though unbounded, are known to exhibit arithmetic pe-riodicity , meaning that each term in a period is always larger than the corresponding term in the previous period by a fixed value (called the am-plitude ) [18]. For instance, the SG sequence of 0.3F is 0, 1, 2, 0, 1, 2, 3, 4, 5, 3, 4, 5, 6, 7, 8, 6, 7, 8, . . . , 
+
+with preperiod, period and amplitude 0 , 6, 3, respectively. Besides hexadecimal games, Wythoff’s game also exhibits arithmetic pe-riodicity. In proving the arithmetic periodicity of Wythoff’s game, [19] in-troduced the mapping 
+
+H(m, n ) := G(m, n ) − m + 2 n
+
+to successfully compress the two-dimensional SG values ( m, n ) into a bounded range, making them recognisable by finite automata. Beyond arithmetic periodicity, hexadecimal games have also been found to exhibit other more complex patterns, such as so-called ruler regularity [9]. The SG values of impartial hexadecimal games under normal play are given by the Sprague–Grundy theorem, but research on mis` ere play and partizan versions remains a blank. If some special cases of these variants still exhibit sufficiently strong regularities, similar compression of their SG values may be possible. 
+
+Problem 5.2. Can this method be generalized to determine the outcomes or SG values of hexadecimal games exhibiting arithmetic periodicity (or other special periodicities)? 
+
+5.2 Stronger Automata 
+
+The rules of many games cannot be expressed as operations on finite au-tomata. Other games, though expressible, have outcomes that cannot be determined by finite automata. For example, the algebraically periodic oc-tal games mentioned earlier exhibit clear regularities in their outcomes under mis` ere play, but these go beyond the class of languages recognisable by finite automata. This is because they require comparing the largest heap with the sum of the remaining heaps, but finite automata cannot perform counting (unless only finitely many numbers are involved), and hence cannot compare magnitudes. With this in mind: 50 Problem 5.3. Can our approach be generalized to stronger automata? The most common automata stronger than finite automata are determin-istic pushdown automata (DPDA), which have an unbounded last-in-first-out stack for recording information, and can recognise many non-regular lan-guages, including palindromes, balanced parentheses, and many languages that depend on counting ability. However, the properties of DPDAs are far less well-behaved than those of FAs: the languages they recognise (called 
+
+context-free languages ) do not enjoy such good closure properties under var-ious operations, and are sometimes even non-computable. Their nondeter-ministic counterpart, NPDA, is even more powerful, but computability of various operations becomes correspondingly worse. Given the trade-off between power and computability, automata inter-mediate between FAs and NPDAs seem more worthy of further exploration, such as visibly pushdown automata (VPDA) [4] and one-counter automata 
+
+(OCA) [10]. Our earlier argument that the outcomes of mis` ere octal games cannot be determined by FAs was not very rigorous. We do not intend to expand on this discussion here, but instead subsume it into the following open problem: 
+
+Problem 5.4. For a given class of automata (especially FAs), is there a rigorous method to prove that the outcomes of a given game cannot be determined by automata in that class? This would help us better understand the computational complexity of games. Moreover, if some octal game could be proven FA-insoluble, that would suffice to disprove Guy’s conjecture, though this appears very difficult. 
+
+5.3 Weak Solutions 
+
+Sometimes a complete solution of a game is very complex, but we may settle for a weak solution : a solution for a special subset of positions that includes the initial positions of interest. The quasi-reachable positions defined in this paper are an instance of this approach. Another example is Treblecross . The rules are that two players alter-nately place their own tokens on a one-dimensional board, with the restric-tion that no three consecutive tokens may be formed; the player who cannot move loses. [21] proved that the outcome of an empty board of length n is determined by n mod 10: it is a P-position when the remainder is 0 , 2, 3, 6or 9, and an N -position otherwise. Their proof proceeded by giving the out-comes of a special class of positions called “regular positions”, and showing 51 that from an empty board, one player can always keep the position within the set of regular positions. In fact, the set of all positions in the above class forms a regular language, and there exists an outcome DFA restricted to this class. However, unlike quasi-reachable positions, this regular language is not closed under next( ·). Moreover, our algorithm fails to produce an outcome DFA for all positions of this game, and from the growth trend of the state queue, it is likely that no such DFA exists at all. Therefore we ask: 
+
+Problem 5.5. Can the algorithm be improved so that it can automatically find and solve weak solutions in the above situation? 
+
+5.4 Two-Dimensional Generalizations 
+
+Many impartial games are played on two-dimensional boards, including clas-sical games such as Go, Gomoku, and Hex. Hence we ask: 
+
+Problem 5.6. Does there exist a two-dimensional generalization of our approach? Such a generalization is likely to be quite difficult in practice. Although there exist two-dimensional analogues of regular languages and finite au-tomata, such as four-way automata (4FA) [8] and recognisable picture lan-guages (REC) [14], their properties are far worse than their one-dimensional counterparts, and many related problems become non-computable. Never-theless, for many open problems on two-dimensional board games, this seems a promising avenue, especially for games like Gomoku, which have “local” move rules and winning conditions, and appear well-suited for representation by specific two-dimensional variants of finite automata. 
+
+# References 
+
+[1] T. Allemang, D. Machine computation with finite games. Master’s thesis, Trinity College, Cambridge , 1984. [2] Meghan R. Allen. An investigation of partizan misere games. Mathe-matics , 2010. [3] Meghan R. Allen. Peeking at partizan mis` ere quotients. Games of No Chance 4 , 63, 2015. 52 [4] Rajeev Alur and P. Madhusudan. Visibly pushdown languages. In Pro-ceedings of the 36th Annual ACM Symposium on Theory of Computing ,pages 202–211, 2004. [5] Srinivas Arun. Geography, kotzig’s nim, and variants. Theoretical Com-puter Science , 1023:Article No. 114957, 14 p., 2025. [6] Richard B. Austin. Impartial and partisan games. Mathematics and Statistics University of Calgary , 1976. [7] Elwyn R Berlekamp, John H Conway, and Richard K Guy. Winning ways, for your mathematical plays. Math Horizons , 13(2):28–29, 2005. [8] M. Blum and C. Hewitt. Automata on a 2-dimensional tape. In IEEE Symposium on Switching and Automata Theory , pages 155–160. 1967. [9] Antoine Dailly, ´Eric Duchˆ ene, Urban Larsson, and Gabrielle Paris. Par-tition games. Discrete Appl. Math. , 285:509–525, 2020. [10] Vojtˇ ech Forejt, Petr Janˇ car, Stefan Kiefer, and James Worrell. Game characterization of probabilistic bisimilarity, and applications to push-down automata. Logical Methods in Computer Science , 14(4), 2018. [11] A. S. Fraenkel and A. Kotzig. Partizan octal games: Partizan sub-traction games. International Journal of Game Theory , 16(2):145–154, 1987. [12] Aviezri S. Fraenkel. How to beat your wythoff games’ opponent on three fronts. The American Mathematical Monthly , 89(6):353–361, 1982. [13] Aviezri S. Fraenkel, Alan Jaffray, Anton Kotzig, and Gert Sabidussi. Modular nim. Theoretical Computer Science , 143(2):319–333, 1995. [14] Dora Giammarresi and Antonio Restivo. Two-dimensional languages. In Handbook of Formal Languages , volume 3, pages 215–267. Springer, 1997. [15] Richard K. Guy. Unsolved problems in combinatorial games. 
+
+R.j.nowakowski Ed.games of , 329:475–491, 1995. [16] Richard K. Guy and Cedric A. B. Smith. The g-values of various games. Mathematical Proceedings of the Cambridge Philosophical Soci-ety , 52(3):514–526, 1956. 53 [17] D. G. Horrocks and Jonathan H. Horrocks. Sprague-grundy values of modular nim. Integers , 19:G1, 2019. [18] S. Howse and R.J. Nowakowski. Periodicity and arithmetic-periodicity in hexadecimal games. Theoretical Computer Science , 313(3):463–472, 2004. [19] Howard A. Landman. A simple fsm-based proof of the additive period-icity of the sprague-grundy function of wythoff’s game. 2002. [20] Urban Larsson and Indrajit Saha. A brief conversation about subtrac-tion games. 2024. [21] Kai Liang and Muxi Li. A weak solution of inverse treblecross, 2026. [22] Bastien Mignoty, Antoine Renard, Michel Rigo, and Markus A. White-land. Automatic proofs in combinatorial game theory. International Journal of Game Theory , 54(2):1–32, 2025. [23] Rebecca Milley and Gabriel Renault. Dead ends in mis` ere play: The mis` ere monoid of canonical numbers. Discrete Mathematics ,313(20):2223–2231, 2013. [24] Richard J Nowakowski and Paul Ottaway. Vertex deletion games with parity rules. Integers , 5(2), 2013. [25] Thane E. Plambeck and Aaron N. Siegel. Misere quotients for impartial games. 2006. [26] Antoine Renard and Michel Rigo. Variants of wythoff game with ter-minal positions or blocking maneuvers. 2025. [27] ric Duchˆ ene, Aviezri S. Fraenkel, Richard J. Nowakowski, and Michel Rigo. Extensions and restrictions of wythoff’s game preserving its p positions. Journal of Combinatorial Theory Series A , 117(5):545–567, 2010. [28] Aaron N. Siegel. Mis` ere canonical forms of partizan games, 2007. [29] Aaron N. Siegel. On the general dead-ending universe of partizan games. 2023. [30] Xin Lu Tan and Mark Daniel Ward. On kotzig’s nim. Integers , 14:Paper G06, 27 p., 2014. 54

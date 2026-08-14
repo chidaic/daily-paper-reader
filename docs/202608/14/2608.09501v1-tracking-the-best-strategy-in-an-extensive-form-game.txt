@@ -1,0 +1,1985 @@
+Title: Tracking the Best Strategy in an Extensive-Form Game
+
+URL Source: https://arxiv.org/pdf/2608.09501v1
+
+Published Time: Tue, 11 Aug 2026 02:15:05 GMT
+
+Number of Pages: 19
+
+Markdown Content:
+# Tracking the Best Strategy in an Extensive-Form Game 
+
+Stephen Pasteris spasteris@turing.ac.uk The Alan Turing Institute London, United Kingdom 
+
+Rahul Savani rahul.savani@liverpool.ac.uk The Alan Turing Institute; The University of Liverpool Liverpool, United Kingdom 
+
+Theodore Turocy t.turocy@uea.ac.uk The Alan Turing Institute; The University of East Anglia Norwich, United Kingdom 
+
+## Abstract 
+
+We consider the extensive-form bandit problem where on each trial the learner plays an extensive-form game against an oblivious adversary. We focus on the notion of switching regret, which measures the expected performance of the learner against that of any switching sequence of mixed strategies in retrospect. Our algorithm takes a parameter ρ > 0 and achieves a switching regret of ˜O((1 /ρ + ρK )√HAT ) where K is the number of switches in the comparator sequence, H is the maximum number of the learner’s information sets that can be traversed during a play of the game and A is the number of actions that the learner can possibly take. Our algorithm is extremely efficient, taking a per trial time of only O(HB ) where B is the maximum number of actions available to the learner at any of its information sets. 
+
+## 1 Introduction 
+
+We consider a (perfect recall) extensive form game. We call any mixed strategy of the learner a policy 
+
+and any deterministic realisation of how the learner’s opponents (including any “chance” player) play an 
+
+environment . The extensive-form bandit problem consists of T trials where on each trial we have an unknown environment μt fixed a-priori. On each trial t the learner stochastically plays the game against the enviroment 
+
+μt , observing its information sets (a.k.a. infosets ) that are traversed. We denote the loss (i.e. the negated payoff) incurred by the learner on trial t by ℓt.The extensive-form bandit problem has been well studied by works such as Kozuno et al. (2021); Bai et al. (2022); Fiegel et al. (2022); Farina et al. (2021b); Maiti et al. (2025) which give bounds on the static regret ,which is the cumulative loss incurred by the learner minus that which it would have obtained by always playing according to the best fixed policy in retrospect. In this paper we focus on the more general notion of switching regret , which is the cumulative loss incurred by the learner minus that which would have been expected by playing an arbitrary sequence of policies in retrospect. Formally, given a policy π and an environment μ′, we define Λ( π, μ ′) to be the expected loss incurred by the learner if it were to play the policy 
+
+π against the environment μ′. Given a sequence of policies ϑ ∈ P T we define the (switching) regret with respect to ϑ as: 
+
+R(ϑ) := ∑ 
+
+> t∈[T]
+
+ℓt − ∑ 
+
+> t∈[T]
+
+Λ( ϑt, μ t) .
+
+Given a sequence of policies ϑ ∈ P T we define: 
+
+K(ϑ) := 1 + |{ t ∈ [T − 1] | ϑt+1 ̸ = ϑt}| 
+
+1arXiv:2608.09501v1 [cs.LG] 10 Aug 2026 which is the number of times the policy changes throughout the sequence. In this paper we give an algorithm 
+
+TrackEFG for the learner that takes a parameter ρ > 0 and achieves, for any sequence of policies ϑ ∈ P T ,an expected regret of: 
+
+E[R(ϑ)] ∈ ˜O
+
+(( 1
+
+ρ + ρK (ϑ)
+
+) √HAT 
+
+)
+
+where H is the maximum number of the learner’s infosets that can be traversed during a play of the game and A is the number of actions that the learner can possibly take (i.e. the sum of the number of actions avaliable at each of the learner’s infosets). A salient feature of TrackEFG is its extreme computational efficiency, taking a per trial time of only O(HB ) where B is the maximum number of actions available at one of the learner’s infosets. From an algorithmic perspective TrackEFG is simple - it essentially follows BalancedOMD Bai et al. (2022) (we note though that we have replaced the use of the balanced exploration policy for performance improvements) but at the end of each trial we apply the FixedShare Herbster & Warmuth (1995) update to the probability distribution over actions at each infoset visited on that trial. The analysis, however, is not a simple combination of (as far as we are aware) known analyses of BalancedOMD and FixedShare .
+
+1.1 Related Work 
+
+The notion of switching regret was introduced in Herbster & Warmuth (1995), which, generalising the Hedge 
+
+algorithm of Freund & Schapire (1997), gave the algorithm FixedShare for the problem of prediction with expert advice. FixedShare was modified by Auer et al. (2002) to create the Exp3.S algorithm for non-stationary learning in the adversarial bandit problem. In the case in which the learner has a single infoset, our problem reduces to the adversarial bandit problem and our algorithm TrackEFG reduces to Exp3.S .The work Maiti et al. (2025) reduces the extensive-form bandit problem to adversarial online shortest path on a directed acyclic graph under semi-bandit feedback. For this problem the works Benkö et al. (2007); Vural et al. (2020) give switching regret guarantees. We suspect that a refined analysis of Benkö et al. (2007), specific to extensive-form games, would lead to a regret of: 
+
+E[R(ϑ)] ∈ ˜O
+
+(( 1
+
+ρ + ρK (ϑ)
+
+) √ln( S)XT 
+
+)
+
+where S is the (massive) number of the learner’s reduced strategies in the reduced strategic form of the game and X is the maximum number of leaves that are reachable under any environment. Whilst this bound would be, in general, incomparable to ours, the algorithm has an extremely high per-trial time and space complexity of O(AT ). The work Vural et al. (2020) gives an algorithm with a regret of: 
+
+E[R(ϑ)] ∈ ˜O
+
+(( 1
+
+ρ + ρK (ϑ)
+
+) √Y AT 
+
+)
+
+where Y is the maximum number of the learner’s infosets that are reachable under any of the learner’s pure strategies. Not only is this regret bound significantly worse than ours but the algorithm has an extremely high per-trial time complexity of O(A4). One may wonder whether the corralling machinery of Luo et al. (2022) could be applied to BalancedOMD 
+
+Bai et al. (2022) which efficiently obtains static regret bounds for the extensive-form bandit problem. How-ever, there are issues in doing this. The first issue is that, to work with Luo et al. (2022), Exp3 had to be modified which means that BalancedOMD , which generalises Exp3 , would also need to be modified. The second issue is that, as far as we are aware, on any trial, the bias term would be dependent on the entire environment at that trial, which is unknown at the end of the trial. We believe that the bias term could be overestimated but this would lead to a dramatically worse regret bound than us and take a time of O(A) to compute. We believe the same issues to hold when trying to corral the algorithms of Kozuno et al. (2021); Fiegel et al. (2022). With regard to the algorithms of Maiti et al. (2025); Farina et al. (2021b), even if these algorithms could be corralled, they would suffer from a dramatically higher regret and time complexity than 
+
+TrackEFG .2Whilst the works Kozuno et al. (2021); Bai et al. (2022) are based on dilated mirror descent Hoda et al. (2010); Farina et al. (2021a), there is also a line of work Lanctot et al. (2009); Farina et al. (2020); Bai et al. (2022) on monte-carlo counterfactual regret minimisation . However, whilst achieving the goal of finding a Nash equilibrium (for a two player zero-sum game), these works fail to give a bound on the true static regret, as the game is played with a policy that is different from the policy that the “regret” is measured against. The work Noarov et al. (2023) considered the notion of subsequence regret, in which switching regret can be seen as a special case. However, their algorithm is full information (in that it must see the entirety of the environment at the end of each trial) and their external regret bound is at least ˜O(A√T ) which is high -especially for a full information algorithm. The per-trial time complexity of their algorithm is also at least 
+
+O(T 2). Related to the extensive-form bandit problem is the problem of reinforcement learning (where transitions are stochastic rather than adversarial). The work Wei & Luo (2021) studied reinforcement learning where the transition probabilities change gradually over time. The development and analysis of TrackEFG was inspired by the works Pasteris et al. (2023); Herbster & Warmuth (1995); Bai et al. (2022); Pasteris et al. (2026). 
+
+1.2 Definitions 
+
+Let N be the set of natural numbers excluding 0. For all i ∈ N let [ i] := {j ∈ N | j ≤ i}. Given a predicate 
+
+P let JP K be equal to 1 if P is true and equal to 0 otherwise. 
+
+## 2 The Game 
+
+For this paper we need not fully define an imperfect information extensive-form game as we only need to focus on the leaner’s infosets and actions and not those of its opponents. In this one-sided view of the game we have a rooted tree whose nodes are either an infoset of the learner, an action of the learner, or a terminal node (a.k.a. leaf ). The children of each infoset are the set of actions that are avaliable at that infoset and the children of each action are the possible leaves or infosets (of the learner) that can be encountered after that action is taken. Formally, we have a rooted tree and a function λ : L → [0 , 1] where L is the set of leaves of the tree. Let V
+
+be the set of nodes of the tree and let r be the root of the tree. Given a node v ∈ V , let C(v) be the set of its children and, given v̸ = r, let p(v) be its parent. The set V \ L , of internal nodes of the tree, is partitioned into two sets N (the set of the learner’s infosets ) and A (the set of the learner’s actions ) satisfying the following rules: • r ∈ N .• For all v ∈ N we have C(v) ⊆ A .• For all a ∈ A we have C(a) ⊆ N ∪ L .Let H be the maximum number of nodes in A in any root-to-leaf path. Let: 
+
+A := |A| , B := max  
+
+> v∈N
+
+|C (v)| .
+
+An environment is defined as a function μ : A → V with μ(a) ∈ C (a) for all a ∈ A . Let M be the set of all possible environments. We note that, in this paper, we will, without loss of generality, consider only deterministic environments, as to handle stochastic environments one simply draws an environment from a probability distribution (so our regret bound will hold for stochastic environments as well). Given some μ ∈ M , when the learner plays the game against μ a root-to-leaf path is traversed as follows. We start at node r and: 3• When we are at a node v ∈ N , the learner observes v and must choose an action a ∈ C (v) to take. We move next to node a.• When at a node a ∈ A , we move next to node μ(a). • When at a node v ∈ L we terminate and the learner observes and incurs loss λ(v)A policy is defined as a function π : A → [0 , 1] such that for all v ∈ N we have: 
+
+∑
+
+> a∈C (v)
+
+π(a) = 1 .
+
+Let P be the set of all policies. Given π ∈ P , when playing the game against an environment, we say that the learner plays according to policy π if and only if, when at a node v ∈ N it draws an action a ∈ C (v)independently with probability π(a) and takes action a. Given π ∈ P and μ ∈ M we define Λ( π, μ ) to be the expected loss of the learner if it were to play the game against μ according to policy π.
+
+## 3 The Problem and Result 
+
+Our problem consists of T trials where on each trial we have an unknown (to the learner) environment μt
+
+fixed a-priori. The learner knows the tree a-priori but not necessarily the function λ. For each trial t ∈ [T ]in turn the learner plays the game against μt. Let ℓt be the loss incurred by the learner on trial t. The aim of the learner is to minimise the cumulative loss incurred. In this paper we give an algorithm TrackEFG for the learner that takes a parameter ρ > 2/√T . In order to present our main theorem we make the following definitions. Given a sequence of policies ϑ ∈ P T we define the regret with respect to ϑ as: 
+
+R(ϑ) := ∑ 
+
+> t∈[T]
+
+ℓt − ∑ 
+
+> t∈[T]
+
+Λ( ϑt, μ t)which is the difference between the cumulative loss of the learner and that which would have been expected if, on each trial t ∈ [T ], it had played according to policy ϑt.Given a sequence of policies ϑ ∈ P T we define: 
+
+K(ϑ) := 1 + |{ t ∈ [T − 1] | ϑt+1 ̸ = ϑt}| 
+
+which is the number of times the policy changes throughout the sequence. We now give the following theorem about TrackEFG .
+
+Theorem 1. For any sequence of policies ϑ ∈ P T , TrackEFG achieves: 
+
+E[R(ϑ)] ∈ O 
+
+(( 1
+
+ρ + ρK (ϑ)
+
+) √HAT ln( ρ2T )
+
+)
+
+where the expectation is over the randomisation in TrackEFG . TrackEFG has a per trial time complexity of O(HB ) and has an initialisation time and space complexity of O(A).Proof. See Section 5. 
+
+## 4 The Algorithm 
+
+To initialise the algorithm we first construct a function n : N ∪ A → N recursively (up the tree) as follows: • For all a ∈ A we have: 
+
+n(a) := 1 + ∑
+
+> v∈C (a)∩N
+
+n(v) .
+
+4• For all v ∈ N we have: 
+
+n(v) := ∑
+
+> a∈C (v)
+
+n(a) .
+
+We note that for all v ∈ N ∪ A we have that n(v) is the number of nodes in A that are descendants of v.We then construct a function β : N ∪ A → R+ recursively (down the tree) as follows: • β(r) := 1 • For all a ∈ A we have: 
+
+β(a) := n(a)β(p(a)) .
+
+• For all v ∈ N \ { r} we have: 
+
+β(v) := β(p(v)) 
+
+n(v) .
+
+We then define: 
+
+η := 1
+
+ρ
+
+√
+
+2 ln( ρ2T )
+
+Hn (r)T , ϕ := 1
+
+ρ2T .
+
+TrackEFG maintains a dynamic (in that it changes from trial to trial) policy. Let πt ∈ P be the value of this policy at the start of trial t. π1 is defined so that for all v ∈ N and all a ∈ C (v) we have: 
+
+π1(a) := 1
+
+|C (v)| .
+
+On a trial t ∈ [T ] the learner plays the game (against μt) according to policy πt. Let dt be the number of nodes in N that were encountered during the play of the game on trial t. For all i ∈ [dt] let xt,i ∈ N be the 
+
+ith node in N that was encountered during the play of the game on trial t and let bt,i ∈ C (xt,i ) be the action that was taken by the learner at xt,i on trial t. Recall that ℓt is the loss incurred by the learner on trial t.We now describe how πt is updated to πt+1 at the end of trial t. First define: 
+
+ψt,d t := exp 
+
+(
+
+−ηℓ t
+
+∏ 
+
+> i∈[dt]
+
+πt(bt,i )
+
+)
+
+.
+
+For all i ∈ [dt], once ψt,i has been defined, we define: 
+
+ψt,i −1 := 
+
+(
+
+1 −
+
+(
+
+1 − ψβ(bt,i )
+
+> t,i
+
+)
+
+πt(bt,i )
+
+)1/β (bt,i )
+
+.
+
+For all i ∈ [dt] and all a ∈ C (xt,i ) we then define: 
+
+πt+1 (a) := ϕ
+
+|C (xt,i )| + (1 − ϕ)πt(a)
+
+ψβ(bt,i )
+
+> t,i −1
+
+(
+
+Ja = bt,i Kψβ(bt,i ) 
+
+> t,i
+
++ Ja̸ = bt,i K
+
+)
+
+and for all v ∈ N \ { xt,i | i ∈ [dt]} and a ∈ C (v) we maintain: 
+
+πt+1 (a) := πt(a) .
+
+This completes the description of TrackEFG .Of course, we must prove that, for all t ∈ [T ], πt is indeed a policy. This is confirmed by the following theorem. 
+
+Theorem 2. For all t ∈ [T + 1] we have πt ∈ P .
+
+5Proof. We prove by induction over t. Since it is clear that π1 ∈ P all we need to do is prove that, for any 
+
+t ∈ [T ] with πt ∈ P , we have πt+1 ∈ P also. So assume we have t ∈ [T ] with πt ∈ P .Using the fact that πt(a) ∈ [0 , 1] for all a ∈ A , by a simple backward induction over j we see that for all 
+
+j ∈ [dt] we have ψt,j ≥ 0 and hence that ψβ(bt,j ) 
+
+> t,j
+
+≥ 0. Hence, for all a ∈ A , we have, since πt(a) ≥ 0, that 
+
+πt+1 (a) ≥ 0. Now take any i ∈ [dt]. Since πt ∈ P we have: 
+
+∑
+
+> a∈C (xt,i )
+
+πt(a) = 1 so that: 
+
+∑
+
+> a∈C (xt,i )
+
+πt(a)
+
+(
+
+Ja = bt,i Kψβ(bt,i ) 
+
+> t,i
+
++ Ja̸ = bt,i K
+
+)
+
+= πt(bt,i )ψβ(bt,i ) 
+
+> t,i
+
++ ∑
+
+> a∈C (xt,i )
+
+πt(a)Ja̸ = bt,i K
+
+= πt(bt,i )ψβ(bt,i ) 
+
+> t,i
+
++ ∑
+
+> a∈C (xt,i )
+
+πt(a) − πt(bt,i )= πt(bt,i )ψβ(bt,i ) 
+
+> t,i
+
++ 1 − πt(bt,i )= 1 −
+
+(
+
+1 − ψβ(bt,i )
+
+> t,i
+
+)
+
+πt(bt,i )= ψβ(bt,i )
+
+> t,i −1
+
+and hence: 
+
+∑
+
+> a∈C (xt,i )
+
+πt+1 (a) = ∑
+
+> a∈C (xt,i )
+
+ϕ
+
+|C (xt,i )| + 1 − ϕψβ(bt,i )
+
+> t,i −1
+
+∑
+
+> a∈C (xt,i )
+
+πt(a)
+
+(
+
+Ja = bt,i Kψβ(bt,i ) 
+
+> t,i
+
++ Ja̸ = bt,i K
+
+)
+
+= ϕ + (1 − ϕ)= 1 .
+
+For all v ∈ N \ { xt,i | i ∈ [dt]} we have, since πt ∈ P , that: 
+
+∑
+
+> a∈C (v)
+
+πt+1 (a) = ∑
+
+> a∈C (v)
+
+πt(a)= 1 .
+
+We have now shown that for all v ∈ N we have: 
+
+∑
+
+> a∈C (v)
+
+πt+1 (a) = 1 so since, by above, we have that πt+1 (a) > 0 for all a ∈ A , we have that πt+1 ∈ P which completes the inductive proof. 
+
+## 5 Analysis 
+
+We will now prove Theorem 1. For all t ∈ [T ] and all i ∈ [H] \ [dt] we define xt,i and bt,i to be equal to some mathematical object not contained in V.A (pure) strategy is defined as a function σ : N → A with σ(v) ∈ C (v) for all v ∈ N . Let S be the set of all strategies. Given some σ ∈ S , when playing the game against an environment, we say that the learner plays according to strategy σ if and only if, when at a node v ∈ N , it takes action σ(v). Given some σ ∈ S 
+
+and μ ∈ M , let Λ( σ, μ ) be the loss incurred by the learner if it were to play the game against μ according to strategy σ.6Given a sequence of strategies σ ∈ S T we define: 
+
+K(σ) = 1 + |{ t ∈ [T − 1] | σt+1 ̸ = σt} .
+
+Lemma 1. For any sequence of policies ϑ ∈ P T there exists a sequence of strategies σ ∈ S T in which: 
+
+K(σ) ≤ K(ϑ)
+
+and: ∑ 
+
+> t∈[T]
+
+Λ( σt, μ t) ≤ ∑ 
+
+> t∈[T]
+
+Λ( ϑt, μ t) .
+
+Proof. Note first that there exists a sequence of policies ϑ† ∈ P K(ϑ) and a sequence τ ∈ [T + 1] K(ϑ)+1 such that: • τ1 = 1 and τK(ϑ)+1 = T + 1. • For all i ∈ [K(ϑ)] we have τi+1 > τ i.• For all i ∈ [K(ϑ)] and all t ∈ [τi, τ i+1 − 1] ∩ N we have ϑt = ϑ† 
+
+> i
+
+.For all i ∈ [K(ϑ)] define: 
+
+σ† 
+
+> i
+
+:= argmin σ′∈S 
+
+> τi+1 −1
+
+∑
+
+> t=τi
+
+Λ( σ′, μ t)where ties are broken arbitrarily. For all i ∈ [K(ϑ)] and t ∈ [τi, τ i+1 − 1] ∩ N we define σt := σ† 
+
+> i
+
+. Clearly we have K(σ) ≤ K(ϑ). For all i ∈ [K(ϑ)] and σ′ ∈ S define: 
+
+zi(σ′) := ∏
+
+> v∈N
+
+ϑ† 
+
+> i
+
+(σ′(v)) .
+
+Note that for all i ∈ [K(ϑ)] we have: ∑
+
+> σ′∈S
+
+zi(σ′) = 1 and for all μ′ ∈ M we have: Λ( ϑ† 
+
+> i
+
+, μ ′) = ∑
+
+> σ′∈S
+
+zi(σ′)Λ( σ′, μ ′)so that: 
+
+> τi+1 −1
+
+∑
+
+> t=τi
+
+Λ( ϑt, μ t) = 
+
+> τi+1 −1
+
+∑
+
+> t=τi
+
+Λ( ϑ† 
+
+> i
+
+, μ t)= ∑
+
+> σ′∈S
+
+zi(σ′)
+
+> τi+1 −1
+
+∑
+
+> t=τi
+
+Λ( σ′, μ t)
+
+≥ min 
+
+> σ′∈S
+> τi+1 −1
+
+∑
+
+> t=τi
+
+Λ( σ′, μ t)=
+
+> τi+1 −1
+
+∑
+
+> t=τi
+
+Λ( σ† 
+
+> i
+
+, μ t)=
+
+> τi+1 −1
+
+∑
+
+> t=τi
+
+Λ( σt, μ t) .
+
+Summing this inequality over i ∈ [K(ϑ)] gives us the result. 7Due to Lemma 1 we will, from here on, fix a sequence of strategies σ ∈ S T . For each t ∈ [T ] we define A† 
+
+> t
+
+to be the set of nodes in A that can possibly be encountered if the learner were to play the game against any environment according to strategy σt. Formally, A† 
+
+> t
+
+is defined as the minimal subset of A in which: • σt(r) ∈ A † 
+
+> t
+
+.• For all a ∈ A † 
+
+> t
+
+and for all v ∈ C (a) ∩ N we have σt(v) ∈ A † 
+
+> t
+
+.We also define: 
+
+A† 
+
+> 0
+
+:= ∅ .
+
+Given t ∈ [T ] and a ∈ A we define mt(a) as follows: • If a ∈ C (xt,i ) for some i ∈ [dt] then: 
+
+mt(a) := 1
+
+ψβ(bt,i )
+
+> t,i −1
+
+(
+
+Ja = bt,i Kψβ(bt,i ) 
+
+> t,i
+
++ Ja̸ = bt,i K
+
+)
+
+.
+
+• If there does not exist i ∈ [dt] with a ∈ C (xt,i ) then: 
+
+mt(a) := 1 .
+
+Given t ∈ [T ] and a ∈ A define: 
+
+gt(a) := Ja ∈ A † 
+
+> t
+
+Kmt(a) + Ja / ∈ A † 
+
+> t
+
+K
+
+and: 
+
+χt(a) := Ja ∈ A † 
+
+> t
+
+K(1 − ϕ) + Ja / ∈ A † 
+
+> t
+
+K
+
+and: 
+
+ωt(a) := Ja / ∈ A † 
+
+> t−1
+
+∧ a ∈ A † 
+
+> t
+
+K ϕB + Ja ∈ A † 
+
+> t−1
+
+∨ a / ∈ A † 
+
+> t
+
+K .
+
+Lemma 2. For all t ∈ [T ] and i ∈ [dt] ∪ { 0} we have: 
+
+ψt,i ∈ (0 , 1] .
+
+Proof. We prove by backwards induction on i. Since η > 0, ℓt ≥ 0 and πt(bt,k ) > 0 for all k ∈ [dt] , we have ψt,d t ∈ (0 , 1]. Now suppose that we have some j ∈ [dt] such that ψt,j ∈ (0 , 1]. We will now show that 
+
+ψt,j −1 ∈ (0 , 1] which will complete the inductive proof. Since ψt,j ∈ (0 , 1] and β(bt,j ) > 0 we have: 1 − ψβ(bt,j ) 
+
+> t,j
+
+∈ [0 , 1) so since πt(bt,j ) ∈ (0 , 1] we have: 1 − (1 − ψβ(bt,j ) 
+
+> t,j
+
+)πt(bt,j ) ∈ (0 , 1] .
+
+Since 1 /β (bt,j ) > 0 we then have that ψt,j −1 ∈ (0 , 1] as required. This completes the inductive proof. Note that by Lemma 2 we have, for all t ∈ [T ] and a ∈ A , that mt(a) > 0 and hence that gt(a) > 0 so that ln( gt(a)) exists as a real number. We will use this ability to take the logarithm throughout this analysis. 
+
+Lemma 3. For all a ∈ A we have: ∏ 
+
+> t∈[T]
+
+χt(a)ωt(a)gt(a) ≤ 1 .
+
+8Proof. We take the inductive hypothesis that for all s ∈ [T ] ∪ { 0} we have: 
+
+∏
+
+> t∈[s]
+
+χt(a)ωt(a)gt(a) ≤ Ja ∈ A †
+
+> s
+
+Kπs+1 (a) + Ja / ∈ A †
+
+> s
+
+K
+
+and prove by induction over s. The inductive hypothesis clearly holds for s = 0 as a / ∈ A †
+
+> 0
+
+. Now suppose we have some q ∈ [T − 1] ∪ { 0} such that the inductive hypothesis holds for s = q. We now show that it holds for s = q + 1 which will complete the proof. We have the following cases: • The first case is that a / ∈ A †
+
+> q+1
+
+. Here we have χq+1 (a) = 1, ωq+1 (a) = 1 and gq+1 (a) = 1 and hence, by the inductive hypothesis we have: 
+
+∏
+
+> t∈[q+1]
+
+χt(a)ωt(a)gt(a) = ∏
+
+> t∈[q]
+
+χt(a)ωt(a)gt(a)
+
+≤ Ja ∈ A † 
+
+> q
+
+Kπq+1 (a) + Ja / ∈ A † 
+
+> q
+
+K
+
+≤ 1as required. • The second case is that a / ∈ A † 
+
+> q
+
+and a ∈ A †
+
+> q+1
+
+. Here we have χq+1 (a) = 1 − ϕ , ωq+1 (a) = ϕ/B and 
+
+gq+1 (a) = mq+1 (a). Since, directly from the algorithm, we have that πq+1 (a) ≥ ϕ/B we then have 
+
+ωq+1 (a) ≤ πq+1 (a). Directly from the algorithm we have: (1 − ϕ)mq+1 (a)πq+1 (a) ≤ πq+2 (a) .
+
+Putting together gives us: 
+
+χq+1 (a)ωq+1 (a)gq+1 (a) ≤ πq+2 (a)So by the inductive hypothesis we have the result. • The third case is that a ∈ A † 
+
+> q
+
+and a ∈ A †
+
+> q+1
+
+. Here we have that χq+1 (a) = 1 − ϕ , ωq+1 (a) = 1 and 
+
+gq+1 (a) = mq+1 (a). Directly from the algorithm we have: (1 − ϕ)mq+1 (a)πq+1 (a) ≤ πq+2 (a) .
+
+Putting together gives us: 
+
+χq+1 (a)ωq+1 (a)gq+1 (a)πq+1 (a) ≤ πq+2 (a)So by the inductive hypothesis we have the result. We have now proved that the inductive hypothesis holds for s = q + 1 and hence that it holds for all 
+
+s ∈ [T ] ∪ { 0}. In particular it holds for s = T which gives us the result. 
+
+Lemma 4. For all t ∈ [T ] we have: ∑
+
+> a∈A †
+> t
+
+1
+
+β(a) = 1 .
+
+Proof. Let N † 
+
+> t
+
+:= {p(a) | a ∈ A † 
+
+> t
+
+}. Given v ∈ N † 
+
+> t
+
+let A′
+
+> t
+
+(v) be the set of nodes in A† 
+
+> t
+
+that are descendants of 
+
+v. We take the inductive hypothesis that for each v ∈ N † 
+
+> t
+
+we have: 
+
+∑
+
+> a∈A ′
+> t(v)
+
+1
+
+β(a) = 1
+
+β(v)and prove by induction up the tree. Hence, we may assume that for all v′ ∈ C (σt(v)) ∩ N we have: 
+
+∑
+
+> a∈A ′
+> t(v′)
+
+1
+
+β(a) = 1
+
+β(v′)9which gives us: 
+
+∑
+
+> a∈A ′
+> t(v)
+
+1
+
+β(a) = 1
+
+β(σt(v)) + ∑
+
+> v′∈C (σt(v)) ∩N
+
+∑
+
+> a∈A ′
+> t(v′)
+
+1
+
+β(a)= 1
+
+β(σt(v)) + ∑
+
+> v′∈C (σt(v)) ∩N
+
+1
+
+β(v′)= 1
+
+β(σt(v)) + ∑
+
+> v′∈C (σt(v)) ∩N
+
+n(v′)
+
+β(σt(v)) = n(σt(v)) 
+
+β(σt(v)) = 1
+
+β(v)as required. We have now proved that the inductive hypothesis holds for all v ∈ N † 
+
+> t
+
+and hence that it holds for v = r
+
+which gives us the result. 
+
+Lemma 5. We have: 
+
+∑
+
+> a∈A
+
+1
+
+β(a)
+
+∑ 
+
+> t∈[T]
+
+ln( χt(a)) = T ln(1 − ϕ)
+
+Proof. By Lemma 4, we have: 
+
+∑
+
+> a∈A
+
+1
+
+β(a)
+
+∑ 
+
+> t∈[T]
+
+ln( χt(a)) = ∑
+
+> a∈A
+
+1
+
+β(a)
+
+∑ 
+
+> t∈[T]
+
+Ja ∈ A † 
+
+> t
+
+K ln(1 − ϕ)= ln(1 − ϕ) ∑ 
+
+> t∈[T]
+
+∑
+
+> a∈A
+
+Ja ∈ A † 
+
+> t
+
+K 1
+
+β(a)= ln(1 − ϕ) ∑ 
+
+> t∈[T]
+
+∑
+
+> a∈A †
+> t
+
+1
+
+β(a)= ln(1 − ϕ) ∑ 
+
+> t∈[T]
+
+1= ln(1 − ϕ)T
+
+as required. 
+
+Lemma 6. We have: 
+
+∑
+
+> a∈A
+
+1
+
+β(a)
+
+∑ 
+
+> t∈[T]
+
+ln( ωt(a)) ≥ K(σ) ln 
+
+( ϕB
+
+)
+
+.
+
+Proof. Let X be the set of all t ∈ [T ] such that either t = 1 or σt−1̸ = σt. Note that |X | = K(σ). 10 For all t ∈ [T ] \ X we have A† 
+
+> t−1
+
+= A† 
+
+> t
+
+so for all a ∈ A we have ωt(a) = 1. Also, for all t ∈ [T ] and a ∈ A \ A †
+
+> t
+
+we have ωt(a) = 1. Hence, by Lemma 4, we have: 
+
+∑
+
+> a∈A
+
+1
+
+β(a)
+
+∑ 
+
+> t∈[T]
+
+ln( ωt(a)) = ∑
+
+> a∈A
+
+1
+
+β(a)
+
+∑
+
+> t∈X
+
+ln( ωt(a)) = ∑
+
+> t∈X
+
+∑
+
+> a∈A
+
+1
+
+β(a) ln( ωt(a)) = ∑
+
+> t∈X
+
+∑
+
+> a∈A †
+> t
+
+1
+
+β(a) ln( ωt(a)) 
+
+≥ ∑
+
+> t∈X
+
+∑
+
+> a∈A †
+> t
+
+1
+
+β(a) ln( ϕ/B )= ln( ϕ/B ) ∑
+
+> t∈X
+
+∑
+
+> a∈A †
+> t
+
+1
+
+β(a)= ln( ϕ/B ) ∑
+
+> t∈X
+
+1= ln( ϕ/B )K(σ)as required. 
+
+Lemma 7. For all t ∈ [T ] we have: 
+
+E
+
+[∑
+
+> a∈A
+
+ln( gt(a)) 
+
+β(a)
+
+]
+
+= −ηΛ( σt, μ t) − E [ψt, 0] .
+
+Proof. Let et be the number of nodes in N that would be encountered if the learner were to play the game against μt according to strategy σt. For all i ∈ [et] let yt,i ∈ N be the i-th node in N that would be encountered if the learner were to play the game against μt according to strategy σt. For all i ∈ [et] let 
+
+ct,i := σt(yt,i )Take any a ∈ A † 
+
+> t
+
+with p(a) = xt,i for some i ∈ [dt]. Assume, for contradiction, that p(a)̸ = yt,i . Then let j
+
+be the maximal element of [ i − 1] such that xt,j = yt,j , which exists as xt, 1 = r = yt, 1. As p(a) = xt,i we must have that a is a descendant of bt,j . But also, as a ∈ A † 
+
+> t
+
+and is a descendant of xt,j we must have that 
+
+a is a descendant of σt(xt,j ) so that bt,j = σt(xt,j ) = ct,j . But μt(bt,j ) = xt,j +1 and μt(ct,j ) = yt,j +1 so that 
+
+xt,j +1 = yt,j +1 which is a contradiction. We have now shown that p(a) = yt,i so since a ∈ A † 
+
+> t
+
+we must have 
+
+a = σt(yt,i ) = ct,i .We have now shown that for all a ∈ A † 
+
+> t
+
+such that there does not exist i ∈ [et] with a = ct,i , we have 
+
+p(a)̸ = xt,j for all j ∈ [dt] and hence that gt(a) = mt(a) = 1. Also, for all a ∈ A \ A † 
+
+> t
+
+we have gt(a) = 1. We have hence shown that: ∑
+
+> a∈A
+
+1
+
+β(a) ln( gt(a)) = ∑
+
+> i∈[et]
+
+1
+
+β(ct,i ) ln( mt(ct,i )) . (1) For all i ∈ [et] we have: 1
+
+β(ct,i ) ln( mt(ct,i )) = Jyt,i = xt,i K (Jct,i = bt,i K ln( ψt,i ) − ln( ψt,i −1)) so since ct,i = bt,i implies yt,i = xt,i we have: 1
+
+β(ct,i ) ln( mt(ct,i )) = Jct,i = bt,i K ln( ψt,i ) − Jyt,i = xt,i K ln( ψt,i −1) . (2) 11 For all i ∈ [et − 1] we have that ct,i = bt,i implies yt,i +1 = μt(ct,i ) = μt(bt,i ) = xt,i +1 . Clearly also we have that yt,i +1 = xt,i +1 implies ct,i = bt,i so that: 
+
+Jct,i = bt,i K = Jyt,i +1 = xt,i +1 K .
+
+Substituting into Equation 2 gives us, for all i ∈ [et − 1], that: 1
+
+β(ct,i ) ln( mt(ct,i )) = Jyt,i +1 = xt,i +1 K ln( ψt,i ) − Jyt,i = xt,i K ln( ψt,i −1) . (3) Utilising equations (2) and (3) in a telescopic sum gives us: 
+
+∑
+
+> i∈[et]
+
+1
+
+β(ct,i ) ln( mt(ct,i )) = Jct,e t = bt,e t K ln( ψt,e t ) − Jyt, 1 = xt, 1K ln( ψt, 0) . (4) Note that if ct,e t = bt,e t then μt(bt,e t ) = μt(ct,e t ) ∈ L so that et = dt. Also note that if ct,e t = bt,e t then 
+
+ct,i = bt,i for all i ∈ [et]. Also note that if ct,e t = bt,e t then, since (by above) et = dt, we have: 
+
+ℓt = λ(μt(bt,e t )) = λ(μt(ct,e t )) = Λ( σt, μ t) .
+
+Hence, we have that: 
+
+Jct,e t = bt,e t K ln( ψt,e t ) = Jct,e t = bt,e t K ln( ψt,d t )= −Jct,e t = bt,e t Kηℓ t
+
+∏ 
+
+> i∈[dt]
+
+πt(bt,i )= −Jct,e t = bt,e t Kηℓ t
+
+∏ 
+
+> i∈[et]
+
+πt(bt,i )= −Jct,e t = bt,e t Kηℓ t
+
+∏ 
+
+> i∈[et]
+
+πt(ct,i )= −Jct,e t = bt,e t KηΛ( σt, μ t)
+
+P[ct,e t = bt,e t | πt] .
+
+Substituting into Equation (4) and noting that yt, 1 = r = xt, 1 gives us: 
+
+∑
+
+> i∈[et]
+
+1
+
+β(ct,i ) ln( mt(ct,i )) = −Jct,e t = bt,e t KηΛ( σt, μ t)
+
+P[ct,e t = bt,e t | πt] − ln( ψt, 0)and hence: 
+
+E
+
+ ∑
+
+> i∈[et]
+
+1
+
+β(ct,i ) ln( mt(ct,i )) 
+
+∣∣∣∣∣ πt
+
+ = −ηΛ( σt, μ t) − E[ln( ψt, 0) | πt]using Equation 1, the result follows. 
+
+Lemma 8. For all t ∈ [T ] we have: 
+
+ln( ψt, 0) ≤ η2
+
+2
+
+∑
+
+> i∈[dt]
+
+β(bt,i )
+
+∏ 
+
+> j∈[i]
+
+πt(bt,j ) − ηℓ t .
+
+Proof. We take the inductive hypothesis that for all k ∈ [dt] ∪ { 0} we have: ln( ψt,k ) ≤ η2ℓ2
+
+> t
+
+2
+
+> dt
+
+∑
+
+> i=k+1
+
+β(bt,i )
+
+(∏ 
+
+> j∈[k]
+
+πt(bt,i )
+
+) ( ∏ 
+
+> j∈[i]
+
+πt(bt,i )
+
+) − ηℓ t
+
+∏ 
+
+> j∈[k]
+
+πt(bt,i )12 and prove by backwards induction on k. The inductive hypothesis clearly holds (with equality) for k = dt.Now assume that we have h ∈ [dt] such that the inductive hypothesis holds for k = h. We will now show that it holds for k = h − 1 which will complete the proof of the inductive hypothesis. Define: 
+
+f ′ 
+
+> t,h
+
+:= η2ℓ2
+
+> t
+
+2
+
+> dt
+
+∑
+
+> i=h+1
+
+β(bt,i )
+
+(∏ 
+
+> j∈[h]
+
+πt(bt,i )
+
+) ( ∏ 
+
+> j∈[i]
+
+πt(bt,i )
+
+)
+
+and: 
+
+ft,h := ηℓ t
+
+∏ 
+
+> j∈[h]
+
+πt(bt,i )noting that both these terms are positive and: ln( ψt,h ) ≤ f ′ 
+
+> t,h
+
+− ft,h .
+
+We have the following two cases: • In the first case we have f ′ 
+
+> t,h
+
+≥ ft,h . By Lemma 2 we have, since β(bt,h ) > 0, that: 
+
+ψβ(bt,h ) 
+
+> t,h
+
+≤ 1
+
+≤ 1 + β(bt,h )( f ′ 
+
+> t,h
+
+− ft,h )
+
+≤ 1 + β(bt,h )( f ′ 
+
+> t,h
+
+− ft,h ) + 12 β(bt,h )2f 2 
+
+> t,h
+
+.
+
+• In the second case we have f ′ 
+
+> t,h
+
+< f t,h . In this case we have, since β(bt,h ) > 0, that: 
+
+ψβ(bt,h ) 
+
+> t,h
+
+= exp( β(bt,h ) ln( ψt,h )) 
+
+≤ exp( β(bt,h )( f ′ 
+
+> t,h
+
+− ft,h )) so since exp( z) ≤ 1 + z + z2/2 for all z ≤ 0 we have: 
+
+ψβ(bt,h ) 
+
+> t,h
+
+≤ 1 + β(bt,h )( f ′ 
+
+> t,h
+
+− ft,h ) + 12 β(bt,h )2(f ′ 
+
+> t,h
+
+− ft,h )2
+
+≤ 1 + β(bt,h )( f ′ 
+
+> t,h
+
+− ft,h ) + 12 β(bt,h )2f 2 
+
+> t,h
+
+.
+
+So in either case we have: 
+
+ψβ(bt,h ) 
+
+> t,h
+
+≤ 1 + β(bt,h )( f ′ 
+
+> t,h
+
+− ft,h ) + 12 β(bt,h )2f 2
+
+> t,h
+
+so that, since β(bt,h ) > 0, we have: ln( ψt,h −1) = 1
+
+β(bt,h ) ln 
+
+(
+
+1 −
+
+(
+
+1 − ψβ(bt,h )
+
+> t,h
+
+)
+
+πt(bt,h )
+
+)
+
+≤ 1
+
+β(bt,h ) ln 
+
+(
+
+1 + β(bt,h )( f ′ 
+
+> t,h
+
+− ft,h )πt(bt,h ) + 12 β(bt,h )2f 2
+
+> t,h
+
+πt(bt,h )
+
+)
+
+and hence, since ln( z) ≤ z − 1 for all z > 0, we have: ln( ψt,h −1) ≤ f ′
+
+> t,h
+
+πt(bt,h ) − ft,h πt(bt,h ) + 12 β(bt,h )f 2
+
+> t,h
+
+πt(bt,h )which proves the inductive hypothesis holds for k = h − 1. We have hence proved that the inductive hypothesis holds always. In particular it holds for k = 0 which, noting that ℓ2 
+
+> t
+
+≤ 1, gives us the result. 13 Lemma 9. We have: 
+
+n(r) = A . 
+
+Proof. By a simple induction up the tree we have that for any v ∈ N ∪ A , n(v) is the number of nodes in 
+
+A that are descendants of v. The result follows immediately. For all t ∈ [T ] and i ∈ [H] we define Dt,i inductively as follows: • Dt, 1 := C(r)• For all j ∈ [H − 1] we have 
+
+Dt,j +1 := ⋃
+
+> a∈D t,j
+
+C(μt(a)) .
+
+We define: 
+
+A∗ 
+
+> t
+
+:= ⋃
+
+> i∈[H]
+
+Dt,i 
+
+which is the set of nodes in A that can possibly be encountered if the learner plays the game against environment μt.
+
+Lemma 10. For all t ∈ [T ] we have: ∑
+
+> a∈A ∗
+> t
+
+β(a) ≤ HA . 
+
+Proof. Given any a ∈ A ∗ 
+
+> t
+
+define A◦ 
+
+> t
+
+(a) to be the set of nodes in A∗ 
+
+> t
+
+that are descendants of a.We take the inductive hypothesis that for all i ∈ [H] and all a ∈ D t,i we have: 
+
+∑ 
+
+> a′∈A ◦
+> t(a)
+
+β(a′) ≤ (H − i + 1) β(a)and prove by backward induction on i. We clearly have the inductive hypothesis for i = H as for any 
+
+a ∈ D t,H we have A◦ 
+
+> t
+
+(a) = {a} so: ∑ 
+
+> a′∈A ◦
+> t(a)
+
+β(a′) = β(a)as required. Now suppose that we have some j ∈ [H] \ { 1} such that the inductive hypothesis holds for 
+
+k = j. We now show that the inductive hypothesis holds for k = j − 1 which will prove that the inductive hypothesis holds always. Take any a ∈ D t,j −1. We have the following two cases: • We first consider the case that μt(a) ∈ L . In this case we have that A◦ 
+
+> t
+
+(a) = {a} so: 
+
+∑ 
+
+> a′∈A ◦
+> t(a)
+
+β(a′) = β(a)
+
+< (H − (j − 1) + 1) β(a)as required. • We next consider the case that μt(a) ∈ N . Since: 
+
+A◦ 
+
+> t
+
+(a) = {a} ∪ ⋃
+
+> a′∈C (μt(a))
+
+A◦ 
+
+> t
+
+(a′)14 and C(μt(a)) ⊆ D t,j , we have: 
+
+∑ 
+
+> a′∈A ◦
+> t(a)
+
+β(a′) = β(a) + ∑
+
+> a′∈C (μt(a))
+
+∑ 
+
+> a′′ ∈A ◦
+> t(a′)
+
+β(a′′ )
+
+≤ β(a) + ( H − j + 1) ∑
+
+> a′∈C (μt(a))
+
+β(a′)= β(a) + ( H − j + 1) ∑
+
+> a′∈C (μt(a))
+
+n(a′)β(μt(a)) = β(a) + ( H − j + 1) β(μt(a)) ∑
+
+> a′∈C (μt(a))
+
+n(a′)= β(a) + ( H − j + 1) β(μt(a)) n(μt(a)) = β(a) + ( H − j + 1) β(a)= ( H − (j − 1) + 1) β(a)as required. We have hence shown that the inductive hypothesis holds for i = j − 1 and hence that it holds always. In particular it holds for i = 1. So since: 
+
+A∗ 
+
+> t
+
+= ⋃
+
+> a∈C (r)
+
+A◦ 
+
+> t
+
+(a)and C(r) = Dt, 1, we have, by Lemma 9, that: 
+
+∑
+
+> a∈A ∗
+> t
+
+β(a) = ∑
+
+> a∈C (r)
+
+∑ 
+
+> a′∈A ◦
+> t(a)
+
+β(a′)= ∑
+
+> a∈C (r)
+
+(H − 1 + 1) β(a)= H ∑
+
+> a∈C (r)
+
+β(a)= H ∑
+
+> a∈C (r)
+
+n(a)β(r)= H ∑
+
+> a∈C (r)
+
+n(a)= Hn (r)= HA 
+
+as required. 
+
+Lemma 11. For all t ∈ [T ] we have: 
+
+E [ln( ψt, 0)] ≤ η2
+
+2 HA − ηE [ℓt] .
+
+Proof. For all i ∈ [H], j ∈ [i] and a ∈ D t,i let p† 
+
+> j
+
+(a) be the unique ancestor of a that is contained in Dt,j .15 Take any i ∈ [H]. First note that the only nodes in A that can possibly be equal to bt,i are the nodes in 
+
+Dt,i . Note also that for any a ∈ D t,i , if a = bt,i then for all j ∈ [i] we have bt,j = p† 
+
+> j
+
+(a). Hence, we have: 
+
+E
+
+[
+
+Ji ≤ dtKβ(bt,i )
+
+∏ 
+
+> j∈[i]
+
+πt(bt,i )
+
+∣∣∣∣∣ πt
+
+]
+
+= ∑
+
+> a∈D t,i
+
+P[a = bt,i | πt]β(a)
+
+∏ 
+
+> j∈[i]
+
+πt(p† 
+
+> j
+
+(a)) = ∑
+
+> a∈D t,i
+
+P[a = bt,i | πt]β(a)
+
+P[a = bt,i | πt]= ∑
+
+> a∈D t,i
+
+β(a) .
+
+By lemmas 10 and 8 we then have: 
+
+E[ln( ψt, 0) | πt] ≤ η2
+
+2
+
+∑
+
+> i∈[H]
+
+E
+
+[
+
+Ji ≤ dtKβ(bt,i )
+
+∏ 
+
+> j∈[i]
+
+πt(bt,i )
+
+∣∣∣∣∣ πt
+
+]
+
+− ηE[ℓt | πt]= η2
+
+2
+
+∑
+
+> i∈[H]
+
+∑
+
+> a∈D t,i
+
+β(a) − ηE[ℓt | πt]= η2
+
+2
+
+∑
+
+> a∈A ∗
+> t
+
+β(a) − ηE[ℓt | πt]= η2
+
+2 HA − ηE[ℓt | πt]which implies the result. 
+
+Lemma 12. We have: 
+
+E
+
+ ∑ 
+
+> t∈[T]
+
+ℓt
+
+ − ∑ 
+
+> t∈[T]
+
+Λ( σt, μ t) ∈ O 
+
+(( 1
+
+ρ + ρK (σ)
+
+) √HAT ln( ρ2T )
+
+)
+
+.
+
+Proof. From Lemma 3 we have, for all a ∈ A , that: 
+
+∑ 
+
+> t∈[T]
+
+ln( χt(a)) + ∑ 
+
+> t∈[T]
+
+ln( ωt(a)) + ∑ 
+
+> t∈[T]
+
+ln( gt(a)) = ln 
+
+ ∏ 
+
+> t∈[T]
+
+χt(a)ωt(a)gt(a)
+
+
+
+≤ 0so that: 
+
+∑
+
+> a∈A
+
+1
+
+β(a)
+
+∑ 
+
+> t∈[T]
+
+ln( χt(a)) + ∑
+
+> a∈A
+
+1
+
+β(a)
+
+∑ 
+
+> t∈[T]
+
+ln( ωt(a)) + ∑ 
+
+> t∈[T]
+
+∑
+
+> a∈A
+
+ln( gt(a)) 
+
+β(a)= ∑
+
+> a∈A
+
+1
+
+β(a)
+
+ ∑ 
+
+> t∈[T]
+
+ln( χt(a)) + ∑ 
+
+> t∈[T]
+
+ln( ωt(a)) + ∑ 
+
+> t∈[T]
+
+ln( gt(a)) 
+
+
+
+≤0and hence, by lemmas 5 and 6, we have: 
+
+T ln(1 − ϕ) + K(σ) ln 
+
+( ϕB
+
+)
+
++ ∑ 
+
+> t∈[T]
+
+∑
+
+> a∈A
+
+ln( gt(a)) 
+
+β(a) ≤ 016 so that, by lemmas 7 and 11 we have: 
+
+T ln(1 − ϕ) + K(σ) ln 
+
+( ϕB
+
+)
+
+≤ − E
+
+ ∑ 
+
+> t∈[T]
+
+∑
+
+> a∈A
+
+ln( gt(a)) 
+
+β(a)
+
+
+
+= − ∑ 
+
+> t∈[T]
+
+E
+
+[∑
+
+> a∈A
+
+ln( gt(a)) 
+
+β(a)
+
+]
+
+= ∑ 
+
+> t∈[T]
+
+(ηΛ( σt, μ t) + E [ψt, 0]) 
+
+≤ ∑ 
+
+> t∈[T]
+
+(
+
+ηΛ( σt, μ t) + η2
+
+2 HA − ηE [ℓt]
+
+)
+
+= η ∑ 
+
+> t∈[T]
+
+Λ( σt, μ t) + η2
+
+2 HAT − ηE
+
+ ∑ 
+
+> t∈[T]
+
+ℓt
+
+ .
+
+Rearranging gives us: 
+
+E
+
+ ∑ 
+
+> t∈[T]
+
+ℓt
+
+ − ∑ 
+
+> t∈[T]
+
+Λ( σt, μ t) ≤ − 1
+
+η
+
+(
+
+T ln(1 − ϕ) + K(σ) ln 
+
+( ϕB
+
+)) 
+
++ η
+
+2 HAT . 
+
+Now note that ln(1 − ϕ) = ln(1 − 1/ρ 2T ) ∈ O (−1/ρ 2T ) and since without loss of generality 1 /ϕ = ρ2T ≥
+
+A ≥ B (else the bound is vacuous) we have ln( ϕ/B ) ≥ 2 ln( ϕ) ∈ O (− ln( ρ2T )). Hence, we have: 
+
+E
+
+ ∑ 
+
+> t∈[T]
+
+ℓt
+
+ − ∑ 
+
+> t∈[T]
+
+Λ( σt, μ t) ∈ O 
+
+( 1
+
+ηρ 2 + 1
+
+η K(σ) ln( ρ2T ) + η
+
+2 HAT 
+
+)
+
+so since, by Lemma 9, we have: 
+
+η = 1
+
+ρ
+
+√ 2 ln( ρ2T )
+
+HAT 
+
+we have the result. For any sequence of policies ϑ ∈ P T , lemmas 1 and 12 give us: 
+
+E
+
+ ∑ 
+
+> t∈[T]
+
+ℓt
+
+ − ∑ 
+
+> t∈[T]
+
+Λ( ϑt, μ t) ∈ O 
+
+(( 1
+
+ρ + ρK (ϑ)
+
+) √HAT ln( ρ2T )
+
+)
+
+which, since the computational complexity of TrackEFG is immediate, completes the proof of Theorem 1. 
+
+## References 
+
+Peter Auer, Nicolò Cesa-Bianchi, Yoav Freund, and Robert E. Schapire. The nonstochastic multiarmed ban-dit problem. SIAM J. Comput. , 32:48–77, 2002. URL https://api.semanticscholar.org/CorpusID: 13209702 .Yunru Bai, Chi Jin, Song Mei, and Tiancheng Yu. Near-optimal learning of extensive-form games with im-perfect information. ArXiv , abs/2202.01752, 2022. URL https://api.semanticscholar.org/CorpusID: 246485834 .17 Pál Benkö, Géza Kós, Tamás Várady, László Andor, and Ralph Robert Martin. The on-line shortest path problem under partial monitoring. ArXiv , abs/0704.1020, 2007. URL https://api.semanticscholar. org/CorpusID:10756937 .Gabriele Farina, Christian Kroer, and Tuomas Sandholm. Stochastic regret minimization in extensive-form games. In International Conference on Machine Learning , 2020. URL https://api.semanticscholar. org/CorpusID:211205212 .Gabriele Farina, Christian Kroer, and Tuomas Sandholm. Better regularization for sequential decision spaces: Fast convergence rates for nash, correlated, and team equilibria. Proceedings of the 22nd ACM Con-ference on Economics and Computation , 2021a. URL https://api.semanticscholar.org/CorpusID: 235212559 .Gabriele Farina, Robin Schmucker, and Tuomas Sandholm. Bandit linear optimization for sequential decision making and extensive-form games. ArXiv , abs/2103.04546, 2021b. URL https://api.semanticscholar. org/CorpusID:232146858 .Côme Fiegel, Pierre M’enard, Tadashi Kozuno, Rémi Munos, Vianney Perchet, and Michal Valko. Adapting to game trees in zero-sum imperfect information games. In International Conference on Machine Learning ,2022. URL https://api.semanticscholar.org/CorpusID:255125421 .Yoav Freund and Robert E. Schapire. A decision-theoretic generalization of on-line learning and an application to boosting. In European Conference on Computational Learning Theory , 1997. URL 
+
+https://api.semanticscholar.org/CorpusID:6644398 .Mark Herbster and Manfred K. Warmuth. Tracking the best expert. Machine Learning , 32:151–178, 1995. URL https://api.semanticscholar.org/CorpusID:12409091 .Samid Hoda, Andrew Gilpin, Javier F. Peña, and Tuomas Sandholm. Smoothing techniques for com-puting nash equilibria of sequential games. Math. Oper. Res. , 35:494–512, 2010. URL https://api. semanticscholar.org/CorpusID:6932987 .Tadashi Kozuno, Pierre M’enard, Rémi Munos, and Michal Valko. Model-free learning for two-player zero-sum partially observable markov games with perfect recall. ArXiv , abs/2106.06279, 2021. URL https: //api.semanticscholar.org/CorpusID:235417366 .Marc Lanctot, K. Waugh, Martin A. Zinkevich, and Michael Bowling. Monte carlo sampling for regret minimization in extensive games. In Neural Information Processing Systems , 2009. URL https://api. semanticscholar.org/CorpusID:2332208 .Haipeng Luo, Mengxiao Zhang, Peng Zhao, and Zhi-Hua Zhou. Corralling a larger band of bandits: A case study on switching regret for linear bandits. In Annual Conference Computational Learning Theory , 2022. URL https://api.semanticscholar.org/CorpusID:246823488 .Arnab Maiti, Zhiyuan Fan, Kevin Jamieson, Lillian J. Ratliff, and Gabriele Farina. Efficient near-optimal algorithm for online shortest paths in directed acyclic graphs with bandit feedback against adaptive adver-saries. ArXiv , abs/2504.00461, 2025. URL https://api.semanticscholar.org/CorpusID:277467759 .Georgy Noarov, Ramya Ramalingam, Aaron Roth, and Stephan Xie. High-dimensional prediction for sequen-tial decision making. ArXiv , abs/2310.17651, 2023. URL https://api.semanticscholar.org/CorpusID: 264491048 .Stephen Pasteris, Chris Hicks, and Vasilios Mavroudis. Nearest neighbour with bandit feedback. ArXiv ,abs/2306.13773, 2023. URL https://api.semanticscholar.org/CorpusID:259251744 .Stephen Pasteris, Rahul Savani, and Ted Turocy. Differential privacy in the extensive-form bandit problem. 2026. URL https://api.semanticscholar.org/CorpusID:288014039 .18 Nuri Mert Vural, Burak Altas, Fatih Ilhan, and Suleyman Serdar Kozat. Shortest path learning in non-stationary enviroments via online convex optimization. 2020 28th Signal Processing and Communications Applications Conference (SIU) , pp. 1–5, 2020. URL https://api.semanticscholar.org/CorpusID: 231599506 .Chen-Yu Wei and Haipeng Luo. Non-stationary reinforcement learning without prior knowledge: An optimal black-box approach. ArXiv , abs/2102.05406, 2021. URL https://api.semanticscholar.org/CorpusID: 231861770 .19

@@ -6,32 +6,49 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-13
-- 运行时间：2026-08-13 19:44:56 UTC
+- 最新运行日期：2026-08-14
+- 运行时间：2026-08-14 19:56:51 UTC
 - 运行状态：成功
-- 本次总论文数：4
-- 精读区：2
-- 速读区：2
+- 本次总论文数：9
+- 精读区：4
+- 速读区：5
 
 ### 今日简报（AI）
-今日精读4篇AI游戏与强化学习论文，最高分9.0分聚焦多智能体卡牌战术游戏设计，另有8.0分揭示多智能体强化学习中的模拟器崩溃问题。最值得关注的是“Pharos Night”将多智能体系统用于游戏玩法创新，以及模拟器崩溃对RL训练稳定性的关键影响。建议下一步可深入探究多智能体框架在游戏中的应用潜力，同时留意模拟器崩溃的规避策略。
-- 详情：[/202608/13/README](/202608/13/README)
+今日聚焦多智能体博弈与LLM策略能力，共精读2篇高分论文并速读3篇相关研究。  
+最值得关注：LLM在自对弈多智能体协调中的纳什均衡表现（9.0分），以及博弈发现基准DiG-bench（8.0分）。  
+下一步可重点探索记忆增强机制对LLM策略推理能力的提升效果。
+- 详情：[/202608/14/README](/202608/14/README)
 
 ### 精读区论文标签
-1. ["Pharos Night: Crown Pursuit": An AI-Native Deck-Building and Tactical Arena Game Design Based on Multi-Agent Systems](/202608/13/2608.12216v1-pharos-night-crown-pursuit-an-ai-native-deck-building-and-tactical-arena-game-design-based-on-multi-agent-systems)  
+1. [Do LLMs Beat Nash? Testing Decentralized Coordination in Self-Play Multi-Agent Games](/202608/14/2608.12547v1-do-llms-beat-nash-testing-decentralized-coordination-in-self-play-multi-agent-games)  
    标签：评分：9.0/10、query:player-ai
-   evidence：基于大模型多智能体系统的AI原生游戏设计，直接驱动游戏玩法与NPC决策
-2. [One Frozen Simulator Is Not Enough: Simulator Collapse in Multi-Agent RL](/202608/13/2608.12253v1-one-frozen-simulator-is-not-enough-simulator-collapse-in-multi-agent-rl)  
+   evidence：直接测试LLM智能体在多智能体游戏中对照纳什均衡的表现
+2. [DiG-bench: Discovery in Games](/202608/14/2608.12593v1-dig-bench-discovery-in-games)  
    标签：评分：8.0/10、query:player-ai
-   evidence：研究LLM模拟用户行为时的模拟器崩溃问题并提出解决方案
+   evidence：面向游戏发现的基准，AI智能体通过交互揭示游戏规则
+3. [A Finite Automaton Approach to Combinatorial Games](/202608/14/2608.13273v1-a-finite-automaton-approach-to-combinatorial-games)  
+   标签：评分：8.0/10、query:player-ai
+   evidence：利用有限自动机自动求解游戏，属于AI在游戏中的应用
+4. [PlayWorld: Benchmarking World Models with Agent Players over Long-Horizon Objectives](/202608/14/2608.13552v1-playworld-benchmarking-world-models-with-agent-players-over-long-horizon-objectives)  
+   标签：评分：8.0/10、query:player-ai
+   evidence：用智能体玩家在长时程目标下评测世界模型
 
 ### 速读区论文标签
-1. [IF:CARGO: LLM-Based Semantic Compilation for Al-Native Rule Programming Games](/202608/13/2608.12195v1-ifcargo-llm-based-semantic-compilation-for-al-native-rule-programming-games)  
+1. [Tracking the Best Strategy in an Extensive-Form Game](/202608/14/2608.09501v1-tracking-the-best-strategy-in-an-extensive-form-game)  
    标签：评分：7.0/10、query:player-ai
-   evidence：AI原生游戏，使用大语言模型作为语义编译器，玩家编写规则并与AI交互。
-2. [Toward the Cognitive--Physical Limits of Embodied Intelligence through a World-Model-Centric Autonomous Racing Agent](/202608/13/2608.10618v1-toward-the-cognitive--physical-limits-of-embodied-intelligence-through-a-world-model-centric-autonomous-racing-agent)  
+   evidence：面向扩展式游戏的无遗憾算法，是AI游戏博弈的核心
+2. [LLMs Are Not Good Strategists, Yet Memory-Enhanced Agency Boosts Reasoning](/202608/14/2608.12626v1-llms-are-not-good-strategists-yet-memory-enhanced-agency-boosts-reasoning)  
+   标签：评分：7.0/10、query:player-ai
+   evidence：长时程策略推理的记忆增强智能体，可用于游戏智能体
+3. [Decentralized Multi-Player Q-Learning in Episodic Markov Decision Processes with Information Asymmetry](/202608/14/2608.12753v1-decentralized-multi-player-q-learning-in-episodic-markov-decision-processes-with-information-asymmetry)  
+   标签：评分：7.0/10、query:player-ai
+   evidence：多玩家Q学习与MDP
+4. [Automating and Scaling Behavioral Scientific Research on AI Agents](/202608/14/2608.10030v1-automating-and-scaling-behavioral-scientific-research-on-ai-agents)  
    标签：评分：6.0/10、query:player-ai
-   evidence：以世界模型为中心的自主赛车智能体，可应用于类游戏赛车环境
+   evidence：自动化AI代理的行为科学研究，可支持代理行为模拟与分析
+5. [Enhancing Virtual Agents through SLMs and Edge-Computing: An Exploratory Evaluation of Think and Memory Processes](/202608/14/2608.13420v1-enhancing-virtual-agents-through-slms-and-edge-computing-an-exploratory-evaluation-of-think-and-memory-processes)  
+   标签：评分：6.0/10、query:player-ai
+   evidence：在虚拟/元宇宙世界中利用认知架构和小语言模型增强虚拟智能体
 
 
 <div class="dpr-home-promo-card">
