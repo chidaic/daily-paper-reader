@@ -1,0 +1,39 @@
+{
+  "label": "2026-08-16",
+  "date": "2026-08-16",
+  "generated_at": "2026-08-16T19:30:54",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202608/16/2608.10499v1-exploration-driven-personalized-federated-reinforcement-learning-via-intrinsic-motivation",
+      "section": "quick",
+      "title_en": "Exploration-Driven Personalized Federated Reinforcement Learning via Intrinsic Motivation",
+      "authors": "Md Rafid Islam, Rafsan Jany, Zahid Hasan, Ratun Rahman",
+      "date": "2026-08-11",
+      "pdf": "https://arxiv.org/pdf/2608.10499v1",
+      "score": "7.0",
+      "evidence": "基于内在动机的强化学习智能体训练，提升探索能力",
+      "tldr": "个性化联邦强化学习常依赖奖励信号优化策略，却忽视非平稳或稀疏奖励环境中的探索。为此提出EDPFRL-IM框架，通过内在好奇心驱动各客户端探索，并将随机网络蒸馏信号叠加到外在奖励上，同时服务器仅发送全局探索先验并接收最小新颖性摘要，保护隐私。实验表明在延迟与稀疏奖励基准中，该方法在策略个性化和样本效率上优于平均PFRL基准，实现了灵活探索与隐私保护的融合。",
+      "tags": "query:player-ai",
+      "abstract_en": "Personalized Federated Reinforcement Learning (PFRL) takes a decentralized approach to storing and accessing information based on past experiences while keeping each client's data private during the learning of each client's policy. Many current methods for PFRL rely heavily on exploiting existing reinforcement learning reward signals to derive an optimal policy for each client, thereby neglecting exploration in non-stationary or sparse-reward environments. In this work, we introduce a new exploration-driven framework, Exploration-Driven Personalized Federated Reinforcement Learning via Intrinsic Motivation (EDPFRL-IM), that leverages an inherent curiosity-driven exploration at each client to promote local exploration and protect client privacy. Furthermore, to facilitate policy discovery via exploration in previously unexplored state spaces, clients add an intrinsic random network distillation (RND) signal to their extrinsic reward. Additionally, the server does not have access to clients' raw experiences or local gradient estimates; instead, the server sends global exploration priors and collects minimal novelty summaries from each client to enable both diverse and coordinated exploration among clients. Experiments in benchmark environments show that our framework outperforms average PFRL benchmarks in policy personalization and sample efficiency, primarily in delayed and sparse reward systems. Overall, EDPFRL-IM enables the integration of a flexible exploratory learning structure into federated reinforcement learning systems while preserving client privacy.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/16/2608.11350v1-self-evolving-embodied-agents-via-skill-harness-evolution",
+      "section": "quick",
+      "title_en": "Self-Evolving Embodied Agents via Skill-Harness Evolution",
+      "authors": "Peidong Wang, Zhiming Ma, Ying Chang, Xufang Luo, Xiaocui Yang, Shi Feng, Yuqing Yang, Dongsheng Li",
+      "date": "2026-08-11",
+      "pdf": "https://arxiv.org/pdf/2608.11350v1",
+      "score": "6.0",
+      "evidence": "通过技能与执行框架进化实现免训练智能体自进化，可迁移到游戏智能体环境适应",
+      "tldr": "具身智能体依赖基础模型及其外部技能、上下文和执行支架，训练微调成本高且非所有场景可用。SHAPER提出免训练自进化框架，在冻结模型参数下，让同一模型兼任规划器与优化器，通过环境试错进化技能与代码支架。在VLABench和ESI-Bench上，该方案优于纯执行、微调及测试时扩展基线。表明技能与支架优化是低成本自进化具身智能体的可行路径。",
+      "tags": "query:player-ai",
+      "abstract_en": "Embodied agents are increasingly built as systems around foundation models, where performance depends not only on model weights but also on the skills, context, action interfaces, and execution harness surrounding the model. While supervised fine-tuning and reinforcement learning can adapt agents to new environments, they require additional data, rewards, and training runs; meanwhile, many train-free code-centric approaches rely on programmable robot APIs that may be unavailable in fixed-interface settings. We propose SHAPER, a self-evolving framework for train-free embodied adaptation that keeps model parameters frozen and improves the non-parametric agent system by evolving reusable skills and a context-code harness through target-environment rollouts. In SHAPER, the same frozen model can serve as both planner and optimizer, refining its external skills and context-code harness without parameter updates. We evaluate SHAPER on VLABench and ESI-Bench, covering embodied agents with different low-level action interfaces, and compare against pure execution, supervised fine-tuning, and test-time-scaling baselines such as verifier-free selection and voting. Our results suggest that skill-and-harness optimization is a practical route to self-evolving embodied agents when model training is expensive, unavailable, or undesirable.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

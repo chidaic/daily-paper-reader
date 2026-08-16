@@ -6,28 +6,29 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-15
-- 运行时间：2026-08-15 20:27:13 UTC
+- 最新运行日期：2026-08-16
+- 运行时间：2026-08-16 19:30:49 UTC
 - 运行状态：成功
-- 本次总论文数：1
+- 本次总论文数：2
 - 精读区：0
-- 速读区：1
+- 速读区：2
 
 ### 今日简报（AI）
-今日共速读1篇论文，无精读，聚焦社交机器人交互式3D世界生成方向。
-
-最值得关注的是《D3D-GEN》，其提出机器人感知的域基交互式3D生成方法，评分6.0/10。
-
-建议后续可深入对比该方法的实际部署效果，并关注相关领域更高分工作。
-- 详情：[/202608/15/README](/202608/15/README)
+今日速读2篇论文，聚焦强化学习与具身智能体方向。  
+最值得关注的是《Exploration-Driven Personalized Federated Reinforcement Learning via Intrinsic Motivation》（7.0分），探讨了内在动机驱动的联邦强化学习个性化探索。  
+建议优先精读该论文，理解其探索激励机制与个性化联邦框架的结合思路。
+- 详情：[/202608/16/README](/202608/16/README)
 
 ### 精读区论文标签
 - 本次无精读推荐。
 
 ### 速读区论文标签
-1. [D3D-GEN: Robot-Aware Domain-Grounded Interactive 3D World Generation for Social Robotics](/202608/15/2608.11876v1-d3d-gen-robot-aware-domain-grounded-interactive-3d-world-generation-for-social-robotics)  
+1. [Exploration-Driven Personalized Federated Reinforcement Learning via Intrinsic Motivation](/202608/16/2608.10499v1-exploration-driven-personalized-federated-reinforcement-learning-via-intrinsic-motivation)  
+   标签：评分：7.0/10、query:player-ai
+   evidence：基于内在动机的强化学习智能体训练，提升探索能力
+2. [Self-Evolving Embodied Agents via Skill-Harness Evolution](/202608/16/2608.11350v1-self-evolving-embodied-agents-via-skill-harness-evolution)  
    标签：评分：6.0/10、query:player-ai
-   evidence：结合领域智能体与RAG的交互式3D世界生成，面向具身AI训练
+   evidence：通过技能与执行框架进化实现免训练智能体自进化，可迁移到游戏智能体环境适应
 
 
 <div class="dpr-home-promo-card">
