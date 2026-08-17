@@ -1,0 +1,421 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-17T19:31:41.629986+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 6,
+    "deep_cap": 6,
+    "deep_selected": 6,
+    "quick_candidates": 4,
+    "quick_skim_target": 11,
+    "quick_selected": 4
+  },
+  "deep_dive": [
+    {
+      "id": "2608.13552v2",
+      "source": "arxiv",
+      "title": "PlayWorld: Benchmarking World Models with Agent Players over Long-Horizon Objectives",
+      "abstract": "Video world models simulate future states conditioned on current observations and user actions. Recent systems have demonstrated impressive video consistency and action controllability over long sequences. However, fairly comparing these interactive models remains challenging. In practice, a human player typically evaluates a world model by pursuing long-horizon objectives through interaction. For example, a user may turn around 360 degrees to see whether the environment remains consistent, or walk into the water and inspect whether realistic water ripples are generated. The action sequence required to achieve the same objective may vary substantially between models, making fixed action-conditioned evaluation unsuitable for cross-model comparison. To address this, we employ multi-modal Agent Players to interact with world models toward specified long-horizon objectives. Building on this paradigm, we introduce PlayWorld, a benchmark providing 171 scenarios, each with a specified objective. To evaluate performance thoroughly, we assess models along four core dimensions: geometry consistency, interaction fidelity, out-of-sight evolution, and insight evolution. In addition, we incorporate basic ability metrics for video quality and controllability. Experiments across nine state-of-the-art world models reveal that current models remain unreliable on long-horizon interactive objectives, particularly in maintaining spatial consistency and persistent state evolution. Code and data are available at https://github.com/kxding/PlayWorld.",
+      "authors": [
+        "Kaixin Ding",
+        "Xi Chen",
+        "Minghong Cai",
+        "Zhiyuan Xu",
+        "Yiyang Wang",
+        "Yuxiang Lu",
+        "Junyi Li",
+        "Shuyang Chen",
+        "Yuan Gao",
+        "Xin Tao",
+        "Pengfei Wan",
+        "Hengshuang Zhao"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-08-13T17:59:30+00:00",
+      "link": "https://arxiv.org/pdf/2608.13552v2",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "agent players benchmark world models via long-horizon interaction objectives",
+      "llm_evidence_cn": "通过智能体玩家执行长时程目标与世界模型交互来评估模型",
+      "llm_evidence": "通过智能体玩家执行长时程目标与世界模型交互来评估模型",
+      "canonical_evidence": "通过智能体玩家执行长时程目标与世界模型交互来评估模型",
+      "llm_tldr_en": "Video world models simulate future states conditioned on actions, but comparing interactive models is hard. PlayWorld benchmarks them by letting agent players pursue long-horizon objectives in the environment; this supports fair cross-model evaluation and user-like interaction testing.",
+      "llm_tldr_cn": "视频世界模型能根据当前观测和动作模拟未来状态，但交互式评估缺乏公平比较标准。本文提出 PlayWorld 基准，让智能体玩家以追求长时程目标的方式在模型中交互，例如转身查看环境一致性或走入水中观察涟漪。相比固定动作条件评估，该方法能适应不同模型的动作策略，实现跨模型比较。该基准为世界模型与智能体训练提供了以玩家画像为核心的评测范式。",
+      "llm_tldr": "视频世界模型能根据当前观测和动作模拟未来状态，但交互式评估缺乏公平比较标准。本文提出 PlayWorld 基准，让智能体玩家以追求长时程目标的方式在模型中交互，例如转身查看环境一致性或走入水中观察涟漪。相比固定动作条件评估，该方法能适应不同模型的动作策略，实现跨模型比较。该基准为世界模型与智能体训练提供了以玩家画像为核心的评测范式。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.14490v1",
+      "source": "arxiv",
+      "title": "Twin: Playing an Unknown Game with a Test-Time Digital Twin",
+      "abstract": "We present a Test-time World-model Inference (Twin) system, in which a frontier coding agent writes an executable world model for completing continual learning tasks, such as ARC-AGI-3 games. Traditional approaches hand-engineer such models, one custom design per task. Each game hides its rules and goal, and our system constructs them from simulation and interaction alone. Its inductive prior over grid games is strong enough to recover the true transitions of the game and the goal on nearly all levels. Replay validation happens in a twin world model. The harness enforces that an action is not made until the program reproduces every previous observed game transition. Each mismatch between a world model prediction and the actual action result becomes a counterexample that is used to repair the world model. Twin clears 179 out of 183 levels (97.8%), and does so more efficiently than humans in 158 out of 179 levels (88.3%). The system infers the goal before any reward on 156 of the levels it clears (87.2%), and in the remaining levels automatically discovers the goal by search. The benchmark scores completion and action efficiency, between 0 and 100, against humans playing each game for the first time. Played directly, the base model scores only 7.8%; an off-the-shelf harness increases it to 61.1%, whereas our twin world model increases the same base model to 93.3%, clearing 23 out of 25 games. Building a usable world model is simpler than anticipated, whereas the harder problem is inferring the right goal.",
+      "authors": [
+        "Alexy Skoutnev",
+        "Kirill Acharya",
+        "Gaston Longhitano",
+        "Madeleine Udell",
+        "Kevin Ellis",
+        "Iddo Drori"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-08-14T17:06:00+00:00",
+      "link": "https://arxiv.org/pdf/2608.14490v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "AI system that plays unknown games by building executable world models from simulation at test time",
+      "llm_evidence_cn": "通过测试时构建可执行世界模型来游玩未知游戏的AI系统",
+      "llm_evidence": "通过测试时构建可执行世界模型来游玩未知游戏的AI系统",
+      "canonical_evidence": "通过测试时构建可执行世界模型来游玩未知游戏的AI系统",
+      "llm_tldr_en": "Twin uses a frontier coding agent to write an executable world model from interaction, enabling it to play unknown grid games such as ARC-AGI-3 with high success.",
+      "llm_tldr_cn": "传统的游戏AI针对每个任务手工设计世界模型，难以适应未知游戏规则。该论文提出测试时世界模型推断系统Twin，由前沿编码代理仅通过模拟和交互自动构建可执行世界模型，并利用双胞胎世界模型进行回放验证。系统在ARC-AGI-3等网格游戏上几乎对所有关卡都能恢复真实转换与目标，直到模型预测与动作结果一致才执行动作。这项工作展示了AI通过自我交互学习规则并游玩未知游戏的通用能力。",
+      "llm_tldr": "传统的游戏AI针对每个任务手工设计世界模型，难以适应未知游戏规则。该论文提出测试时世界模型推断系统Twin，由前沿编码代理仅通过模拟和交互自动构建可执行世界模型，并利用双胞胎世界模型进行回放验证。系统在ARC-AGI-3等网格游戏上几乎对所有关卡都能恢复真实转换与目标，直到模型预测与动作结果一致才执行动作。这项工作展示了AI通过自我交互学习规则并游玩未知游戏的通用能力。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.11539v1",
+      "source": "arxiv",
+      "title": "Player Perceptions of Generative AI in Games: A Steam Review Analysis",
+      "abstract": "The rapid adoption of generative AI in game development has created large discussions among players, yet little empirical work has examined how players actually perceive AI-generated content. Employing quantitative methods, we study the adoption of generative AI in games in the Steam marketplace, using procedural content generation (PCG) as a baseline of a generative technology that was successfully integrated into games over several decades. Furthermore, using qualitative methods, we study player reception of generative AI by analyzing 508,192 English-language reviews. We found that games disclosing generative AI use receive lower recommendation rates and more negative overall sentiment than PCG games. Thematic analysis of 600 reviews shows that players perceive the use of generative AI in games as low developer investment in the game. Drawing on human-centered AI frameworks, we argue that successful generative AI adoption requires deploying generative AI for what players need, not for what makes development cheaper.",
+      "authors": [
+        "Mahsa Bazzaz",
+        "Seth Cooper"
+      ],
+      "primary_category": "cs.HC",
+      "categories": [
+        "cs.HC"
+      ],
+      "published": "2026-08-12T01:05:25+00:00",
+      "link": "https://arxiv.org/pdf/2608.11539v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Empirical study of player perceptions of generative AI in games via Steam reviews",
+      "llm_evidence_cn": "通过Steam评论实证研究玩家对游戏中生成式AI的感知",
+      "llm_evidence": "通过Steam评论实证研究玩家对游戏中生成式AI的感知",
+      "canonical_evidence": "通过Steam评论实证研究玩家对游戏中生成式AI的感知",
+      "llm_tldr_en": "Using Steam marketplace data and 508,192 English reviews, this study finds that games disclosing generative AI use receive lower recommendations and more negative sentiment than PCG games, providing empirical player perception evidence for AI in games.",
+      "llm_tldr_cn": "生成式AI在游戏开发中被快速采用，但玩家到底如何看待AI生成内容缺乏实证研究。作者以程序化内容生成（PCG）为基线，结合定量方法分析Steam市场上生成式AI的采用情况，并基于508,192条英文评论进行定性主题分析。结果发现披露使用生成式AI的游戏获得更低的推荐率和更负面的总体情感；对600条评论的深入分析进一步揭示了玩家的具体担忧。这一大规模实证研究为游戏行业理解玩家对生成式AI的态度提供了重要参考。",
+      "llm_tldr": "生成式AI在游戏开发中被快速采用，但玩家到底如何看待AI生成内容缺乏实证研究。作者以程序化内容生成（PCG）为基线，结合定量方法分析Steam市场上生成式AI的采用情况，并基于508,192条英文评论进行定性主题分析。结果发现披露使用生成式AI的游戏获得更低的推荐率和更负面的总体情感；对600条评论的深入分析进一步揭示了玩家的具体担忧。这一大规模实证研究为游戏行业理解玩家对生成式AI的态度提供了重要参考。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "artificial intelligence in games",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.13715v1",
+      "source": "arxiv",
+      "title": "The Capturing and Logging Ecological Virtual Experiences and Reality (CLEVER) - Job Simulator Dataset",
+      "abstract": "Virtual reality (VR) motion tracking and interaction data has become increasingly recognized as valuable for machine learning experiments for a variety of purposes, including predicting user identities, predicting user attributes like gender and age, predicting retention and learning, and more. However, there exist a limited number of publicly accessible VR motion datasets. In this paper, we present a new open-source dataset of 95 participants playing the SteamVR game Job Simulator. Additionally, we review existing datasets, detail our study procedure, describe our data collection process, list attributes of our dataset, and suggest future work, impact, and applications.",
+      "authors": [
+        "Qidi J. Wang",
+        "Xiaozheng Wang",
+        "Akhilesh M. Anand",
+        "Veera V. Pala",
+        "Rohan V. Penmetsa",
+        "Ryan P. McMahan"
+      ],
+      "primary_category": "cs.HC",
+      "categories": [
+        "cs.HC"
+      ],
+      "published": "2026-08-13T19:19:14+00:00",
+      "link": "https://arxiv.org/pdf/2608.13715v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "VR gameplay dataset of 95 participants playing Job Simulator, supports player attribute prediction and behavior modeling",
+      "llm_evidence_cn": "包含95名参与者VR游戏行为的公开数据集，可用于玩家属性预测和行为建模",
+      "llm_evidence": "包含95名参与者VR游戏行为的公开数据集，可用于玩家属性预测和行为建模",
+      "canonical_evidence": "包含95名参与者VR游戏行为的公开数据集，可用于玩家属性预测和行为建模",
+      "llm_tldr_en": "Presents CLEVER, an open-source VR motion and interaction dataset from 95 participants playing Job Simulator, enabling ML research on predicting user identities, attributes, retention, and learning.",
+      "llm_tldr_cn": "虚拟现实中的运动与交互数据对于预测用户身份、性别年龄等属性以及留存和学习等任务极具价值，然而公开数据集非常有限。本文提出CLEVER数据集，收集了95名参与者在SteamVR游戏Job Simulator中的游玩数据，并回顾现有数据集、说明实验流程和采集方法。该数据集可支持多种机器学习实验，为虚拟游戏玩家建模与行为研究提供了大规模开源基准。",
+      "llm_tldr": "虚拟现实中的运动与交互数据对于预测用户身份、性别年龄等属性以及留存和学习等任务极具价值，然而公开数据集非常有限。本文提出CLEVER数据集，收集了95名参与者在SteamVR游戏Job Simulator中的游玩数据，并回顾现有数据集、说明实验流程和采集方法。该数据集可支持多种机器学习实验，为虚拟游戏玩家建模与行为研究提供了大规模开源基准。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "virtual game player modeling",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.14022v1",
+      "source": "arxiv",
+      "title": "ForgeWM: Progressive Causal Training for Few-Step Action-Conditioned Video World Models",
+      "abstract": "Action-conditioned video world models require low-latency causal generation and reliable responses to game-native controls. Although causal distillation enables one- or few-step video synthesis, extending it to interactive world models remains challenging, as discrete keyboard states and continuous mouse motion must remain aligned with temporally compressed latent chunks during causal training and autoregressive rollout. We introduce ForgeWM, a progressive framework that transforms a bidirectional action-conditioned video generator into efficient few-step world models through domain adaptation, teacher-forced causal training, causal consistency distillation, and on-policy distribution matching with a bidirectional teacher. The resulting budget-specialized students operate at steady-state denoising budgets of 1, 2, and 4 steps. ForgeWM further supports a dual-path deployment protocol combining latency-critical interaction with optional replay-time refinement, where the one-step student re-noises and refines its saved draft. On paired Minecraft trajectories, ForgeWM leads the evaluated systems in Imaging Quality, reference-aligned motion-profile agreement, action-sign accuracy, and mouse-control accuracy, while achieving the lowest reference LPIPS; the same four-stage recipe transfers to gamepad-controlled FPS gameplay. Replay-time refinement matches four-step reference quality while remaining roughly three times closer to the experienced trajectory than regeneration from noise. These results demonstrate ForgeWM's effectiveness for controllable few-step video generation.",
+      "authors": [
+        "Xinye Li",
+        "Lingshuai Lin",
+        "Lei Wang",
+        "Liuzhou Zhang",
+        "Jialin Cui",
+        "Qingshan Li",
+        "Guanchu Wang",
+        "Qingbin Liu",
+        "Xi Chen",
+        "Jiang Bian",
+        "Wai Lam"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-08-14T07:13:34+00:00",
+      "link": "https://arxiv.org/pdf/2608.14022v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Action-conditioned video world models for game-native controls, supports AI in games and game-agent training.",
+      "llm_evidence_cn": "面向游戏原生控制的动作条件视频世界模型，支撑游戏AI与智能体训练。",
+      "llm_evidence": "面向游戏原生控制的动作条件视频世界模型，支撑游戏AI与智能体训练。",
+      "canonical_evidence": "面向游戏原生控制的动作条件视频世界模型，支撑游戏AI与智能体训练。",
+      "llm_tldr_en": "Action-conditioned video world models need low-latency causal generation for game controls. ForgeWM progressively transforms a bidirectional generator into a few-step interactive world model via domain adaptation, teacher-forced causal training, causal consistency distillation, and on-policy distribution matching. It achieves efficient and consistent response to game-native controls, supporting game-agent training and decision-making.",
+      "llm_tldr_cn": "动作条件视频世界模型需要低延迟因果生成以响应游戏操作，但现有的因果蒸馏难以扩展到交互式模型。本文提出ForgeWM，通过领域适配、教师强迫因果训练、因果一致性蒸馏和在线分布匹配，将双向动作条件视频生成器转化为少步交互式世界模型。结果表明ForgeWM在响应游戏原生控制时兼具高效生成与一致性，可支撑游戏AI智能体的训练与决策。",
+      "llm_tldr": "动作条件视频世界模型需要低延迟因果生成以响应游戏操作，但现有的因果蒸馏难以扩展到交互式模型。本文提出ForgeWM，通过领域适配、教师强迫因果训练、因果一致性蒸馏和在线分布匹配，将双向动作条件视频生成器转化为少步交互式世界模型。结果表明ForgeWM在响应游戏原生控制时兼具高效生成与一致性，可支撑游戏AI智能体的训练与决策。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "artificial intelligence in games",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.14530v1",
+      "source": "arxiv",
+      "title": "Marionette: Predicting World States, Rendering Geometry, Painting Appearance",
+      "abstract": "Interactive game world models typically autoregress visual observations directly in pixel or latent space, forcing structured properties such as pose, geometry, and occlusion to be implicitly maintained by the same generative sequence. Over long horizons, errors in these latent world properties accumulate, making consistency and controllability fragile. We explicitly model the evolving world state, delegate exact geometric computation to a fixed, zero-parameter renderer, and leave the neural model to synthesize appearance. We instantiate this idea as Marionette, a world model for interactive games with articulated characters. First, a two-stage autoregressive dynamics model predicts an explicit and interpretable 276-dimensional 3D world state comprising multi-entity articulated skeletons, metric root trajectories, and rotations. Second, a zero-parameter graphics bridge converts the predicted state into pose-control videos, computing world-space geometry and occlusion in closed form. Third, a control-conditioned video-diffusion observation model synthesizes photorealistic RGB observations from the resulting structured controls. Our experiments establish two properties of Marionette. First, the predicted world state is directly controllable. Forcing a mismatched action stream changes root-aligned joint error by 31% across 48 held-out segments. Second, long-horizon behaviour is determined in the state, and can be repaired there. Left free, the two generated characters drift to 21.2 m apart (recorded sessions stay near 5 m) and a third of frames show ground penetration. Two rules imposed on the explicit state, a terrain collider and a separation cap, cut penetration by 66% and keep the pair engaged, with no change to the observation model. Routing appearance through the predicted state costs no fidelity we can detect, at an FVD of 831 against 799 for recorded pose.",
+      "authors": [
+        "Zian Meng",
+        "Zhen Li",
+        "Chuanhao Li",
+        "Qiang Li",
+        "Kaipeng Zhang"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-08-14T17:48:16+00:00",
+      "link": "https://arxiv.org/pdf/2608.14530v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "interactive game world model for articulated characters",
+      "llm_evidence_cn": "面向关节角色的交互式游戏世界模型",
+      "llm_evidence": "面向关节角色的交互式游戏世界模型",
+      "canonical_evidence": "面向关节角色的交互式游戏世界模型",
+      "llm_tldr_en": "Marionette explicitly models evolving world state, delegates geometry to a fixed renderer, and uses neural synthesis for appearance, improving consistency and controllability in interactive game world models.",
+      "llm_tldr_cn": "现有交互式游戏世界模型通常直接在像素或潜空间自回归生成视觉观测，导致位姿、几何和遮挡等结构化属性隐式学习，长期预测误差累积、可控性差。Marionette将世界状态显式建模为可解释的276维3D状态，用固定零参数渲染器处理精确几何计算，仅让神经网络合成外观。两阶段自回归动力学模型预测显式世界状态，显著提升长时程一致性与可控性，为智能体环境预测提供了新范式。",
+      "llm_tldr": "现有交互式游戏世界模型通常直接在像素或潜空间自回归生成视觉观测，导致位姿、几何和遮挡等结构化属性隐式学习，长期预测误差累积、可控性差。Marionette将世界状态显式建模为可解释的276维3D状态，用固定零参数渲染器处理精确几何计算，仅让神经网络合成外观。两阶段自回归动力学模型预测显式世界状态，显著提升长时程一致性与可控性，为智能体环境预测提供了新范式。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "artificial intelligence in games",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2608.13810v1",
+      "source": "arxiv",
+      "title": "What preferences can - and cannot - predict in multi-agent online learning",
+      "abstract": "We examine the interplay between ordinal, preference-based solution concepts in games and the long-run behavior of game dynamics, asking in particular to what extent the combinatorial data of a game -- its preference graph -- determine the outcomes of no-regret learning dynamics -- such as follow-the-regularized-leader (FTRL). In one direction, we show that the skeleton of every dynamically stable set (i.e. the set of pure profiles it contains) must also be preferentially stable, that is, it must be closed under profitable deviations. We then ask the converse question: when do preferences determine the long-run behavior of the players' learning dynamics? We begin by showing that preferences characterize asymptotic stability in the case of subgames -- i.e. subsets of pure profiles obtained by restricting players' action sets. Beyond this case however, the equivalence between dynamic and preferential stability collapses: concretely, we construct a three-player game with a preferentially stable set whose span is dynamically unstable, showing in this way that preferences do not suffice as a criterion of dynamic stability. We then bridge this gap via the notion of resilience under aggregate deviations, an easy-to-check payoff-based condition that guarantees asymptotic stability of arbitrary spans of pure strategies.",
+      "authors": [
+        "Omar Abbadi",
+        "Rida Laraki",
+        "Panayotis Mertikopoulos"
+      ],
+      "primary_category": "cs.GT",
+      "categories": [
+        "cs.GT",
+        "cs.LG"
+      ],
+      "published": "2026-08-13T22:42:53+00:00",
+      "link": "https://arxiv.org/pdf/2608.13810v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "preference graph and no-regret learning dynamics in multi-agent games",
+      "llm_evidence_cn": "多智能体博弈中的偏好图与无遗憾学习动力学",
+      "llm_evidence": "多智能体博弈中的偏好图与无遗憾学习动力学",
+      "canonical_evidence": "多智能体博弈中的偏好图与无遗憾学习动力学",
+      "llm_tldr_en": "Studies how ordinal preference graphs of a game determine the long-run outcomes of no-regret learning dynamics such as FTRL; proves that dynamically stable sets must be preferentially stable and identifies the limits of preference-based prediction.",
+      "llm_tldr_cn": "本文研究博弈的序数偏好信息（偏好图）能在多大程度上预测无遗憾学习动力学（如FTRL）的长期行为。作者证明了任意动态稳定集的骨架必然满足偏好稳定条件；同时探讨了其逆命题，指出偏好在子博弈情形下可以刻画渐近稳定性。该结果揭示了偏好数据在预测多智能体学习结果中的能力与边界，为博弈动力学分析提供了新视角。",
+      "llm_tldr": "本文研究博弈的序数偏好信息（偏好图）能在多大程度上预测无遗憾学习动力学（如FTRL）的长期行为。作者证明了任意动态稳定集的骨架必然满足偏好稳定条件；同时探讨了其逆命题，指出偏好在子博弈情形下可以刻画渐近稳定性。该结果揭示了偏好数据在预测多智能体学习结果中的能力与边界，为博弈动力学分析提供了新视角。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.14132v1",
+      "source": "arxiv",
+      "title": "Act2Intention: A Benchmark For Developing Active Mobile Agents Through Inferring User Intention from GUI Actions",
+      "abstract": "Mobile GUI Agents powered by multimodal large language models (MLLMs) show promise in human-computer intelligence. However, current research primarily focuses on reactive task execution while lacking a comprehensive understanding-prediction-execution process for user intentions, which are the core requirements of active agents. In this paper, we propose the Act2Intention framework that builds an active mobile agent by integrating understanding, predicting user intentions, and executing decisions. First, we construct the Act2Intention Bench through data collection and validated generation, comprising 72,511 intentions and over 700,000 actions across 52 apps, thereby establishing the first benchmark for evaluating proactive agents via continuous intention-action trajectories. We further develop the Act2Intention Agent, achieving proactive services through Proactive-oriented Intention Understanding, Personalized Proactive Intention Prediction, and Experience-guided Intention Execution. Experimental results show that supervised fine-tuning on Act2Intention Bench yields absolute improvements of +32.0 Acc-S, +10.25 Acc-S, and +6.9 SSR points over non-fine-tuned counterparts under the same agent framework for intention understanding, prediction, and execution, respectively. This success underscores the necessity and value of the Act2Intention Bench, which establishes a standardized platform for developing and evaluating proactive agents and consequently paves the way for research on intention-driven human-computer interaction.",
+      "authors": [
+        "Xiaokai Yan",
+        "Jingtao Ding",
+        "Yong Li",
+        "Zhiwen Yu"
+      ],
+      "primary_category": "cs.HC",
+      "categories": [
+        "cs.HC",
+        "cs.AI"
+      ],
+      "published": "2026-08-14T09:36:59+00:00",
+      "link": "https://arxiv.org/pdf/2608.14132v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Infers user intention from GUI actions; methodology transferable to player behavior modeling and simulation",
+      "llm_evidence_cn": "从GUI操作推断用户意图；方法可迁移到玩家行为建模与仿真",
+      "llm_evidence": "从GUI操作推断用户意图；方法可迁移到玩家行为建模与仿真",
+      "canonical_evidence": "从GUI操作推断用户意图；方法可迁移到玩家行为建模与仿真",
+      "llm_tldr_en": "Act2Intention introduces a benchmark and framework for active mobile agents that infer user intention from GUI actions, with 72,511 intentions and 700k+ actions across 52 apps; the intention-from-actions methodology can transfer to player behavior modeling.",
+      "llm_tldr_cn": "现有移动GUI智能体通常只会机械地执行任务，缺乏对用户意图的理解、预测与执行一体化能力。作者提出了Act2Intention框架，构建了覆盖52个应用、包含72,511条意图和超过70万条操作的基准数据集，并基于多模态大模型整合意图理解、预测与决策执行。该基准首次用于评估主动移动智能体从GUI操作中推断用户意图的能力，为人机协同中的主动行为建模提供了新基础。",
+      "llm_tldr": "现有移动GUI智能体通常只会机械地执行任务，缺乏对用户意图的理解、预测与执行一体化能力。作者提出了Act2Intention框架，构建了覆盖52个应用、包含72,511条意图和超过70万条操作的基准数据集，并基于多模态大模型整合意图理解、预测与决策执行。该基准首次用于评估主动移动智能体从GUI操作中推断用户意图的能力，为人机协同中的主动行为建模提供了新基础。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "player behavior simulation techniques",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.14352v1",
+      "source": "arxiv",
+      "title": "ATLAS: Discovering Agent Strategies through LLM-Guided Abstraction and Automata Learning",
+      "abstract": "Large Language Model (LLM)-based agents are increasingly used for complex tasks such as software testing and cybersecurity assessment. While these agents demonstrate impressive capabilities, their behavior is difficult to understand, explain, and analyze. Existing evaluations focus mainly on task success and execution traces, offering limited insight into the strategies employed by the agent. We present ATLAS (Automata Learning for Agent Trajectory Analysis and Strategy Discovery), an approach for recovering interpretable behavioral models from agent trajectories. ATLAS combines trace abstraction with automata learning to infer finite-state models that capture observed agent-environment interaction strategies. These models provide human-interpretable insights and support automated analyses of recurring behaviors, decision points, successful task-completion paths, and failure loops. As a proof of concept, we apply ATLAS to trajectories generated by an LLM-based penetration-testing agent. The resulting models expose high-level behavioral strategies for exploiting vulnerable machines that are difficult to identify from raw execution traces alone. We discuss how learned behavioral models can support explainability, model-guided exploration, auditing, and analysis of agentic systems. We further demonstrate symbolic model-based knowledge transfer from powerful frontier models to compact language models. In addition, we show how model transformations can derive concise explanations of agent behavior in a penetration-testing case study comprising 12 vulnerable machines. ATLAS highlights a new opportunity for model-driven engineering: transforming agent trajectories into explicit behavioral models that enable systematic understanding and analysis of otherwise opaque AI agents.",
+      "authors": [
+        "Ignacio D. Lopez-Miguel",
+        "Andreas Happe",
+        "Jürgen Cito",
+        "Ezio Bartocci",
+        "Bettina Könighofer",
+        "Martin Tappler"
+      ],
+      "primary_category": "cs.SE",
+      "categories": [
+        "cs.SE",
+        "cs.LG"
+      ],
+      "published": "2026-08-14T14:51:48+00:00",
+      "link": "https://arxiv.org/pdf/2608.14352v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Automata learning from agent trajectories for behavioral model discovery, applicable to player behavior modeling.",
+      "llm_evidence_cn": "从智能体轨迹学习行为模型，适用于虚拟玩家行为建模与仿真。",
+      "llm_evidence": "从智能体轨迹学习行为模型，适用于虚拟玩家行为建模与仿真。",
+      "canonical_evidence": "从智能体轨迹学习行为模型，适用于虚拟玩家行为建模与仿真。",
+      "llm_tldr_en": "LLM-agent evaluations focus on task success, not strategies. ATLAS combines trace abstraction with automata learning to infer interpretable finite-state behavioral models from agent trajectories. It enables human-readable strategy discovery and analysis, and is directly transferable to virtual game player behavior modeling and simulation.",
+      "llm_tldr_cn": "现有LLM智能体评估只关注任务成功率，难以理解其内部策略。本文提出ATLAS，将智能体轨迹抽象后用自动机学习推断可解释的有限状态模型，捕捉智能体与环境交互的策略。实验和案例显示ATLAS能从轨迹中恢复类人可读的行为模型，帮助分析和解释智能体行为。此方法可直接迁移至虚拟游戏中玩家行为的建模与仿真。",
+      "llm_tldr": "现有LLM智能体评估只关注任务成功率，难以理解其内部策略。本文提出ATLAS，将智能体轨迹抽象后用自动机学习推断可解释的有限状态模型，捕捉智能体与环境交互的策略。实验和案例显示ATLAS能从轨迹中恢复类人可读的行为模型，帮助分析和解释智能体行为。此方法可直接迁移至虚拟游戏中玩家行为的建模与仿真。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "player behavior simulation techniques",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.14339v1",
+      "source": "arxiv",
+      "title": "Clearing the Fog: Towards Installing and Refining Proactive Exploration Capabilities in LLM Agents",
+      "abstract": "We study proactive exploration in LLM agents, i.e., the ability to explore an environment to acquire information that improves future decision-making. In this regard, we first identify two fundamental bottlenecks that hinder this capability and then propose \\ours, a novel method designed to instill and refine proactive exploration. Specifically, \\ours\\ consists of two components: (1) Exploratory Data Construction, which synthesizes exploration-rich trajectories to mitigate the hindsight bias of standard demonstrations; and (2) RL Optimization with Contrastive Signal Guidance, which leverages contrastive trajectory pairs to distinguish productive exploration from redundant wandering. Extensive experiments demonstrate the effectiveness of \\ours\\ and provide insights into the characteristics of proactive exploration. Our code is available at: https://github.com/GuanZhizhao/SAFARI.",
+      "authors": [
+        "Zhizhao Guan",
+        "Chen Huang",
+        "Ziming Liu",
+        "Hongru Liang",
+        "Wenqiang Lei",
+        "See-Kiong Ng",
+        "Tat-Seng Chua",
+        "Anthony G Cohn"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-08-14T14:24:50+00:00",
+      "link": "https://arxiv.org/pdf/2608.14339v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Proactive exploration method for LLM agents, transferable to game AI agent training.",
+      "llm_evidence_cn": "面向LLM智能体的主动探索训练方法，可迁移至游戏AI智能体训练。",
+      "llm_evidence": "面向LLM智能体的主动探索训练方法，可迁移至游戏AI智能体训练。",
+      "canonical_evidence": "面向LLM智能体的主动探索训练方法，可迁移至游戏AI智能体训练。",
+      "llm_tldr_en": "LLM agents often lack proactive exploration. The paper identifies bottlenecks and proposes a method with exploratory trajectory synthesis and contrastive-signal-guided RL optimization. Experiments show improved information-gathering and decision-making in unknown environments. The approach is transferable to AI agent training in game environments.",
+      "llm_tldr_cn": "大语言模型智能体普遍缺乏主动探索能力，现有示范数据存在后见偏差。本文提出由探索性数据构造与对比信号引导的RL优化组成的方法，以注入并精炼主动探索行为。实验证明该方法能显著提升智能体在未知环境中获取信息的效率，进而改善后续决策。该方法可作为游戏环境中智能体探索训练的有效范例。",
+      "llm_tldr": "大语言模型智能体普遍缺乏主动探索能力，现有示范数据存在后见偏差。本文提出由探索性数据构造与对比信号引导的RL优化组成的方法，以注入并精炼主动探索行为。实验证明该方法能显著提升智能体在未知环境中获取信息的效率，进而改善后续决策。该方法可作为游戏环境中智能体探索训练的有效范例。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
