@@ -1,0 +1,1024 @@
+Title: When Stories Evolve: Benchmarking LLM Storytelling Across Agent Architectures in Open-Ended World Simulations
+
+URL Source: https://arxiv.org/pdf/2608.15654v1
+
+Published Time: Tue, 18 Aug 2026 01:23:19 GMT
+
+Number of Pages: 20
+
+Markdown Content:
+# When Stories Evolve: Benchmarking LLM Storytelling Across Agent Architectures in Open-Ended World Simulations 
+
+Yuqi Chen 1⋆B Sixuan Li 2⋆ Yunfeng Cai 4
+
+Xueai Li 1 Ka Man Yan 1 Ying Li 3,4 B
+
+> 1
+
+The University of Hong Kong 2Peking University 3Tsinghua University 
+
+> 4
+
+Beijing Institute of Mathematical Sciences and Applications (BIMSA) chenyuqi@hku.hk liying0928@tsinghua.edu.cn    
+
+> ⋆Equal contribution BCorresponding authors
+
+Abstract 
+
+Large language models can write fluent stories, but open-ended storytelling requires more than local fluency. In evolving world simulations and AI-native games, models must preserve facts, relationships, causal dependencies, and character states as the world changes. We introduce WSE-bench, a process benchmark that separately evaluates sustained generation, canonical coherence, and meaningful development in dynamic LLM storytelling. Generation Coverage records the proportion of planned narrative steps produced; Consistency tracks when canon breaks; and Richness measures how meaningfully branching, player-shaped trajectories develop. Across frontier models, Consistency and Richness do not form a smooth trade-off: their empirical Pareto frontier is non-concave, with several non-dominated intermediate configurations that no positive linear weighting can select. Added structure can enrich trajectories, but it does not uniformly improve coherence and may shorten them. Model scale chiefly improves sustained generation, without producing reliable gains in canonical coherence or meaningful development. These results show that sustained generation, canonical coherence, and meaningful development are distinct and sometimes competing capacities. WSE-bench makes those dynamics visible by extending narrative evaluation from finished stories to the processes that create them. 
+
+1 Introduction 
+
+An open-ended story has no final draft. In evolving world simulations and LLM-driven open-narrative games, each ac-tion changes the state from which the next scene is generated (Park et al., 2023; Han et al., 2024; Wang et al., 2024b). A promise, injury, or transfer of knowledge can become binding evidence many steps later. Each continuation becomes part of the story’s canon: the set of facts established so far. Open-ended storytelling can fail in three distinct ways: generation may stop, the story may contradict its accumulated canon, or it may remain coherent only by failing to develop. Evaluation must therefore distinguish sustained generation, canonical coherence, and meaningful development. Most narrative evaluation focuses on completed stories, in-cluding book-length quality (Yang and Jin, 2025) and consis-tency bugs (Li et al., 2026a). Such settings do not reveal when an evolving trajectory first breaks canon, when development stalls, or whether an architecture trades one capability for the other. Interactive systems combine memory, planning, character, and world components (Park et al., 2023; Han et al., 2024; Chen et al., 2026), but differences in worlds, models, and player policies obscure component effects. Long-horizon benchmarks expose compounding errors hid-den by short evaluations (Ma et al., 2024; Sinha et al., 2026). Figure 1 illustrates the three requirements at stake: sustained generation, canonical coherence, and meaningful develop-ment. 
+
+Figure 1. Conceptual requirements for open-ended storytelling across agent architectures: meaningful development (Richness), canonical coherence (Consistency), and sustained generation (Gener-ation Coverage). WSE-bench evaluates evolving stories along these three dimensions. 
+
+To evaluate these requirements, we introduce WSE-bench 
+
+(When Stories Evolve Benchmark ), a process benchmark that operationalizes them as Generation Coverage, Consistency, and Richness. Generation Coverage records the proportion of planned narrative steps successfully produced. Each episode starts from a common initial world and a model-independent opening. A fixed player policy selects attempted actions, the 
+
+> 1arXiv:2608.15654v1 [cs.CL] 16 Aug 2026
+
+When Stories Evolve: Benchmarking LLM Storytelling Across Agent Architectures in Open-Ended World Simulations tested architecture determines what follows, and independent evaluators identify contradictions and meaningful develop-ments. Sharing the episode setup and choice-selection sched-ule across conditions makes architectural differences easier to interpret. We examine how canonical coherence, meaningful develop-ment, and sustained generation vary with agent architecture and model choice, and whether dense-model scale produces consistent trends. Within-episode comparisons estimate ar-chitecture effects, while cross-model analyses characterize the models evaluated here. Beyond architecture and model differences, we ask whether the origin of a world shapes the evolving canon. We hypoth-esize that source-derived worlds may be more vulnerable to contradiction when generated trajectories diverge from plots potentially seen during pretraining. Comparing simulation-native settings with worlds adapted from published plays tests this possibility, which we call prior-canon interference .Together, paired architecture comparisons, cross-model anal-yses, and blinded validation separate story quality from sus-tained generation. They distinguish configurations that ex-pand the attainable Consistency–Richness region from those that move along its boundary. 
+
+2 Related Work 
+
+Planning and long-form story generation. Planning-based generators separate storyline construction from surface realization (Yao et al., 2019). Re3 conditions recursively on a global plan and current story state (Yang et al., 2022). DOME combines dynamic outlines, temporal memory, and conflict analysis (Wang et al., 2025b), while FACTTRACK tracks tem-porally qualified world facts at the outline level (Lyu et al., 2025). These systems establish planning and memory as plau-sible interventions, but generally compare bundled pipelines on completed drafts. 
+
+Narrative evaluation and LLM judges. OpenMEVA tests story metrics for human agreement, discourse-level coherence, and robustness (Guan et al., 2021). LongStoryEval organizes reader-relevant criteria for book-length narratives (Yang and Jin, 2025), and ConStory-Bench targets consistency bugs in long stories (Li et al., 2026a). G-Eval motivates rubric-based LLM evaluation (Liu et al., 2023), but creative-writing prefer-ence remains difficult even for strong judges (Fein et al., 2026). WSE-bench therefore uses dimension-specific Judges, blinded human validation, and step-level evidence. This design locates contradictions and substantive developments while keeping generation failures separate from Consistency and Richness. 
+
+Role-playing and simulated story worlds. Generative Agents and SOTOPIA study memory, planning, and multi-agent interaction (Park et al., 2023; Zhou et al., 2024). Char-acterBox evaluates role-playing through character trajecto-ries in a narrator-coordinated sandbox (Wang et al., 2025a). Other interactive systems combine authorial and character processes through director–actor control, narrative planning, or character simulation (Han et al., 2024; Wang et al., 2024b; Chen et al., 2026; Yu et al., 2025). BOOKWORLD and Evolv-ingWorld extend these ideas to persistent literary societies and co-evolving character–world state (Ran et al., 2025; Zong et al., 2026). These studies usually assess bundled systems. 
+
+Long-horizon and stateful agent evaluation. AgentBoard evaluates multi-turn agents through process-level progress rather than final success alone (Ma et al., 2024). Long-horizon studies also show how small per-step errors compound with task length (Sinha et al., 2026). Language-model world simu-lators expose unreliable state transitions (Wang et al., 2024a), while trained text-based world models can learn coherent dynamics when behavioral coverage is adequate (Li et al., 2026b). Across these lines of work, system comparisons often conflate differences in models, worlds, player behavior, and architec-ture. WSE-bench holds the world, choice-selection policy, nar-rator role, output format, and tested model fixed within paired episodes while varying character-decision structure, WMOD, and WMEM independently. It evaluates inference-time behav-ior through canonical coherence, meaningful development, and sustained generation over long-horizon, open-ended tra-jectories. 
+
+3 Benchmark Framework 
+
+WSE-bench represents each evolving story as a trajectory grounded in a common initial world. Figure 2 traces the frame-work from standardized episode construction through recur-rent story generation to evaluation. Operationally, B1 assigns character decisions to the Story Agent, B2 adds one Character Agent for all non-player characters, and B3 assigns one iso-lated Character Agent to each non-player character. WMOD supplies a pre-narration PlotPlan of at most 12 beats, while WMEM applies a structured state update after narration. The resulting trajectories are evaluated with Generation Coverage, Consistency, and Richness. 
+
+3.1 Initial Worlds and Episode Construction 
+
+Each episode is grounded in an InitialWorld , a self-contained canonical starting state that specifies characters, relationships, persistent facts, and time. The benchmark col-lection used here draws from three source families. Two are simulation-native: Into-the-Painting (ITP), an open-narrative historical game world (Chen, 2026), and Smallville, a simu-lated society (Park et al., 2023). The third consists of literary worlds adapted from the multilingual DraCor drama collec-tion (Fischer et al., 2019). The simulation-native settings do not prescribe a reference continuation. DraCor worlds, by con-trast, begin from published plays whose plots and character arcs may be represented in model pretraining. A common InitialWorld format makes architectures com-parable across sources. Each EpisodeSeed defines a con-nected cast, the focal player, their initial relationships and locations, and the instance language. The collection contains 42 five-character seeds, 14 per source family, balanced for 
+
+> 2
+
+When Stories Evolve: Benchmarking LLM Storytelling Across Agent Architectures in Open-Ended World Simulations        
+
+> Figure 2. WSE-bench combines standardized episode construction, recurrent generation loop, and systematic comparison of agent architectures. Each episode contains one player-controlled character and four non-player characters. At each step, B1lets the Story Agent decide consequences directly, B2uses one Character Agent to propose for all non-player characters, and B3uses one isolated Character Agent per non-player character; the Story Agent remains the sole narrator. WMOD optionally organizes proposed actions into a pre-narration PlotPlan of at most 12 beats, whereas WMEM optionally records a structured post-narration world-state update. Crossing the three bases with the two binary modules yields 12 architecture conditions.
+
+focal-player representation and relationship structure. Each seed has a native-language opening created without an evaluated model. All 12 architecture conditions follow the same pre-specified choice schedule. The instances span Chinese, English, Dano-Norwegian, Russian, and Swedish. Appendix A provides further details on episode construction and cross-architecture comparison. 
+
+3.2 Evolving Trajectories 
+
+The opening introduces the player-controlled character and multiple active non-player characters. At step t, a determinis-tic policy selects an option from the previous narrative. The selected option expresses what the player attempts, and the agent system determines its consequences and continues the story. Each step produces a narrative continuation Nt, options for the next action, and indicators of whether the story advances to a new day or ends. To keep the source of canon unam-biguous, only the generated narrative can establish new story facts. The history supplied to later steps contains selected player intents, generated narratives, and time. When WMEM is enabled, it records a structured state update after each nar-rative, but that update cannot rewrite canon. A failed update therefore does not invalidate an already generated step. This trajectory-centered view does not prescribe a correct continuation. Instead, each new step is evaluated against the canon accumulated along its own path and by how meaning-fully it develops that path. 
+
+3.3 Metrics 
+
+Generation Coverage measures how much of the planned trajectory is produced; Consistency and Richness measure its canonical coherence and meaningful development. 
+
+Generation: Trajectory Coverage 
+
+For trajectory i, let Li be the number of valid narrative steps available for evaluation, and let H be the planned horizon. 
+
+> 3
+
+When Stories Evolve: Benchmarking LLM Storytelling Across Agent Architectures in Open-Ended World Simulations For a cell containing n trajectories, Generation Coverage is 
+
+G = 100 
+
+nH 
+
+> n
+
+X
+
+> i=1
+
+Li. (1) Trajectories with no valid narrative have Li = 0 . Thus, G
+
+is the mean percentage of planned narrative steps observed across trajectories. It measures the ability to sustain genera-tion through the planned horizon, not narrative quality. Con-tinuations after generation failures or valid story endings remain unobserved. 
+
+Consistency: Canonical Coherence 
+
+A narrative step is inconsistent only when all of the following conditions hold: 1. the starting state or an earlier narrative explicitly estab-lishes a fact, or unavoidably entails it; 2. the current narrative explicitly establishes or unavoidably entails a conflicting claim about the same entity, reference, and applicable time; and 3. the current narrative contains no explicit or clearly implied transition that reconciles the two. These criteria distinguish contradiction from narrated change. Missing information and unfulfilled player intents are not inconsistencies; style, plausibility, repetition, and progress are evaluated separately. The first step meeting these crite-ria marks the onset of inconsistency; uncertain cases remain separate. A trajectory that ends because generation fails has not demon-strated consistency over the missing future steps, but neither has it demonstrated a contradiction. Such trajectories are therefore right-censored, and a Kaplan–Meier curve estimates the proportion remaining contradiction-free at each step (Ka-plan and Meier, 1958). Let bSC (t) denote this estimate, and let 
+
+Yt be the number of trajectories still observed at step t with no earlier contradiction. The two Consistency scores are 
+
+Cobs = 100 
+
+H
+
+> H
+
+X
+
+> t=1
+
+bSC (t),Cadj = 100 
+
+H
+
+> H
+
+X
+
+> t=1
+
+I[Yt > 0] bSC (t).
+
+(2) The primary score, Cobs , carries forward the last estimable value if no trajectory remains under observation. The con-servative alternative, Cadj , instead assigns zero after observa-tional support is exhausted. This prevents a low-coverage cell from appearing artificially favorable in the Pareto comparison without treating generation failure as a contradiction or im-puting unseen content. Appendix B.2 gives the Kaplan–Meier and risk-set definitions. 
+
+Richness: Meaningful Development 
+
+Richness Judges identify text-supported units that introduce or advance consequential events, character or relationship changes, story threads, or world elements. Repetition, stylistic elaboration, and text length alone do not count. The Richness score R combines the frequency and breadth of meaningful development. The three breadth dimensions capture event diversity, meaningful character and relation-ship change, and consequential world or social expansion. Let Q ∈ [0 , 1] be the log-scaled frequency of non-repetitive development per observed narrative step, capped at the 95th percentile of the calibration data. Let B ∈ [0 , 1] be the mean normalized rating across these dimensions. Then 
+
+R = 100 pQB. (3) The geometric mean prevents abundant but narrow activity from fully compensating for broad but sparse development. Appendix B.4 gives the exact calculation of Q and B.Consistency and Richness remain independent during evalua-tion. A canon-contradicting development still counts toward Richness and is penalized only by Consistency. Conversely, a static trajectory can remain coherent while receiving low Rich-ness. Because these qualities can diverge, the results compare them jointly without collapsing them into a single score. 
+
+4 Agent Architectures 
+
+The evaluated grid combines one of three base architectures with zero, one, or two add-on modules: 
+
+Ab,w,p = Bb ⊕ WMEM w ⊕ WMOD p,b ∈ { 1, 2, 3}, w, p ∈ { off , on }. (4) Here ⊕ denotes architectural composition, and w and p in-dicate whether WMEM and WMOD are enabled. Each base therefore has four module configurations: neither module, memory only, planning only, or both. For each tested model, the same model and operating mode are used for every en-abled component. 
+
+B1 has no Character Agent. The shared Story Agent decides consequences and narrates. B2 uses one Character Agent to propose actions jointly for all non-player characters, whereas 
+
+B3 uses a separate Character Agent for each non-player char-acter. These bases reflect three character-action topologies from prior work: single-narrator long-form generation ( B1)(Yang et al., 2022), centralized multi-character coordination (B2) (Zong et al., 2026), and decentralized character agents (B3) (Park et al., 2023; Han et al., 2024; Yu et al., 2025). WMOD inserts a stateless World Model before narration. It adjudicates the selected player attempt together with any Character-Agent proposals and returns a PlotPlan of at most 12 dependency-linked beats; the Story Agent receives this plan in place of the raw proposals. WMEM runs after narra-tion: a World Memory Agent compares the realized narrative with prior structured state, emits a MemoryDelta of persistent changes, and a rule-based reducer updates character condi-tions, relationships, facts, and supporting characters for the next step. The Story Agent remains the sole narrator, and only the initial world and generated narratives establish canon. Paired conditions share the episode setup, choice-selection schedule, Story Agent role, and tested model. Appendix A shows the full information flow, and Appendix C gives results for each base architecture. 
+
+> 4
+
+When Stories Evolve: Benchmarking LLM Storytelling Across Agent Architectures in Open-Ended World Simulations 
+
+5 Evaluation and Validation 
+
+5.1 LLM-Judge Evaluation 
+
+Evaluators receive the InitialWorld , opening, and gener-ated trajectory, but no model, architecture, internal generation data, or source-revealing identifiers. Appendix B details these evaluation inputs. Consistency Judges apply the three criteria above to every nar-rative step. To mark a contradiction, a Judge must identify the prior fact, the conflicting claim, their mutual exclusion, and the missing transition. Each Judge verdict has three states— consistent, inconsistent, or uncertain—and the uncertain state is retained through aggregation. Only a valid majority of con-sistent or inconsistent votes yields a binary step verdict for the first-contradiction risk set; cases with a missing Judge or no valid majority are excluded from that binary risk set. Richness Judges return the development units and dimension scores defined above , and the trajectory-level median determines R.
+
+5.2 Human Validation of Judges 
+
+Human annotations provide references on separate held-out samples, using the same rubrics without model, architecture, or Judge outputs. For Consistency, design-weighted compar-ison of a valid two-of-three Judge majority with human la-bels on 120 trajectories reaches 85.7% accuracy (95% CI 81 .3–
+
+90 .1% ) and 82.0% balanced accuracy. For Richness, the three-Judge median on a separate 36-trajectory sample achieves MAE 7.63 (95% CI 6.26 –8.95 ) and Pearson r = .861 against the human reference. We use these validation results to assess the benchmark’s aggregate Judge measures; Appendix B.5 details sampling and agreement. 
+
+5.3 Experimental Design and Analysis 
+
+The evaluation crosses 12 models, 42 shared episode seeds, and 12 architectures, yielding 6,048 trajectories and 144 cells. One model–architecture cell contains all 42 seeds; its model fills every enabled LLM role. The Qwen panel contains dense Qwen2.5-Instruct 3B, 7B, 14B, 32B, and 72B checkpoints (Qwen Team, 2024), plus Qwen3.5 -397B-A17B MoE. The Frontier panel contains Grok-4.3, GLM-5.2, DeepSeek-V4-Pro, Kimi-K2.6, Gemini-3.1-Pro, and GPT-5.6-sol. Panel summaries refer to and equally weight these twelve tested models. Architecture contrasts pair cells over shared seeds and weight evaluated models equally. Their intervals hierarchically boot-strap source clusters and EpisodeSeed records (Appendix C); source-family contrasts also weight models equally (Ap-pendix E). The heatmap reports Cobs beside Generation Coverage, whereas Pareto analysis uses Cadj to avoid car-rying survival beyond observational support. Dense-Qwen, source-family, and horizon analyses respectively describe five-checkpoint association, the studied worlds, and when step-20 events first appear. All analyses retain Generation Coverage, Consistency, and Richness as separate outcomes. Story Agent + WMEM + WMOD + WMEM + WMOD Centralized CA + WMEM + WMOD + WMEM + WMOD Distributed CAs + WMEM + WMOD + WMEM + WMOD 
+
+Qwen series Frontier models 
+
+(a) Generation                                                                                                                                     
+
+> 3.1 66.5 34.5 100.0 100.0 100.0 100.0 98.6 98.0 96.4 98.5 100.0 1.9 23.9 24.8 65.6 83.2 79.9 95.4 42.3 76.0 94.8 92.3 98.1 1.1 4.9 5.2 71.7 92.3 100.0 97.6 83.8 93.9 84.9 93.2 100.0 3.1 4.8 5.1 46.4 77.0 80.2 95.4 33.0 65.2 81.1 90.2 96.5 6.3 80.2 41.3 100.0 98.6 88.9 98.1 93.0 94.9 90.1 94.6 100.0 3.8 29.3 22.1 50.1 81.0 68.6 97.6 36.9 67.5 82.4 88.9 97.6 1.8 4.5 5.7 95.8 98.2 93.7 100.0 73.7 85.6 83.5 93.6 93.5 4.5 4.6 6.3 61.0 77.1 70.0 95.5 42.3 44.3 71.5 83.7 98.0 2.0 68.7 39.9 98.3 98.3 91.9 98.2 96.8 89.4 67.4 80.4 100.0 2.6 27.7 24.2 53.0 72.9 72.6 94.5 34.5 67.1 69.9 91.2 95.6 1.1 4.6 6.3 95.2 97.5 84.2 98.2 88.8 75.2 54.2 81.2 97.4 3.5 4.9 6.8 54.8 83.0 55.2 95.7 45.2 56.7 62.9 89.5 94.9
+> Story Agent + WMEM + WMOD + WMEM + WMOD Centralized CA + WMEM + WMOD + WMEM + WMOD Distributed CAs + WMEM + WMOD + WMEM + WMOD
+
+(b) Consistency                                                                                                                                     
+
+> 100.0 62.9 53.8 90.9 93.3 93.7 97.3 85.8 90.8 93.2 98.6 100.0 100.0 63.8 77.2 91.3 92.3 92.1 97.5 96.8 95.4 97.6 98.0 98.4 100.0 92.5 100.0 95.8 88.9 94.0 92.4 77.5 82.7 89.4 95.3 98.4 76.2 97.5 52.5 88.8 88.2 90.8 88.1 78.2 73.6 91.3 97.8 98.1 69.8 74.2 55.3 85.1 87.9 87.1 86.3 78.5 92.8 91.3 100.0 99.6 48.6 73.0 74.1 86.9 91.8 84.7 90.1 78.8 84.5 89.5 98.6 97.4 68.3 100.0 95.1 84.2 84.4 85.9 91.0 82.0 68.5 89.8 100.0 99.8 39.3 100.0 47.0 76.0 85.1 72.1 88.3 55.5 79.4 95.5 96.9 100.0 57.5 75.4 56.6 76.0 88.5 87.5 89.4 82.4 86.3 93.2 88.8 98.3 39.1 79.6 37.1 80.6 84.2 84.1 91.2 95.4 85.4 96.6 97.7 100.0 43.8 100.0 88.3 80.4 84.5 79.6 87.9 74.8 78.0 85.0 95.8 100.0 80.3 94.7 60.1 77.2 79.0 74.6 83.6 70.7 82.0 85.6 100.0 98.3
+> Qwen2.5 3B Qwen2.5 7B Qwen2.5 14B Qwen2.5 32B Qwen2.5 72B Qwen3.5 397B-A17B Grok 4.3 GLM 5.2 DeepSeek V4-Pro Kimi K2.6 Gemini 3.1-Pro GPT 5.6-sol
+> Story Agent + WMEM + WMOD + WMEM + WMOD Centralized CA + WMEM + WMOD + WMEM + WMOD Distributed CAs + WMEM + WMOD + WMEM + WMOD
+
+(c) Richness                                                                                                                                     
+
+> 15.9 27.1 40.2 34.8 35.0 44.8 35.5 56.6 57.7 56.4 54.6 60.5 10.7 22.8 35.4 33.9 36.4 43.9 33.2 49.5 53.8 57.7 56.1 63.7 9.1 8.6 16.0 33.5 34.0 46.6 33.0 64.9 64.0 59.3 53.6 49.4 12.0 6.6 13.1 29.7 32.9 45.4 31.7 57.7 64.0 58.8 54.1 50.3 13.4 22.7 38.7 39.9 39.0 55.4 39.6 66.7 66.9 66.1 66.5 67.7 20.5 25.1 36.5 34.8 33.9 51.9 37.8 58.5 59.7 59.9 63.8 68.7 17.8 4.5 29.1 33.9 31.7 65.7 41.7 73.3 79.9 67.7 67.8 66.9 18.9 4.2 27.0 36.0 30.4 54.1 38.7 71.1 73.3 65.1 62.5 65.9 28.5 26.9 37.8 39.4 35.4 58.3 49.0 71.3 68.8 68.8 70.1 71.4 30.2 25.5 36.2 41.2 36.1 53.6 45.6 63.8 64.7 68.8 71.0 68.7 16.4 5.3 32.2 39.2 32.8 69.0 53.7 78.9 84.0 71.6 70.7 68.7 15.7 8.2 35.0 37.7 31.4 64.3 49.9 76.2 78.7 71.4 70.4 71.0
+
+Figure 3. Model-by-architecture point estimates for the Qwen and Frontier panels. Columns index models, and rows index the 12 ar-chitecture conditions. The three panels show Generation Coverage 
+
+G, Consistency Cobs , and Richness R; the dashed rule separates the two analysis groups. Paired architecture contrasts below provide uncertainty intervals. 
+
+6 Experiments and Results 
+
+The experiments compare outcome profiles across models and architectures, then estimate paired architectural shifts, dense-Qwen scale associations, source-family patterns, and long-horizon failures. Qwen3.5 MoE is analyzed separately from dense-model scaling. Figure 3 maps how Generation Coverage, Consistency, and Richness vary across the evaluated model–architecture condi-tions. Generation Coverage shows the clearest between-model separation, including an apparent gradient across the dense 
+
+5When Stories Evolve: Benchmarking LLM Storytelling Across Agent Architectures in Open-Ended World Simulations 70 80 90 100       
+
+> Consistency Cadj
+> 40 60 80 100
+> Richness
+> better
+> (a) Frontier models
+> 20 40 60 80 100
+> Consistency Cadj
+> 20 40 60 80
+> Richness
+> better
+> (b) Qwen series
+> Grok-4.3 GLM-5.2 DeepSeek-V4-Pro Kimi-K2.6 Gemini-3.1-Pro GPT-5.6-sol 2.5-3B 2.5-7B 2.5-14B 2.5-32B 2.5-72B 3.5-397B-A17B
+> Architecture
+> Base 1 Base 2 Base 3 Both o ff
+> WMEM on WMOD on Both on
+> Grok-4.3 GLM-5.2 DeepSeek-V4-Pro Kimi-K2.6 Gemini-3.1-Pro GPT-5.6-sol 2.5-3B 2.5-7B 2.5-14B 2.5-32B 2.5-72B 3.5-397B-A17B
+> Architecture
+> Base 1 Base 2 Base 3 Both o ff
+> WMEM on WMOD on Both on Pareto point
+
+Figure 4. Consistency–Richness point estimates based on Cadj ,which sets the survival contribution to zero after a cell loses ob-servational support. Shapes denote B1 (Story Agent only), B2 (one centralized Character Agent), and B3 (distributed Character Agents); white overlays mark WMEM, WMOD, or both. The upper-right boundary identifies non-dominated configurations, and supported configurations lie on its upper concave envelope. 
+
+Qwen2.5 checkpoints. Consistency remains high for many Frontier conditions but changes heterogeneously across ar-chitecture rows, whereas Richness is generally greater in the 
+
+B2 and B3 rows and produces an ordering distinct from Cov-erage and Consistency. The cross-panel outcome differences motivate Figure 4’s joint Consistency–Richness analysis; the heterogeneous within-model architecture shifts motivate the paired contrasts in Table 1; and the model and scale analysis below quantifies the apparent between-model ordering and checkpoint gradient. 
+
+6.1 Consistency–Richness Trade-off 
+
+At the plotted point estimates, Figure 4 reveals a non-concave empirical Consistency–Richness frontier: six model– architecture cells are non-dominated, but only two lie on the upper concave envelope. We use Cadj so the comparison reflects contradiction-free survival while it remains obser-vationally supported. Replacing Cadj with Cobs leaves the same pooled six-cell non-dominated set across all 144 cells (Appendix Figure 7). DeepSeek-V4-Pro and GLM-5.2 occupy the Richness-favoring region, GPT-5.6-sol and Gemini-3.1-Pro occupy the Consistency-favoring end, and Kimi-K2.6 lies between them. DeepSeek-V4-Pro B3+WMOD and Gemini-3.1-Pro B3+WMEM+WMOD are the two supported configurations. The four intermediate cells are unsupported : they are non-dominated among observed configurations but cannot maximize any positive linear weighting of the two outcomes (Ehrgott, 2005). Every Grok-4.3 condition is dominated. The adjacent GPT-5.6-sol cell lies 0.05 Richness points below the envelope; this gap is small relative to sampling uncertainty, leaving that cell’s supportedness uncertain. All pooled-frontier cells come from Frontier models, while Qwen cells exhibit internal trade-offs. The four unsupported cells represent distinct observed compromises that a single weighted score would skip, showing why separate Consis-tency and Richness results preserve choices hidden by scalar ranking. 
+
+6.2 Architectures, Models, and Worlds 
+
+Beyond the joint Consistency–Richness geometry, the individ-ual outcomes vary with architecture, model identity, dense-model scale, and InitialWorld source family. Architecture comparisons are paired within episodes. 
+
+Agent Architecture Effects 
+
+Table 1 shows that paired changes to character decision struc-ture mainly shift the Consistency–Richness trade-off. Among Frontier models, B2 and B3 raise Richness by 9.2 and 14.6 points relative to B1 while reducing Cobs by 3.2 and 2.7 points. B3 ’s independent proposals may increase both development and coordination burden, echoing evidence that multi-agent collaboration can become counterproductive under excess coordination demands (Kim et al., 2026; Sun et al., 2026). The effect of WMOD depends on the character-decision topology. For Frontier models, it changes Richness by only 
+
++0 .4 [ −1.3, +2 .1] points at B1. The gains are larger at B2 and B3: +4 .3 [+2 .6, +6 .0] and +5 .3 [+4 .0, +6 .6] , respectively. This pattern is consistent with planning being most useful when the Story Agent must coordinate separately proposed character actions, although WMOD does not produce a corre-sponding Consistency gain. Appendix C gives the results for each base architecture. The marginal effect of WMOD also differs across model groups. It raises Frontier Richness by 3.4 points but lowers Qwen Richness by 5.9 points, while reducing Generation Coverage in both groups. The same planning scaffold is therefore not uniformly useful; its effect depends on the model used with it. WMEM provides no stable Consistency benefit at any base and reduces Generation Coverage in both groups. Because every condition retains the complete narrative history, this result concerns structured state added to full-history access, not memory as a substitute for history. One possible expla-nation is that long contexts can obscure distant evidence, while extracted summaries may lose information and intro-duce an additional failure point (Wu et al., 2025; Pollertlam and Kornsuwannawit, 2026). Stronger graph-memory systems often add retrieval, temporal provenance, and conflict han-dling (Banerjee et al., 2026; Hu et al., 2026). Appendix C gives model-specific results and module interactions. 
+
+> 6
+
+When Stories Evolve: Benchmarking LLM Storytelling Across Agent Architectures in Open-Ended World Simulations 
+
+Contrast ∆G ∆Cobs ∆Cadj ∆R
+
+Qwen series 
+
+B2 – B1 +0.8 [-1.0, +2.5] -9.2 [-14.5, -3.2] -3.4 [-8.3, +3.3] +4.0 [+2.6, +6.0] B3 – B1 -1.1 [-3.0, +0.9] -12.0 [-17.7, -5.4] -8.4 [-10.5, -1.7] +7.0 [+4.4, +9.0] B3 – B2 -1.9 [-3.5, -0.3] -2.8 [-8.5, +3.6] -5.0 [-7.7, +0.4] +3.0 [+0.2, +4.8] WMEM on – off -18.0 [-19.8, -16.1] -5.6 [-10.2, -0.8] -6.0 [-8.8, -0.6] -1.3 [-2.5, +0.1] WMOD on – off -13.7 [-15.6, -11.7] +4.7 [-1.0, +11.9] -22.9 [-25.7, -16.0] -5.9 [-7.2, -4.2] 
+
+Frontier models 
+
+B2 – B1 -4.1 [-6.2, -1.9] -3.2 [-5.2, -1.2] -3.3 [-5.3, -1.4] +9.2 [+7.8, +10.5] B3 – B1 -7.5 [-10.8, -4.1] -2.7 [-5.2, -0.4] -2.7 [-5.4, -0.4] +14.6 [+13.3, +16.0] B3 – B2 -3.4 [-6.1, -0.7] +0.5 [-1.8, +2.8] +0.6 [-1.9, +2.9] +5.5 [+4.5, +6.5] WMEM on – off -14.1 [-16.3, -11.9] +0.3 [-1.3, +2.0] +0.2 [-1.8, +1.7] -2.4 [-3.0, -1.8] WMOD on – off -5.5 [-7.2, -3.8] -5.3 [-7.1, -3.4] -5.2 [-6.9, -3.1] +3.4 [+2.4, +4.2] 
+
+Table 1. Architecture effects on the four reported outcomes. Each contrast averages over the other architecture factors. Values are mean differences across the evaluated models, weighted equally, with 95% hierarchical cluster-bootstrap intervals. 
+
+Model and Scale Effects 
+
+When scores are averaged across architectures, Figure 3 shows that no Frontier model leads all three outcomes. GPT-5.6-sol combines the highest mean Consistency with near-complete Generation Coverage ( Cobs = 99 .0, G = 97 .6). DeepSeek-V4-Pro instead has the highest mean Richness ( R = 68 .0) but lower Consistency and Generation Coverage. Grok-4.3 nearly matches GPT-5.6-sol in Generation Coverage ( G = 97 .2)while producing substantially lower Richness ( R = 40 .8). These profiles complement the Pareto analysis in Section 6.1 and show that model differences cannot be reduced to a single quality ordering. Scale is a separate question that can be studied within a com-parable model family. Across five dense Qwen2.5 checkpoints, Generation Coverage rises by an estimated 19.32 percentage points per parameter doubling. Appendix D provides the full analysis. Larger parameter count does not yield a reliable monotonic improvement in either story measure. Consistency rises across much of the dense series, but low Generation Coverage among smaller models leaves unstable survival tails. Richness is also non-monotonic. Thus, within the tested Qwen2.5 range, pa-rameter count strongly predicts sustained generation but not canonical coherence or meaningful development. 
+
+Source-Family Effects 
+
+Source-family comparisons test the prior-canon interference hypothesis: DraCor worlds may become more inconsistent than the simulation-native ITP and Smallville worlds after branching from potentially familiar plots. Each of the 12 mod-els receives equal weight. Contrary to this hypothesis, Figure 5 shows that, across the 12 evaluated models, Cobs averages 82.1 for ITP, 83.5 for DraCor, and 78.1 for Smallville. DraCor exceeds ITP by +1.4 points (95% CI [-4.6, +6.9]) and Smallville by +5.4 points ([-2.2, +9.9]). Both Cobs intervals include zero. Results under Cadj are more favorable to DraCor and likewise do not indicate a DraCor disadvantage. ITP DraCor Smallville 020 40 60 80 100 
+
+> Consistency  Cobs
+> 2.5-3B 2.5-7B 2.5-14B 2.5-32B 2.5-72B 3.5-397B-A17B Grok-4.3 GLM-5.2 DeepSeek-V4-Pro Kimi-K2.6 Gemini-3.1-Pro GPT-5.6-sol
+
+Figure 5. Per-model Consistency Cobs across the three world fam-ilies, with each model pooled over 12 architectures. Markers and whiskers show model-specific means and 95% hierarchical cluster-bootstrap intervals. The plotted profiles show within-model source-family variation; aggregate source-family contrasts give each of the 12 evaluated models equal weight. 
+
+DraCor is not uniquely prone to internal contradiction over the evaluated horizon. Among inconsistent trajectories, the first contradiction appears at approximately step 10 in all three source families (Appendix Table 7). We also repeat the comparison after removing each of the seven DraCor plays in turn. The overall comparison remains stable regardless of which play is removed (Appendix Figure 15). 
+
+6.3 Long-Horizon Error Patterns When contradictions appear. A 10-step evaluation would miss 36.9% of the contradictions eventually observed by step 20 in the Qwen group and 56.1% in the Frontier group. Among cases with an agreed category, temporal conflicts are the most common in both groups. Identity and relationship conflicts tend to surface early against InitialWorld commitments, whereas character-state and world-fact conflicts more often arise later from the accumulated narrative history. The longer 
+
+> 7
+
+When Stories Evolve: Benchmarking LLM Storytelling Across Agent Architectures in Open-Ended World Simulations horizon thus exposes contradictions that short continuations systematically miss (Appendix B.6; Table 5). 
+
+Semantic contradiction versus technical truncation. 
+
+Long-horizon breakdowns comprise semantic contradictions and technical truncations. A failure in a Character Agent, WMOD, or the Story Agent prevents the current narrative from being produced, whereas a WMEM failure follows a valid narrative and can truncate the subsequent trajectory. A failed post-narration update can therefore preserve a coherent prefix while eliminating the future in which its consequences would have unfolded. Some contradictions echo content introduced in Character-Agent proposals or WMOD plans, consistent with a conflict surviving multiple handoffs. Most cases, how-ever, have no strong localized upstream match. The trace identifies possible error pathways without assigning causal origins (Appendix C). 
+
+7 Conclusion 
+
+Evaluating stories as evolving trajectories reveals that sus-tained generation, canonical coherence, and meaningful de-velopment are distinct capacities. A trajectory can remain coherent by changing little, become richly eventful at the ex-pense of accumulated canon, or end before either quality is tested over a long horizon. Keeping these outcomes separate shifts the question from whether a model can write a convinc-ing continuation to whether it can sustain a world through consequential change. More architecture is not necessarily more control. Greater scale chiefly extends how long generation lasts, while addi-tional stages often shift trade-offs among the three outcomes rather than improving all of them. Components should earn their complexity by supplying information, coordination, or enforcement that downstream generation can actually use. The source-family comparison does not support the simple expectation that divergence from a familiar plot necessarily destabilizes canon. More broadly, process evaluation must pre-serve both time and failure type: contradictions may emerge after substantial canon has accumulated, whereas component failures can end generation without producing contradictory text. The non-concave Frontier-model Pareto set reveals spe-cialized Consistency- and Richness-favoring regimes rather than a smooth route to balance. The open challenge is to build systems whose stories can keep changing without losing what they have already become. 
+
+References 
+
+Pratyay Banerjee, Masud Moshtaghi, Shivashankar Subramanian, Amita Misra, and Ankit Chadha. APEX-MEM: Agentic semi-structured memory with temporal reasoning for long-term con-versational AI. In Proceedings of the 64th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) ,pages 16470–16489. Association for Computational Linguistics, 2026. doi: 10.18653/v1/2026.acl-long.749. Yuqi Chen. Into the Painting: Along the river during the qingming festival. https://fishframe.net/itp, 2026. URL https://fishframe.net/ itp. Accessed 2026-07-29. Zehao Chen, Rong Pan, and Haoran Li. StoryBox: Collaborative multi-agent simulation for hybrid bottom-up long-form story generation using large language models. In Proceedings of the AAAI Conference on Artificial Intelligence , volume 40, pages 30359– 30367, 2026. doi: 10.1609/aaai.v40i36.40288. Matthias Ehrgott. Multicriteria Optimization . Springer, Berlin, Hei-delberg, 2 edition, 2005. doi: 10.1007/3-540-27659-9. Daniel Fein, Sebastian Russo, Violet Xiang, Kabir Jolly, Rafael Rafailov, and Nick Haber. LitBench: A benchmark and dataset for reliable evaluation of creative writing. In Proceedings of the 19th Conference of the European Chapter of the Association for Computational Linguistics (Volume 1: Long Papers) , pages 7740–7755. Association for Computational Linguistics, 2026. doi: 10.18653/v1/2026.eacl-long.362. Frank Fischer, Ingo Börner, Mathias Göbel, Angelika Hechtl, Christo-pher Kittel, Carsten Milling, and Peer Trilcke. Programmable corpora: Introducing DraCor, an infrastructure for the research on european drama. In Proceedings of DH2019: Complexities , Utrecht, the Netherlands, 2019. doi: 10.5281/zenodo.4284002. Jian Guan, Zhexin Zhang, Zhuoer Feng, Zitao Liu, Wenbiao Ding, Xiaoxi Mao, Changjie Fan, and Minlie Huang. OpenMEVA: A benchmark for evaluating open-ended story generation metrics. In Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics and the 11th International Joint Con-ference on Natural Language Processing (Volume 1: Long Papers) ,pages 6394–6407. Association for Computational Linguistics, 2021. doi: 10.18653/v1/2021.acl-long.500. Senyu Han, Lu Chen, Li-Min Lin, Zhengshan Xu, and Kai Yu. IBSEN: Director-actor agent collaboration for controllable and interac-tive drama script generation. In Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) , pages 1607–1619. Association for Computational Linguistics, 2024. doi: 10.18653/v1/2024.acl-long.88. Sen Hu, Yuxiang Wei, Jiaxin Ran, Xueran Han, Zhiyuan Yao, Huacan Wang, Ronghao Chen, and Lei Zou. Does memory need graphs? a unified framework and empirical analysis for long-term dialog memory. In Proceedings of the 64th Annual Meeting of the Associa-tion for Computational Linguistics (Volume 1: Long Papers) , pages 26758–26782. Association for Computational Linguistics, 2026. doi: 10.18653/v1/2026.acl-long.1232. Edward L. Kaplan and Paul Meier. Nonparametric estimation from incomplete observations. Journal of the American Statistical Associ-ation , 53(282):457–481, 1958. doi: 10.1080/01621459.1958.10501452. Yubin Kim, Ken Gu, Chanwoo Park, Chunjong Park, Samuel Schmidgall, A. Ali Heydari, Yao Yan, Zhihan Zhang, Yuchen Zhuang, Yun Liu, Mark Malhotra, Paul Pu Liang, Hae Won Park, Yuzhe Yang, Xuhai Xu, Yilun Du, Shwetak Patel, Tim Althoff, Daniel McDuff, and Xin Liu. Capable language models can out-grow the benefits of collaboration. Nature Machine Intelligence , 8: 1157–1172, 2026. doi: 10.1038/s42256-026-01268-y. Junjie Li, Xinrui Guo, Yuhao Wu, Roy Ka-Wei Lee, Hongzhi Li, and Yu-tao Xie. Lost in stories: Consistency bugs in long story generation by LLMs. In Findings of the Association for Computational Linguis-tics: ACL 2026 , pages 8400–8428. Association for Computational Linguistics, 2026a. doi: 10.18653/v1/2026.findings-acl.410. 
+
+> 8
+
+When Stories Evolve: Benchmarking LLM Storytelling Across Agent Architectures in Open-Ended World Simulations 
+
+Yixia Li, Hongru Wang, Jiahao Qiu, Zhenfei Yin, Dongdong Zhang, Cheng Qian, Zeping Li, Xiaoteng Ma, Guanhua Chen, and Heng Ji. From word to world: Can large language models be implicit text-based world models? In Proceedings of the 64th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Pa-pers) , pages 8084–8111. Association for Computational Linguistics, 2026b. doi: 10.18653/v1/2026.acl-long.366. Yang Liu, Dan Iter, Yichong Xu, Shuohang Wang, Ruochen Xu, and Chenguang Zhu. G-Eval: NLG evaluation using GPT-4 with better human alignment. In Proceedings of the 2023 Confer-ence on Empirical Methods in Natural Language Processing , pages 2511–2522. Association for Computational Linguistics, 2023. doi: 10.18653/v1/2023.emnlp-main.153. Zhiheng Lyu, Kevin Yang, Lingpeng Kong, and Dan Klein. FACT-TRACK: Time-aware world state tracking in story outlines. In 
+
+Proceedings of the 2025 Conference of the Nations of the Amer-icas Chapter of the Association for Computational Linguistics: Human Language Technologies (Volume 1: Long Papers) , pages 2825–2848. Association for Computational Linguistics, 2025. doi: 10.18653/v1/2025.naacl-long.144. Chang Ma, Junlei Zhang, Zhihao Zhu, Cheng Yang, Yujiu Yang, Yao-hui Jin, Zhenzhong Lan, Lingpeng Kong, and Junxian He. Agent-Board: An analytical evaluation board of multi-turn LLM agents. In Advances in Neural Information Processing Systems , volume 37, 2024. doi: 10.52202/079017-2365. Joon Sung Park, Joseph C. O’Brien, Carrie J. Cai, Meredith Ringel Morris, Percy Liang, and Michael S. Bernstein. Generative agents: Interactive simulacra of human behavior. In Proceedings of the 36th Annual ACM Symposium on User Interface Software and Technology ,pages 1–22. Association for Computing Machinery, 2023. doi: 10.1145/3586183.3606763. Natchanon Pollertlam and Witchayut Kornsuwannawit. Beyond the context window: A cost-performance analysis of fact-based memory vs. long-context LLMs for persistent agents, 2026. URL https://arxiv.org/abs/2603.04814. Qwen Team. Qwen2.5 Technical Report. arXiv preprint arXiv:2412.15115 , 2024. URL https://arxiv.org/abs/2412.15115. Yiting Ran, Xintao Wang, Tian Qiu, Jiaqing Liang, Yanghua Xiao, and Deqing Yang. BOOKWORLD: From novels to interactive agent societies for story creation. In Proceedings of the 63rd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers) , pages 15898–15912. Association for Computational Linguistics, 2025. doi: 10.18653/v1/2025.acl-long.773. Akshit Sinha, Arvindh Arun, Shashwat Goel, Steffen Staab, and Jonas Geiping. The illusion of diminishing returns: Measur-ing long horizon execution in LLMs. In The Fourteenth In-ternational Conference on Learning Representations , 2026. URL https://openreview.net/forum?id=3lm8lWYxiq. Youran Sun, Xingyu Ren, Kejia Zhang, Xinpeng Liu, and Jiaxuan Guo. PerspectiveGap: A benchmark for multi-agent orchestration prompting, 2026. URL https://arxiv.org/abs/2606.08878. Lei Wang, Jianxun Lian, Yi Huang, Yanqi Dai, Haoxuan Li, Xu Chen, Xing Xie, and Ji-Rong Wen. CharacterBox: Evaluating the role-playing capabilities of LLMs in text-based virtual worlds. In 
+
+Proceedings of the 2025 Conference of the Nations of the Ameri-cas Chapter of the Association for Computational Linguistics: Hu-man Language Technologies (Volume 1: Long Papers) , pages 6372– 6391. Association for Computational Linguistics, 2025a. doi: 10.18653/v1/2025.naacl-long.323. Qianyue Wang, Jinwu Hu, Zhengping Li, Yufeng Wang, Daiyuan Li, Yu Hu, and Mingkui Tan. Generating long-form story using dynamic hierarchical outlining with memory-enhancement. In 
+
+Proceedings of the 2025 Conference of the Nations of the Americas Chapter of the Association for Computational Linguistics: Human Language Technologies (Volume 1: Long Papers) , pages 1352–1391. Association for Computational Linguistics, 2025b. doi: 10.18653/ v1/2025.naacl-long.63. Ruoyao Wang, Graham Todd, Ziang Xiao, Xingdi Yuan, Marc-Alexandre Côté, Peter Clark, and Peter Jansen. Can language models serve as text-based world simulators? In Proceedings of the 62nd Annual Meeting of the Association for Computational Lin-guistics (Volume 2: Short Papers) , pages 1–17. Association for Com-putational Linguistics, 2024a. doi: 10.18653/v1/2024.acl-short.1. Yi Wang, Qian Zhou, and David Ledo. Storyverse: Towards co-authoring dynamic plot with llm-based character simulation via narrative planning. In Proceedings of the 19th International Con-ference on the Foundations of Digital Games . Association for Com-puting Machinery, 2024b. doi: 10.1145/3649921.3656987. Di Wu, Hongwei Wang, Wenhao Yu, Yuwei Zhang, Kai-Wei Chang, and Dong Yu. LongMemEval: Benchmarking chat assistants on long-term interactive memory. In International Conference on Learning Representations , 2025. URL https://arxiv.org/abs/2410. 10813. Dingyi Yang and Qin Jin. What matters in evaluating book-length stories? a systematic study of long story evaluation. In Proceedings of the 63rd Annual Meeting of the Association for Computational Lin-guistics (Volume 1: Long Papers) , pages 16375–16398. Association for Computational Linguistics, 2025. doi: 10.18653/v1/2025.acl-long.799. Kevin Yang, Yuandong Tian, Nanyun Peng, and Dan Klein. Re3: Generating longer stories with recursive reprompting and revision. In Proceedings of the 2022 Conference on Empirical Methods in Natural Language Processing , pages 4393–4479. Association for Computational Linguistics, 2022. doi: 10.18653/v1/2022.emnlp-main.296. Lili Yao, Nanyun Peng, Ralph Weischedel, Kevin Knight, Dongyan Zhao, and Rui Yan. Plan-and-write: Towards better automatic storytelling. In Proceedings of the AAAI Conference on Artificial Intelligence , volume 33, pages 7378–7385, 2019. doi: 10.1609/aaai. v33i01.33017378. Tian Yu, Ken Shi, Zixin Zhao, and Gerald Penn. Multi-agent based character simulation for story writing. In Proceedings of the Fourth Workshop on Intelligent and Interactive Writing Assistants (In2Writing 2025) , pages 87–108. Association for Computational Linguistics, 2025. doi: 10.18653/v1/2025.in2writing-1.9. Xuhui Zhou, Hao Zhu, Leena Mathur, Ruohong Zhang, Haofei Yu, Zhengyang Qi, Louis-Philippe Morency, Yonatan Bisk, Daniel Fried, Graham Neubig, and Maarten Sap. Sotopia: Interactive evaluation for social intelligence in language agents. In The Twelfth International Conference on Learning Representations , 2024. URL https://openreview.net/forum?id=mM7VurbA4r. 
+
+> 9
+
+When Stories Evolve: Benchmarking LLM Storytelling Across Agent Architectures in Open-Ended World Simulations 
+
+Qing Zong, Yue Guo, Mengxin Yang, Yiwen Guo, and Yangqiu Song. EvolvingWorld: An open-schema framework for co-evolving role-play agents and world model in interactive literary world, 2026. URL https://arxiv.org/abs/2607.17250. 
+
+> 10
+
+When Stories Evolve: Benchmarking LLM Storytelling Across Agent Architectures in Open-Ended World Simulations 
+
+# Appendix 
+
+A Benchmark Construction and Architecture 
+
+A.1 Episode Construction and Cross-Architecture Com-parison 
+
+We standardized 17 InitialWorld records and selected the nine worlds in Table 2: two simulation-native settings and seven DraCor openings with self-contained five-character casts. Each world begins from one shared snapshot before player choices create a new timeline. All nine worlds are converted to the same self-contained representation of characters, relationships, persistent facts, and time. Language and source family are not independently crossed, so family contrasts describe the worlds studied here rather than causal language effects. Episode construction enumerates connected, self-contained five-character casts and rotates each character into the player role. A fixed selection procedure balances source family, focal-player representation, and relationship structure. This pro-duces 42 EpisodeSeed records, with 14 per family. The native-language opening and three initial actions are then constructed without using any evaluated model. At each step, a fixed sequence sampled uniformly over the three option positions determines the selected choice. All 12 conditions share this sequence and identical first-step option text, although the meaning of later options can diverge with the trajectory. Architecture may therefore affect the narrative, later options, selected actions, and subsequent continuation. The comparison captures the total effect of an architecture as the story evolves. It is not a direct module effect holding the narrative state fixed. 
+
+A.2 WMOD as Pre-Narration Adjudication 
+
+At step t, the stateless World Model receives the selected player attempt Pt, any Character-Agent intents It produced under B2 or B3, the canonical history Ht, and structured state Mt when WMEM is enabled. It returns a PlotPlan Wt
+
+rather than reader-facing prose. The plan contains at most 12 PlotBeat records; each specifies beat_id , depends_on ,
+
+> source_intent_ids
+
+, and content . At least one beat traces to the player attempt, while background intents may be merged, delayed, prevented, or omitted. With WMOD en-abled, the Story Agent receives Pt and Wt in place of the raw Character-Agent intents. The plan remains operational state until the Story Agent realizes it in Narrative Nt, the canon-committing output. 
+
+A.3 WMEM with Full-History Access 
+
+After each narrative step, structured world memory records current character conditions, relationships, persistent facts, and supporting characters. A rule-based updater applies ex-plicit model-proposed changes without adding inferred facts. Concretely, the World Memory Agent emits a MemoryDelta 
+
+of persistent changes, and the rule-based reducer applies those operations atomically to produce Mt+1 . For the next step, each Character Agent receives a deterministic actor-centric  
+
+> CharacterMemory
+
+projection of the global structured state. Unchanged entries persist, and the memory cannot rewrite the generated narrative. Evaluators reconstruct canon inde-pendently from the narrative trajectory, so structured memory is never ground truth. Let H denote the policy of exposing the complete narrative history through the current step, and let M denote the struc-tured current-state projection path. All evaluated conditions keep H active and vary only the additional memory path. The relevant contrast is therefore 
+
+∆M |H = Y (H, M ) − Y (H, ∅), (5) averaged over the stated bases and WMOD levels. This con-trast measures the contribution of structured current-state information alongside the complete narrative history. The im-plemented WMEM path consists of extraction and rule-based reduction; retrieval, provenance verification, and conflict en-forcement are outside that path. Its effect includes changes to later model inputs and the possible coverage loss caused by another model call. The Story Agent is the sole narrator in all conditions. Char-acter Agents and the World Model are stateless at each step. Only the final narrative establishes canon. Structured memory is updated from that narrative, while unexecuted plans and proposed actions establish no story facts. In the experimental configuration, B2 uses one Character Agent to propose ac-tions for all four non-player characters, whereas B3 uses four isolated calls to propose one action per non-player character. WMOD may reconcile these proposals into a plan of at most 12 ordered beats, but only the final narrative enters canon. 
+
+B Evaluation and Validation 
+
+B.1 Evaluator Blinding 
+
+Each evaluator receives an independently prepared view con-taining the InitialWorld , opening, language, and gener-ated trajectory. The view excludes model and architecture identities, source-family labels, internal outputs, memory, fail-ures, costs, and the other evaluator’s result. DeepSeek-V4-Pro appears both among the evaluated models and in the Judge ensemble, but its identity is hidden during evaluation. Char-acter names and canon remain visible as necessary evidence and may reveal recognizable works. 
+
+B.2 Consistency Under Unequal Coverage 
+
+For trajectory i, let Li be its number of narrative steps avail-able for evaluation and set Tinc ,i = ∞ when no contradiction occurs in that prefix. The exact step-k risk set and first-event 
+
+> 11
+
+When Stories Evolve: Benchmarking LLM Storytelling Across Agent Architectures in Open-Ended World Simulations                                         
+
+> Source Initial world Language Opening snapshot Seeds ITP Bianjing, 1100 CE Chinese Bianjing at the opening state in the year 1100 CE. 14 Smallville 25-agent Smallville English Base simulation at midnight on February 13, 2023. 14 DraCor A Doll’s House Dano–Norwegian Act I, after the nurse brings the children upstairs. 2DraCor Uncle Vanya Russian Act I, just after Serebryakov, Yelena, and Sonya return from their walk. 2DraCor Three Sisters Russian Act I, after Andrei joins the guests at Irina’s name-day gathering. 2DraCor The Cherry Orchard Russian Act I, immediately after the family’s arrival in the nursery. 2DraCor Hamlet English Act I, Scene 2, after the court assembles at Elsinore. 2DraCor King Lear English Act I, Scene 1, before the division of the kingdom is resolved. 2DraCor The Father Swedish Opening of Act I, with the Captain, Laura, and Bertha at home. 2
+
+Table 2. Initial worlds used to construct the 42 EpisodeSeed records. The snapshot identifies the shared canonical starting point, not a plot that generated trajectories are expected to follow. 
+
+(Ht, M (1)  
+
+> t
+
+), . . . , (Ht, M (4)  
+
+> t
+
+) −→ { CA (1)  
+
+> t
+
+, . . . , CA (4)  
+
+> t
+
+}∥ −→ It,
+
+(Pt, I t, H t, M t) −→ WM t −→ Wt,
+
+(Pt, W t, H t, M t) −→ SA t −→ Nt,
+
+(Mt, N t) −→ MA t −→ ∆Mt
+
+> reduce
+
+−−−−→ Mt+1 ,
+
+(Ht, N t) −→ Ht+1 , (Ht+1 , M t+1 ) ⟳ step t + 1 .
+
+Figure 6. Per-step information flow for B3 + WMOD + WMEM . Ht is canonical history, Mt structured world memory, and M (k) 
+
+> t
+
+the actor-specific view. Pt, It, Wt, Nt, and ∆Mt denote the player intent, Character-Agent intents, World-Model plan, Story-Agent narrative, and memory update. Character Agents do not observe Pt, and only Nt becomes part of canon. 
+
+count are 
+
+Yk = X
+
+> i
+
+I[Li ≥ k, T inc ,i ≥ k],Dk = X
+
+> i
+
+I[Li ≥ k, T inc ,i = k].
+
+(6) A trajectory with its first contradiction at step k belongs to both Yk and Dk at that step, then leaves later risk sets. A contradiction-free trajectory contributes through Li and is then right-censored. Thus Dk counts first events at step k,not all contradictions observed up to that step. For the experiments reported here, H = 20 . The estimated contradiction-free curve and the two Consistency summaries are 
+
+bSC (t) = Y  
+
+> k≤t:Yk>0
+
+
+
+1 − Dk
+
+Yk
+
+
+
+,Cobs = 100 
+
+H
+
+> H
+
+X
+
+> t=1
+
+bSC (t),Cadj = 100 
+
+H
+
+> H
+
+X
+
+> t=1
+
+I[Yt > 0] bSC (t).
+
+(7) Both summaries use the same verdicts, first-contradiction events, and censoring. They differ only after no trajectory re-mains at risk. Cobs carries forward the last estimable survival value, while Cadj assigns zero after support is exhausted. The heatmap pairs Cobs with a separate generation-coverage axis. The Pareto view uses Cadj . Neither summary recovers unseen continuations or treats generation failure as a contradiction. Figure 7 shows that the two values coincide in 119 of 144 cells. Their differences occur mainly in Qwen conditions with few trajectories remaining at later steps and are nearly absent among Frontier models. Recomputing non-dominance with either definition leaves the same six-cell Pareto set across all 144 cells. The Qwen-only sets differ by one member, so we continue to report both summaries for Qwen comparisons affected by sparse later-step evidence. 
+
+B.3 Supportedness of the Empirical Pareto Set 
+
+Let YF be the 72 Frontier model–architecture point estimates. A non-dominated point yi is supported if some strictly positive weight vector selects it under a linear scalarization, 
+
+yi ∈ arg max 
+
+> y∈Y F
+
+w⊤y, w ∈ R2
+
+> >0
+
+. (8) Only two endpoints are supported: DeepSeek-V4-Pro B3+WMOD and Gemini-3.1-Pro B3+WMEM+WMOD. In increasing Consistency order, the four intermediate non-dominated cells fall 2.84, 8.26, 8.15, and 0.05 Richness points below the chord joining these endpoints. The final gap is neg-ligible relative to sampling uncertainty, so this classification describes the estimated frontier only. 
+
+B.4 Richness Annotation 
+
+Let d be the number of non-repetitive development units per observed narrative step, and let d95 = 3 .5 be the 95th per-centile in the calibration data. For each breadth dimension j,
+
+sj ∈ { 1, . . . , 5} is its anchored rating. The exact computation 
+
+> 12
+
+When Stories Evolve: Benchmarking LLM Storytelling Across Agent Architectures in Open-Ended World Simulations 0 50 100   
+
+> Cobs
+> 020 40 60 80 100
+> Cadj
+> (a) Two Consistency summaries
+> B1 B1+WMEM B1+WMOD B1+WMEM+WMOD B2 B2+WMEM B2+WMOD B2+WMEM+WMOD B3 B3+WMEM B3+WMOD B3+WMEM+WMOD Qwen2.5-3B Qwen2.5-7B Qwen2.5-14B Qwen2.5-32B Qwen2.5-72B Qwen3.5-397B-A17B Grok-4.3 GLM-5.2 DeepSeek-V4-Pro Kimi-K2.6 Gemini-3.1-Pro GPT-5.6-sol
+> (b) Di ff erence by architecture
+> 050 100
+> Generation coverage
+> 020 40 60 80
+> Cobs  − Cadj
+> (c) Di ff erence vs. coverage
+> 020 40 60 80
+> points
+
+Figure 7. Comparison of the two Consistency summaries across all 144 model–architecture cells. Panel (a) compares Cobs with Cadj . Panel (b) shows where they differ across architectures, and panel (c) relates that difference to Generation Coverage G. The difference is concentrated in lower-coverage Qwen cells and changes no observed judgment or event location. 
+
+is 
+
+Q = clip 
+
+ log(1 + d)log(1 + d95 ) , 0, 1
+
+
+
+,B = 13
+
+X
+
+> j∈{ event ,character ,world }
+
+sj − 14 ,R = 100 pQB. 
+
+(9) Here clip( x, 0, 1) truncates x to [0 , 1] , and the character and world labels refer to character and relationship development and world or social expansion. 
+
+B.5 Human Validation of Judges 
+
+Consistency and Richness use separate blinded human-reference samples. Annotators receive the trajectory and rubric, but not model, architecture, sampling stratum, or model-Judge outputs. Figure 8 summarizes both validation studies. The Consistency sample draws 120 human-labeled cases from 2,447 trajectories with no uncertain Judge verdicts. Inverse-probability weights restore the target distribution, while 14 uncertain cases are kept only for additional analysis. Panel (b) treats each repre-sented inconsistency type as a one-vs-rest judgment over all 120 trajectories, so shared presence and shared absence both count as agreement. The separate Richness sample contains 36 cases stratified by six models and three source families. The three-Judge median provides the closest aggregate match to the human reference, with the lowest MAE and near-zero bias. Across the three breadth dimensions used in R, its ordinal ratings fall within one point of the human reference in 97.8% of weighted com-parisons (mean quadratic-weighted κ = .780 ). Together, the two studies support the aggregate Judge measures used in the main analysis. 
+
+B.6 Long-Horizon Sensitivity 
+
+A shorter trajectory has fewer opportunities to contradict itself or develop. First-contradiction analysis remains at risk until the event or the end of the evaluated prefix, and the trajectories in these experiments end at step 20. A missing continuation is not counted as a contradiction. Richness is instead weighted by observed narrative steps because, unlike Consistency, it is not determined by a single first event. For each shorter horizon, we recompute Generation Coverage 
+
+Gh and Cobs (h) from the same trajectories and give the six models equal weight within each group. Figure 9 shows that only 63.1% of Qwen-series and 43.9% of Frontier first contradictions observed by step 20 had appeared by step 10. A ten-step evaluation would therefore miss 36.9% and 56.1%, respectively, of the first contradictions eventually observed in these same trajectories. Because Richness Judges assess each observed trajectory as a whole, we do not reuse those ratings to estimate Richness at earlier horizons. 
+
+C Architecture Contrasts and Robustness 
+
+Architecture affects both story quality and the opportunity to reach later steps. Figure 11 therefore shows computational cost alongside Generation Coverage. Extra computation alone does not provide more narrative evidence. Figure 12 also separates valid story endings from generation failures instead of treating the latter as Consistency or Richness outcomes. The directed trace in Figure 6 distinguishes generation failures from possible narrative precursors. Character-Agent, World-Model, and Story-Agent failures prevent the current narrative. A World-Memory failure occurs after a valid narrative, so that step remains canon even though later generation stops. To trace possible precursors, we localize the first conflict and compare it with the player intent, Character-Agent intents, 
+
+> 13
+
+When Stories Evolve: Benchmarking LLM Storytelling Across Agent Architectures in Open-Ended World Simulations 0.0 0.2 0.4 0.6 0.8 1.0 
+
+> Agreement with human reference
+> DeepSeek-Pro Kimi-K2.6 GPT-5.6 2/3 majority Any-Judge
+
+(a) Consistency: overall classi fi cation       
+
+> Accuracy (95% CI) Balanced accuracy
+> 0.0 0.2 0.4 0.6 0.8 1.0
+> Observed agreement
+> Temporal Identity Relationship World fact
+> 87.6 98.0 99.1 94.1 90.9 98.6 99.2 95.5 95.0 99.4 99.0 96.8
+
+(b) Consistency: category agreement           
+
+> LLM--LLM Human--LLM Human--LLM majority
+> 020 40 60 80 100
+> Human-reference R
+> 020 40 60 80 100
+> Three-Judge median  R Pearson r= 0.861 MAE = 7.63
+
+(c) Richness: trajectory-level agreement        
+
+> <20 steps 20 steps
+> 0.0 2.5 5.0 7.5 10.0 12.5 15.0
+> RMAE (95% bootstrap CI)
+> DeepSeek-Pro Kimi-K2.6 GPT-5.6 Median
+> bias -9.9 bias +1.8 bias +6.2 bias -0.1
+
+(d) Richness: absolute validation error 
+
+Figure 8. Human validation of the Judges. (a) Design-weighted Consistency classification on 120 trajectories. (b) One-vs-rest observed agreement across the same sample; the pairwise series average three comparisons. (c–d) Richness agreement and error on a separate 36-trajectory sample. 
+
+World-Model beats, and memory views. Conservative lexi-cal matches identify possible precursors rather than causal origins. Table 3 separates generation failures from possible narra-tive precursors. Across both model groups, 1,709 generation failures occur before the current narrative is produced. The 1,021 World-Memory failures instead follow a valid narrative and prevent 12,672 later narrative steps from being produced. Added structure can therefore reduce sustained generation through extra handoffs without contradicting text already shown. Temporal conflicts are the most common category on which Judges agree in both model groups. Identity and relation-ship conflicts tend to appear earlier and usually contradict 
+
+InitialWorld commitments. Character-state and world-fact conflicts more often contradict earlier narratives. Strong Character-Agent precursors appear in 89 inconsistent trajec-tories, including 42 that persist through the World Model. Another 27 trajectories have only a World-Model precursor. Most cases lack a strong localized upstream match. The trace thus shows that errors can pass through multiple layers, but not that added layers are their predominant source. 
+
+C.1 Per-Model Architecture Effects 
+
+Table 8, the per-model counterpart to main-text Table 1, uses the same paired measures and 10,000 hierarchical source-                          
+
+> Quantity Qwen Frontier
+> Generation failures
+> Centralized Character Agent failures 1.1% 5.4% Distributed Character Agent failures 1.9% 12.8% World Model failures 33.6% 6.9% Story Agent failures 24.4% 4.8% World Memory Agent failures 42.7% 24.8%
+> Possible narrative precursors
+> Memory precursor 0.8% 0.0% Player-intent precursor 3.2% 0.4% Character-Agent precursor 12.2% 5.8% World-Model precursor 2.8% 2.8% No strong recorded precursor 55.8% 64.1% Violation not localized 9.7% 12.7% Plurality tie 15.6% 14.2%
+
+Table 3. Two complementary error-propagation audits. Generation-failure rates use trajectories in which the component is enabled. Precursor rates use majority-inconsistent trajectories and report the plurality origin of conservative lexical matches to upstream content. These matches identify possible precursors, not causal effects or errors repaired downstream. 
+
+cluster/ EpisodeSeed bootstrap draws. Its intervals describe seed variation among the models studied. They do not cap-ture decoding or model-population uncertainty and are not adjusted for multiple comparisons. 
+
+14 When Stories Evolve: Benchmarking LLM Storytelling Across Agent Architectures in Open-Ended World Simulations trajectory horizon h             
+
+> 020 40 60 80 100
+> trajectories reaching step  h (%)
+> (a) Generation survival
+> Qwen series Frontier models
+> trajectory horizon h
+> 020 40 60 80 100 ̂
+> SC(h) (%)
+> (b) Contradiction-free survival
+> 510 15 20
+> trajectory horizon h
+> 020 40 60 80 100
+> cumulative share by  h (%)
+> (c) First contradictions revealed
+> 510 15 20
+> trajectory horizon h
+> 020 40 60 80 100
+> score through  h
+> (d) Scores at each horizon
+> Qwen series Gh
+> Qwen series Cobs (h)Frontier models Gh
+> Frontier models Cobs (h)
+
+Figure 9. Horizon sensitivity for the two six-model groups. Panels (a–b) show equal-model mean generation and contradiction-free survival. Panel (c) reports the timing distribution of first contradictions observed by step 20. Panel (d) recomputes the normalized summaries at 
+
+h = 5 , 10 , 15 , 20 .
+
+C.2 Base-Conditional Module Effects 
+
+Table 9 compares each module on versus off within a base while averaging over the other module. These conditional contrasts compare the resulting trajectories as a whole rather than holding the narrative state fixed. The decomposition shows no base with a stable WMEM Consistency gain. WMOD has the clearest topology depen-dence: Frontier Richness changes by +0 .4 [ −1.3, +2 .1] at B1, 
+
++4 .3 [+2 .6, +6 .0] at B2, and +5 .3 [+4 .0, +6 .6] at B3. 
+
+C.3 Full-Horizon Paired Comparison 
+
+This sensitivity retains an architecture pair only when both conditions reach step 20 with valid scores. It then averages paired differences within each model and the available model estimates within each group. The paired results in Figure 10 preserve the character-agent trade-off and the absence of a joint WMEM gain, showing that the main pattern is not created solely by comparing short and full-horizon prefixes. 
+
+D Model and Scale Effects 
+
+The models exhibit distinct profiles across Generation Cov-erage, Consistency, and Richness, with no common ranking across the three outcomes. This model-level variation is sepa-rate from scaling, which we assess only among the comparable dense Qwen2.5 checkpoints. Figure 12 shows how often each model sustains generation through the 20-step horizon. Fig-ure 13 then shows the corresponding Qwen trajectories step by step. 
+
+D.1 Qwen-Series Scaling 
+
+Figure 14 condenses the step-resolved curves into finite-horizon model summaries. Dense fits use log 2 total parameters for the five Qwen2.5 checkpoints. Qwen3.5-397B-A17B is ex-cluded because total parameter count cannot be compared directly between its sparse MoE architecture and the dense models. 
+
+Outcome α β R2
+
+Generation Coverage G -32.62 19.32 .879 
+
+G, excluding 14B -26.46 19.17 .992 Consistency Cobs 45.71 6.55 .639 Richness R 13.86 4.03 .720 
+
+Table 4. Model-level fits Y = α + β log 2 P , where P is the dense-model parameter count in billions. The primary rows use five Qwen2.5 models. The sensitivity row omits 14B, and Qwen3.5 MoE is excluded. The fitted associations apply to the five studied dense Qwen2.5 checkpoints. 
+
+Table 4 shows that the unusually low Generation Coverage at 14B does not drive its slope: excluding that checkpoint changes the estimate from 19.32 to 19.17 points per parameter doubling. Consistency and Richness vary non-monotonically across the five model sizes. Tables 5 and 6 expand the long-horizon error analysis by separating the first-conflict categories from the location of the prior canonical commitment. 
+
+E Source-Family Inference 
+
+Table 7 uses 10,000 hierarchical bootstrap draws over source clusters and EpisodeSeed records while retaining models 
+
+15 When Stories Evolve: Benchmarking LLM Storytelling Across Agent Architectures in Open-Ended World Simulations −25 −20 −15 −10 −5 0 5
+
+> matched di ff erence (points)
+> B2-B1 B3-B1 B3-B2 WMEM WMOD
+
+(a) Full-horizon Consistency        
+
+> −2.5 0.0 2.5 5.0 7.5 10.0 12.5 15.0
+> matched di ff erence (points)
+
+(b) Full-horizon Richness  
+
+> Qwen series Frontier models
+
+Figure 10. Architecture contrasts among paired conditions in which both trajectories reach the full horizon. Bars average the six model-specific estimates in each group. Positive values favor the first-named base or module-on condition. This analysis complements the primary analysis, which includes each trajectory up to its observed length. 0 50 100 150 200 250 
+
+> paired change (%)
+> B2-B1 B3-B1 WMEM WMOD
+
+Calls     
+
+> 050 100 150 200
+> paired change (%)
+
+Provider tokens     
+
+> −30 −20 −10 010
+> paired change (%)
+
+Generated steps  
+
+> Qwen series Frontier models
+
+Figure 11. Generation cost and coverage under four architecture contrasts. Bars average within-model percentage changes across the six models in each group. Positive values favor the first-named base or module-on condition. B3 invokes four isolated Character Agents per active step, and lower coverage can reduce later calls and tokens.                         
+
+> First-violation reason Qwen: n(%) / step Frontier: n(%) / step Temporal conflict 131 (25.8%) / 8.0 144 (31.0%) / 11.0 World-fact conflict 52 (10.3%) / 10.0 88 (18.9%) / 13.0 Character-state conflict 70 (13.8%) / 7.0 38 (8.2%) / 9.0 Identity conflict 42 (8.3%) / 2.0 23 (4.9%) / 7.0 Relationship conflict 34 (6.7%) / 2.0 6 (1.3%) / 4.0 Knowledge conflict 2 (0.4%) / 10.0 4 (0.9%) / 11.5 Causal conflict 0 (0.0%) / – 0 (0.0%) / – Other 2 (0.4%) / 2.0 1 (0.2%) / 15.0 No 2-Judge agreement 174 (34.3%) / 10.0 160 (34.4%) / 13.0
+
+Table 5. Adjudicated reasons for the first inconsistency, excluding generation failures. A category requires agreement from at least two inconsistent Judges. Percentages use all majority-inconsistent trajectories in each model panel. The value after each slash is the median first contradictory step. 
+
+and paired architectures. Both primary Cobs DraCor contrasts include zero, whereas the Cadj sensitivity is more favorable to DraCor. In the leave-one-play-out analysis, all seven DraCor– Smallville contrasts remain positive. Six of the seven DraCor– ITP contrasts remain positive; omitting one play gives a dif-ference of −0.27 points (Figure 15). Consistency is judged against the supplied InitialWorld 
+
+and emerging trajectory, not against a published continuation.                                      
+
+> Agreed reason Initial World Episode opening Earlier Narrative Current Narrative Unresolved tied Total Temporal 21 082 17 155 275 World fact 2063 273 140 Character state 5054 940 108 Identity 48 00116 65 Relationship 39 000140 Knowledge 003126
+
+Table 6. Candidate source of the canonical commitment violated at the first inconsistent step, pooled across both model panels. Sources are localized from the Judges’ stated prior commitment. Ambiguous and tied cases are grouped as unresolved. The table identifies where a commitment was recorded, not which agent caused the conflict. 
+
+Prior knowledge is observable only when it creates an internal contradiction. As Table 7 shows, all families use the same relative-day repre-sentation and record whether the story advances to a new day. Such advances are rare and least common in DraCor, while mean first-contradiction steps are similar. The similar timing gives no indication that the relative-day representation drives the family pattern. 
+
+16 When Stories Evolve: Benchmarking LLM Storytelling Across Agent Architectures in Open-Ended World Simulations Qwen2.5-3B Qwen2.5-7B Qwen2.5-14B Qwen2.5-32B Qwen2.5-72B Qwen3.5-397B-A17B Grok-4.3 GLM-5.2 DeepSeek-V4-Pro Kimi-K2.6 Gemini-3.1-Pro GPT-5.6-sol 0100 200 300 400 500 
+
+> planned trajectories
+
+Generation completion and endings    
+
+> Full horizon Story ending Output-format failure Other technical failure
+
+Figure 12. Generation outcomes by model across all 12 architectures. Each bar represents 504 planned trajectories. Full horizon indicates 20 completed narrative steps. Story ending denotes an accepted ending, such as the player’s death, permanent incapacity, or a genuinely closed story. Only four occur. Output-format and other technical failures reduce Generation Coverage but are not story outcomes. 2.5 5.0 7.5 10.0 12.5 15.0 17.5 20.0 
+
+step 
+
+> 020 40 60 80 100
+> survival (%)
+
+(a) Generation survival        
+
+> 2.5 5.0 7.5 10.0 12.5 15.0 17.5 20.0
+
+step 
+
+> 020 40 60 80 100
+> survival (%)
+
+(b) Contradiction-free survival 
+
+> Qwen2.5 3B Qwen2.5 7B Qwen2.5 14B Qwen2.5 32B Qwen2.5 72B Qwen3.5 397B-A17B
+
+Figure 13. Finite-horizon survival curves for the Qwen series. Panel (a) shows the probability of generating through step t. Panel (b) shows contradiction-free survival, with trajectories that stop for technical reasons right-censored. Dotted tails have fewer than 30 trajectories at risk. Curves end at the experimental horizon H = 20 , and their integrals yield the summaries in Figure 14. Qwen3.5-397B-A17B is shown separately as an MoE model. 
+
+17 When Stories Evolve: Benchmarking LLM Storytelling Across Agent Architectures in Open-Ended World Simulations 3B 7B 14B 32B 72B 020 40 60 80 100 
+
+> Generation score 100 ̂ μG(20)/20
+> 14B protocol anomaly
+
+(a) Generation score 
+
+397B (A17B) 3B 7B 14B 32B 72B 020 40 60 80 100   
+
+> Score
+> Open: n20 < 30
+
+(b) Consistency and Richness 
+
+397B (A17B) Consistency score Richness 
+
+Figure 14. Qwen-series scaling under unequal trajectory cover-age. Dense-model fits use log parameter count for Qwen2.5 3B–72B. Qwen3.5-397B-A17B is shown separately as an MoE model. Open markers have fewer than 30 trajectories at risk at step 20. Play 1 Play 2 Play 3 Play 4 Play 5 Play 6 Play 7 0123456
+
+> difference in  Cobs  (pp)
+
+Leave-one-DraCor-play-out, fi xed 12-model mean 
+
+> DraCor − ITP DraCor − Smallville
+
+Figure 15. Leave-one-DraCor-play-out sensitivity for the 12-model 
+
+Cobs contrasts. Each point compares DraCor with a simulation-native control after omitting one play. All DraCor–Smallville con-trasts remain positive; one DraCor–ITP contrast is slightly below zero ( −0.27 points). 
+
+Measure ITP DraCor Smallville 
+
+Consistency: estimate [95% bootstrap CI] 
+
+Cobs 82.1 [78.4, 86.1] 83.5 [79.1, 87.9] 78.1 [75.7, 84.0] 
+
+Cadj 80.3 [77.3, 82.8] 83.5 [77.1, 87.8] 75.2 [72.4, 77.0] DraCor contrast: difference [95% bootstrap CI] 
+
+Cobs +1.4 [-4.6, +6.9] — +5.4 [-2.2, +9.9] 
+
+Cadj +3.2 [-3.8, +8.3] — +8.3 [+1.8, +13.5] 
+
+Realized temporal exposure 
+
+Observed narrative steps 12.5 13.3 14.0 Day advance (%) 0.7 0.3 1.0 Full horizon (%) 50.4 54.0 60.8 First contradiction step 9.8 10.2 9.6 Relative day at contradiction 1.1 1.1 1.2 
+
+Table 7. Source-family Consistency and trajectory timing. Cells report equal-model means with 95% hierarchical bootstrap intervals. DraCor contrasts subtract ITP or Smallville from DraCor. 
+
+18 When Stories Evolve: Benchmarking LLM Storytelling Across Agent Architectures in Open-Ended World Simulations 
+
+Generator Contrast ∆G ∆Cobs ∆Cadj ∆R
+
+Qwen series Qwen2.5-3B B2 – B1 +1 .8 [ −0.8, +4 .4] −37 .6 [ −64 .2, −8.4] +0 .1 [ −24 .2, +33 .3] +5 .8 [ −1.1, +15 .0] 
+
+B3 – B1 +0 .0 [ −1.7, +1 .3] −38 .9 [ −62 .0, −9.8] −20 .0 [ −24 .3, +6 .8] +10 .8 [ −2.3, +20 .2] 
+
+B3 – B2 −1.8 [ −3.7, −0.3] −1.3 [ −29 .1, +31 .6] −20 .0 [ −30 .6, +3 .2] +5 .0 [ −10 .0, +13 .9] 
+
+WMEM on – off +0 .7 [ −1.1, +2 .3] −9.3 [ −33 .8, +10 .6] −25 .1 [ −33 .5, +5 .6] +1 .2 [ −5.3, +8 .0] 
+
+WMOD on – off −0.8 [ −2.5, +0 .7] −1.2 [ −25 .0, +27 .1] −20 .0 [ −29 .9, +9 .0] −4.9 [ −10 .4, +3 .5] 
+
+Qwen2.5-7B B2 – B1 +4 .6 [+0 .2, +9 .0] +7 .6 [ −2.8, +18 .3] +7 .7 [ −3.4, +17 .5] −2.2 [ −4.7, +0 .3] 
+
+B3 – B1 +1 .5 [ −2.8, +5 .7] +8 .3 [ −1.9, +19 .3] +7 .1 [ −3.2, +17 .6] +0 .2 [ −2.1, +2 .5] 
+
+B3 – B2 −3.2 [ −7.4, +1 .2] +0 .7 [ −8.1, +9 .8] −0.6 [ −8.8, +10 .1] +2 .4 [+0 .1, +4 .6] 
+
+WMEM on – off −22 .4 [ −26 .1, −18 .5] +0 .6 [ −6.1, +7 .6] +0 .7 [ −8.2, +6 .9] −0.4 [ −2.6, +1 .5] 
+
+WMOD on – off −44 .7 [ −49 .2, −40 .0] +26 .0 [+19 .9, +31 .9] −64 .9 [ −71 .3, −56 .9] −18 .8 [ −20 .8, −16 .8] 
+
+Qwen2.5-14B B2 – B1 +1 .5 [ −1.5, +4 .3] −3.0 [ −27 .1, +21 .6] −6.1 [ −12 .9, +4 .7] +6 .7 [+2 .7, +10 .6] 
+
+B3 – B1 +1 .9 [ −1.9, +5 .7] −10 .4 [ −33 .0, +13 .5] −6.4 [ −13 .0, +6 .3] +9 .2 [+5 .7, +12 .5] 
+
+B3 – B2 +0 .4 [ −2.0, +2 .9] −7.4 [ −30 .0, +14 .2] −0.3 [ −7.8, +8 .6] +2 .5 [ −1.5, +6 .7] 
+
+WMEM on – off −7.3 [ −9.9, −4.7] −16 .9 [ −31 .4, +4 .5] −3.9 [ −12 .4, +1 .7] −1.8 [ −5.0, +1 .2] 
+
+WMOD on – off −25 .2 [ −30 .4, −19 .5] +14 .8 [ −1.6, +34 .9] −41 .3 [ −48 .4, −31 .1] −12 .0 [ −15 .1, −9.1] 
+
+Qwen2.5-32B B2 – B1 +5 .8 [ −0.7, +12 .1] −8.6 [ −14 .6, −2.8] −8.6 [ −14 .9, −2.8] +3 .2 [+0 .8, +5 .8] 
+
+B3 – B1 +4 .4 [ −1.8, +10 .6] −13 .1 [ −19 .0, −6.9] −13 .1 [ −19 .8, −6.9] +6 .4 [+3 .5, +9 .4] 
+
+B3 – B2 −1.4 [ −5.9, +3 .2] −4.5 [ −13 .3, +4 .4] −4.5 [ −13 .9, +4 .5] +3 .2 [+0 .7, +5 .8] 
+
+WMEM on – off −38 .4 [ −44 .0, −32 .8] −1.9 [ −7.9, +4 .1] −1.9 [ −8.2, +3 .8] −1.2 [ −3.2, +0 .7] 
+
+WMOD on – off −7.0 [ −12 .1, −2.0] −1.4 [ −8.0, +5 .2] −1.4 [ −7.7, +5 .4] −2.4 [ −4.5, −0.4] 
+
+Qwen2.5-72B B2 – B1 +0 .6 [ −3.6, +5 .2] −3.4 [ −9.0, +1 .9] −3.4 [ −9.0, +1 .9] −0.8 [ −2.9, +1 .3] 
+
+B3 – B1 −0.2 [ −4.8, +4 .5] −6.7 [ −12 .5, −0.6] −6.7 [ −12 .5, −0.6] −0.6 [ −3.3, +2 .1] 
+
+B3 – B2 −0.8 [ −4.7, +3 .0] −3.3 [ −9.5, +3 .2] −3.3 [ −9.5, +3 .2] +0 .2 [ −1.7, +2 .0] 
+
+WMEM on – off −18 .5 [ −23 .7, −13 .5] −1.2 [ −5.3, +3 .5] −1.2 [ −5.3, +3 .5] −1.1 [ −3.2, +0 .9] 
+
+WMOD on – off −1.5 [ −4.9, +2 .0] −4.7 [ −9.8, +0 .4] −4.7 [ −9.8, +0 .4] −3.8 [ −5.5, −1.8] 
+
+Qwen3.5-397B-A17B B2 – B1 −9.7 [ −14 .9, −4.9] −10 .2 [ −16 .9, −3.9] −10 .2 [ −16 .9, −3.9] +11 .6 [+9 .3, +13 .8] 
+
+B3 – B1 −14 .0 [ −18 .5, −9.7] −11 .2 [ −19 .1, −3.5] −11 .2 [ −19 .1, −3.5] +16 .1 [+13 .4, +18 .6] 
+
+B3 – B2 −4.3 [ −9.6, +1 .1] −1.0 [ −7.9, +5 .5] −1.0 [ −7.9, +5 .5] +4 .5 [+2 .1, +6 .9] 
+
+WMEM on – off −22 .0 [ −26 .6, −17 .5] −4.9 [ −9.9, +0 .1] −4.9 [ −9.9, +0 .1] −4.4 [ −6.0, −2.9] 
+
+WMOD on – off −3.1 [ −7.0, +0 .7] −5.4 [ −11 .9, +0 .7] −5.4 [ −11 .9, +0 .7] +6 .2 [+4 .6, +7 .8] 
+
+Frontier models Grok-4.3 B2 – B1 +0 .7 [ −1.4, +3 .6] −4.9 [ −9.2, −1.1] −4.9 [ −9.2, −1.1] +6 .1 [+3 .3, +9 .0] 
+
+B3 – B1 −0.4 [ −4.8, +4 .5] −5.8 [ −10 .9, −1.2] −5.8 [ −10 .9, −1.2] +16 .2 [+13 .1, +19 .5] 
+
+B3 – B2 −1.1 [ −4.1, +1 .7] −0.9 [ −6.5, +5 .0] −0.9 [ −6.5, +5 .0] +10 .1 [+6 .6, +13 .6] 
+
+WMEM on – off −3.0 [ −9.9, +1 .7] −0.9 [ −5.1, +3 .0] −0.9 [ −5.1, +3 .0] −2.6 [ −4.3, −0.8] 
+
+WMOD on – off −0.2 [ −3.7, +2 .8] −3.4 [ −7.7, +0 .5] −3.4 [ −7.7, +0 .5] +1 .3 [ −0.1, +2 .8] 
+
+GLM-5.2 B2 – B1 −2.9 [ −8.3, +2 .3] −10 .9 [ −18 .0, −3.1] −11 .4 [ −18 .8, −3.8] +10 .2 [+7 .3, +13 .1] 
+
+B3 – B1 +1 .9 [ −4.7, +8 .3] −3.7 [ −11 .2, +3 .5] −3.7 [ −12 .6, +3 .1] +15 .4 [+13 .1, +17 .6] 
+
+B3 – B2 +4 .9 [ −2.0, +11 .7] +7 .1 [ −1.0, +14 .3] +7 .7 [ −1.3, +15 .2] +5 .1 [+3 .0, +7 .2] 
+
+WMEM on – off −50 .1 [ −56 .9, −43 .5] −0.9 [ −7.5, +5 .5] −1.3 [ −10 .5, +3 .9] −5.8 [ −8.0, −3.9] 
+
+WMOD on – off −5.9 [ −10 .8, −1.2] −13 .2 [ −20 .2, −5.7] −12 .8 [ −19 .0, −3.9] +9 .3 [+6 .9, +11 .4] 
+
+DeepSeek-V4-Pro B2 – B1 −10 .2 [ −17 .4, −2.8] −4.3 [ −10 .9, +1 .9] −4.3 [ −11 .0, +1 .9] +10 .1 [+7 .8, +12 .2] 
+
+B3 – B1 −11 .2 [ −18 .5, −2.6] −2.8 [ −8.9, +3 .3] −2.8 [ −8.9, +3 .3] +14 .2 [+11 .8, +16 .4] 
+
+B3 – B2 −1.0 [ −7.9, +5 .9] +1 .6 [ −5.4, +9 .0] +1 .6 [ −5.4, +9 .0] +4 .1 [+2 .3, +6 .0] 
+
+WMEM on – off −26 .7 [ −31 .5, −21 .8] +0 .2 [ −4.6, +5 .1] +0 .2 [ −4.6, +5 .1] −4.5 [ −6.4, −2.8] 
+
+WMOD on – off −12 .0 [ −17 .1, −7.0] −11 .8 [ −18 .0, −5.9] −11 .8 [ −18 .1, −5.9] +12 .1 [+10 .1, +14 .1] 
+
+Kimi-K2.6 B2 – B1 −7.4 [ −14 .0, −1.0] −1.3 [ −6.0, +3 .9] −1.3 [ −6.0, +3 .9] +6 .7 [+4 .0, +9 .3] 
+
+B3 – B1 −25 .7 [ −32 .7, −18 .2] −2.8 [ −8.6, +3 .3] −2.8 [ −8.6, +3 .3] +12 .1 [+9 .7, +14 .5] 
+
+B3 – B2 −18 .3 [ −25 .7, −11 .2] −1.4 [ −6.8, +3 .9] −1.4 [ −6.8, +3 .9] +5 .4 [+3 .0, +7 .8] 
+
+WMEM on – off −2.3 [ −7.2, +2 .2] +2 .4 [ −2.4, +6 .9] +2 .4 [ −2.4, +6 .9] −1.4 [ −3.6, +0 .7] 
+
+WMOD on – off −10 .5 [ −14 .5, −6.2] −4.1 [ −8.2, −0.2] −4.1 [ −8.2, −0.2] +2 .7 [+1 .0, +4 .5] 
+
+Gemini-3.1-Pro B2 – B1 −3.3 [ −8.8, +1 .9] +1 .5 [ −0.8, +4 .1] +1 .5 [ −0.8, +4 .1] +10 .5 [+8 .1, +12 .9] 
+
+B3 – B1 −8.0 [ −13 .9, −2.3] −1.8 [ −5.6, +1 .6] −1.8 [ −5.6, +1 .6] +15 .9 [+14 .2, +17 .7] 
+
+B3 – B2 −4.6 [ −10 .7, +1 .2] −3.3 [ −6.9, −0.0] −3.3 [ −6.9, −0.0] +5 .4 [+3 .5, +7 .4] 
+
+WMEM on – off −0.9 [ −5.3, +3 .6] +1 .8 [ −0.5, +4 .2] +1 .8 [ −0.5, +4 .2] −0.9 [ −2.1, +0 .3] 
+
+WMOD on – off −2.4 [ −6.4, +1 .6] +0 .7 [ −1.4, +2 .8] +0 .7 [ −1.4, +2 .8] −0.5 [ −2.2, +1 .2] 
+
+GPT-5.6-sol B2 – B1 −1.4 [ −3.5, +0 .6] +0 .5 [ −1.4, +2 .2] +0 .5 [ −1.4, +2 .2] +11 .3 [+9 .0, +13 .6] 
+
+B3 – B1 −1.7 [ −4.4, +0 .7] +0 .4 [ −1.4, +2 .1] +0 .4 [ −1.4, +2 .1] +14 .0 [+11 .8, +16 .3] 
+
+B3 – B2 −0.3 [ −2.9, +2 .2] −0.1 [ −1.8, +1 .7] −0.1 [ −1.8, +1 .7] +2 .7 [+0 .6, +4 .7] 
+
+WMEM on – off −1.7 [ −3.5, +0 .1] −0.7 [ −2.0, +0 .7] −0.7 [ −2.0, +0 .7] +0 .6 [ −0.9, +2 .2] 
+
+WMOD on – off −1.8 [ −3.6, −0.0] +0 .2 [ −1.2, +1 .7] +0 .2 [ −1.2, +1 .7] −4.8 [ −6.5, −3.0] 
+
+Table 8. Per-model counterpart to main-text Table 1 for both six-model groups. Each block reports the same five marginal contrasts as point estimates with 95% hierarchical bootstrap intervals. Models are fixed and are not resampled. 
+
+19 When Stories Evolve: Benchmarking LLM Storytelling Across Agent Architectures in Open-Ended World Simulations 
+
+Generator Conditional contrast ∆G ∆Cobs ∆Cadj ∆R
+
+Qwen series Qwen2.5-3B WMEM at B1 +0 .4 [ −3.2, +2 .7] −11 .9 [ −47 .5, +0 .0] −44 .4 [ −49 .5, +7 .5] −1.1 [ −12 .1, +10 .9] 
+
+WMEM at B2 +0 .1 [ −4.6, +3 .9] −25 .1 [ −70 .0, +28 .2] −30 .7 [ −58 .6, +13 .5] +4 .1 [ −11 .3, +15 .7] 
+
+WMEM at B3 +1 .5 [ −0.1, +3 .0] +9 .0 [ −55 .1, +64 .5] −0.1 [ −11 .9, +9 .2] +0 .5 [ −10 .7, +15 .8] 
+
+WMOD at B1 −0.4 [ −3.9, +1 .4] −11 .9 [ −47 .5, +0 .0] −39 .4 [ −45 .0, +10 .0] −2.8 [ −11 .0, +11 .8] 
+
+WMOD at B2 −1.9 [ −6.2, +1 .7] −5.4 [ −38 .7, +37 .9] −18 .8 [ −44 .4, +22 .8] +1 .4 [ −9.7, +12 .4] 
+
+WMOD at B3 −0.1 [ −1.5, +1 .3] +13 .7 [ −42 .1, +74 .7] −1.8 [ −13 .0, +6 .5] −13 .3 [ −23 .2, +0 .3] 
+
+Qwen2.5-7B WMEM at B1 −21 .4 [ −27 .4, −14 .5] +2 .9 [ −10 .7, +17 .2] +0 .6 [ −13 .6, +13 .2] −3.1 [ −6.8, +0 .4] 
+
+WMEM at B2 −25 .4 [ −31 .0, −19 .6] −0.6 [ −13 .8, +11 .3] −0.6 [ −15 .8, +11 .3] +1 .1 [ −2.1, +4 .3] 
+
+WMEM at B3 −20 .4 [ −26 .8, −13 .8] −0.5 [ −10 .0, +9 .8] +2 .0 [ −10 .0, +10 .7] +0 .8 [ −2.2, +3 .7] 
+
+WMOD at B1 −40 .4 [ −47 .3, −33 .6] +31 .7 [+17 .4, +47 .7] −58 .6 [ −72 .2, −41 .3] −17 .4 [ −20 .7, −14 .2] 
+
+WMOD at B2 −50 .2 [ −56 .3, −43 .5] +26 .4 [+17 .0, +36 .4] −63 .6 [ −75 .5, −52 .9] −19 .6 [ −22 .4, −16 .3] 
+
+WMOD at B3 −43 .5 [ −50 .4, −36 .8] +19 .9 [+7 .5, +31 .7] −72 .6 [ −83 .9, −58 .2] −19 .5 [ −22 .8, −16 .0] 
+
+Qwen2.5-14B WMEM at B1 −4.9 [ −9.3, −0.5] −12 .1 [ −42 .4, +18 .9] +8 .6 [ −11 .4, +18 .6] −3.9 [ −9.6, +1 .8] 
+
+WMEM at B2 −9.3 [ −13 .2, −5.7] −14 .7 [ −41 .9, +15 .9] −9.4 [ −19 .3, −1.0] −2.2 [ −7.9, +3 .3] 
+
+WMEM at B3 −7.6 [ −12 .3, −3.2] −23 .9 [ −53 .3, +3 .0] −10 .7 [ −23 .5, +2 .9] +0 .6 [ −3.4, +4 .8] 
+
+WMOD at B1 −24 .5 [ −31 .5, −17 .3] +10 .7 [ −21 .0, +44 .3] −54 .9 [ −65 .9, −32 .1] −23 .2 [ −27 .9, −18 .5] 
+
+WMOD at B2 −25 .7 [ −31 .7, −19 .3] +6 .4 [ −19 .9, +36 .8] −34 .8 [ −43 .1, −26 .1] −9.6 [ −15 .2, −4.2] 
+
+WMOD at B3 −25 .5 [ −31 .4, −19 .5] +27 .4 [ −6.2, +51 .4] −34 .1 [ −48 .5, −23 .1] −3.4 [ −8.1, +1 .1] 
+
+Qwen2.5-32B WMEM at B1 −29 .8 [ −38 .9, −21 .0] −3.3 [ −10 .8, +3 .6] −3.3 [ −10 .9, +3 .6] −2.3 [ −5.9, +1 .3] 
+
+WMEM at B2 −42 .4 [ −50 .2, −34 .6] −3.2 [ −14 .7, +8 .0] −3.2 [ −14 .9, +7 .9] −1.5 [ −4.6, +1 .7] 
+
+WMEM at B3 −42 .9 [ −50 .4, −35 .3] +0 .7 [ −9.1, +10 .0] +0 .7 [ −10 .5, +9 .8] +0 .1 [ −3.7, +3 .8] 
+
+WMOD at B1 −23 .8 [ −33 .0, −14 .5] +1 .2 [ −7.9, +9 .9] +1 .2 [ −7.9, +9 .9] −2.7 [ −5.8, +0 .3] 
+
+WMOD at B2 +3 .3 [ −3.5, +10 .0] −5.9 [ −16 .8, +5 .2] −5.9 [ −16 .8, +5 .6] −2.4 [ −5.2, +0 .2] 
+
+WMOD at B3 −0.7 [ −8.9, +7 .2] +0 .5 [ −11 .8, +13 .0] +0 .5 [ −11 .5, +14 .3] −1.9 [ −5.0, +1 .1] 
+
+Qwen2.5-72B WMEM at B1 −16 .0 [ −24 .0, −8.6] −0.9 [ −8.4, +8 .3] −0.9 [ −8.4, +8 .3] +0 .2 [ −2.7, +3 .0] 
+
+WMEM at B2 −19 .3 [ −26 .4, −12 .7] +2 .3 [ −6.1, +11 .3] +2 .3 [ −6.1, +11 .3] −3.2 [ −6.9, +0 .6] 
+
+WMEM at B3 −20 .0 [ −27 .4, −12 .8] −4.9 [ −11 .8, +2 .2] −4.9 [ −11 .8, +2 .2] −0.3 [ −3.1, +2 .5] 
+
+WMOD at B1 −7.0 [ −14 .4, −0.4] −4.3 [ −12 .5, +3 .5] −4.3 [ −12 .5, +3 .5] −2.3 [ −6.4, +1 .5] 
+
+WMOD at B2 −2.1 [ −8.3, +4 .3] −5.1 [ −11 .6, +1 .4] −5.1 [ −11 .6, +1 .4] −5.4 [ −8.2, −2.5] 
+
+WMOD at B3 +4 .6 [ −1.0, +10 .9] −4.6 [ −14 .3, +4 .2] −4.6 [ −14 .3, +4 .2] −3.7 [ −7.0, −0.5] 
+
+Qwen3.5-397B-A17B WMEM at B1 −19 .9 [ −26 .4, −13 .4] −2.4 [ −9.7, +5 .0] −2.4 [ −9.7, +5 .0] −1.0 [ −3.6, +1 .7] 
+
+WMEM at B2 −22 .0 [ −30 .1, −14 .2] −8.1 [ −19 .6, +2 .2] −8.1 [ −19 .6, +2 .2] −7.5 [ −11 .2, −4.1] 
+
+WMEM at B3 −24 .1 [ −31 .3, −17 .0] −4.2 [ −14 .6, +5 .6] −4.2 [ −14 .6, +5 .6] −4.7 [ −7.4, −1.8] 
+
+WMOD at B1 +0 .2 [ −4.7, +4 .9] −0.5 [ −7.5, +5 .8] −0.5 [ −7.5, +5 .8] +1 .7 [ −1.5, +4 .9] 
+
+WMOD at B2 +3 .1 [ −4.1, +10 .0] −6.9 [ −18 .5, +4 .5] −6.9 [ −18 .5, +4 .5] +6 .3 [+3 .9, +8 .8] 
+
+WMOD at B3 −12 .6 [ −20 .9, −4.2] −8.7 [ −18 .8, +1 .3] −8.7 [ −18 .8, +1 .3] +10 .7 [+7 .5, +13 .7] 
+
+Frontier models Grok-4.3 WMEM at B1 −3.5 [ −11 .4, +0 .0] −2.1 [ −8.2, +4 .0] −2.1 [ −8.2, +4 .0] −1.7 [ −4.5, +1 .1] 
+
+WMEM at B2 −2.5 [ −10 .7, +2 .9] +0 .5 [ −6.8, +7 .2] +0 .5 [ −6.8, +7 .2] −2.4 [ −5.8, +0 .8] 
+
+WMEM at B3 −3.1 [ −10 .0, +4 .2] −1.3 [ −9.7, +6 .6] −1.3 [ −9.7, +6 .6] −3.6 [ −6.9, −0.4] 
+
+WMOD at B1 −1.2 [ −4.8, +0 .0] −7.2 [ −13 .4, −1.4] −7.2 [ −13 .4, −1.4] −2.0 [ −5.0, +1 .1] 
+
+WMOD at B2 −0.1 [ −3.3, +2 .9] +1 .4 [ −6.2, +8 .9] +1 .4 [ −6.2, +8 .9] +1 .5 [ −1.7, +4 .6] 
+
+WMOD at B3 +0 .6 [ −4.3, +5 .6] −4.6 [ −12 .7, +3 .0] −4.6 [ −12 .7, +3 .0] +4 .5 [+1 .9, +7 .3] 
+
+GLM-5.2 WMEM at B1 −53 .6 [ −62 .1, −44 .6] +5 .9 [ −4.7, +16 .0] +5 .9 [ −6.9, +15 .0] −7.1 [ −10 .6, −4.0] 
+
+WMEM at B2 −43 .8 [ −52 .8, −34 .3] −13 .1 [ −26 .2, +1 .7] −14 .3 [ −30 .4, −1.1] −5.1 [ −8.5, −2.1] 
+
+WMEM at B3 −52 .9 [ −61 .8, −43 .9] +4 .4 [ −7.2, +16 .1] +4 .4 [ −11 .6, +14 .4] −5.1 [ −8.1, −2.5] 
+
+WMOD at B1 −12 .0 [ −17 .7, −6.2] −13 .5 [ −23 .7, −3.1] −13 .5 [ −24 .0, −3.2] +8 .2 [+5 .0, +11 .1] 
+
+WMOD at B2 −7.0 [ −15 .5, +1 .3] −9.9 [ −22 .2, +3 .9] −8.7 [ −20 .2, +5 .8] +9 .6 [+5 .6, +13 .4] 
+
+WMOD at B3 +1 .4 [ −5.4, +8 .2] −16 .2 [ −26 .0, −6.6] −16 .2 [ −24 .9, −1.5] +10 .0 [+6 .3, +13 .7] 
+
+DeepSeek-V4-Pro WMEM at B1 −25 .4 [ −33 .3, −17 .1] −2.2 [ −11 .0, +6 .1] −2.2 [ −11 .0, +6 .1] −2.0 [ −4.4, +0 .5] 
+
+WMEM at B2 −34 .3 [ −43 .5, −25 .5] +1 .3 [ −8.1, +10 .7] +1 .3 [ −8.2, +10 .7] −6.9 [ −10 .0, −3.9] 
+
+WMEM at B3 −20 .4 [ −30 .1, −10 .4] +1 .6 [ −7.4, +10 .5] +1 .6 [ −7.6, +10 .5] −4.7 [ −8.7, −0.9] 
+
+WMOD at B1 −7.4 [ −15 .9, +0 .3] −14 .9 [ −23 .9, −6.7] −14 .9 [ −23 .9, −6.7] +8 .3 [+4 .8, +11 .5] 
+
+WMOD at B2 −16 .2 [ −24 .2, −8.6] −14 .7 [ −23 .8, −5.4] −14 .7 [ −23 .8, −5.4] +13 .3 [+9 .6, +16 .8] 
+
+WMOD at B3 −12 .3 [ −21 .4, −3.5] −5.8 [ −16 .3, +3 .7] −5.8 [ −16 .4, +3 .7] +14 .6 [+10 .7, +19 .1] 
+
+Kimi-K2.6 WMEM at B1 −2.7 [ −9.8, +4 .5] +3 .1 [ −3.3, +9 .2] +3 .1 [ −3.3, +9 .2] +0 .4 [ −2.0, +2 .8] 
+
+WMEM at B2 −9.8 [ −20 .6, +0 .1] +1 .9 [ −5.2, +8 .9] +1 .9 [ −5.2, +8 .9] −4.4 [ −8.9, −0.2] 
+
+WMEM at B3 +5 .6 [ −2.3, +12 .9] +2 .0 [ −5.3, +9 .6] +2 .0 [ −5.3, +9 .6] −0.1 [ −3.4, +3 .2] 
+
+WMOD at B1 −12 .6 [ −20 .1, −5.4] −5.0 [ −11 .5, +1 .3] −5.0 [ −11 .5, +1 .3] +2 .0 [ −0.8, +4 .8] 
+
+WMOD at B2 −8.8 [ −14 .6, −2.7] +2 .3 [ −5.1, +9 .9] +2 .3 [ −5.1, +9 .9] +3 .4 [+0 .1, +6 .6] 
+
+WMOD at B3 −10 .1 [ −19 .5, −0.7] −9.6 [ −19 .0, −1.3] −9.6 [ −19 .0, −1.3] +2 .7 [ −0.2, +5 .6] 
+
+Gemini-3.1-Pro WMEM at B1 −4.6 [ −10 .1, +0 .8] +1 .0 [ −1.3, +3 .6] +1 .0 [ −1.3, +3 .6] +1 .0 [ −1.2, +3 .2] 
+
+WMEM at B2 −7.8 [ −16 .2, +0 .3] −2.3 [ −4.7, −0.3] −2.3 [ −4.7, −0.3] −4.0 [ −6.4, −1.4] 
+
+WMEM at B3 +9 .6 [ −2.1, +20 .8] +6 .5 [+0 .5, +13 .5] +6 .5 [+0 .5, +13 .5] +0 .3 [ −2.0, +2 .6] 
+
+WMOD at B1 −3.6 [ −9.9, +2 .3] −1.8 [ −6.2, +1 .7] −1.8 [ −6.2, +1 .7] −1.5 [ −4.1, +1 .1] 
+
+WMOD at B2 −3.2 [ −10 .7, +4 .2] −0.9 [ −3.5, +1 .4] −0.9 [ −3.5, +1 .4] +0 .0 [ −3.3, +3 .1] 
+
+WMOD at B3 −0.4 [ −6.6, +6 .0] +4 .6 [ −0.1, +10 .0] +4 .6 [ −0.1, +10 .0] +0 .1 [ −2.5, +2 .7] 
+
+GPT-5.6-sol WMEM at B1 −2.7 [ −5.7, +0 .0] −1.0 [ −3.6, +1 .7] −1.0 [ −3.6, +1 .7] +2 .1 [ −1.1, +5 .5] 
+
+WMEM at B2 +1 .1 [ −2.9, +5 .0] −1.1 [ −3.7, +0 .5] −1.1 [ −3.7, +0 .5] +0 .1 [ −2.9, +3 .1] 
+
+WMEM at B3 −3.5 [ −6.7, −0.6] −0.0 [ −2.2, +2 .7] −0.0 [ −2.2, +2 .7] −0.2 [ −2.5, +2 .1] 
+
+WMOD at B1 −0.8 [ −3.9, +2 .2] −1.0 [ −3.6, +1 .6] −1.0 [ −3.6, +1 .6] −12 .3 [ −15 .6, −8.9] 
+
+WMOD at B2 −3.1 [ −7.1, +0 .8] +1 .4 [ −0.0, +4 .1] +1 .4 [ −0.0, +4 .1] −1.8 [ −5.1, +1 .4] 
+
+WMOD at B3 −1.7 [ −6.0, +2 .3] −0.0 [ −2.2, +2 .7] −0.0 [ −2.2, +2 .7] −0.2 [ −2.9, +2 .5] 
+
+Table 9. Per-model module effects within each base for both six-model groups. Each module is compared on versus off while averaging over the other. Entries are point estimates with 95% hierarchical bootstrap intervals. Models are fixed and are not resampled. 
+
+20

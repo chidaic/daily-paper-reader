@@ -1,0 +1,322 @@
+Title: Proving the Utility of Large Language Models in Cybersecurity Simulations: A Comprehensive Examination
+
+URL Source: https://arxiv.org/pdf/2608.16422v1
+
+Published Time: Tue, 18 Aug 2026 01:57:40 GMT
+
+Number of Pages: 13
+
+Markdown Content:
+# Proving the Utility of Large Language Models in Cybersecurity Simulations: A Comprehensive Examination 
+
+Stylianos Kampakis 1, Fabio Rovai 1, Marcos Charalambides 2,
+
+Theodosis Mourouzis 2, Chris Hicks 31The Tesseract Academy, London, UK 
+
+{stelios, fabio }@thetesseractacademy.com 
+
+> 2
+
+Electi Consulting, Nicosia, Cyprus 
+
+{marcos.charalambides, theodosis.mourouzis }@electiconsulting.com 
+
+> 3
+
+The Alan Turing Institute, London, UK 
+
+c.hicks@turing.ac.uk 
+
+August 18, 2026 
+
+Abstract 
+
+Cyber threats continue to escalate in both frequency and sophistication, necessitating more adaptive and scalable defense strategies. This paper explores how Large Language Models (LLMs) can bolster cybersecurity simulations by automating the creation of synthetic environments and identifying latent vulnerabilities. We employ YAML as a structured representation format for simulating complex network configurations, thereby enabling Large Language Model-driven pipelines to support and improve reinforcement learning (RL) agent training. Comparative studies examine the advantages of LLM-based techniques over classical approaches such as Double Q-learning with Prioritized Experience Replay (PER), emphasizing increased efficiency, higher adaptability, and enhanced realism in cyberattack simulations. In empirical benchmarks across multiple synthetic topologies, LLM-instantiated Python agents achieved up to a 94.5% compromise rate while executing in 0.02–0.06 seconds per assessment—a ∼25,000 × to 50,000 ×
+
+speedup over traditional RL training cycles. Our findings underscore the transformative potential of integrating LLMs into cybersecurity research, ultimately paving the way for more intelligent and robust cyber-defense systems. 
+
+# 1 Introduction 
+
+The cybersecurity landscape has undergone a paradigm shift, wherein threat actors leverage increasingly sophisticated tactics to exploit vulnerabilities in both conventional and emerging technological infrastructures. Traditional defense mechanisms, largely reliant on static rule sets and signature-based methods, struggle to adapt against zero-day exploits and polymorphic threats [1, 2]. Consequently, there is an urgent need for advanced simulation frameworks that can accurately represent heterogeneous network environments, facilitate continuous adaptation, and support the rapid development of novel defensive strategies. Cybersecurity simulations offer controlled, replicable environments for research and development, enabling experimentation with attack vectors, defense algorithms, and training methodologies. 1arXiv:2608.16422v1 [cs.CR] 17 Aug 2026 Among these approaches, reinforcement learning (RL) has gained prominence, particularly through Deep Reinforcement Learning (DRL) methods [3, 4]. However, a major bottleneck lies in the generation of realistic and scalable simulation environments; manual configuration often proves time-consuming, error-prone, and limited in scope. Recent advances in Large Language Models (LLMs) hold promise for addressing this bottleneck. Contemporary LLMs demonstrate a remarkable capacity for contextual understanding, structured data generation, and direct code synthesis [7–10]. Nevertheless, minimal prior work has explored the application of LLMs to automate the generation of detailed cybersecurity environments. To bridge this gap, the present study proposes an LLM-driven pipeline that uses YAML as a flexible and human-readable configuration scheme, thereby empowering diverse RL agents to train in dynamically generated attack-defense scenarios. 
+
+1.1 Challenges with Existing Methods 
+
+1. Manual Labor Intensity: Building sophisticated simulation environments with multiple subnets, firewalls, and host vulnerabilities is highly resource-intensive. Many existing ap-proaches rely on skilled domain experts, which becomes infeasible for larger-scale or frequently updated simulations. 2. Limited Adaptability: As networks evolve (e.g., expansions, reconfigurations, or introduction of novel technologies), existing digital twins must be manually revised to maintain fidelity, incurring continuous overhead [11]. 3. Computational and Maintenance Costs: Designing high-fidelity simulation frameworks necessitates extensive computational resources [12], hindering the routine testing and training of RL algorithms. 
+
+1.2 Proposed Approach and Contributions 
+
+This paper posits that Large Language Models (LLMs) can alleviate these constraints by automati-cally generating YAML-based cybersecurity environments. Specifically, we present: 1. A Novel LLM-Driven Pipeline: We detail an approach that leverages prompt engineering, “golden” reference examples, and iterative topological validation to create realistic network topologies, vulnerability distributions, and security policies. 2. Comparative Analysis with Classical Methods: We benchmark LLM-generated attack agents against conventional Double Q-learning with Prioritized Experience Replay across 6 distinct network topologies (6,000 total evaluation episodes), quantifying improvements in compromise rate, adaptability, and computational efficiency. 3. Insight into In-Context Learning and Robustness: We document key empirical lessons from prompt design—including the “memorize after debugging” pitfall—and propose architec-tural enhancements such as retrieval-augmented generation (RAG). 
+
+# 2 Related Work 
+
+Research in cybersecurity simulations has been influenced by multiple paradigms, including machine learning-based intrusion detection systems, digital twins for replicating physical systems, and multi-agent frameworks for coordinating attack and defense strategies. 22.1 Machine Learning in Cybersecurity 
+
+Machine learning approaches have significantly advanced the identification and mitigation of cyber threats, spanning intrusion detection, malware analysis, and anomaly detection [1, 2]. Deep Reinforcement Learning methods have further demonstrated efficacy in adapting to dynamic adversarial patterns by updating defense strategies in response to novel attack behaviors [3]. 
+
+2.2 Digital Twins and Simulation Environments 
+
+The concept of a digital twin, a virtual replica of physical or cyber-physical systems, has been applied in cybersecurity to enable environment virtualization [13, 14]. While frameworks such as CyberBattleSim [15], YAWNING-TITAN [16], NASim [17], PrimAITE [18], CSLE [19], and NetSecGame [20] offer modular simulation settings, they still require manual or semi-automated processes for scenario generation. This limitation narrows the scope of experimentation and hinders rapid iteration. Additionally, scaling such simulations remains non-trivial due to reconfiguration demands and alignment with real-world network properties. 
+
+2.3 LLMs in Cybersecurity 
+
+Recent literature explores using LLMs for specialized tasks, including automated exploit generation, detection of zero-day vulnerabilities, and contextual intrusion detection [20–24]. However, few studies have harnessed LLMs for environment creation. The success of LLMs in generating structured data in other domains (e.g., 3D scene generation [7], supply chain optimization [25], and reward design [26]) motivates our investigation into automated cybersecurity environment generation. 
+
+2.4 Structured Output Generation with LLMs 
+
+Generating accurate, well-formed YAML files exemplifies a structured output task. Several ap-proaches to structured generation exist: 1. Model Fine-Tuning : Continually train a foundation model on domain-specific, example-based data to produce more consistent structured outputs [27–29]. 2. Grammar-Constrained Decoding : Leverage domain-specific languages (DSLs) and grammar-enforcing token generation [30–34]. 3. Schema Engineering : Use type or interface definitions to guide and validate generation outputs [35]. We adapt a hybrid approach that uses prompt engineering and example-based configuration to encourage syntactically valid and semantically coherent YAML generation, validated by domain-specific checks. 
+
+# 3 Methodology 
+
+In this section, we detail our system design for automated cybersecurity environment generation and the subsequent integration of reinforcement learning (RL) agents. We also describe the metrics used to evaluate the quality of generated environments and agent performance. 33.1 System Architecture 
+
+We develop a pipeline that automatically generates YAML configurations using an LLM and tests them within a cybersecurity emulator (e.g., NASim [17]). Figure 1 illustrates two main approaches for YAML generation: 1. Template-Based Configuration (Approach 1): Uses rigid YAML schemas that the LLM fills in according to user prompts. Under this paradigm, the model is prompted with generic structural placeholders. 2. Example-Based Configuration (Approach 2): Starts from one or more “golden” reference YAML files. The LLM edits or extends them in response to user instructions (e.g., varying host counts, subnets, and service combinations), achieving substantially higher success rates. 
+
+> Approach 1 (Template)
+> Generic schema prompt with placeholders
+> ChatGPT-4
+> Zero-shot generation
+> NASim Validator
+> Schema & topology check
+> Frequent Failures
+> Adjacency & firewall mis-match (40% valid)
+> Approach 2 (Example)
+> Few-shot prompt with golden YAML
+> ChatGPT-4
+> Context-guided mutation
+> NASim Validator
+> Topology re-inforcement
+> High Fidelity
+> Consistent relational bindings (70% valid)
+
+Figure 1: High-level architecture for YAML file creation and experimentation. This diagram contrasts Approach 1 (Template-Based Generation) with Approach 2 (Example-Based Generation). 
+
+3.1.1 LLM-Driven YAML Generation 
+
+After receiving a prompt (including a documentation link or special instructions), the LLM generates a candidate YAML configuration. We apply topological reinforcement checks to ensure coherence and realism, discarding outputs that fail these checks (Figure 2). This includes network adjacency matrix correctness, firewall bidirectional rule consistency, vulnerability definitions, and process mapping. 
+
+> Scenario Prompt
+> Requirements & documentation
+> LLM Engine
+> Candidate YAML synthesis
+> Topology Check
+> NASim Test
+> Emulator load
+> Runs in NASim?
+> DISCARDED
+> Rejected candidate
+> STORED
+> Golden YAML Pool
+> Pass Fail Fail Pass
+
+Figure 2: Process flow for YAML creation, including topological reinforcement. If the configuration passes validation and successfully runs in the NASim emulator, it is stored; otherwise, it is discarded. 43.1.2 Generated YAML Topology Specification 
+
+Listing 1 illustrates a representative synthetic network configuration generated by our LLM pipeline. The schema defines subnet partitioning, topology adjacency, high-value sensitive targets, available exploits, privilege escalation vectors, individual host profiles, and directional firewall filters. Listing 1: Sample LLM-Generated YAML Network Configuration (AI YAML 1). 
+
+subnets : [1 , 1 , 1 , 1 , 1] topology : [[0 , 1 , 1 , 1 , 0 , 0] , [1 , 0 , 0 , 0 , 1 , 1] , [1 , 0 , 0 , 0 , 1 , 1] , [1 , 0 , 0 , 0 , 1 , 1] , [0 , 1 , 1 , 1 , 0 , 0] , [0 , 1 , 1 , 1 , 0 , 0]] sensitive_hosts : {(2 , 0) : 100 , (5 , 0) : 100} os : [ linux , windows ] services : [ ssh , http ] processes : [ tomcat , apache , iis ] exploits : e_ssh : { service : ssh , os : linux , prob : 0.8 , cost : 1 , access : user } e_http : { service : http , os : windows , prob : 0.7 , cost : 1 , access : user } priv ilege_e scalation : pe_iis : { process : iis , os : windows , prob : 0.9 , cost : 1 , access : root } service_scan_cost : 1os_scan_cost : 1subnet_scan_cost : 1process_scan_cost : 1host_configurations : (1 , 0) : { os : linux , services : [ ssh , http ] , processes : [ tomcat , apache ] , firewall : {(4 , 0) : [ ssh ] , (5 , 0) : [ http ]}} (2 , 0) : { os : windows , services : [ http , ssh ] , processes : [ apache , iis ] , firewall : {(4 , 0) : [ http ] , (5 , 0) : [ ssh ]}} (3 , 0) : { os : linux , services : [ ssh ] , processes : [ tomcat , apache ] , firewall : {(4 , 0) : [ ssh ] , (5 , 0) : [ http ]}} (4 , 0) : { os : windows , services : [ http ] , processes : [ iis ] , firewall : {(1 , 0) : [ http ] , (2 , 0) : [ ssh ]}} (5 , 0) : { os : linux , services : [ ssh ] , processes : [ tomcat , iis ] , firewall : {(1 , 0) : [ http ] , (2 , 0) : [ ssh ]}} firewall : {(0 , 1) : [ ssh ] , (1 , 0) : [] , (0 , 2) : [ http ] , (2 , 0) : [] , (0 , 3) : [ http ] , (3 , 0) : [] , (1 , 4) : [ ssh , http ] , (4 , 1) : [] , (1 , 5) : [ http ] , (5 , 1) : [ ssh ] , (4 , 5) : [ ssh , http ] , (5 , 4) : []} step_limit : 1000 
+
+3.2 Reinforcement Learning Integration 
+
+After generating a valid YAML file, we instantiate RL-based agents and LLM-synthesized attack scripts to attempt to compromise the environment. Figure 3 shows how these agents are constructed and benchmarked against standard reinforcement learning baselines. 
+
+3.3 Overall System Pipeline 
+
+Figure 4 synthesizes the entire workflow. By integrating YAML generation and agent testing into a single closed loop, we can rapidly iterate over multiple scenarios, store successful outputs, and feed back any errors into subsequent prompt refinements. 
+
+3.4 Agent Framework 
+
+We develop three specialized attack agents prompted under the scenario prompt: 
+
+“I am working with configuration network files in Python. I would like you to develop an advanced approach to emulate this environment and identify potential vulnerabilities or cracks in the shortest possible time. You can use any techniques, such as reinforcement 
+
+5Validated YAML 
+
+Network topology & vulnerabilities 
+
+LLM Agent Prompt 
+
+Tactical direc-tive synthesis 
+
+Synthesized Agents 
+
+Agent 1: Probing Agent 2: Kill Chain Agent 3: Targeted 
+
+RL Baseline 
+
+Double Q-learning + PER Target Host Compromised? 
+
+Telemetry & Metrics 
+
+Success rate, steps & runtime 
+
+Figure 3: Agent creation and evaluation process. Once a valid YAML configuration is verified, adversarial agents are synthesized and deployed to emulate attack campaigns against classical RL baselines. 
+
+Stage 1: Environ-ment Synthesis 
+
+Example-based YAML generation with LLMs 
+
+Stage 2: Vali-dation & Filter 
+
+Topological vali-dation & NASim emulator testing 
+
+Stage 3: Agent Deployment 
+
+Multi-agent LLM emulation (Probing, Kill Chain, Targeted) 
+
+Stage 4: Teleme-try & Analysis 
+
+Empirical bench-marking vs. Double Q-learning baseline 
+
+Figure 4: End-to-end closed-loop workflow of the system, from prompt engineering and LLM-based YAML generation to agent emulation, telemetry collection, and iterative refinement. 6learning, brute force, or other state-of-the-art methods. Write in many steps how the network was compromised or if it was not compromised. Write ‘this network was compromised’ or ‘not compromised.’ Please provide python code only. Read following configurations without rewriting it.” 
+
+The resulting agents express three distinct tactical behaviors: 1. Agent 1 (Step-by-Step Probing): Methodical breadth-first scanning, enumeration of services, operating systems, and active processes across subnets before attempting exploita-tion. Performs exhaustive exploration to ensure all reachable attack surfaces are mapped. Incorporates probabilistic execution checks reflecting real-world exploit success uncertainty. 2. Agent 2 (Cyber Kill Chain & Network Propagation): Simulates multi-stage attack propagation (reconnaissance → weaponization → exploit → lateral movement → C2) starting from pre-compromised beachhead nodes. Explicitly evaluates network segmentation and subnet-to-subnet firewall filtering rules to determine viable lateral movement paths. 3. Agent 3 (Targeted Exploit & Sensitive Host Focus): Direct exploit execution targeting known high-impact services without exhaustive host-by-host scanning. Minimizes observable network footprints by prioritizing rapid privilege escalation paths directly to defined sensitive target hosts, terminating simulation immediately upon target breach. 
+
+3.5 Comparative Baseline: Double Q-Learning with PER 
+
+To establish an empirical baseline, we implemented a classical reinforcement learning agent utilizing 
+
+Double Q-learning with Prioritized Experience Replay (PER) [5, 6] interfacing directly with the NASim environment: 
+
+• Double Q-Learning: To eliminate the overestimation bias inherent in standard Q-learning, the agent maintains two independent Q-value estimators, Q1(s, a ) and Q2(s, a ). During each update, one table selects the greedy action while the alternate table estimates its value: 
+
+Y DoubleQ t = Rt+1 + γQ 2
+
+
+
+St+1 , arg max  
+
+> a
+
+Q1(St+1 , a )
+
+
+
+(1) 
+
+• Prioritized Experience Replay (PER): Experiences et = ( st, a t, r t, s t+1 , d t) are stored in a prioritized buffer where transition sampling probabilities P (i) are proportional to temporal-difference (TD) error magnitudes: 
+
+P (i) = pαiP 
+
+> k
+
+pαk
+
+, pi = |δi| + ϵper (2) 
+
+• Exploration Schedule: The agent employs an ϵ-greedy exploration policy, initialized at 
+
+ϵ0 = 1 .0 and decaying dynamically over training episodes towards ϵmin = 0 .05. 
+
+• Training and Logging: Policy convergence, episode returns, and TD errors were logged in real-time using TensorBoard via SummaryWriter .74 Results and Findings 
+
+4.1 YAML Generation Success 
+
+Table 1 summarizes the validation success rates across 25 independent generation trials per method. The example-based approach achieved a 70% success rate in producing valid configurations without manual debugging, outperforming prompt-only and template-only strategies that suffered from recurring firewall rule mismatches and adjacency matrix inconsistencies. Table 1: LLM-Generated YAML Success Rates (25 runs per method).         
+
+> Approach Valid Configs (%) Common Failure Mode
+> Template-Based (Approach 1) 40% Syntax errors and missing keys Prompt-Based 55% Firewall rule mismatches Example-Based (Approach 2) 70% Occasional incomplete adjacency
+
+4.2 Comprehensive Scenario-by-Scenario Benchmark 
+
+We conducted an extensive empirical benchmark across 6 distinct network environments: the standard NASim Tiny Example benchmark and 5 AI-generated synthetic topologies (AI YAML 1 through 5). Each scenario was evaluated over 1,000 independent attack episodes per agent (6,000 evaluation episodes total). Table 2 details the full breakdown of successful breaches, failures, and execution times. 
+
+4.3 Agent Performance and Tactical Comparison 
+
+Across all 6,000 test runs, the three agent strategies exhibited distinct operational characteristics: 
+
+• Agent 2 (Cyber Kill Chain) demonstrated the highest overall robustness, achieving a 
+
+94.5% aggregate compromise rate and achieving 100% compromise in 5 of the 6 topologies. Its ability to account for firewall segmentation rules allowed it to consistently find viable multi-hop pivoting routes. 
+
+• Agent 1 (Probing) achieved an 80.0% aggregate compromise rate . While effective in smaller topologies, its exhaustive enumeration approach resulted in occasional failures in segmented architectures where blind probing triggered firewall blocks. 
+
+• Agent 3 (Targeted) achieved an 80.9% aggregate compromise rate with the lowest step counts and fastest execution time (0.02–0.05 seconds). In scenarios where direct exploit paths existed, Agent 3 reached target hosts with minimal overhead. 
+
+4.4 Execution Efficiency: LLM Synthesis vs. Classical RL 
+
+A central finding of our benchmark is the dramatic efficiency advantage of LLM-instantiated analysis: 
+
+• Training Latency of Classical RL: The Double Q-learning agent required between 914.11 and 1,716.36 seconds ( ∼15 to 28.6 minutes) per environment to train and converge policy values over thousands of exploratory steps. In 4 of the 5 AI-generated environments, the classical RL agent failed to discover optimal compromise paths within standard step limits due to sparse reward bottlenecks. 8Table 2: Comprehensive Performance Benchmark Across 6 Network Scenarios (1,000 runs per agent per scenario; 6,000 runs total). 
+
+Scenario Approach Unsuccessful Successful Success (%) Time (s) Tiny Example Double Q-Learning 0 1 100.0% 914.11 (NASim Benchmark) Agent 1 (Probing) 48 952 95.2% 0.03 
+
+Agent 2 (Kill Chain) 0 1000 100.0% 0.03 
+
+Agent 3 (Targeted) 50 950 95.0% 0.02 vs 1st AI Gen YAML Double Q-Learning 1 0 0.0% 1452.38 Agent 1 (Probing) 381 619 61.9% 0.06 
+
+Agent 2 (Kill Chain) 0 1000 100.0% 0.05 
+
+Agent 3 (Targeted) 348 652 65.2% 0.04 vs 2nd AI Gen YAML Double Q-Learning 1 0 0.0% 1716.36 Agent 1 (Probing) 387 613 61.3% 0.06 
+
+Agent 2 (Kill Chain) 333 667 66.7% 0.06 
+
+Agent 3 (Targeted) 418 582 58.2% 0.05 vs 3rd AI Gen YAML Double Q-Learning 0 1 100.0% 1485.40 Agent 1 (Probing) 134 866 86.6% 0.05 
+
+Agent 2 (Kill Chain) 0 1000 100.0% 0.04 
+
+Agent 3 (Targeted) 127 873 87.3% 0.04 vs 4th AI Gen YAML Double Q-Learning 1 0 0.0% 1477.04 Agent 1 (Probing) 131 869 86.9% 0.05 
+
+Agent 2 (Kill Chain) 0 1000 100.0% 0.05 
+
+Agent 3 (Targeted) 105 895 89.5% 0.04 vs 5th AI Gen YAML Double Q-Learning 1 0 0.0% 1475.28 Agent 1 (Probing) 116 884 88.4% 0.05 
+
+Agent 2 (Kill Chain) 0 1000 100.0% 0.05 
+
+Agent 3 (Targeted) 98 902 90.2% 0.04 Aggregate (All Scenarios) Agent 1 (Probing) 1,197 4,803 80.0% 0.05 avg Agent 2 (Kill Chain) 333 5,667 94.5% 0.05 avg Agent 3 (Targeted) 1,146 4,854 80.9% 0.04 avg 
+
+9• Rapid Assessment Speedup: In contrast, LLM-generated Python agents executed complete vulnerability emulations in 0.02 to 0.06 seconds . This represents an assessment speedup factor of approximately 25 , 000 × to 50 , 000 ×, demonstrating that LLMs can rapidly evaluate synthetic digital twins without requiring compute-intensive exploration phases. 
+
+# 5 Discussion 
+
+Our findings confirm that Large Language Models can reliably generate valid, topologically sound cybersecurity simulation environments when guided by example-based reference configurations. 
+
+5.1 Prompt Engineering Insights: The “Memorize After Debugging” Pitfall 
+
+During our iterative prompt optimization experiments, we uncovered an important nuance in multi-turn LLM interaction: 
+
+When the model encountered an assertion failure (such as an asymmetrical firewall rule or adjacency dimension mismatch) and was instructed to correct the error and “memorize the corrected configuration as a good example,” subsequent generations became noticeably more prone to subtle edge-case bugs. 
+
+This phenomenon occurs because conversational in-context correction introduces noisy conversational artifacts and contradictory structural priors into the model’s active context window. Consequently, we found that maintaining a static, validated “golden” reference example and using strict automated rejection filtering yielded far more consistent generation fidelity than multi-turn conversational repair. 
+
+5.2 Topological Constraints and Firewall Symmetry 
+
+The primary source of generation failures in LLM-synthesized environments stems from relational dependencies. In NASim, every subnet connection in the adjacency matrix must be mirrored by exact bidirectional entries in the firewall dictionary. Pure zero-shot prompting frequently generated single-directional firewall rules, triggering assertion errors during emulator initialization. The example-based approach mitigates this by providing structural relational anchors that preserve matrix-dictionary alignment. 
+
+5.3 Limitations and Generalization 
+
+Despite high compromise rates, current evaluations primarily verify syntactic execution and reacha-bility within emulated state spaces. In real-world enterprise infrastructures, dynamic state elements (e.g., rate limiting, intrusion detection systems, host-based firewalls) introduce stochastic noise. Fu-ture work will investigate integrating Retrieval-Augmented Generation (RAG) backed by real-world CVE databases to ensure generated vulnerabilities reflect production software vulnerabilities. 
+
+# 6 Conclusion and Future Directions 
+
+This paper presented an empirical investigation into the utility of Large Language Models for automated cybersecurity simulation generation and adversarial evaluation. Our findings show that: 10 1. Automated Environment Generation: LLMs can generate simulation-ready network configurations in YAML format with a 70% out-of-the-box validity rate using example-based prompt structures. 2. High-Fidelity Adversarial Emulation: LLM-prompted attack agents achieved high compro-mise rates (up to 94.5%) while executing orders of magnitude faster than classical reinforcement learning algorithms. 3. Significant Efficiency Gains: LLM-driven security emulation delivers a ∼25,000 × to 50,000 × speedup over traditional Double Q-learning training loops, making it an ideal approach for high-throughput digital twin vulnerability testing. Future research will extend this pipeline to multi-agent cyber ranges where LLM-driven red teams and blue teams adapt simultaneously in co-evolving defensive scenarios. 
+
+# Acknowledgments 
+
+We gratefully acknowledge the Alan Turing Institute and the Department for AI for CyberDefense for providing the financial support that made this research possible. We also extend our gratitude to our colleagues and domain experts whose valuable insights and feedback significantly enhanced the design and analysis of this work. 
+
+# References 
+
+[1] A. Handa, A. Sharma, and S. K. Shukla, “Machine learning in cybersecurity: A review,” Wiley Interdisciplinary Reviews: Data Mining and Knowledge Discovery , vol. 9, no. 4, p. e1306, 2019. [2] D. Dasgupta, Z. Akhtar, and S. Sen, “Machine learning in cybersecurity: a comprehensive survey,” The Journal of Defense Modeling and Simulation , vol. 19, no. 1, pp. 57–106, 2022. [3] T. T. Nguyen and V. J. Reddi, “Deep reinforcement learning for cyber security,” IEEE Transactions on Neural Networks and Learning Systems , vol. 34, no. 8, pp. 3779–3795, 2021. [4] Limmen, “Awesome RL for Cybersecurity,” GitHub, 2024. [Online]. Available: https:// github.com/Limmen/awesome-rl-for-cybersecurity 
+
+[5] H. van Hasselt, A. Guez, and D. Silver, “Deep reinforcement learning with double Q-learning,” in Proceedings of the AAAI Conference on Human Computation and Crowdsourcing (AAAI-16) ,vol. 30, no. 1, 2016. [6] T. Schaul, J. Quan, I. Antonoglou, and D. Silver, “Prioritized experience replay,” in International Conference on Learning Representations (ICLR) , 2016. [7] R. Ma, A. G. Patil, M. Fisher, M. Li, S. Pirk, B.-S. Hua, S.-K. Yeung, X. Tong, L. Guibas, and H. Zhang, “Language-driven synthesis of 3D scenes from scene databases,” ACM Transactions on Graphics (TOG) , vol. 37, no. 6, p. 1–16, 2018. [8] A. X. Chang, M. Eric, M. Savva, and C. D. Manning, “SceneSeer: 3D scene design with natural language,” arXiv preprint arXiv:1703.00050 , 2017. 11 [9] S. Long, T. Schuster, and A. Pich´ e, “Can large language models build causal graphs?,” arXiv preprint arXiv:2303.05279 , 2023. [10] T. Jiralerspong, X. Chen, Y. More, V. Shah, and Y. Bengio, “Efficient causal graph discovery using large language models,” arXiv preprint arXiv:2402.01207 , 2024. [11] Y. Wu, K. Zhang, and Y. Zhang, “Digital twin networks: A survey,” IEEE Internet of Things Journal , vol. 8, no. 18, pp. 13789–13804, 2021. [12] M. Segovia and J. Garcia-Alfaro, “Design, modeling and implementation of digital twins,” 
+
+Sensors , vol. 22, no. 14, p. 5396, 2022. [13] R. Faleiro, L. Pan, S. R. Pokhrel, and R. Doss, “Digital twin for cybersecurity: Towards enhancing cyber resilience,” in Broadband Communications, Networks, and Systems , Springer, 2022, pp. 57–76. [14] M. Eckhart and A. Ekelhart, “Towards security-aware virtual environments for digital twins,” in Proceedings of the 4th ACM Workshop on Cyber-Physical System Security , 2018, pp. 61–72. [15] Microsoft, CyberBattleSim , 2021. [Online]. Available: https://github.com/microsoft/ CyberBattleSim 
+
+[16] Defence Science and Technology Laboratory, YAWNING-TITAN: A Cyber Security Research Platform , 2024. [Online]. Available: https://github.com/dstl/YAWNING-TITAN 
+
+[17] J. Schwartz, NetworkAttackSimulator: A simple OpenAI gym environment for sim-ulating network attacks , 2024. [Online]. Available: https://github.com/Jjschwartz/ NetworkAttackSimulator 
+
+[18] Autonomous-Resilient-Cyber-Defence, PrimAITE , 2023. [Online]. Available: https://github. com/Autonomous-Resilient-Cyber-Defence/PrimAITE 
+
+[19] K. Hammar, CSLE: A platform for evaluating and developing reinforcement learning agents for control problems in cyber security , 2023. [Online]. Available: https://github.com/Limmen/ csle 
+
+[20] M. Rigaki, O. Luk´ aˇ s, C. A. Catania, and S. Garcia, “Out of the cage: How stochastic parrots win in cyber security environments,” arXiv preprint arXiv:2308.12086 , 2023. [21] W. Tann, Y. Liu, J. H. Sim, C. M. Seah, and E.-C. Chang, “Using large language mod-els for cybersecurity capture-the-flag challenges and certification questions,” arXiv preprint arXiv:2308.10443 , 2023. [22] M. A. Ferrag, M. Ndhlovu, N. Tihanyi, L. C. Cordeiro, M. Debbah, and T. Lestable, “Revolu-tionizing cyber threat detection with large language models,” arXiv preprint arXiv:2306.14263 ,2023. [23] M. D. Purba, A. Ghosh, B. J. Radford, and B. Chu, “Software vulnerability detection using large language models,” in 2023 IEEE 34th International Symposium on Software Reliability Engineering Workshops (ISSREW) , IEEE, 2023, pp. 112–119. [24] M. M. Yamin, E. Hashmi, M. Ullah, and B. Katt, “Applications of llms for generating cyber security exercise scenarios,” 2024. 12 [25] B. Li, K. Mellou, B. Zhang, J. Pathuri, and I. Menache, “Large language models for supply chain optimization,” arXiv preprint arXiv:2307.03875 , 2023. [26] Y. J. Ma, W. Liang, G. Wang, D. Huang, O. Bastani, D. Jayaraman, Y. Zhu, L. Fan, and A. Anandkumar, “Eureka: Human-level reward design via coding large language models,” arXiv preprint arXiv:2310.12931 , 2023. [27] B. Zhang, Z. Liu, C. Cherry, and O. Firat, “When scaling meets llm finetuning: The effect of data, model and finetuning method,” arXiv preprint arXiv:2402.17193 , 2024. [28] C. Jeong, “Fine-tuning and utilization methods of domain-specific llms,” arXiv preprint arXiv:2401.02981 , 2024. [29] J. Wei, M. Bosma, V. Y. Zhao, K. Guu, A. W. Yu, B. Lester, N. Du, A. M. Dai, and Q. V. Le, “Finetuned language models are zero-shot learners,” arXiv preprint arXiv:2109.01652 , 2021. [30] T. Lin, “Generating Structured Output from LLMs,” https://www.timlrx.com/blog/ generating-structured-output-from-llms , accessed 2024-11-27. [31] Microsoft, guidance , 2023. [Online]. Available: https://github.com/guidance-ai/guidance 
+
+[32] SRI Lab, ETH Zurich, LMQL , 2023. [Online]. Available: https://github.com/eth-sri/lmql 
+
+[33] dottxt-ai, outlines , 2024. [Online]. Available: https://github.com/dottxt-ai/outlines 
+
+[34] ggerganov, llama.cpp , 2023. [Online]. Available: https://github.com/ggerganov/llama.cpp 
+
+[35] Microsoft, TypeChat , 2023. [Online]. Available: https://github.com/microsoft/TypeChat 
+
+13

@@ -1,0 +1,429 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-18T19:27:50.423396+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 5,
+    "deep_cap": 6,
+    "deep_selected": 5,
+    "quick_candidates": 4,
+    "quick_skim_target": 11,
+    "quick_selected": 4
+  },
+  "deep_dive": [
+    {
+      "id": "2608.16196v1",
+      "source": "arxiv",
+      "title": "Beyond Asking: A Pipeline for Personalized Game Generation that Reads Players from Behavior",
+      "abstract": "Personalized game generation requires inferring a player's abilities and behavioral style from how they play. Large language models have made this inference more attainable than ever: an LLM can read a raw gameplay transcript and produce a fluent, plausible profile of the player. Plausible, however, is not verified, and verification is precisely what the field lacks: latent traits are unobservable; questionnaires provide noisy proxies and become circular when self-reports are used to validate behavior-based inference; and behavior itself is ambiguous without context -- a player who never collects an item may not want it, or may never have had the chance. We address both problems. First, we construct a synthetic player population whose traits are ground truth by construction: each trait is an explicit bot parameter, accepted only after controlled manipulation produces consistent, trait-specific behavioral change. Unlike prior parameter-recovery work that inverts a known decision model, our benchmark evaluates policy-agnostic inference from behavioral transcripts alone. Second, we introduce an opportunity-aware decision-moment representation that disentangles preference from the chance to express it; ablating it selectively degrades opportunity-dependent traits. On this benchmark, few-shot LLM inference outperforms embedding- and rule-based baselines on most traits, though feature-based supervised regressors remain stronger overall. Finally, we close the loop: inferred profiles drive difficulty adaptation, evaluated against ground-truth references and mismatched-profile controls, and an exploratory human study examines whether these findings transfer to real players.",
+      "authors": [
+        "Yifan Lu",
+        "Xiaopeng Yuan",
+        "Haohan Wang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.HC"
+      ],
+      "published": "2026-08-17T07:19:27+00:00",
+      "link": "https://arxiv.org/pdf/2608.16196v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "reads players from behavior for personalized game generation",
+      "llm_evidence_cn": "从玩家行为中读取画像以生成个性化游戏",
+      "llm_evidence": "从玩家行为中读取画像以生成个性化游戏",
+      "canonical_evidence": "从玩家行为中读取画像以生成个性化游戏",
+      "llm_tldr_en": "The paper tackles unverified inference in personalized game generation by building a synthetic player population and a pipeline for LLMs to read gameplay transcripts, verifying inferred player traits through behavior-based evaluation.",
+      "llm_tldr_cn": "个性化游戏生成需要从玩家行为中推断其能力和风格，但推断结果往往未经验证。本文构建合成玩家群体并提出一个从原始游戏记录读取玩家画像的流水线，同时处理行为歧义和问卷循环验证问题。通过设计行为实验，该方法能够更可靠地验证玩家特质推断。该工作为基于行为的玩家建模提供了验证框架，推动了个性化游戏生成的发展。",
+      "llm_tldr": "个性化游戏生成需要从玩家行为中推断其能力和风格，但推断结果往往未经验证。本文构建合成玩家群体并提出一个从原始游戏记录读取玩家画像的流水线，同时处理行为歧义和问卷循环验证问题。通过设计行为实验，该方法能够更可靠地验证玩家特质推断。该工作为基于行为的玩家建模提供了验证框架，推动了个性化游戏生成的发展。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "virtual game player modeling",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.12253v2",
+      "source": "arxiv",
+      "title": "One Frozen Simulator Is Not Enough: Simulator Collapse in Multi-Agent RL",
+      "abstract": "Multi-agent reinforcement learning for human-AI interaction typically relies on a single large language model to simulate user behavior. We show that this approach systematically fails to generalize, and trace the failure to simulator collapse: because the simulator LLM is mode-collapsed, an LLM policy trained against it overfits to narrow strategies that exploit the simulator's dominant mode, and such a policy transfers poorly to unseen simulators and real users. We formalize this collapse theoretically and propose two complementary solutions, one at inference time and one at training time. The inference-time solution, Verbalized Sampling, broadens the simulator's behavior by sampling from a verbalized response distribution, reducing mode collapse. The training-time solution, Co-Training, jointly optimizes the policy against a population of trainable simulators, preventing it from overfitting to any single simulator's mode. We validate both solutions on three multi-turn benchmarks: Persuasion for Good, $τ^2$-bench, and CooperBench. Verbalized Sampling improves held-out success by up to 9% over single-simulator RL, and Co-Training pushes gains further to 14%; the human study shows similar gain on real users. Both solutions preserve the policy diversity that collapses under single-simulator RL. To support further work in this direction, we release SCOPE, an open-source framework for Population Co-Training multi-agent RL. More broadly, our results suggest that the diversity of the training environment, not only the policy, is critical to the generalization of multi-turn RL to real-world deployment.",
+      "authors": [
+        "Simon Yu",
+        "Nicholas Tomlin",
+        "Marwa Abdulhai",
+        "Ximing Lu",
+        "Derek Chong",
+        "Abe Hou",
+        "Dilara Soylu",
+        "Sergey Levine",
+        "Christopher D. Manning",
+        "Weiyan Shi"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-08-12T16:55:50+00:00",
+      "link": "https://arxiv.org/pdf/2608.12253v2",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Simulates user behavior with LLM in multi-agent RL, direct relevance to player behavior simulation",
+      "llm_evidence_cn": "多智能体RL中用LLM模拟用户行为，直接对应用户行为仿真",
+      "llm_evidence": "多智能体RL中用LLM模拟用户行为，直接对应用户行为仿真",
+      "canonical_evidence": "多智能体RL中用LLM模拟用户行为，直接对应用户行为仿真",
+      "llm_tldr_en": "Shows that using a single frozen LLM simulator to simulate user behavior in multi-agent RL causes simulator collapse and poor generalization, and proposes Verbalized Sampling and a training-time solution.",
+      "llm_tldr_cn": "针对多智能体强化学习中常用单一LLM模拟用户行为导致泛化失败的问题，论文首次形式化模拟器坍缩现象，即模拟器模式坍缩使策略过度拟合其主导模式。为此提出推理期的Verbalized Sampling方法，通过从口语化响应分布采样来增大模拟器行为多样性，同时给出训练期互补方案。实验证明这些方法能提升策略向真实用户与未知模拟器的迁移表现。该工作直接服务于玩家/用户行为仿真与AI智能体训练，与需求高度契合。",
+      "llm_tldr": "针对多智能体强化学习中常用单一LLM模拟用户行为导致泛化失败的问题，论文首次形式化模拟器坍缩现象，即模拟器模式坍缩使策略过度拟合其主导模式。为此提出推理期的Verbalized Sampling方法，通过从口语化响应分布采样来增大模拟器行为多样性，同时给出训练期互补方案。实验证明这些方法能提升策略向真实用户与未知模拟器的迁移表现。该工作直接服务于玩家/用户行为仿真与AI智能体训练，与需求高度契合。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "player behavior simulation techniques",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.13787v1",
+      "source": "arxiv",
+      "title": "From Passive Delegates to Strategic Negotiators: Reinforcing Social Reasoning in Small Language Models with SocialRL",
+      "abstract": "AI agents increasingly act on their users' behalf, handling tasks such as scheduling meetings, comparing offers, and haggling over prices. These principal-driven tasks routinely place the agent across from a counterpart (another user's agent, a seller, a recruiter) whose goals may conflict with its principal's. Yet the dispositions that make an assistant pleasant can make it a poor delegate: a friendly, helpful frontier model may disclose its principal's private information unprompted and concede at the first sign of resistance. We present SocialRL, a general recipe that trains social reasoning directly, and apply it to a 4B model across six domains: Deal-or-No-Deal, CaSiNo, Craigslist, Job Interview, Calendar, and Marketplace. Every domain is trained in-domain under the same recipe, and every policy is evaluated on all six. We find that (1) in-domain training reaches the frontier: on held-out scenarios the 4B matches or exceeds the GPT-5 family per domain, closing 73-122% of the baseline-to-frontier gap on the negotiation games, with 78% of buyer openings anchoring below target versus 3% untrained; (2) cross-domain transfer follows game structure: structurally paired games lift each other, a broad multi-issue donor lifts nearly all domains, and structurally isolated games transfer nothing; (3) guided by this transfer structure, two strategies, cascade RL and multi-teacher on-policy distillation (OPD), consolidate the per-domain specialists into a single unified 4B that reaches 0.627 average utility across all six environments, matching or exceeding GPT-4.1 (0.625), GPT-5.1 (0.619), and GPT-5.2 (0.613); (4) an explicit theory-of-mind scaffold helps only through training: distilling the ToM trace, rather than actions alone, lifts utility on every environment and generalizes better across them, and of the two ToM skills, only next-action prediction predicts negotiation outcomes.",
+      "authors": [
+        "Wenyue Hua",
+        "Zachary Huang",
+        "Tyler Payne",
+        "Safoora Yousefi",
+        "Saleema Amershi",
+        "Asli Celikyilmaz"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CL",
+        "cs.LG",
+        "cs.MA"
+      ],
+      "published": "2026-08-13T21:39:12+00:00",
+      "link": "https://arxiv.org/pdf/2608.13787v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "reinforces social reasoning in AI agents via reinforcement learning across negotiation and game domains",
+      "llm_evidence_cn": "通过多个谈判与博弈域强化AI智能体社会推理能力",
+      "llm_evidence": "通过多个谈判与博弈域强化AI智能体社会推理能力",
+      "canonical_evidence": "通过多个谈判与博弈域强化AI智能体社会推理能力",
+      "llm_tldr_en": "Presents SocialRL, a recipe to train social reasoning in small language models, tested on Deal-or-No-Deal, Craigslist, job interviews and calendar tasks, making 4B models strategic negotiators.",
+      "llm_tldr_cn": "论文针对AI智能体在用户委托任务中缺乏策略性、易透露隐私或过早让步的问题，提出SocialRL训练方法，直接强化智能体的社会推理能力。将该方法应用于4B小模型，在Deal-or-No-Deal、Craigslist、求职面试等多个谈判博弈域中训练，使模型从被动辅助变为战略谈判者。实验显示小模型在对抗性交互中的表现显著提升。该方法为AI Agent在博弈式交互环境中的行为建模提供了通用训练途径。",
+      "llm_tldr": "论文针对AI智能体在用户委托任务中缺乏策略性、易透露隐私或过早让步的问题，提出SocialRL训练方法，直接强化智能体的社会推理能力。将该方法应用于4B小模型，在Deal-or-No-Deal、Craigslist、求职面试等多个谈判博弈域中训练，使模型从被动辅助变为战略谈判者。实验显示小模型在对抗性交互中的表现显著提升。该方法为AI Agent在博弈式交互环境中的行为建模提供了通用训练途径。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.15838v1",
+      "source": "arxiv",
+      "title": "PersonaEval: Persona-Based User Simulation for Evaluating Interactive Applications",
+      "abstract": "Real user studies are important for understanding how people interact with systems under test or already deployed. In practice, however, they are often costly, time-consuming, and difficult to scale. To address these challenges, we introduce PersonaEval, a persona-based user simulation framework that approximates real-user behavior across diverse interactive settings. PersonaEval connects simulated users drawn from existing persona datasets to task-specific application interfaces and collects the interaction trajectories and outcomes. PersonaEval provides a plug-and-play evaluation workflow in which the application being evaluated can be easily changed. In this demo, we present PersonaEval on three forms of interactive applications: surveys, chatbots, and web applications. Together, these examples show that PersonaEval can support repeatable, parallelizable, and scalable evaluation across different interaction settings, while producing user-oriented feedback and task-specific behavior.",
+      "authors": [
+        "Yifan Simon Liu",
+        "Qianfeng Wen",
+        "Yilan Fan",
+        "Shirley Huang",
+        "Ruoqi Gao",
+        "Jianheng Hou",
+        "Muhammad Ahmed Mohsin",
+        "Zonglin Di",
+        "Brihi Joshi",
+        "Xincheng Tan",
+        "Yucheng Lu",
+        "Xiaoyi Liu",
+        "Heming Liu",
+        "Hanwen Xing",
+        "Guanghui Min",
+        "Zhengyang Shan",
+        "My Chiffon Nguyen",
+        "Ishan Gupta",
+        "Yunze Xiao",
+        "Hannah Collison",
+        "Jintao Huang",
+        "Jiatong Li",
+        "Sankalp Jajee",
+        "Yunhan Zhao",
+        "Bing Hu",
+        "Sky Ng",
+        "Xupeng Chen",
+        "Binghang Lu",
+        "Weihang Xiao",
+        "Aravind Mohan",
+        "Bolun Sun",
+        "Yunshu Wu",
+        "Yuanda Xu",
+        "Yun Shen",
+        "Runyu Zhang",
+        "Zheyuan Deng",
+        "Zhiwei Zhang",
+        "Qianyu Zhu",
+        "Dianzhuo Wang",
+        "Yijun Wang",
+        "Yixuan He",
+        "Yuexing Hao",
+        "Xiaomin Li"
+      ],
+      "primary_category": "cs.HC",
+      "categories": [
+        "cs.HC"
+      ],
+      "published": "2026-08-16T16:15:26+00:00",
+      "link": "https://arxiv.org/pdf/2608.15838v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Persona-based user simulation framework approximating real-user behavior in interactive applications",
+      "llm_evidence_cn": "基于角色的用户仿真框架，可逼近交互式应用中真实用户的行为",
+      "llm_evidence": "基于角色的用户仿真框架，可逼近交互式应用中真实用户的行为",
+      "canonical_evidence": "基于角色的用户仿真框架，可逼近交互式应用中真实用户的行为",
+      "llm_tldr_en": "PersonaEval is a plug-and-play framework that connects personas from existing datasets to application interfaces, generating realistic interaction trajectories for evaluating interactive systems, reducing cost and improving scale.",
+      "llm_tldr_cn": "针对真实用户研究成本高、耗时且难以扩展的问题，PersonaEval提出了一种基于角色的用户仿真框架。它将现有角色数据集中的仿真用户与任务特定的应用接口对接，收集交互轨迹和结果，并支持轻松更换被评估应用。该框架为交互式系统的评估提供了可扩展的仿真方案。",
+      "llm_tldr": "针对真实用户研究成本高、耗时且难以扩展的问题，PersonaEval提出了一种基于角色的用户仿真框架。它将现有角色数据集中的仿真用户与任务特定的应用接口对接，收集交互轨迹和结果，并支持轻松更换被评估应用。该框架为交互式系统的评估提供了可扩展的仿真方案。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "player behavior simulation techniques",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.15868v1",
+      "source": "arxiv",
+      "title": "CoupVisor: Strategy Optimization by Round and Challenge Decision Support",
+      "abstract": "This paper presents CoupVisor, a decision-support system for the hidden-information card game Coup. It addresses two questions: what a player should do on each turn, and when a player should challenge an opponent's claim. The system is built around a single description of game events, which is shared across manual play, replay of recorded games, simulation, belief tracking, advisor recommendations, and learning-based policies. CoupVisor estimates the chance that a claim is truthful by combining how likely each role is with how many cards the claimant still holds, which corrects a case where the very first claim of a game was flagged as suspicious despite no evidence. We compare a rule-following advisor and several learned and heuristic players across many simulated games and different opponent styles. Our main finding is that the choice of reward, whether it rewards short-term gains or ultimately winning the game, decides which learning approach performs best, and that a win-oriented reward produces a policy that outperforms all baselines.",
+      "authors": [
+        "Cris Huynh"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.GT",
+        "cs.LG"
+      ],
+      "published": "2026-08-16T17:29:04+00:00",
+      "link": "https://arxiv.org/pdf/2608.15868v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Learned and heuristic players in the card game Coup with simulation and decision support",
+      "llm_evidence_cn": "在卡牌游戏Coup中训练/启发式玩家，并提供模拟与决策支持",
+      "llm_evidence": "在卡牌游戏Coup中训练/启发式玩家，并提供模拟与决策支持",
+      "canonical_evidence": "在卡牌游戏Coup中训练/启发式玩家，并提供模拟与决策支持",
+      "llm_tldr_en": "CoupVisor is a decision-support system for the hidden-information card game Coup, combining a unified game event description, belief tracking, simulation, and learning-based policies to advise on actions and challenges. It compares rule-following and learned players.",
+      "llm_tldr_cn": "针对隐藏信息卡牌游戏Coup，CoupVisor构建了共享游戏事件描述的统一系统，支持手动对局、回放、模拟、信念跟踪与学习策略。系统通过结合角色概率与剩余卡牌数估计声明的真实性，纠正了首轮声明被过度怀疑的问题，并比较了规则跟随顾问与多种学习/启发式玩家的表现。",
+      "llm_tldr": "针对隐藏信息卡牌游戏Coup，CoupVisor构建了共享游戏事件描述的统一系统，支持手动对局、回放、模拟、信念跟踪与学习策略。系统通过结合角色概率与剩余卡牌数估计声明的真实性，纠正了首轮声明被过度怀疑的问题，并比较了规则跟随顾问与多种学习/启发式玩家的表现。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2608.15654v1",
+      "source": "arxiv",
+      "title": "When Stories Evolve: Benchmarking LLM Storytelling Across Agent Architectures in Open-Ended World Simulations",
+      "abstract": "Large language models can write fluent stories, but open-ended storytelling requires more than local fluency. In evolving world simulations and AI-native games, models must preserve facts, relationships, causal dependencies, and character states as the world changes. We introduce WSE-bench, a process benchmark that separately evaluates sustained generation, canonical coherence, and meaningful development in dynamic LLM storytelling. Generation Coverage records the proportion of planned narrative steps produced; Consistency tracks when canon breaks; and Richness measures how meaningfully branching, player-shaped trajectories develop. Across frontier models, Consistency and Richness do not form a smooth trade-off: their empirical Pareto frontier is non-concave, with several non-dominated intermediate configurations that no positive linear weighting can select. Added structure can enrich trajectories, but it does not uniformly improve coherence and may shorten them. Model scale chiefly improves sustained generation, without producing reliable gains in canonical coherence or meaningful development. These results show that sustained generation, canonical coherence, and meaningful development are distinct and sometimes competing capacities. WSE-bench makes those dynamics visible by extending narrative evaluation from finished stories to the processes that create them.",
+      "authors": [
+        "Yuqi Chen",
+        "Sixuan Li",
+        "Yunfeng Cai",
+        "Xueai Li",
+        "Ka Man Yan",
+        "Ying Li"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-08-16T09:46:45+00:00",
+      "link": "https://arxiv.org/pdf/2608.15654v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "LLM agents storytelling in world simulations and AI-native games",
+      "llm_evidence_cn": "LLM智能体在开放世界模拟与AI原生游戏中的叙事评测",
+      "llm_evidence": "LLM智能体在开放世界模拟与AI原生游戏中的叙事评测",
+      "canonical_evidence": "LLM智能体在开放世界模拟与AI原生游戏中的叙事评测",
+      "llm_tldr_en": "WSE-bench evaluates LLM storytelling in evolving world simulations and AI-native games via three metrics: generation coverage, coherence, and richness. Experiments reveal no smooth consistency-richness trade-off across frontier models, providing insights for game agent design.",
+      "llm_tldr_cn": "开放世界模拟和AI原生游戏中的LLM叙事需要维持事实、因果与角色状态的一致性，而现有评测多关注局部流畅性。为此该论文提出过程级基准WSE-bench，从生成覆盖率、设定一致性和叙事丰富度三个维度分别评估动态长程故事。在多种模型与智能体架构上的实验显示，一致性与丰富度并不存在平滑的折中关系。该工作为游戏与模拟环境中的智能体叙事能力提供了系统化评测工具，并揭示了当前模型的局限与改进方向。",
+      "llm_tldr": "开放世界模拟和AI原生游戏中的LLM叙事需要维持事实、因果与角色状态的一致性，而现有评测多关注局部流畅性。为此该论文提出过程级基准WSE-bench，从生成覆盖率、设定一致性和叙事丰富度三个维度分别评估动态长程故事。在多种模型与智能体架构上的实验显示，一致性与丰富度并不存在平滑的折中关系。该工作为游戏与模拟环境中的智能体叙事能力提供了系统化评测工具，并揭示了当前模型的局限与改进方向。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.10357v1",
+      "source": "arxiv",
+      "title": "Efficient Reinforcement Learning for Long-Horizon Tool-Use Agentic Tasks",
+      "abstract": "Long-horizon tool-using agents must reason over user goals, domain policies, tool calls, simulator state, and delayed verifiable rewards. Reinforcement learning (RL) is a natural fit for this setting, but multi-turn on-policy rollouts create long contexts, while model-specific attention layers may require custom masks and learned sink normalization. We present SINKFLEX-RL, a modular training system for RL in dual-control tool-use environments. The system combines a Gymnasium-compatible environment wrapper, a VERL-style rollout dataflow, group-relative policy optimization without a separate value model, and a sink-aware FlexAttention path designed to preserve model-specific sink scaling under causal and sliding-window masks. In a preliminary Tau2Bench retail run, validation reward (mean@1) rises from 0.25 early in training to $0.44$ later in the observed training window, while training-score and trajectory-reward proxies also trend upward. In a fixed-configuration memory benchmark, the optimized attention path reduces peak VRAM from 28.06GB to 22.52GB at 4096 tokens, a $19.7\\%$ reduction, and runs the measured 8192-token configuration using $25.53$~GB where the eager baseline runs out of memory. These results illustrate the value of integrating environment interfaces, RL dataflow, and attention-kernel design for memory-feasible long-horizon agent training.",
+      "authors": [
+        "Zelei Cheng",
+        "Amritansh Mishra",
+        "Sambit Sahu",
+        "William Campbell"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-08-11T01:30:56+00:00",
+      "link": "https://arxiv.org/pdf/2608.10357v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Presents an efficient RL training system for long-horizon agentic tasks, with transferable methods for training AI agents in interactive environments",
+      "llm_evidence_cn": "提出了面向长周期工具使用智能体任务的高效强化学习训练系统，其方法可迁移到游戏环境中的智能体训练",
+      "llm_evidence": "提出了面向长周期工具使用智能体任务的高效强化学习训练系统，其方法可迁移到游戏环境中的智能体训练",
+      "canonical_evidence": "提出了面向长周期工具使用智能体任务的高效强化学习训练系统，其方法可迁移到游戏环境中的智能体训练",
+      "llm_tldr_en": "Introduces SINKFLEX-RL, a modular RL training system for long-horizon tool-use agents, combining a Gymnasium wrapper, VERL-style rollout, and sink-aware attention for efficient policy optimization.",
+      "llm_tldr_cn": "针对长周期工具使用智能体在强化学习训练中上下文过长、注意力机制需要自定义掩码等问题，本文提出SINKFLEX-RL训练系统。系统结合Gymnasium环境封装、VERL风格回放数据流、无独立价值模型的组相对策略优化以及适应因果/滑动窗口掩码的注意力路径，在Tau2Bench的初步实验表明其训练效率得到提升。该系统为智能体在复杂交互环境中的强化学习训练提供了可复用的模块化方案。",
+      "llm_tldr": "针对长周期工具使用智能体在强化学习训练中上下文过长、注意力机制需要自定义掩码等问题，本文提出SINKFLEX-RL训练系统。系统结合Gymnasium环境封装、VERL风格回放数据流、无独立价值模型的组相对策略优化以及适应因果/滑动窗口掩码的注意力路径，在Tau2Bench的初步实验表明其训练效率得到提升。该系统为智能体在复杂交互环境中的强化学习训练提供了可复用的模块化方案。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.16422v1",
+      "source": "arxiv",
+      "title": "Proving the Utility of Large Language Models in Cybersecurity Simulations: A Comprehensive Examination",
+      "abstract": "Cyber threats continue to escalate in both frequency and sophistication, necessitating more adaptive and scalable defense strategies. This paper explores how Large Language Models (LLMs) can bolster cybersecurity simulations by automating the creation of synthetic environments and identifying latent vulnerabilities. We employ YAML as a structured representation format for simulating complex network configurations, thereby enabling Large Language Model-driven pipelines to support and improve reinforcement learning (RL) agent training. Comparative studies examine the advantages of LLM-based techniques over classical approaches such as Double Q-learning with Prioritized Experience Replay (PER), emphasizing increased efficiency, higher adaptability, and enhanced realism in cyberattack simulations. In empirical benchmarks across multiple synthetic topologies, LLM-instantiated Python agents achieved up to a 94.5% compromise rate while executing in 0.02-0.06 seconds per assessment---a ~25,000x to 50,000x speedup over traditional RL training cycles. Our findings underscore the transformative potential of integrating LLMs into cybersecurity research, ultimately paving the way for more intelligent and robust cyber-defense systems.",
+      "authors": [
+        "Stylianos Kampakis",
+        "Fabio Rovai",
+        "Marcos Charalambides",
+        "Theodosis Mourouzis",
+        "Chris Hicks"
+      ],
+      "primary_category": "cs.CR",
+      "categories": [
+        "cs.CR"
+      ],
+      "published": "2026-08-17T11:22:20+00:00",
+      "link": "https://arxiv.org/pdf/2608.16422v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "LLM-driven synthetic environment generation to improve RL agent training in simulations",
+      "llm_evidence_cn": "用LLM生成合成仿真环境以改进RL智能体训练",
+      "llm_evidence": "用LLM生成合成仿真环境以改进RL智能体训练",
+      "canonical_evidence": "用LLM生成合成仿真环境以改进RL智能体训练",
+      "llm_tldr_en": "Explores LLM-based synthesis of YAML network configurations and latent vulnerability identification to support RL agent training in cybersecurity simulations, showing improvements over classic Double Q-learning.",
+      "llm_tldr_cn": "论文针对网络安全仿真中环境构建与漏洞发现效率低的问题，探索用大型语言模型自动生成YAML结构化网络配置并识别潜在漏洞，从而支持强化学习智能体训练。通过对比实验，发现该LLM驱动流水线相比经典Double Q-learning与PER方法在训练效率上具有优势。研究表明LLM能够增强仿真环境的自动化程度，为RL智能体提供更有效的训练场景。该方法可推广到其他仿真训练环境构建。",
+      "llm_tldr": "论文针对网络安全仿真中环境构建与漏洞发现效率低的问题，探索用大型语言模型自动生成YAML结构化网络配置并识别潜在漏洞，从而支持强化学习智能体训练。通过对比实验，发现该LLM驱动流水线相比经典Double Q-learning与PER方法在训练效率上具有优势。研究表明LLM能够增强仿真环境的自动化程度，为RL智能体提供更有效的训练场景。该方法可推广到其他仿真训练环境构建。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.16798v1",
+      "source": "arxiv",
+      "title": "ClawGym II: Exploring Black-Box RL on Agent Harness",
+      "abstract": "Agent harnesses have substantially improved performance on long-horizon tasks by coordinating agent interactions with the environment. However, reinforcement learning through complex harnesses remains largely unexplored, as scaling such training to long-horizon agent tasks introduces fundamental challenges. In this work, we present a unified black-box RL framework for stable and scalable optimization of general agents through complex harnesses. Concretely, we first build a sandbox-based execution infrastructure that isolates task environments and harnesses within temporary sandboxes for large-scale concurrent rollouts. We then decouple policy optimization from opaque harness execution and place a serving proxy at the model boundary to capture model calls. To reconstruct multi-turn trajectories and improve training efficiency, we organize the captured calls into prefix trees and further adapt both critic-based PPO and critic-free GRPO to optimize over the recovered tree structure. Meanwhile, we maintain training-inference consistency throughout the optimization process. Finally, we introduce mix-harness training, allowing a single model to be jointly optimized by heterogeneous harnesses. With Qwen3-30A3B, black-box RL improves Pass@1 on ClawGym-Bench by 9.98 and 14.81 points through OpenClaw and Claude Code, respectively, while remaining stable over 200-400 optimization steps. Moreover, the framework yields consistent gains on more challenging tasks such as JobBench and OfficeQA. Overall, our framework enables effective, stable, and scalable optimization of general agents through black-box harnesses, supporting unified training across heterogeneous execution systems.",
+      "authors": [
+        "Huatong Song",
+        "Fei Bai",
+        "Ming Yang",
+        "Renyuan Li",
+        "Jia Deng",
+        "Jujie He",
+        "Zhange Zhang",
+        "Daixuan Cheng",
+        "Yan Xing",
+        "Qi Yun",
+        "Xuxing Chen",
+        "Danyang Li",
+        "Feng Chang",
+        "Chuan Hao",
+        "Ran Tao",
+        "Jian Yang",
+        "Bryan Dai",
+        "Wayne Xin Zhao",
+        "Mingjie Tang",
+        "Ji-Rong Wen"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-08-17T16:53:03+00:00",
+      "link": "https://arxiv.org/pdf/2608.16798v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "black-box RL framework for training agents through complex harnesses in general environments",
+      "llm_evidence_cn": "面向通用环境的智能体黑盒强化学习训练框架",
+      "llm_evidence": "面向通用环境的智能体黑盒强化学习训练框架",
+      "canonical_evidence": "面向通用环境的智能体黑盒强化学习训练框架",
+      "llm_tldr_en": "Proposes a unified black-box RL framework for stable, scalable training of general agents through complex harnesses, using sandbox-based concurrent rollouts and a serving proxy at the model boundary.",
+      "llm_tldr_cn": "论文针对复杂Agent Harness下强化学习训练难扩展的问题，提出一种统一的黑盒强化学习框架。框架利用沙箱隔离环境支持大规模并发采样，并将策略优化与Harness执行解耦，在模型边界放置服务代理采集模型调用。实验证明该方法能稳定优化通用Agent在长程任务中的表现。该工作为AI Agent在复杂环境中的训练提供了可借鉴的基础设施与方法。",
+      "llm_tldr": "论文针对复杂Agent Harness下强化学习训练难扩展的问题，提出一种统一的黑盒强化学习框架。框架利用沙箱隔离环境支持大规模并发采样，并将策略优化与Harness执行解耦，在模型边界放置服务代理采集模型调用。实验证明该方法能稳定优化通用Agent在长程任务中的表现。该工作为AI Agent在复杂环境中的训练提供了可借鉴的基础设施与方法。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
