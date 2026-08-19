@@ -6,47 +6,47 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-18
-- 运行时间：2026-08-18 19:34:17 UTC
+- 最新运行日期：2026-08-19
+- 运行时间：2026-08-19 20:23:54 UTC
 - 运行状态：成功
 - 本次总论文数：9
-- 精读区：5
-- 速读区：4
+- 精读区：2
+- 速读区：7
 
 ### 今日简报（AI）
-今日共处理9篇论文，其中精读5篇、速读4篇，重点关注个性化游戏生成与多智能体强化学习。最值得精读的是满分论文《Beyond Asking》与9分论文《One Frozen Simulator》，前者从玩家行为生成个性化游戏，后者揭示多智能体模拟器崩溃问题。建议优先阅读这两篇，可快速把握当前AI游戏与RL领域的前沿热点。
-- 详情：[/202608/18/README](/202608/18/README)
+今日精读2篇、速读7篇，聚焦机器人格斗博弈与强化学习时序推理。最值得关注的是《RoboStriker》的潜空间战略博弈（9.0分）和《Chronocooked》的隐式时间间隔基准（8.0分）。建议普通读者优先浏览这两篇，理解自主智能体在对抗与计时任务中的新突破。
+- 详情：[/202608/19/README](/202608/19/README)
 
 ### 精读区论文标签
-1. [Beyond Asking: A Pipeline for Personalized Game Generation that Reads Players from Behavior](/202608/18/2608.16196v1-beyond-asking-a-pipeline-for-personalized-game-generation-that-reads-players-from-behavior)  
-   标签：评分：10.0/10、query:player-ai
-   evidence：从玩家行为中读取画像以生成个性化游戏
-2. [One Frozen Simulator Is Not Enough: Simulator Collapse in Multi-Agent RL](/202608/18/2608.12253v2-one-frozen-simulator-is-not-enough-simulator-collapse-in-multi-agent-rl)  
+1. [RoboStriker: Latent-Space Strategic Games for Autonomous Humanoid Boxing](/202608/19/2608.16195v1-robostriker-latent-space-strategic-games-for-autonomous-humanoid-boxing)  
    标签：评分：9.0/10、query:player-ai
-   evidence：多智能体RL中用LLM模拟用户行为，直接对应用户行为仿真
-3. [From Passive Delegates to Strategic Negotiators: Reinforcing Social Reasoning in Small Language Models with SocialRL](/202608/18/2608.13787v1-from-passive-delegates-to-strategic-negotiators-reinforcing-social-reasoning-in-small-language-models-with-socialrl)  
+   evidence：通过潜在空间多智能体RL训练AI代理进行拳击博弈
+2. [Chronocooked: A Benchmark for Implicit Interval Timing in Reinforcement Learning Agents](/202608/19/2608.16666v1-chronocooked-a-benchmark-for-implicit-interval-timing-in-reinforcement-learning-agents)  
    标签：评分：8.0/10、query:player-ai
-   evidence：通过多个谈判与博弈域强化AI智能体社会推理能力
-4. [PersonaEval: Persona-Based User Simulation for Evaluating Interactive Applications](/202608/18/2608.15838v1-personaeval-persona-based-user-simulation-for-evaluating-interactive-applications)  
-   标签：评分：8.0/10、query:player-ai
-   evidence：基于角色的用户仿真框架，可逼近交互式应用中真实用户的行为
-5. [CoupVisor: Strategy Optimization by Round and Challenge Decision Support](/202608/18/2608.15868v1-coupvisor-strategy-optimization-by-round-and-challenge-decision-support)  
-   标签：评分：8.0/10、query:player-ai
-   evidence：在卡牌游戏Coup中训练/启发式玩家，并提供模拟与决策支持
+   evidence：在受Overcooked启发的烹饪环境中对RL智能体进行基准测试
 
 ### 速读区论文标签
-1. [When Stories Evolve: Benchmarking LLM Storytelling Across Agent Architectures in Open-Ended World Simulations](/202608/18/2608.15654v1-when-stories-evolve-benchmarking-llm-storytelling-across-agent-architectures-in-open-ended-world-simulations)  
+1. [Q-Learning With World Models](/202608/19/2608.17163v1-q-learning-with-world-models)  
    标签：评分：7.0/10、query:player-ai
-   evidence：LLM智能体在开放世界模拟与AI原生游戏中的叙事评测
-2. [Efficient Reinforcement Learning for Long-Horizon Tool-Use Agentic Tasks](/202608/18/2608.10357v1-efficient-reinforcement-learning-for-long-horizon-tool-use-agentic-tasks)  
+   evidence：世界模型与Q学习结合，是可用于游戏环境等复杂场景的Agent训练通用方法。
+2. [Content Based Video Narration of Gameplay with Vision Language Models](/202608/19/2608.14016v1-content-based-video-narration-of-gameplay-with-vision-language-models)  
    标签：评分：6.0/10、query:player-ai
-   evidence：提出了面向长周期工具使用智能体任务的高效强化学习训练系统，其方法可迁移到游戏环境中的智能体训练
-3. [Proving the Utility of Large Language Models in Cybersecurity Simulations: A Comprehensive Examination](/202608/18/2608.16422v1-proving-the-utility-of-large-language-models-in-cybersecurity-simulations-a-comprehensive-examination)  
+   evidence：利用AI对游戏视频进行解说，属于游戏人工智能应用
+3. [Watermarked Game Solving via Perturbed Regret Minimization](/202608/19/2608.14977v1-watermarked-game-solving-via-perturbed-regret-minimization)  
    标签：评分：6.0/10、query:player-ai
-   evidence：用LLM生成合成仿真环境以改进RL智能体训练
-4. [ClawGym II: Exploring Black-Box RL on Agent Harness](/202608/18/2608.16798v1-clawgym-ii-exploring-black-box-rl-on-agent-harness)  
+   evidence：针对不完美信息游戏智能体的水印技术
+4. [Evo-Harness: Context-to-Harness Skill Compilation for Self-Evolving Agents](/202608/19/2608.15071v1-evo-harness-context-to-harness-skill-compilation-for-self-evolving-agents)  
    标签：评分：6.0/10、query:player-ai
-   evidence：面向通用环境的智能体黑盒强化学习训练框架
+   evidence：面向智能体自我进化的学习方法，可应用于游戏智能体训练
+5. [From Sequence to Structure: Relational Uncertainty Propagation for LLM Agents](/202608/19/2608.16002v1-from-sequence-to-structure-relational-uncertainty-propagation-for-llm-agents)  
+   标签：评分：6.0/10、query:player-ai
+   evidence：面向复杂环境中LLM智能体的不确定性传播框架
+6. [PlanPO: Group Planning-Aware Policy Optimization for Multi-Turn Agentic LLMs](/202608/19/2608.17289v1-planpo-group-planning-aware-policy-optimization-for-multi-turn-agentic-llms)  
+   标签：评分：6.0/10、query:player-ai
+   evidence：面向多轮智能体LLM的策略优化训练方法，可应用于游戏环境
+7. [Procedural Content Metageneration via Program Search and Continual Abstraction Discovery](/202608/19/2608.17947v1-procedural-content-metageneration-via-program-search-and-continual-abstraction-discovery)  
+   标签：评分：6.0/10、query:player-ai
+   evidence：LLM驱动的游戏程序化内容生成
 
 
 <div class="dpr-home-promo-card">

@@ -1,0 +1,1045 @@
+Title: Watermarked Game Solving via Perturbed Regret Minimization
+
+URL Source: https://arxiv.org/pdf/2608.14977v1
+
+Published Time: Tue, 18 Aug 2026 00:21:29 GMT
+
+Number of Pages: 13
+
+Markdown Content:
+# Watermarked Game Solving via Perturbed Regret Minimization 
+
+Juho Kim 1, Tuomas Sandholm 1,2,3,4 
+
+> 1
+
+Computer Science Department, CMU 
+
+> 2
+
+Strategic Machine, Inc. 
+
+> 3
+
+Strategy Robot, Inc. 
+
+> 4
+
+Optimized Markets, Inc. {juhok,sandholm}@cs.cmu.edu 
+
+Abstract 
+
+Many real-world interactions among self-interested parties can be modeled by game theory, and the rapid advance-ments in AI have raised concerns about the possible misuse— accidental or deliberate—of superhuman or human-level game-playing agents by bad actors. While AI watermarking has mainly been applied to LLM-generated texts, a recent line of work proposes developing watermarking techniques for agents in game-theoretic settings. However, existing water-marking techniques for game-theoretic agents are not readily applicable due to their limited scope or capabilities—they are tailored to perfect-information games and are thus inappli-cable to richer game types. We propose a new approach to watermarking game-playing agents, which a) can be applied to imperfect-information settings; b) is directly integrated into the learning process itself; and c) incurs only a bounded cost in exploitability. For this purpose, we introduce perturbed regret minimization, which adds perturbations to the utilities prior to observation so as to encourage the learning algorithm to em-bed the watermark. Our experiments show that the watermark incurs only a small exploitability cost and can be detected within just a couple of hours of gameplay at human speed. 
+
+Introduction 
+
+Recent advances in AI have given rise to remarkably ca-pable models that radically transform the world. However, they also have the potential to disrupt society by empower-ing bad actors to automate cyberattacks (Anthropic 2025), execute large-scale phishing scams (Schultz 2025), spread mis/disinformation (Qiao et al. 2025; The Lancet Digital Health 2026), make biological weapons (Wells and Ramku-mar 2026), etc . To at least partially address these risks, the AI research community has paid significant attention to wa-termarking large language models (LLMs), which ‘mark’ the output of an LLM with a hidden, robust signature to enable verification of whether or not a piece of text was generated using the LLM (Dathathri et al. 2024; Kirchenbauer et al. 2023; Zhao et al. 2024; Takezawa et al. 2025; Huo et al. 2024; Wang et al. 2025). However, the potential societal harms of AI are not limited to those involving LLMs. Indeed, considering how many real-life interactions be-tween self-interested parties in domains like business, fi-nance, political science, economics, national defense, etc. 
+
+can be modeled by game theory, many important areas of AI misuse involve game-playing agents. One possible appli-cation of a watermark for game-playing agents is detecting unauthorized use of AI tools in online platforms, for exam-ple, those for recreational games like chess and poker that already face a widespread cheating problem in terms of bot-ting (Chappell 2022; Grant 2026). Another more high-stakes scenario of its potential use includes preventing or detect-ing intellectual property (IP) theft (e.g. , license noncompli-ance (The Stockfish Team 2021), cybersecurity breaches, or distillation learning): the mere presense of a watermark can deter model theft; or, by collecting information about a com-petitor’s model in the wild, one can ascertain whether it one’s own model or at least derived from it or not (Sander et al. 2024). Additionally, a researcher can use a watermark detec-tor to filter out non-human data from a dataset of ‘gameplays’ so it can be used to study human behavior. Addressing this gap, Kim, Fang, and Sandholm (2026) re-cently connected the problem of text generation with game playing to extend LLM watermarking techniques, namely the KGW watermark (Kirchenbauer et al. 2023), for water-marking game-playing agents. However, their contribution works for perfect-information games only and thus fails to adequately address the myriad of settings that occur in real-life, which include the presence of private information only available to a subset of the parties involved. Their technique cannot be applied in such imperfect-information games. In this paper, we explore the possibility of simultane-ous watermarking and (imperfect-information) game solv-ing, thus embedding the watermark during the learning pro-cess. In our methodology, we focus on the framework of re-gret minimization, which is the most common family of tech-niques for solving games in a manner that is both theoretically sound and amenable to large-scale settings: this family of al-gorithms was instrumental to creating near-optimal or super-human agents for playing milestone imperfect-information games like poker (Bowling et al. 2015; Moravčík et al. 2017; Brown and Sandholm 2018, 2019b), The Resistance: Avalon (Serrino et al. 2019), and dark chess (Zhang and Sandholm 2026). While our watermarking technique shares some core ideas with the foundational KGW watermark for LLMs (Kirchenbauer et al. 2023) and its recent adaptation for perfect-information games (Kim, Fang, and Sandholm 2026), we introduce several important differences from the prior works. Most notably, the watermark is learned through arXiv:2608.14977v1 [cs.GT] 15 Aug 2026 what we call perturbed regret minimization , which applies a small perturbation to utilities prior to observation, thereby encouraging certain actions to be played more frequently than others. In our analysis, we provide a bound for the exploitabil-ity incurred by watermarking, and show the fundamental tradeoff between the exploitability cost and watermark de-tectability. In our experiments, we apply our technique to selections of large games and show that a) the incurred ex-ploitability cost is small and b) the watermark can be detected already within a couple of hours of gameplay at human speed. 
+
+Notation and Background 
+
+In this section, we define the notation used throughout this paper and review game solving and watermarking. 
+
+Extensive-Form Games (EFGs) 
+
+An extensive-form game (EFG) contains a finite set of histo-ries H and players P . Chance pc is a special type of player not in P that represents random events. Every h ∈ H is a sequence of actions taken by each player, and we denote the player in turn to act on h as p(h) and the set of available actions on h as A(h). Further, we use h · a = h′ to denote that history h′ is reached by applying a ∈ A(h) at h. If 
+
+p(h) = pc, that is, h is a chance node, then fc(h, a ) gives a fixed probability distribution over A(h). Every terminal history z ∈ Z ⊆ H is associated with a utility ui(z) for each non-chance player i ∈ P .In EFGs, private information belonging to a subset of players is represented by partitioning non-chance histories into information sets (infosets) I. For each i ∈ P , let Ii be a subset of I belonging to i. Here, i cannot distinguish between any h, h ′ ∈ I ∈ I i, so A(h) = A(h′), and we denote the common set by A(I). Each i ∈ P plays with strategy σi,which, for any I ∈ I i, gives a probability distribution over 
+
+A(I). σ = ( σ1, . . . , σ n) is a strategy profile. In two-player zero-sum (2p0s) games , there are two players and the sum of player utilities at any terminal node is zero. 
+
+Nash Equilibrium (NE) 
+
+A traditional solution concept in game theory is Nash equi-librium (NE) , where no player can gain by deviating, i.e. , an NE is a strategy profile σ∗ such that 
+
+∀i ∈ P, σ i ∈ Si : ui(σ∗) ≥ ui(σi, σ ∗−i),
+
+where Si is the strategy space of player i. An NE is guaranteed to exist (Nash 1950). Its approximation is ϵ-Nash equilibrium (ϵ-NE) , where the amount any player can gain by deviating is bounded, i.e. , an ϵ-NE is a strategy profile σ∗ such that 
+
+∀i ∈ P, σ i ∈ Si : ui(σ∗) + ϵ ≥ ui(σi, σ ∗−i).
+
+In 2p0s games, a common way to measure the quality of a strategy profile is exploitability , which, intuitively, is the strategic distance between a given strategy profile and an NE. The exploitability of a strategy profile σ∗ is defined as follows: 
+
+ϵ = 1
+
+|P |
+
+X
+
+> i∈P
+
+max 
+
+> σi∈Si
+
+ui(σi, σ ∗−i) − ui(σ∗).
+
+Note that a strategy profile with exploitability ϵ is a 2ϵ-NE. 
+
+Tree-Form Sequential Decision Process (TFSDP) 
+
+In EFGs, a player i ∈ P faces a tree-form sequential de-cision process (TFSDP) , as demonstrated in Figure 1. In a TFSDP, each node p ∈ P either is an end of the deci-sion process ⊥ or is in the set of decision points J or the set of observation points K. At a decision point j ∈ J ,an available action a ∈ A j can be applied, and ρ(j, a ) de-notes the child node reached from j by applying a. Sim-ilarly, a signal s ∈ S k can be observed at an observation point k ∈ K , and the corresponding child is ρ(k, s ). Let 
+
+Σ+ = {(j, a ) : ∀j ∈ J , a ∈ A j } be the set of non-empty sequences, and let Σ = Σ + ∪ {∅} be the set of (possibly empty) sequences, where ∅ is the empty sequence. Note that decision points and infosets are equivalent. Each time a TFSDP ends, the player observes utilities ⃗u ∈ R Σ. The utility associated with an empty sequence ∅
+
+represents the utility realized when the TFSDP ends before any action is taken. The utility associated with a non-empty sequence (j, a ) ∈ Σ+ represents the utility realized when the TFSDP ends immediately after taking a at j. Note that each element in ⃗u is already weighted by the probability of realization due to factors outside the TFSDP ( e.g. , strategies of other players and chance probabilities). For each decision point j, let pj be its parent sequence (if j does not have an ancestor decision point, then pj =
+
+∅). For each i ∈ P , the strategy space Si is a sequence-form polytope (von Stengel 1996; Koller, Megiddo, and von Stengel 1996), defined as follows:            
+
+> Xi=
+> n⃗x∈RΣ
+> ≥0:⃗x[∅] = 1 ,∀j∈ J :P
+> a∈A j⃗x[( j, a )] = ⃗x[pj]
+> o
+> .
+
+Thus, a learning algorithm that solves a TFSDP is said to operate over its sequence-form polytope. One distinct advan-tage of representing a strategy in sequence-form is that, given a strategy ⃗x ∈ X i and a utility vector ⃗u ∈ R Σ, the expected utility is simply ⟨⃗u,⃗ x⟩, that is, a linear function. 
+
+Regret Minimization 
+
+The framework of regret minimization has been integral to developing theoretically sound methods for solving games. At each time t ∈ N+, a regret minimization algorithm out-puts a strategy ⃗x (t) ∈ X , where the strategy space X ⊆ Rn
+
+is a compact and convex subset of the Euclidean space with some dimension n. Then, the learning algorithm observes a linear utility vector ⃗u (t) and receives utility ⟨⃗u (t),⃗ x (t)⟩. The learning algorithm’s performance is evaluated by its cumu-lative regret up to time T ∈ N, defined as follows: 
+
+R(T ) 
+
+> X
+
+= max ⃗x∈X 
+
+> T
+
+X
+
+> t=1
+
+⟨⃗u (t),⃗ x⟩ − 
+
+> T
+
+X
+
+> t=1
+
+⟨⃗u (t),⃗ x (t)⟩.
+
+A regret minimizer is a learning algorithm that satisfies Han-nan consistency: its average regret up to time T tends to zero when taking the limit T → ∞ , that is, R(T ) 
+
+> X
+
+= o(T ).One of the most common types of strategy space over which regret minimization is studied is a probability sim-plex. We denote a probability simplex of dimension m by 
+
+∆m. However, a probability simplex is not rich enough to represent the strategy space of a player in EFGs, which 12 21 1 1 1111 12 2
+
+Figure 1: The figure on the left represents an example 2p0s EFG. Square, triangle, and diamond nodes represent Player 1, Player 2, and terminal nodes, respectively. Edges represent actions, while the dashed line connects nodes in the same infoset. The middle and right figures represent the TFSDPs for Players 1 and 2, respectively. Square, circle, and diamond nodes represent decision points, observation points, and ends of the decision process, respectively. Edges represent actions or signals. is a sequence-form polytope. Farina, Kroer, and Sandholm (2019) demonstrated how a regret minimizer operating over a sequence-form polytope can be constructed using those operating over probability simplices by applying Cartesian product and convex hull operations; every regret minimizer operating over a probability simplex is placed at some deci-sion point j to mix the available actions Aj .When solving an EFG by minimizing regret on its TFS-DPs, the average strategy profile converges to a coarse-correlated equilibrium , which coincides with NE in 2p0s games. There are many variants of such algorithms. When 
+
+regret matching (RM) (Hart and Mas-Colell 2000) is used lo-cally, the construction reduces to counterfactual regret min-imization (CFR) (Zinkevich et al. 2007). When RM + is used the construction reduces to CFR + (Tammelin 2014). Finally, when discounted RM is used, the construction reduces to Dis-counted (DCFR) (Brown and Sandholm 2019a). The type of local regret minimizer is not important in this paper. 
+
+Watermarking Game-Playing Agents 
+
+Watermarking in the modern AI literature has focused on embedding a hidden, robust signature within LLM-generated texts. In this section, we describe its recent adaptation for perfect-information game-playing agents by Kim, Fang, and Sandholm (2026), henceforth called the KFS watermark. The KFS watermark is designed to act as a wrapper to a given strategy profile σ and accepts the following parame-ters: green -list size λ ∈ (0 , 1) and hardness δ ≥ 0. Each time a query is made for history h (e.g. , for action recommenda-tions), the KFS watermark queries the underlying model of 
+
+σ to calculate (or estimate) the expected utilities over A(h).Next, the hash of the observation made at h is used to seed a pseudo-random number generator, which is then used to ran-domly partition A(h) into red and green lists (their sizes are informed by λ). Then, the expected utilities of taking differ-ent actions are adjusted to favor the selection of actions in the 
+
+green list, as opposed to those in the red list (the adjustments are informed by δ). Finally, the watermark returns the action associated with the maximum (estimated) expected utility. The design of boosting the expected utilities associated with green actions was inspired by how the KGW water-mark (Kirchenbauer et al. 2023) boosts the logits associated with green words. Also, the design of using observations to seed a pseudo-random number generator was inspired by how the KGW watermark uses prompts’ final tokens to do so. Kim, Fang, and Sandholm (2026) analyzed the concentration and deterministic bounds on the loss in expected utility incurred by the watermark and demonstrated that the watermark does not meaningfully impact the strength of game-playing agents by experimenting with off-the-shelf chess engines. 
+
+Shortcomings in the Literature 
+
+There are two significant shortcomings in the literature on watermarking game-playing agents. First, the KFS water-mark is designed for perfect-information games. However, most real-world interactions are of imperfect information, and it is not obvious whether the KFS approach can be adapted to this setting. In perfect-information games, there is a clear way to obtain optimal action probabilities from boosted expected utilities (taking argmax ), but in imperfect-information games, translating modified expected utilities into optimal action probabilities is highly non-trivial. While it may be possible to come up with an ad hoc solution like modifying the action probabilities directly, it would be prefer-able to come up with a well-motivated solution with clear connections to a learning framework, as we do in this paper. Second, the KFS analysis assumes that the opponent strat-egy stays fixed as we watermark our strategy. In other words, they assume that the opponent does not change its strategy to exploit the weaknesses in our strategy caused by our wa-termarking. We fix this issue by analyzing the quality of our watermarked strategy by evaluating how exploitable it is. 
+
+Simultaneous Watermarking and Game Solving 
+
+We are now ready to present our contribution on simulta-neous watermarking and game solving . The core goal of our watermark is similar to the KFS watermark for perfect-information games: we desire the gameplay of watermarked agents to contain a robust, hidden signature that can be de-tected. The KFS watermark labels each action as either red 
+
+or green and encourages the strategy profile to play more 
+
+green actions than would be expected by chance. However, unlike the KFS watermark, which boosts the expected util-ities of applying different actions, our watermark is learned through what we coin perturbed regret minimization , where tiny label-dependent perturbations are applied to utilities prior to observation, thereby encouraging green actions to be played with increased frequency. Our perturbed regret minimization framework accepts two parameters: green -list size γ ∈ (0 , 1) and hardness δ ≥ 0.During initialization, the watermarked learning framework partitions the set of sequences Σ into a red list R of size 
+
+(1 − γ)|Σ| and a green list G of size γ|Σ|. When Σ is too large even to be enumerated, sequences can be classi-fied on-the-fly using a hash function (this is asymptotically equivalent). Partitioning the set of sequences is similar in functionality to partitioning the set of actions at each deci-sion point, except now a decision point can have more than γ
+
+fraction of green actions. Our framework also modifies the regret minimization algorithm used to solve a given EFG, 
+
+e.g. , CFR. Recall that a regret minimizer operating over a sequence-form polytope ( i.e. , a player’s strategy space) is re-ally a composition of local regret minimizers, each of which operates over a probability simplex and mixes the available actions at a decision point. In our framework, we replace every local regret minimizer with its perturbed counterpart. Let Rj be a local regret minimizer at some decision point 
+
+j. The perturbed counterpart of Rj is almost identical to the original, except that, at every time t, it observes a utility vector ⃗u (t) 
+
+> j
+
+with some perturbation ⃗w j , i.e. ,⃗u (t) 
+
+> j
+
++⃗w j , where ⃗w j =
+
+ δ (j, a ) ∈ G
+
+−δγ/ (1 − γ) (j, a ) ∈ R
+
+
+
+> a∈A(j)
+
+.
+
+Here, the perturbations are controlled by δ and γ and are designed so as to encourage the learning algorithm to play actions of green sequences more often than by chance. We also added offsets for red sequences to ensure that the total adjustment across all sequences is zero. 
+
+Regret Minimizer under Perturbation (P/RM) 
+
+In this subsection, we formally define a regret minimizer un-der perturbation (P/RM) , which simply wraps a regret min-imizer operating over a probability simplex and hijacks the utility to add certain parameterized noise. Its regret circuit diagram is given in Figure 2, and its pseudocode in Algo-rithm 1. The P/RM accepts two parameters: a component regret minimizer R and a static perturbation ⃗w. In our con-text, the component regret minimizer is the regret minimizer in CFR responsible for mixing over actions at some decision point. At time t ∈ N+, the P/RM forwards the output of the component regret minimizer as its own. Then, the P/RM observes a utility vector ⃗u (t) and adds a perturbation ⃗w to it. Finally, the perturbed utility ⃗u (t) +⃗w is forwarded to the component regret minimizer for its observation. 
+
+Analysis 
+
+We analyze P/RM in this section. Due to limited space, proofs are relegated to Appendix A. In the following proposition, we show that a P/RM incurs only constant average regret. 
+
+Proposition 1. Let W be a P/RM with a component R oper-ating over ∆m and a static perturbation in [L, U ]m. Further, ⃗u (t−1) ⃗w
+
+R⃗ x (t)⃗u (t−1) +⃗w
+
+Figure 2: Regret circuit diagram of a P/RM with R as its component and static perturbation ⃗w.
+
+Algorithm 1: Regret minimizer under perturbation (P/RM)  
+
+> 1
+
+Input: A component regret minimizer R operating over ∆m and a static perturbation ⃗w. 
+
+> 2
+
+NextStrategy () : 
+
+> 3
+
+return R.NextStrategy () ; 
+
+> 4
+
+ObserveUtility  ⃗u (t) ∈ Rm: 
+
+> 5
+
+R.ObserveUtility (⃗u (t) +⃗w);
+
+let W (T ) and R(T ) be the regret incurred by W and R,respectively, until time T . Then, 
+
+W (T ) ≤ R(T ) + T (U − L).
+
+Remark 1. Assuming R is a regret minimizer, R(T ) = o(T ),so the first term is not important. Technically, a P/RM is not a regret minimizer, as it incurs linear regret. However, the average regret can be bounded as small as desired by setting 
+
+L and U accordingly. In our context, L = −δγ/ (1 − γ) and 
+
+U = δ. Thus, the average regret can be managed by setting 
+
+δ accordingly, but it may impact the number of playthroughs needed to detect the watermark, as we will show later. Now, we use Proposition 1 to analyze the regret incurred by perturbed regret minimization when operating on a TFSDP. 
+
+Proposition 2. Let W be the construction in perturbed regret minimization operating on a TFSDP with decision points J .In every j ∈ J , actions at j are mixed by a P/RM with a component Rj operating over ∆Aj and a static perturba-tion in [L, U ]Aj . Further, let W (T ) and R(T ) 
+
+> j
+
+be the regret incurred by W and Rj , respectively, until time T . Then, 
+
+W (T ) ≤ X
+
+> j∈J
+
+max {0, R (T ) 
+
+> j
+
+} + T |J | (U − L).
+
+Remark 2. Again, in our context, the average regret can be managed by setting δ accordingly. Finally, we connect the propositions with the following theorem about the quality of the solution obtained via per-turbed regret minimization. 
+
+Theorem 1. Let Γ be a 2p0s EFG with infosets I. Suppose that perturbed regret minimization with green -list size γ ∈
+
+(0 , 1) and hardness δ ≥ 0 is run for T iterations to solve Γ. Let R(T ) 
+
+> I
+
+be the regret incurred by the component of the P/RM at the decision point corresponding to infoset I until time T . Then, the average strategy profile is a 2ϵ-NE where 
+
+2ϵ ≤ X
+
+> I∈I
+
+max {0, R (T ) 
+
+> I
+
+}/T + δ|I| /(1 − γ).
+
+Suppose that we fix the type of local regret minimizers to be regret matching. Then, our framework reduces to a ‘watermarked’ counterpart of CFR. 
+
+Corollary 1. Let Γ be a 2p0s EFG with infosets I. Further, let ∆ be the range of payoffs, and let m be the maximum number of actions in a player node. Suppose that a water-marked counterpart of CFR with green -list size γ ∈ (0 , 1) 
+
+and hardness δ ≥ 0 is run for T iterations to solve Γ. Then, the average strategy profile is a 2ϵ-NE where 
+
+2ϵ ≤ |I| (∆ + δ/ (1 − γ)) √m/ √T + δ|I| /(1 − γ).
+
+Remark 3. While it can be concerning that watermarking incurs some increase in exploitability, we later demonstrate that this is not much of a concern in practice. Besides, typical runs of the CFR family of algorithms ( e.g. , 1,000 iterations) yield solutions with some exploitability anyway. By manag-ing the watermark parameters, the exploitability cost can be made unsubstantial in this context. 
+
+Detecting the Watermark 
+
+Our watermark can be detected by calculating a z-score like its predecessors (Kirchenbauer et al. 2023; Zhao et al. 2024; Takezawa et al. 2025; Huo et al. 2024; Wang et al. 2025; Kim, Fang, and Sandholm 2026). As usual, the null hypothesis is that the player in question acts without any knowledge of the 
+
+green and red lists. Let n be the number of actions applied by the player, and let nG be the number of green actions applied by the player. Then, we have the following z-score: 
+
+z = nG − γn 
+
+pnγ (1 − γ) ,
+
+which is a measure of how many more green actions are applied than expected by chance. Kim, Fang, and Sandholm (2026) suggested a threshold of z = 4 , corresponding to a false positive rate of approximately 3 × 10 −5.
+
+Experiments 
+
+In our experiments, we tested our watermark on two very dif-ferent games with tens of millions of nodes each: Goofspiel-7 and Battleship-3x2-22-3. The games are described in Ap-pendix B. We considered three foundational learning algo-rithms from the CFR family: CFR (Zinkevich et al. 2007), CFR + (Tammelin 2014), and DCFR (Brown and Sandholm 2019a). We also ran their watermarked counterparts with pa-rameters γ = 0 .25 and δ = 10 −5, and we further scaled δ
+
+by max i,j |Ai,j |, where A is the utility matrix from the per-spective of the row player. We found these to be good choices later when we ablated on the parameter values. Each (watermarked) CFR variant was run for 2,000 itera-tions, during which we recorded the average strategy profile’s exact exploitability by computing best responses. We also ran Monte Carlo game simulations where we pit the resulting watermarked agents against their original counterparts. To ensure the diversity of play, we initiated the gameplays from every possible early-game situation (first five player moves) and player position permutations. Our practice is consistent with how chess engines are evaluated (Kim, Fang, and Sand-holm 2026). We tracked the z-scores across the simulations. The exploitabilities and z-scores are plotted in Figure 3 and tabulated in Table 1. The expected utilities of the wa-termarked solutions against their non-watermarked counter-parts are tabulated in Appendix C. For CFR and DCFR, the presence of the watermark barely affects the convergence rate, although it does affect CFR + to a small degree. It is interesting how the different CFR variants react differently to perturbations, and it seems that the way CFR + uniquely behaves ( e.g. , aggressively flooring negative regrets) may be responsible for the slowdown in convergence. As expected, the z-scores of the watermarked agents rise as the number of simulations increases, whereas those of the non-watermarked agents hover near zero as desired. We observed that it takes around 100 actions for the z-score cor-responding to the advanced CFR variants (CFR + and DCFR) to cross the suggested z = 4 threshold. Assuming it takes around 30 seconds ( e.g. , for a human) to act, this means a watermarked agent would be detected after a couple of hours of gameplay. We also observed that watermarking does not affect the output solution’s expected utility against its non-watermarked counterpart. Appendix C.1 contains ROC curves per 100 actions, whose AUCs are above 0.9 for the advanced CFR variants, indicating strong discrimination. 
+
+Ablation Studies 
+
+We ablated on the watermark parameters to see how they affect the behavior of the watermarked learning algorithms. First, we fixed δ = 10 −5, iterated through the values of 
+
+γ ∈ (0 .1, 0.25 , 0.5, 0.75 , 0.9) . Next, we fixed γ = 0 .25 , iter-ated through the values of δ ∈ (0 .1, 0.01 , 10 −3, 10 −5, 10 −8).In our ablation studies, we only considered CFR +. We also recorded exploitabilities and ran Monte Carlo simulations as we did in the main experiments in the previous section. The exploitabilities and z-scores are plotted in Figure 4 and tabulated in Table 2. The expected utilities of the water-marked solutions against the solution from CFR + are tabu-lated in Appendix C. Interestingly, increasing γ helped CFR +
+
+converge faster, perhaps because this made the perturbations more uniform. Also, middling gamma values helped the wa-termarked agent be more detectable. As expected, decreasing 
+
+δ helped CFR + converge faster, as it decreased the magni-tudes of the applied perturbations. That said, increasing δ
+
+helped the watermarked agent be more detectable. We also observed that, for varying γ, watermarking does not affect the output solution’s head-to-head expected utility against that of CFR +; however, larger values of δ do so negatively. 
+
+Discussion 
+
+We now discuss some potential limitations and possibilities. 0 500 1000 1500 2000                        
+
+> # iterations
+> 10 3
+> 10 2
+> 10 1
+> 10 0
+> Exploitability
+> Exploitabilities (Goofspiel-7)
+> 05000 10000 15000
+> # actions
+> 010 20 30 40 50
+> z-score
+> z-scores (Goofspiel-7)
+> 0500 1000 1500 2000
+> # iterations
+> 10 2
+> 10 1
+> 10 0
+> Exploitability
+> Exploitabilities (Battleship-3x2-22-3)
+> 02000 4000 6000
+> # actions
+> 010 20 30
+> z-score
+> z-scores (Battleship-3x2-22-3)
+> CFR WM( =.25, =1E-5)-CFR CFR+ WM( =.25, =1E-5)-CFR+ DCFR WM( =.25, =1E-5)-DCFR
+
+Figure 3: Exploitability and z-score plots from our experiments running the (watermarked) CFR family of algorithms. Variant Goofspiel-7 Battleship-3x2-22-3 
+
+ϵt=2000 nz=4 zn=10 zn=100 zn=1000 ϵt=2000 nz=4 zn=10 zn=100 zn=1000 
+
+CFR 5.03 ×10 −2 N/A −0.68 −1.2 0.12 8.30 ×10 −2 N/A 0.35 0.51 −0.18 
+
+WM -CFR 5.16 ×10 −2 55 2.0 4.6 12 1.05 ×10 −1 277 −0.12 1.5 8.1 CFR+ 3.58 ×10 −4 N/A 1.3 −1.2 −0.039 1.56 ×10 −3 N/A 0.81 −0.073 −1.1 *WM -CFR+ 1.53 ×10 −3 86 0.88 4.5 13 4.47 ×10 −3 92 −0.12 4.0 14 DCFR 3.93 ×10 −3 N/A 0.098 −0.43 0.90 7.07 ×10 −3 N/A 0.35 0.80 −1.7 
+
+WM -DCFR 3.90 ×10 −3 112 0.098 3.4 12 8.45 ×10 −3 63 0.35 4.6 15 Table 1: Tabulated results from our experiments running (watermarked) CFR variants on select games. WM-R corresponds to the watermarked counterpart of the regret minimizer R with parameters γ = 0 .25 and δ = 10 −5. N/A stands for ‘not applicable’. 
+
+ϵt=2000 denotes the exploitability of the computed strategy profile after 2,000 iterations, nz=4 denotes the number of actions taken for the z-score to cross the z = 4 threshold, and finally zn=( ·) denotes the z-score after (·) actions have been played. The row marked with ‘*’ contains the same data shown in the identically marked rows in Table 2. 
+
+Attacking the Watermark 
+
+We begin by discussing possible attacks on our watermark. As observed by Kim, Fang, and Sandholm (2026), there is no point in modifying the gameplay post-hoc, as utilities have already been realized and other players can also keep records. Thus, the unique nature of game playing prevents attackers from carrying out ‘offline’ attacks for LLM watermarks in-volving paraphrasing, insertion, and replacement. As usual, tricks such as only using the watermarked agent during cru-cial situations will not suffice in bypassing the watermark, as the z-score will eventually cross the threshold. However, it is unknown whether the attacker could somehow use periph-eral information—such as the expected utilities—to bypass the watermark. If this turns out to be possible, it would imply a major breakthrough in equilibrium finding. A notable vulnerability of the KFS watermark is less of an issue in imperfect-information games. In the KFS watermark, an attacker who is trying to circumvent the watermark can, instead of querying the strategy at the current history h, query another history h′ whose observation is different from that of h but which is strategically similar. The attacker would successfully bypass the KFS watermark if the recommended action for h′ is also good for h. While, in theory, this attack can be applied to our watermark ( e.g. , by passing a similar infoset), this is less of a concern in our setting. Solving most games in real-life requires using game abstraction (Sandholm 2015), which shrinks the game size by merging strategically similar infosets. This effectively nullifies the attack since using a good abstraction prevents the attacker from finding a strategically similar infoset to manipulate. So, interestingly, abstraction techniques help not only to solve larger games more quickly but also to strengthen our watermark! 
+
+Lossless Watermarking? 
+
+We continue our discussions by raising the possibility of lossless watermarking, that is, ensuring that perturbed regret minimization incurs sublinear regret. One way to do so is to ensure that perturbations decay exponentially during game solving (see Proposition 3). However, it is unknown whether a ‘lossless’ P/RM truly ‘selects’ an equilibrium which plays 
+
+green actions more frequently than others. This connects to the open question raised by Brown and Sandholm (2017) on which particular equilibrium CFR converges to. 1 Addition-ally, a game’s equilibrium space may not even be rich enough to contain a lossless watermarked strategy that can be effi-ciently detected. As an extreme case, consider a game that has just one equilibrium. More details are given in Appendix D. 
+
+Conclusions and Future Research 
+
+We developed the first watermarking technique for game-playing agents that also applies to imperfect-information games. Our approach does watermarking and game solving 
+
+> 1
+
+See the footnote in Brown and Sandholm (2017, page 290). 0 500 1000 1500 2000                                                       
+
+> # iterations
+> 10 3
+> 10 2
+> 10 1
+> 10 0
+> Exploitability
+> Exploitabilities (Goofspiel-7)
+> 05000 10000 15000
+> # actions
+> 010 20 30 40 50 60
+> z-score
+> z-scores (Goofspiel-7)
+> 0500 1000 1500 2000
+> # iterations
+> 10 2
+> 10 1
+> 10 0
+> Exploitability
+> Exploitabilities (Battleship-3x2-22-3)
+> 02000 4000 6000
+> # actions
+> 0510 15 20 25 30 35
+> z-score
+> z-scores (Battleship-3x2-22-3)
+> CFR+ WM( =.1, =1E-5)-CFR+ WM( =.25, =1E-5)-CFR+ WM( =.5, =1E-5)-CFR+ WM( =.75, =1E-5)-CFR+ WM( =.9, =1E-5)-CFR+ 0500 1000 1500 2000
+> # iterations
+> 10 3
+> 10 2
+> 10 1
+> 10 0
+> Exploitability
+> Exploitabilities (Goofspiel-7)
+> 05000 10000 15000
+> # actions
+> 020 40 60 80 100
+> z-score
+> z-scores (Goofspiel-7)
+> 0500 1000 1500 2000
+> # iterations
+> 10 2
+> 10 1
+> 10 0
+> Exploitability
+> Exploitabilities (Battleship-3x2-22-3)
+> 02000 4000 6000
+> # actions
+> 025 50 75 100 125 150
+> z-score
+> z-scores (Battleship-3x2-22-3)
+> CFR+ WM( =.25, =.1)-CFR+ WM( =.25, =.01)-CFR+ WM( =.25, =1E-3)-CFR+ WM( =.25, =1E-5)-CFR+ WM( =.25, =1E-8)-CFR+
+
+Figure 4: Exploitability and z-score plots from our ablation studies running (watermarked) CFR +.
+
+γ δ Goofspiel-7 Battleship-3x2-22-3 
+
+ϵt=2000 nz=4 zn=10 zn=100 zn=1000 ϵt=2000 nz=4 zn=10 zn=100 zn=1000 
+
+0.1 10 −5
+
+2.32 ×10 −3 163 −0.85 3.4 8.2 4.30 ×10 −3 155 −0.33 1.7 12 *0.25 1.53 ×10 −3 86 0.88 4.5 13 4.47 ×10 −3 92 −0.12 4.0 14 0.5 8.30 ×10 −4 101 0.85 3.8 15 4.64 ×10 −3 65 2.2 4.0 12 0.75 7.51 ×10 −4 121 0.29 3.1 13 4.01 ×10 −3 83 1.5 4.3 11 0.9 9.85 ×10 −4 203 −0.28 1.6 8.5 4.02 ×10 −3 137 1.0 3.6 8.7 0.25 0.1 7.16 ×10 −1 29 1.7 6.4 20 3.72 3 5.0 21 66 0.01 1.52 ×10 −1 15 2.4 7.6 24 2.13 15 2.7 11 38 10 −3 1.75 ×10 −2 70 0.49 6.1 20 3.97 ×10 −1 16 2.7 6.6 24 *10 −5 1.53 ×10 −3 86 0.88 4.5 13 4.47 ×10 −3 92 −0.12 4.0 14 10 −8 1.37 ×10 −3 112 0.88 3.4 11 1.94 ×10 −3 136 −0.12 2.6 7.4 Table 2: Tabulated results from our ablation studies running watermarked CFR+ on select games. N/A stands for ‘not applicable’. 
+
+ϵt=2000 denotes the exploitability of the computed strategy profile after 2,000 iterations, nz=4 denotes the number of actions taken for the z-score to cross the z = 4 threshold, and finally zn=( ·) denotes the z-score after (·) actions have been played. The rows marked with ‘*’ contain the same data shown in the identically marked row in Table 1. simultaneously via perturbed regret minimization, which ap-plies perturbations to the observed utilities so as to encourage the learning algorithm to embed the watermark. While our watermark incurs some cost in exploitability, we analyzed and bounded this loss. Empirically, we showed that the costs in exploitability, convergence rate, and expected utility are small to none. In our ablation studies, we swept through dif-ferent values of watermark parameters and noted how the learning process differs. Then, we discussed the possible attacks to our watermark and the potential ways our water-mark can be improved. A promising avenue of future work is expanding our approach to achieve theoretically lossless watermarking in games where that may be possible, and our proposal in the discussion may be a good starting point. 
+
+References 
+
+Anthropic. 2025. Disrupting the first reported AI-orchestrated cyber espionage campaign. Bowling, M.; Burch, N.; Johanson, M.; and Tammelin, O. 2015. Heads-up limit hold’em poker is solved. Science ,347(6218): 145–149. Brown, N.; and Sandholm, T. 2017. Reduced Space and Faster Convergence in Imperfect-Information Games via Pruning. In Proceedings of the International Conference on Machine Learning (ICML) .Brown, N.; and Sandholm, T. 2018. Superhuman AI for heads-up no-limit poker: Libratus beats top professionals. 
+
+Science , 359(6374): 418–424. Brown, N.; and Sandholm, T. 2019a. Solving imperfect-information games via discounted regret minimization. In 
+
+Proceedings of the AAAI Conference on Artificial Intelli-gence (AAAI) .Brown, N.; and Sandholm, T. 2019b. Superhuman AI for multiplayer poker. Science , 365(6456): 885–890. Cesa-Bianchi, N.; and Lugosi, G. 2006. Prediction, Learn-ing, and Games . Cambridge University Press. Chappell, B. 2022. Hans Niemann is accused of cheating in more than 100 chess games. He’s playing today. National Public Radio (NPR) .Dathathri, S.; See, A.; Ghaisas, S.; Huang, P.-S.; McAdam, R.; Welbl, J.; Bachani, V.; Kaskasoli, A.; Stanforth, R.; Mate-jovicova, T.; Hayes, J.; Vyas, N.; Merey, M. A.; Brown-Cohen, J.; Bunel, R.; Balle, B.; Cemgil, T.; Ahmed, Z.; Stacpoole, K.; Shumailov, I.; Baetu, C.; Gowal, S.; Hassabis, D.; and Kohli, P. 2024. Scalable watermarking for identifying large language model outputs. Nature , 634(8035): 818–823. Farina, G. 2023. Game-Theoretic Decision Making in Imperfect-Information Games: Learning Dynamics, Equilib-rium Computation, and Complexity . Ph.D. thesis, Carnegie Mellon University. Farina, G.; Kroer, C.; and Sandholm, T. 2019. Regret Cir-cuits: Composability of Regret Minimizers. In Proceed-ings of the International Conference on Machine Learning (ICML) .Farina, G.; Ling, C. K.; Fang, F.; and Sandholm, T. 2019. Cor-relation in extensive-form games: saddle-point formulation and benchmarks. In Proceedings of the International Confer-ence on Neural Information Processing Systems (NeurIPS) .Grant, C. 2026. Poker Pro Axed From Sponsorship After Using Solver While Playing Online. PokerNews .Hart, S.; and Mas-Colell, A. 2000. A Simple Adaptive Pro-cedure Leading to Correlated Equilibrium. Econometrica ,68(5): 1127–1150. Huo, M.; Somayajula, S. A.; Liang, Y.; Zhang, R.; Koushan-far, F.; and Xie, P. 2024. Token-specific watermarking with enhanced detectability and semantic coherence for large lan-guage models. In Proceedings of the International Confer-ence on Machine Learning (ICML) .Kim, J.; Fang, F.; and Sandholm, T. 2026. Watermark-ing Game-Playing Agents in Perfect-Information Extensive-Form Games. Kirchenbauer, J.; Geiping, J.; Wen, Y.; Katz, J.; Miers, I.; and Goldstein, T. 2023. A Watermark for Large Language Models. In Proceedings of the International Conference on Machine Learning (ICML) .Koller, D.; Megiddo, N.; and von Stengel, B. 1996. Efficient Computation of Equilibria for Extensive Two-Person Games. 
+
+Games and Economic Behavior , 14(2): 247–259. Kuhn, H. W. 1950. Simplified Two-Person Poker. Contribu-tions to the Theory of Games , 1: 97–103. Lanctot, M.; Lockhart, E.; Lespiau, J.-B.; Zambaldi, V.; Upadhyay, S.; Pérolat, J.; Srinivasan, S.; Timbers, F.; Tuyls, K.; Omidshafiei, S.; Hennes, D.; Morrill, D.; Muller, P.; Ewalds, T.; Faulkner, R.; Kramár, J.; Vylder, B. D.; Saeta, B.; Bradbury, J.; Ding, D.; Borgeaud, S.; Lai, M.; Schrittwieser, J.; Anthony, T.; Hughes, E.; Danihelka, I.; and Ryan-Davis, J. 2020. OpenSpiel: A Framework for Reinforcement Learning in Games. Moravčík, M.; Schmid, M.; Burch, N.; Lisý, V.; Morrill, D.; Bard, N.; Davis, T.; Waugh, K.; Johanson, M.; and Bowling, M. 2017. DeepStack: Expert-level artificial intelligence in heads-up no-limit poker. Science , 356(6337): 508–513. Nash, J. F. 1950. Equilibrium points in n-person games. 
+
+Proceedings of the National Academy of Sciences , 36(1): 48–49. Qiao, B.; Li, K.; Zhou, W.; Li, S.; Lu, Q.; and Hu, S. 2025. BotSim: LLM-powered malicious social botnet simulation. In Proceedings of the AAAI Conference on Artificial Intelli-gence (AAAI) .Sander, T.; Fernandez, P.; Durmus, A. O.; Douze, M.; and Furon, T. 2024. Watermarking Makes Language Models Radioactive. In Proceedings of the Annual Conference on Neural Information Processing Systems (NeurIPS) .Sandholm, T. 2015. Abstraction for solving large incomplete-information games. In Proceedings of the AAAI Conference on Artificial Intelligence (AAAI) .Schultz, J. 2025. Cybercriminal abuse of large language models. Cisco Talos .Serrino, J.; Kleiman-Weiner, M.; Parkes, D. C.; and Tenen-baum, J. B. 2019. Finding friend and foe in multi-agent games. In Proceedings of the International Conference on Neural Information Processing Systems (NeurIPS) .Southey, F.; Bowling, M.; Larson, B.; Piccione, C.; Burch, N.; Billings, D.; and Rayner, C. 2005. Bayes’ bluff: opponent modelling in poker. In Proceedings of the Conference on Uncertainty in Artificial Intelligence (UAI) .Takezawa, Y.; Sato, R.; Bao, H.; Niwa, K.; and Yamada, M. 2025. Necessary and Sufficient Watermark for Large Lan-guage Models. Transactions on Machine Learning Research .Tammelin, O. 2014. Solving Large Imperfect Information Games Using CFR+. The Lancet Digital Health. 2026. Large language models and misinformation. The Lancet Digital Health , 8(1): 1. The Stockfish Team. 2021. Our lawsuit against ChessBase. von Stengel, B. 1996. Efficient Computation of Behavior Strategies. Games and Economic Behavior , 14(2): 220–246. Wang, C.; Shu, J.; Chiu, B.; LI, Y.; Alharbi, S.; Zhang, M.; and Li, J. 2025. Learning to Watermark: A Selective Watermarking Framework for Large Language Models via Multi-Objective Optimization. In Proceedings of the An-nual Conference on Neural Information Processing Systems (NeurIPS) .Wells, G.; and Ramkumar, A. 2026. AI Chatbots Know How to Make Deadly Biological Weapons. Some Will Teach You. Zhang, B. H.; and Sandholm, T. 2026. General search techniques without common knowledge for imperfect-information games, and application to superhuman Fog of War chess. In Proceedings of the International Conference on Learning Representations (ICLR) .Zhao, X.; Ananth, P. V.; Li, L.; and Wang, Y.-X. 2024. Provable Robust Watermarking for AI-Generated Text. In 
+
+Proceedings of the International Conference on Learning Representations (ICLR) .Zinkevich, M.; Johanson, M.; Bowling, M.; and Piccione, C. 2007. Regret Minimization in Games with Incomplete Information. In Proceedings of the Annual Conference on Neural Information Processing Systems (NeurIPS) .A Omitted Proofs 
+
+This section contains the proofs omitted from the main body of the paper. 
+
+A.1 Proof of Proposition 1 
+
+Proof. Let ⃗w be the static perturbation. Then, we have that 
+
+W (T ) = max ⃗x∈∆ m
+
+> T
+
+X
+
+> t=1
+
+⟨⃗u (t),⃗ x⟩ − 
+
+> T
+
+X
+
+> t=1
+
+⟨⃗u (t),⃗ x (t)⟩
+
+= max ⃗x∈∆ m
+
+> T
+
+X
+
+> t=1
+
+⟨⃗u (t) +⃗w −⃗w,⃗ x⟩−
+
+> T
+
+X
+
+> t=1
+
+⟨⃗u (t) +⃗w −⃗w,⃗ x (t)⟩≤ max ⃗x∈∆ m
+
+> T
+
+X
+
+> t=1
+
+⟨⃗u (t) +⃗w,⃗ x⟩ + max ⃗x∈∆ m
+
+> T
+
+X
+
+> t=1
+
+⟨− ⃗w,⃗ x⟩−
+
+> T
+
+X
+
+> t=1
+
+⟨⃗u (t) +⃗w,⃗ x (t)⟩ − 
+
+> T
+
+X
+
+> t=1
+
+⟨− ⃗w,⃗ x (t)⟩
+
+= R(T ) + max ⃗x∈∆ m
+
+> T
+
+X
+
+> t=1
+
+⟨− ⃗w,⃗ x⟩ − 
+
+> T
+
+X
+
+> t=1
+
+⟨− ⃗w,⃗ x (t)⟩≤ R(T ) −
+
+> T
+
+X
+
+> t=1
+
+min ⃗x∈∆ m⟨⃗w,⃗ x⟩ +
+
+> T
+
+X
+
+> t=1
+
+⟨⃗w,⃗ x (t)⟩≤ R(T ) − T L + T U 
+
+= R(T ) + T (U − L),
+
+as required. 
+
+A.2 Proof of Proposition 2 
+
+Proof. Let Wj be the local P/RM in the decision point j, and let W (T ) 
+
+> j
+
+be the regret incurred by Wj until time T . Farina (2023, Proposition 4.1) showed that 
+
+W (T ) ≤ X
+
+> j∈J
+
+max {0, W (T ) 
+
+> j
+
+}.
+
+By Proposition 1, we have that 
+
+W (T ) ≤ X
+
+> j∈J
+
+max {0, R (T ) 
+
+> j
+
++ T (U − L)}≤ X
+
+> j∈J
+
+max {0, R (T ) 
+
+> j
+
+} + T |J | (U − L),
+
+as required. 
+
+A.3 Proof of Theorem 1 
+
+Proof. Let X and Y be the sequence-form polytopes of the row and column players, respectively; let A be the utility matrix from the perspective of the row player, let (¯ x, ¯y) be the average sequence-form strategy profile, and let ϵ be its exploitability. Further, let (⃗x (t),⃗ y (t)) be the output strategy profile at time t. Then, we have that 
+
+2ϵ = max ⃗x∈X ⃗ x ⊤A¯y − min ⃗y∈Y ¯x⊤A⃗ y
+
+= max ⃗x∈X ⟨A¯y,⃗ x⟩ + max ⃗y∈Y ⟨− A¯x,⃗ y⟩
+
+= max ⃗x∈X 
+
+> T
+
+X
+
+> t=1
+
+⟨A⃗ y (t),⃗ x⟩/T + max ⃗y∈Y 
+
+> T
+
+X
+
+> t=1
+
+⟨− A⃗ x (t),⃗ y⟩/T 
+
+= max ⃗x∈X 
+
+> T
+
+X
+
+> t=1
+
+⟨A⃗ y (t),⃗ x⟩ − 
+
+> T
+
+X
+
+> t=1
+
+⟨A⃗ y (t),⃗ x (t)⟩
+
+!
+
+/T 
+
++ max ⃗y∈Y 
+
+> T
+
+X
+
+> t=1
+
+⟨− A⃗ x (t),⃗ y⟩ − 
+
+> T
+
+X
+
+> t=1
+
+⟨− A⃗ x (t),⃗ y (t)⟩
+
+!
+
+/T. 
+
+Let W (T ) 
+
+> X
+
+and W (T ) 
+
+> Y
+
+be the regret incurred by the regret min-imizers operating over the row and column sequence-form polytopes until time T , and let JX and JY be the decision points in the row and column TFSDPs. By Proposition 2, we have that 
+
+2ϵ = W (T ) 
+
+> X
+
+/T + W (T ) 
+
+> Y
+
+/T 
+
+≤
+
+ X
+
+> j∈J X
+
+max {0, R (T ) 
+
+> j
+
+} + T |J X |(U − L)
+
+ /T 
+
++
+
+ X
+
+> j∈J Y
+
+max {0, R (T ) 
+
+> j
+
+} + T |J Y |(U − L)
+
+ /T 
+
+= X 
+
+> j∈J X∪J Y
+
+max {0, R (T ) 
+
+> j
+
+}/T + |J X ∪ J Y |(U − L),
+
+where L and U are the minimum and maximum perturba-tions. Since decision points and infosets are equivalent and 
+
+L = −δγ/ (1 − γ), U = δ, we have that 
+
+2ϵ ≤ X
+
+> I∈I
+
+max {0, R (T ) 
+
+> I
+
+}/T + δ|I| /(1 − γ),
+
+as required. 
+
+A.4 Proof of Corollary 1 
+
+Proof. Let R(T ) 
+
+> I
+
+be the regret incurred by the component of the P/RM at the decision point corresponding to infoset I
+
+until time T . By Theorem 1, we have that the average strategy profile is a 2ϵ-NE, where 
+
+2ϵ ≤ X
+
+> I∈I
+
+max {0, R (T ) 
+
+> I
+
+}/T + δ|I| /(1 − γ).
+
+The type of local regret minimizers used in CFR is regret matching, which satisfies R(T ) 
+
+> I
+
+≤ ∆′p|A(I)|√T , where 
+
+∆′ is the range of utilities observed by the local regret min-imizer (Cesa-Bianchi and Lugosi 2006). Since the compo-nent of a P/RM observes perturbed utilities, we have that 
+
+∆′ ≤ ∆ + δ/ (1 − γ). Also, since |A(I)| ≤ m for any I ∈ I ,we have that the average strategy profile is a 2ϵ-NE where 
+
+2ϵ ≤ |I| (∆ + δ/ (1 − γ)) √m/ √T + δ|I| /(1 − γ),
+
+as required. Variant Goofspiel-7 Battleship-3x2-22-3 
+
+WM -CFR −7.93 ×10 −4 7.49 ×10 −4
+
+*WM -CFR+ 4.34 ×10 −5 5.85 ×10 −4
+
+WM -DCFR 1.92 ×10 −4 −7.40 ×10 −4
+
+Table 3: Expected utilities of the solutions obtained from watermarked CFR variants against their non-watermarked counterparts. The row marked with ‘*’ contains the same data shown in the identically marked rows in Table 4. 
+
+γ δ Goofspiel-7 Battleship-3x2-22-3 0.1 10 −5
+
+6.10 ×10 −5 1.27 ×10 −4
+
+*0.25 4.34 ×10 −5 5.85 ×10 −4
+
+0.5 1.26 ×10 −5 5.55 ×10 −4
+
+0.75 5.83 ×10 −6 1.72 ×10 −4
+
+0.9 4.62 ×10 −6 2.60 ×10 −5
+
+0.25 0.1 4.75 ×10 −3 −8.88 ×10 −2
+
+0.01 −2.95 ×10 −5 −1.35 ×10 −1
+
+10 −3 1.11 ×10 −4 3.74 ×10 −2
+
+*10 −5 4.34 ×10 −5 5.85 ×10 −4
+
+10 −8 4.46 ×10 −5 −3.62 ×10 −5
+
+Table 4: Expected utilities of the solutions obtained from wa-termarked CFR+ against that from CFR+. The rows marked with ‘*’ contain the same data shown in the identically marked row in Table 3. 
+
+B Game Descriptions 
+
+We tested several CFR variants and their watermarked coun-terparts using two games: Goofspiel-7 and Battleship-3x2-22-3. These are common benchmark games that are codified in OpenSpiel 1.6.15 (Lanctot et al. 2020), a popular com-putational game-theory library. Goofspiel-7 is the imperfect-information variant of the game of Goofspiel, played with seven cards and descending point order. Battleship-3x2-22-3 is simply the game of battleship (Farina et al. 2019) played on a 3-by-2 board with two ships of size 2 and value 4, where every player fires three shots. Goofspiel-7 has about 4.8 ×10 7 nodes in its game tree, whereas battleship-3x2-22-3 has around 2.7 ×10 7 nodes. 
+
+C Omitted Data from the Experiments 
+
+The expected utilities of the watermarked solutions from the experiments against their non-watermarked counterparts are tabulated in Table 3, and the expected utilities of the watermarked solutions from our ablation studies against that from CFR + are tabulated in Table 3. In general, watermarking does not seem to have much of an effect on the expected utilities of the solutions against those produced from the non-watermarked CFR variants, except when δ is large enough. 
+
+C.1 ROC Curves 
+
+From the play data of each watermarked engine, we batched every non-overlapping sequence of 100 actions. We chose 0.0 0.2 0.4 0.6 0.8 1.0                                         
+
+> False positive rate
+> 0.0 0.2 0.4 0.6 0.8 1.0
+> True positive rate ROC curves (Goofspiel-7)
+> 0.0 0.2 0.4 0.6 0.8 1.0
+> False positive rate
+> 0.0 0.2 0.4 0.6 0.8 1.0
+> True positive rate ROC curves (Battleship-3x2-22-3)
+> WM( =.25, =1E-5)-CFR WM( =.25, =1E-5)-CFR+ WM( =.25, =1E-5)-DCFR 0.0 0.2 0.4 0.6 0.8 1.0
+> False positive rate
+> 0.0 0.2 0.4 0.6 0.8 1.0
+> True positive rate ROC curves (Goofspiel-7)
+> 0.0 0.2 0.4 0.6 0.8 1.0
+> False positive rate
+> 0.0 0.2 0.4 0.6 0.8 1.0
+> True positive rate ROC curves (Battleship-3x2-22-3)
+> WM( =.1, =1E-5)-CFR+
+> WM( =.25, =1E-5)-CFR+
+> WM( =.5, =1E-5)-CFR+
+> WM( =.75, =1E-5)-CFR+
+> WM( =.9, =1E-5)-CFR+ 0.0 0.2 0.4 0.6 0.8 1.0
+> False positive rate
+> 0.0 0.2 0.4 0.6 0.8 1.0
+> True positive rate ROC curves (Goofspiel-7)
+> 0.0 0.2 0.4 0.6 0.8 1.0
+> False positive rate
+> 0.0 0.2 0.4 0.6 0.8 1.0
+> True positive rate ROC curves (Battleship-3x2-22-3)
+> WM( =.25, =.1)-CFR+
+> WM( =.25, =.01)-CFR+
+> WM( =.25, =1E-3)-CFR+
+> WM( =.25, =1E-5)-CFR+
+> WM( =.25, =1E-8)-CFR+
+
+Figure 5: Rate of characteristic curves for the watermarked agents in the experiments and ablation studies. the number 100, as we deemed this was enough to detect the watermark when more practical CFR variants ( e.g. , CFR +
+
+and DCFR) are used. Then, we swept through z-thresholds and plotted the rate of characteristic (ROC) curves in Fig-ure 5. Their area under curve (AUC) values are tabulated in Tables 5 and 6. For more practical CFR variants, we see that the AUC values are above 0.9, indicating strong discrimina-tion. In our ablations, middling values of γ and higher values of δ lead to higher AUC values. 
+
+D Lossless P/RM 
+
+In this section, we formally define a lossless regret minimizer under perturbation (P/RM) , which is identical to a P/RM except that it accepts an extra discount rate parameter ω ∈
+
+(0 , 1) and the perturbation is no longer static. Its regret circuit diagram is given in Figure 6, and its pseudocode is given in Algorithm 2. Just like its lossy counterpart, at time t ∈ N+,the lossless P/RM forwards the output of the component regret minimizer as its own. However, when the lossless P/RM observes a utility vector ⃗u (t), it adds a discounted 
+
+perturbation ωt⃗w to it. Finally, the perturbed utility ⃗u (t) +Variant Goofspiel-7 Battleship-3x2-22-3 
+
+WM -CFR 0.917 0.868 *WM -CFR+ 0.929 0.982 
+
+WM -DCFR 0.937 0.985 Table 5: AUC values of the ROC curves for the watermarked CFR variants in our main experiments (not ablations). The row marked with ‘*’ contains the same data shown in the identically marked rows in Table 6. 
+
+γ δ Goofspiel-7 Battleship-3x2-22-3 0.1 10 −5
+
+0.855 0.935 *0.25 0.929 0.982 0.5 0.946 0.977 0.75 0.931 0.974 0.9 0.872 0.980 0.25 0.1 0.991 1.000 0.01 0.995 1.000 10 −3 0.983 1.000 *10 −5 0.929 0.982 10 −8 0.884 0.875 Table 6: AUC values of the ROC curves for watermarked CFR + in our ablation studies. The row marked with ‘*’ con-tains the same data shown in the identically marked rows in Table 5. ⃗u (t−1) ⃗w
+
+R⃗ x (t)⃗u (t−1) + ωt⃗w
+
+Figure 6: Regret circuit diagram of a lossless P/RM with R
+
+as its component and perturbation ⃗w.
+
+Algorithm 2: Lossless regret minimizer under per-turbation (P/RM)  
+
+> 1
+
+Input: A component regret minimizer R operating over ∆m, a perturbation ⃗w, and a discount rate 
+
+ω ∈ (0 , 1) . 
+
+> 2
+
+NextStrategy () : 
+
+> 3
+
+return R.NextStrategy () ; 
+
+> 4
+
+ObserveUtility  ⃗u (t) ∈ Rm: 
+
+> 5
+
+R.ObserveUtility (⃗u (t) + ωt⃗w);
+
+ωt⃗w is forwarded to the component regret minimizer for its observation. In the following proposition, we show that a lossless P/RM incurs sublinear average regret. 
+
+Proposition 3. Let W be a lossless P/RM with a component regret minimizer R operating over ∆m, a perturbation in 
+
+[L, U ]m, and a discount rate ω ∈ (0 , 1) . Further, let W (T )
+
+and R(T ) be the regret incurred by W and R, respectively, until time T . Then, 
+
+W (T ) ≤ R(T ) + ω(U − L)/(1 − ω).
+
+Proof. Let ⃗w be the perturbation. Then, we have that 
+
+W (T ) = max ⃗x∈∆ m
+
+> T
+
+X
+
+> t=1
+
+⟨⃗u (t),⃗ x⟩ − 
+
+> T
+
+X
+
+> t=1
+
+⟨⃗u (t),⃗ x (t)⟩
+
+= max ⃗x∈∆ m
+
+> T
+
+X
+
+> t=1
+
+⟨⃗u (t) + ωt⃗w − ω t⃗w,⃗ x⟩−
+
+> T
+
+X
+
+> t=1
+
+⟨⃗u (t) + ωt⃗w − ω t⃗w,⃗ x (t)⟩≤ max ⃗x∈∆ m
+
+> T
+
+X
+
+> t=1
+
+⟨⃗u (t) + ωt⃗w,⃗ x⟩ + max ⃗x∈∆ m
+
+> T
+
+X
+
+> t=1
+
+⟨− ωt⃗w,⃗ x⟩−
+
+> T
+
+X
+
+> t=1
+
+⟨⃗u (t) + ωt⃗w,⃗ x (t)⟩ − 
+
+> T
+
+X
+
+> t=1
+
+⟨− ωt⃗w,⃗ x (t)⟩
+
+= R(T ) + max ⃗x∈∆ m
+
+> T
+
+X
+
+> t=1
+
+⟨− ωt⃗w,⃗ x⟩ − 
+
+> T
+
+X
+
+> t=1
+
+⟨− ωt⃗w,⃗ x (t)⟩≤ R(T ) −
+
+> T
+
+X
+
+> t=1
+
+ωt min ⃗x∈∆ m⟨⃗w,⃗ x⟩ +
+
+> T
+
+X
+
+> t=1
+
+ωt⟨⃗w,⃗ x (t)⟩≤ R(T ) −
+
+> T
+
+X
+
+> t=1
+
+ωtL +
+
+> T
+
+X
+
+> t=1
+
+ωtU
+
+≤ R(T ) + ω(U − L)/(1 − ω),
+
+as required. 
+
+Remark 4. Assuming R is a regret minimizer, R(T ) = o(T ),so we have that W (T ) = o(T ) as well. Thus, when lossless P/RMs are used, the resulting perturbed regret minimization algorithm converges to NE when solving 2p0s games. How-ever, the existence of a lossless P/RM does not necessarily imply that lossless watermarking is possible. Indeed, it is unknown whether this regret minimizer can perform ‘equi-librium selection’ in that the average strategy converges to an NE that plays green actions more frequently than others. This connects to the open question raised by Brown and Sand-holm (2017) on which particular equilibrium CFR converges to. 2 Also, the equilibrium space may not be large enough to contain a desired ‘watermarked’ strategy profile anyway, although we do know that even toy games of moderate sizes like Kuhn poker (Kuhn 1950) and Leduc poker (Southey et al. 2005) contain a rich space of NE. 
+
+> 2
+
+See the footnote in Brown and Sandholm (2017, page 290). E Testbench specification 
+
+Our testbench has an AMD Ryzen 9 3900X 12-core, 24-thread CPU and 128 GB of memory.
