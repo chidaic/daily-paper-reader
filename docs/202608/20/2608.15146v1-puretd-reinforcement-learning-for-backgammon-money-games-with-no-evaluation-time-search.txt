@@ -1,0 +1,420 @@
+Title: PureTD: Reinforcement Learning for Backgammon Money Games with No Evaluation-time Search
+
+URL Source: https://arxiv.org/pdf/2608.15146v1
+
+Published Time: Tue, 18 Aug 2026 00:41:45 GMT
+
+Number of Pages: 21
+
+Markdown Content:
+# PureTD: Reinforcement Learning for Backgammon Money Games with No Evaluation-time Search 
+
+Alexander Strehl astrehl@gmail.com Independent Researcher 
+
+## Abstract 
+
+We revisit Tesauro’s TD-Gammon for backgammon money games in the setting of no evaluation-time search. Both checker play and cube action (use of the doubling cube) are learned from scratch via self-play reinforcement learning (RL), with minimal hand-coded logic and no expert features. In this setting, we demonstrate that pure self-play RL suffices to train models that reach near-state-of-the-art playing strength. Specifically, for cubeful money games, our search-free model evaluates faster and is substantially stronger than the open-source engines GNU Backgammon and Open Sage running a one-move (1-ply) look-ahead search. 
+
+## 1 Introduction 
+
+Computer backgammon engines combine two components at decision time: a learned position evaluator ,typically a neural network that maps a board state to an equity (we use evaluator , model , and network 
+
+interchangeably); and an expectimax search that computes an expectation of the evaluator’s scores over the game states reached after n rounds of play. In the shallowest possible search, for a given board state, an action is selected by querying the evaluator on the resulting position for each candidate move and picking the move that maximizes the evaluator’s score. Throughout this paper we use the terminology in which “0-ply” describes this procedure, where the evaluator is consulted directly with no look-ahead, and “ n-ply” means a look-ahead expanding n turns. We focus primarily on the no-search (0-ply) setting. Concretely, we ask: how strong can a backgammon agent be made if its decisions are produced by a single forward pass of a neural network per candidate move? The training regimes behind many of the strongest modern engines, such as eXtreme Gammon (XG) (Du-faure de Citres, 2011a) and GNU Backgammon ( gnubg ) (GNU Backgammon Developers, 2024a), are not publicly documented, though both use cubeless evaluators (predicting cubeless outcome probabilities), with cube decisions computed separately via analytic Janowski-style formulas (Dufaure de Citres, 2011b; GNU Backgammon Developers, 2024b). The main contribution of this paper is to demonstrate that for money games, a simple RL method suffices to train competitive evaluators that learn cubeful play end-to-end. While the strength of an evaluator is worth studying in isolation, maximizing it is not the objective for a backgammon engine, which must optimize the full system (evaluator combined with search). Viable engines such as gnubg must therefore balance stronger but larger networks against smaller ones that evaluate faster during search. This paper, by contrast, optimizes a single evaluator’s strength without regard to inference or search cost. This gap between a strong 0-ply evaluator and a competitive end-to-end engine is a genuine limitation of the present work. However, our models do not simply trade more computation for more strength: for both cubeless and cubeful money, our models at 0-ply are at least 2 .5× faster and substantially stronger than the open-source engines gnubg and Open Sage (Higgins, 2026) running a 1-ply search. Despite its limitations, a study of the 0-ply setting remains valuable for a few reasons. First, a stronger evaluator is broadly expected to yield a stronger engine once combined with search, and capping network size prematurely risks limiting what the full system can ultimately achieve. Second, performance per unit time depends heavily on implementation choices, which makes comparisons across engines challenging. Third, the 1arXiv:2608.15146v1 [cs.LG] 15 Aug 2026 searchless setting is of interest in its own right, in the spirit of searchless chess (Ruoss et al., 2024), and offers a useful data point on the ceiling reachable by self-play RL. 
+
+TD-Gammon’s historical ceiling. The canonical pure-self-play RL backgammon agent is Tesauro’s TD-Gammon (Tesauro, 1992; 1995), which used TD( λ) on a shallow feed-forward network to reach what was at the time considered state-of-the-art for computer backgammon. Subsequent engines surpassed TD-Gammon’s level, but typically by incorporating more specialized training and adopting hand-tuned algorithms to deal with cube action. Our experiments demonstrate that with larger networks and a few modern changes to the learning procedure (specifically ReLU instead of sigmoid activations, batch training, and exact Bellman updates) the TD-Gammon procedure alone is sufficient to produce a near-SoTA 0-ply evaluation function for money games. We did not experiment with non-zero λ values; notably, Tesauro reported that later development of TD-Gammon mostly used λ = 0, which performed about as well as small non-zero values while requiring roughly half the computation per time step (Tesauro, 2002). Our exact Bellman backups are conceptually related to non-zero λ values, enriching the target by averaging over all 21 dice outcomes rather than by extending the look-ahead along the sampled trajectory. 
+
+Money games and the doubling cube. Backgammon money games and match play include the doubling cube . How a player chooses to handle the cube in a given position is called the cube action . At the beginning of the game it is “centered” but can later be owned by one of the players. At the beginning of a turn, if the cube is centered or owned by the player on roll, they can offer_double and propose doubling the stakes; the opponent must accept ( take , and assume cube ownership) or refuse ( drop , conceding the current cube value and ending the game). Optimal decisions are difficult and depend on win and gammon rates, on the cube’s current ownership, and on the recube vigorish, the future value of being able to redouble (Backgammon Galore, 2024). A money game ends in one of three ways: a normal win, worth the cube value; a gammon, worth twice the cube value; or a backgammon, worth three times the cube value. The inclusion of the doubling cube also changes the optimal checker play in significant ways. 
+
+Contributions. Cube decisions as an action-space extension. Virtually all known modern backgammon engines train a cubeless evaluator and incorporate cube decisions (and cubeful checker play) through a combination of look-ahead search and heuristics based on Janowski’s formulas (Janowski, 1993; Madsen, 2024). Following Lin (2020), we instead learn cubeful play (checker play and cube action) for money games as part of self-play RL. We extend the agent’s action space with the doubling decision ( offer_double versus 
+
+no_double ) at the start of a turn, treating it as an ordinary state transition learned via self-play RL. 1
+
+Doubling decisions are made the same way as checker decisions, by querying the network on each resulting state and choosing the action that maximizes expected equity. During training, each such decision yields a proper state transition, and a normal TD update pushes the value of the current state toward the value of the next state. This procedure follows the same overall approach as Lin (2020), but corrects a key conceptual flaw in its formulation (Sec. 3.3; Sec. 4.5 quantifies the improvement) and scales to far larger networks evaluated directly against strong baselines. To our knowledge, ours is the first competitive money-game model to learn both the cube action and cubeful checker play end-to-end with RL. 
+
+Open-source pipeline and large-scale evaluation. We release a complete training and evaluation pipeline, train networks until apparent convergence, and evaluate them in two complementary ways: offline error-rate metrics for cubeful money, gnubg ’s 4-ply mEMG and eXtreme Gammon’s XG++ Performance Rating (PR) (where lower is better for both); and head-to-head play against gnubg (and Open Sage) at 0-ply and 1-ply across cubeless and cubeful money modes. 
+
+Code and reproducibility. Code, trained models, and reproduction commands are released under the MIT license at https://github.com/alexstrehl/backgammon-ai-engine ; training code and preliminary results have been public there since March 26, 2026, initially for double-match-point play, with cubeless and cubeful money-game training added on April 16. 
+
+> 1When offered a cube, our current approach is to take or pass greedily according to the current network; see Section 3.3 for details.
+
+22 Background and Related Work 
+
+Temporal-difference (TD) learning and TD-Gammon. The standard approach is to train a model, typically a neural network of limited depth, that given a position s outputs the approximate value V (s) of the position for a given player. Formally, this involves modeling the game as a Markov Decision Process (MDP). At play time, games proceed by picking the action that the model predicts is best from the current state. For ease of exposition, equations in this paper use the convention that V (s) is the value of state s for a fixed reference player, the maximizer , whose goal is to maximize V at every state, while the opponent correspondingly minimizes V (equivalently, maximizes −V ). Because the reference player is fixed, no state transition induces a sign change in V , whether or not the on-roll player changes (a completed cube decision, for instance, keeps the same player on roll). This lets us write the optimality condition in the same functional form as the single-agent Bellman optimality equation, with every decision involving a single max. 2 Every displayed value equation is therefore stated for a state with the maximizer on roll; when the opponent is on roll the equations take the symmetric min a, which completes the recursion, 3 and are suppressed for brevity. For an optimal value function V ∗, Bellman’s equation requires 
+
+V ∗(s) = max  
+
+> a
+
+Es′∼T (s,a )
+
+[ V ∗(s′) ], (1) where T (s, a ) is the transition distribution over next states induced by action a. Rewards are zero except at terminal states, where V equals the game outcome. During self-play, the maximizer chooses actions greedily using the current value estimate V ,
+
+a⋆ = arg max  
+
+> a
+
+Es′∼T (s,a )
+
+[ V (s′) ], (2) and the opponent symmetrically takes arg min, with occasional non-greedy exploratory actions. For backgam-mon specifically, we found little benefit to any explicit exploration during training, as natural variation is provided by the dice rolls and by the many stages of training. The model is trained incrementally to be consistent with Bellman’s equation. Tesauro’s TD-Gammon (Tesauro, 1995; Sutton & Barto, 2018) used a clever technique to reduce the variance of the TD training targets, based on decomposing a state into a stochastic dice roll and a deterministic part. Define a pseudo-state x as a backgammon position before the dice are rolled. Rolling d from x yields a state 
+
+sx,d , from which the player on roll selects a checker play a. For any pseudo-state x,
+
+V ∗(x) = Ed∼D 
+
+[ V ∗(sx,d ) ] = Ed∼D 
+
+[ max a Q∗(sx,d , a ) ] = Ed∼D 
+
+[ max a V ∗( ˜T (sx,d , a )) ] , (3) where D is the distribution over the 21 distinct dice rolls, sx,d is the state reached from x after rolling d, ˜T (s, a )is the deterministic next pseudo-state reached by playing action a in state s, and Q∗(s, a ) = V ∗( ˜T (s, a )) is the value of playing a in state s. Evaluators are trained directly on pseudo-states, which cleanly reduces input dimensionality and the complexity of learning by avoiding any encoding of the dice. The decomposition of Equation (3) suggests two ways to form a regression target for V (x): a 0-ply target 
+
+that samples a single dice roll d ∼ D and backs up the value of the greedy continuation, and a 1-ply target 
+
+that instead averages over all 21 rolls (the right-hand side of (3)), which we call an Exact Bellman update 
+
+that removes the dice variance at the cost of enumerating every roll. We define both targets formally in Section 3.2. TD-Gammon included a λ parameter that controlled the time-horizon used for training targets. TD-Gammon with λ = 0 is essentially the 0-ply variant of above method where we train the model after every action during self-play via online stochastic gradient descent. Tesauro originally reported a single hidden-layer network (∼40 hidden units).                 
+
+> 2In practice, for a specific state s, our model produces a value Vmodel (s) representing the equity of the position for the player on roll. Thus there is a direct correspondence: V=Vmodel when the maximizer is on roll and V=−Vmodel otherwise.
+> 3For an action that ends the current player’s turn, expanding one further ply makes the suppressed minimization explicit:
+> V∗(s) = max aEs′∼T(s,a )
+
+[min a′ Es′′ ∼T (s′,a ′)[ V ∗(s′′ ) ] ], where s′ has the opponent on roll (hence the min) and s′′ returns the maximizer to roll. 
+
+3GNU Backgammon. GNU Backgammon (GNU Backgammon Developers, 2024a) is an extremely strong open-source backgammon engine that is a standard baseline. Its evaluator consists of three specialized single-hidden-layer neural networks ( ∼30k weights each) for distinct game phases (contact, race, crashed) with hand-engineered features. 4 The engine also uses a precomputed bearoff database for common endgame positions. Networks are believed to have been trained through a combination of TD self-play and supervised learning, and at runtime are combined with n-ply expectimax search. 
+
+Open Sage. Open Sage ( bgsage ) (Higgins, 2026) is an impressive, recently released and actively developed open-source engine. Its evaluator is an ensemble of 16 distinct neural networks specialized to different game phases. Each has a single hidden layer, with roughly 100k parameters for the more common contact positions and 20k for pure races. Its documented training pipeline relies on gnubg ’s published rollout databases, so unlike a pure self-play system, it depends on an existing strong engine. Like gnubg , it relies on multi-ply search and computes cube decisions from a cubeless evaluator rather than learning them. Its developer reports rough parity with XG, measured at 2-ply truncated-rollout evaluation (Open Sage’s “3T” setting in its own ply convention). 5 We caution, however, that strength measured at a fixed search depth or rollout budget does not by itself establish a stronger engine, since it omits the per-decision computational cost. 
+
+RL vs SL training for backgammon. Neither gnubg nor Open Sage is trained by self-play TD alone. The technique, confirmed for Open Sage and, we believe, also used by gnubg , is to first train an evaluator with TD self-play until performance plateaus, then refine it on a selected set of positions whose targets are computed by averaging repeated rollouts of an existing model. This refinement is itself a form of RL: a Monte-Carlo value estimate whose variance is reduced by averaging rollouts, though it is often referred to as an SL phase. Restricting refinement to a selected set of positions is interesting and reminiscent of the emphasis on hard examples in boosting-style training. 
+
+The doubling cube and Janowski’s formulas. Janowski’s analytic cube-decision formulas (Janowski, 1993; Madsen, 2024) compute approximate double/take points from cubeless win equity and gammon rates, parameterized by an estimate of the recube vigorish (the future value of cube ownership). The formulas rely on a continuous-volatility model of equity evolution that is controlled by an empirically tuned cube-efficiency parameter; they are widely used in practice but are not a closed-form optimum. Most engines learn evaluators that model cubeless equity, including gnubg (and, it is widely believed, XG), and apply heuristics based on these formulas at inference time, treating cube decisions as a post-hoc adjustment rather than something the network itself learns. Implementing cube handling based on these formulas is complex and a known pain point for engine developers. 
+
+Prior RL-native cube work. The closest prior work is Lin (2020), who first proposed integrating cube actions into the agent’s action space and reported results for match play. Our work differs in several ways. First, we fix a critical conceptual error in the formulation that leads to suboptimal play (Sec. 3.3). Second, Lin’s results are not measured against a strong baseline like gnubg , and his network has a single hidden layer of roughly 48k weights. In contrast, our 562k-parameter cubeful model is an order of magnitude larger, and we evaluate it directly on cubeful money play against gnubg .
+
+Exact Bellman updates. Hilton (2020) experimented with exact Bellman updates. He argued that the technique is naturally situated between TD-Gammon’s sampled targets and the much slower but more accurate targets used by AlphaZero’s MCTS search (Silver et al., 2018). We use this technique as a refinement phase in our training pipeline (Sec. 3.2). 
+
+Other modern backgammon RL. XG is closed-source and widely regarded as one of the strongest available backgammon engines; the details of its training are not publicly documented. BGBlitz (Berger, 2025) is an extremely strong closed-source backgammon engine whose performance is similar to gnubg and that, importantly, reports state-of-the-art results from self-play RL training . Octopus (Ø. Schønning-Johansen, 
+
+> 4A contact position is one in which future hits are possible. A race is a non-contact position. A crashed position is a technical subtype of contact position.
+> 5https://github.com/markbgsage/bgsage/blob/main/XG_COMPARISON.md
+
+4personal communication, 2026) is an unreleased, extremely strong model trained with self-play RL. Both BGBlitz and Octopus train a cubeless model and extend to cubeful play with Janowski’s formulas rather than learning cube decisions directly. Stochastic MuZero (Antonoglou et al., 2022) extends AlphaZero-style learned-model MCTS planning to stochastic environments and reports backgammon performance exceeding that of gnubg 3-ply, though it stops short of a full evaluation that accounts for run-time cost. It does not handle cubeful money play, however, and its implementation is not publicly available. Two other open-source projects are noteworthy: wildbg (Wenderdel, 2024) (supervised plus search) and Hilton (2020) (RL). Both influenced this work: wildbg ’s training-pipeline design informed our model architecture, and Hilton’s 1-ply amplified-equity formulation underlies our exact-backup refinement phase (Sec. 3.2). A strong new open-source engine, Hedgehog, appeared on GitLab during the preparation of this work, 6
+
+self-described as “an NNUE-style neural-network evaluator with incremental accumulation and Highway SIMD.” Its strongest models became usable with the open-source engine in early August 2026, 7 Hedgehog uses a cubeless model and extends to cubeful play with Janowski-style formulas, but its cubeful evaluation does not support the standard Jacoby rule (the standard used throughout this paper). Hedgehog’s published benchmarks 8 report FOX winning 22.7 milli-equity per game (mEq/game) and their strongest commercial model, Colossus, winning 67.3 mEq/game against gnubg , all evaluated at 0-ply, over 10 7 cubeful money games. These figures are not directly comparable to Table 3 as Hedgehog’s benchmark runs each engine’s network with Hedgehog’s own harness and evaluation settings, comparing networks rather than engines, whereas our head-to-head games drive the unmodified gnubg software. No training code or methodology was publicly available for Hedgehog. Computer backgammon is an active field, and new engines continue to be developed. Rather than benchmark every available engine, we compare against the strongest open-source engines supporting money-game play with the Jacoby rule as of July 15, 2026. To the best of our knowledge, these were gnubg and Open Sage. 
+
+## 3 Method 
+
+3.1 Board Encoding 
+
+For the feature representation, we adopt Tesauro’s per-point board encoding (Tesauro, 1995; described in Sutton & Barto, 2018, §16.1): four features per point per player, with separate binary units for one, two, and three checkers, plus a fourth feature encoding the number of additional checkers (the surplus beyond three, halved), together with scalar features for the checkers on the bar and borne off. We use a perspective encoding , always calling the network from the perspective of the side to play and moving in a fixed direction, for a total of 196 features. Although a minor detail, this choice encodes a basic symmetry of backgammon. For example, every backgammon player knows to “make the 5-point” on a first roll of (3 , 1) regardless of whether they are moving clockwise or counter-clockwise. For cubeful money play we extend the input to 200 features by adding three one-hot cube-ownership features ( cube_centered , cube_own , cube_opp_own ) and a binary is_cube_action flag marking cube-decision positions. Table 1 enumerates the combinations these four features can take and the corresponding decision they encode. 
+
+> 6https://gitlab.com/eranlambooij/hedgehog-public/ . The repository ships the network-evaluation engine only; model files are distributed separately through the project website.
+> 7The engine was first published on May 21, 2026. Its strongest models were released later (FOX v0.3 on July 20, FOX v0.32 on July 23, and Aureus on July 27, 2026), but fixes enabling these models to run correctly under the open-source engine landed in commits dated August 2–4, 2026.
+> 8https://hedgehog-bg.com/benchmarks , accessed August 7, 2026.
+
+5Table 1: Cube-specific features.                             
+
+> cube_centered cube_own cube_opp_own is_cube_action Decision for the player on roll 1000checker play 1001cube offer (initial cube) 0100checker play 0101cube offer (recube) 0010checker play 0011not a legal configuration
+
+3.2 Architecture and Training Pipeline 
+
+Architecture. Our models are multilayer perceptrons (MLPs) implemented in PyTorch. The cubeful money model has 200 inputs feeding four hidden layers of sizes [512 , 512 , 256 , 256], for a total of 562k parameters. All hidden layers use ReLU activations, replacing the sigmoid units of the original TD-Gammon. 
+
+Output heads. For cubeful money, the output is linear and interpreted as equity per unit cube value ;realized equity is output × current_cube_value . This normalization keeps outputs in a stable numeric range across cube levels and encodes the theoretical fact that money-game equity scales linearly with the cube (thus the optimal checker play and cube decisions are identical at every cube value of 2 or greater) (GNU Backgammon Developers, 2024a; Lin, 2020). 
+
+Training loop. TD-Gammon trained via online learning, interleaving self-play moves with stochastic-gradient-descent updates. On modern hardware we found it more practical to decouple self-play data collection from model training, yielding a batch-style pipeline. At each round we play N games ( N = 1000 in all our reported results) with the current network as both players, compute a regression target for every visited state, then run one epoch of minibatch SGD with Adam (Kingma & Ba, 2015). Rounds repeat with fresh self-play data. For reference, on a single 64-core AMD Ryzen Zen 5 workstation with a modern Nvidia GPU of at least 24 GB of VRAM, training runs at roughly 1 ,900–2 ,600 games/s at 0-ply and ∼500 games/s at 1-ply. In total, our best cubeful model (the 4-layer [512 , 512 , 256 , 256] network) was trained over approximately 200M cubeful self-play games ( ≈115M 0-ply, ≈84M 1-ply), or about 65 wall-clock hours on such a machine. Throughput is limited primarily by CPU-side self-play (move generation and game logic) rather than by GPU network evaluation. 
+
+Progressive expansion and cross-task transfer. The final [512 , 512 , 256 , 256] network was trained incrementally, reusing weights across both architectures and tasks. Beginning from a single hidden-layer network, we alternately widened and deepened the network in stages ([80] → [150] → [150 , 150] → [256 , 256] →
+
+[512 , 512] → [512 , 512 , 256] → [512 , 512 , 256 , 256]), each time transferring the existing parameters into the larger network with function-preserving Net2Net transformations (Chen et al., 2016) before continuing self-play training. We also transferred across tasks: a double-match-point (DMP, i.e. one-point matches) network warm-started a 3-layer cubeless equity model, reusing the hidden layers while re-initializing the output head to predict equity, which in turn warm-started the cubeful-money model by extending the input layer with the cube features. A brief learning-rate warmup after each task transition improved stability: rather than resuming at the full learning rate, we linearly ramped it from roughly 10% of its target value up to the target over the first 20 training rounds. All parameters remained trainable at every stage (no weights were frozen). We found that this simple form of transfer reused learned representations and substantially accelerated training relative to learning each task from scratch. The production models were trained over a period of months, and their exact per-stage settings were not preserved. In Appendix D we therefore give exact settings that retrain the cubeful-money model and the prob5 cubeless model (Sec. 4.2), yielding models whose performance is very close to that of the production models: the retrained prob5 model scores −0.3[−1.2, 0.5] mEq/game against the production prob5 model, and the retrained cubeful model +1 .5 [ −0.3, 3.2] mEq/game against the production cubeful model, each over 10 7 games. 6Training targets: sampled vs. exact backups. Let x be any pseudo-state, which as defined in Section 2 is a position before the dice are rolled, and recall that rolling d ∼ D yields the state sx,d , from which any action a leads deterministically to the next pseudo-state ˜T (sx,d , a ). We use one of two training targets, both regressing V (x). The sampled TD(0) target estimates the value from a single dice roll, 
+
+ysampled (x) = max a V( ˜T (sx,d , a )), d ∼ D , (4) i.e. it rolls once, plays greedily, and records the value of the resulting pseudo-state. The 1-ply (exact) target instead takes the full expectation over all 21 rolls, 
+
+yexact (x) = Ed∼D 
+
+[ max a V( ˜T (sx,d , a )) ] , (5) yielding an exact Bellman backup equivalent to the “1-ply amplified equity” target of Hilton (2020). We use sampled (0-ply) backups for the initial training (roughly 5 × faster per transition) until a plateau is reached, then switch to exact (1-ply) backups until a second plateau is reached. 
+
+3.3 The Doubling Cube as an Action-Space Extension 
+
+In money games, cube handling is typically implemented as a separate decision module on top of a learned cubeless evaluator: given an estimate of cubeless equity, apply Janowski’s analytic formulas (Janowski, 1993) to decide whether to double, take, or drop. We instead treat cube-offer decisions , in which the player on roll must decide whether to double, as ordinary actions in the agent’s action space, which is arguably a more natural RL formulation. As no dice are rolled during a cube-offer decision, transitions are deterministic and we can apply equation (1) directly, with the maximization ranging over the cube actions 
+
+{no_double , offer_double }.9 Its sampled and exact targets therefore coincide: 
+
+ysampled (s) = yexact (s) = max a V( ˜T (s, a )). (6) Thus, during 1-ply training, our code takes the more expensive expectation over dice rolls for checker plays but uses the cheaper update (6) for cube-offer decisions. When a cube is offered, the player faces a take/pass decision. We resolve this greedily with respect to the learned value function V , taking the cube when the resulting position is worth more than conceding the current cube value and passing otherwise. Thus, the decision is driven by the learned evaluator. Take/pass could instead be modeled as explicit actions during RL, but in preliminary experiments this yielded minimal benefit at significant computational cost. We suspect that the complexity of take/pass decisions is captured implicitly from learning the closely related cube-offer decisions. Backgammon money games are most commonly played with the Jacoby rule , under which a gammon or backgammon counts as more than a normal win only after the cube has been turned (offered and accepted at least once). During training our code handles this directly for the on-roll player during a cube-offer decision: when the cube is centered, it offers a double whenever the opponent will pass. Algorithm 1 provides pseudo-code for cube-offer decisions and their subsequent TD update during self-play. The single max in Eq. (6) and the explicit min in Algorithm 1 are consistent. In the equation, the opponent’s take/pass response is folded into the successor value V ( ˜T (s, offer_double )), as the state transitioned to after the cube-offer is whatever the opponent’s equity-minimizing response leads to. Algorithm 1 instead resolves that response concretely as Vdouble = min( Vtake , V pass ). The factor of 2 in the Vtake calculation reflects that a take doubles the stake; it appears as a constant rather than depending on the current cube level because 
+
+model (·) returns equity from the mover’s view normalized by the current cube value (Sec. 3.2). It is useful to work through two examples. 
+
+Example 1. Suppose the agent owns the doubling cube (having previously taken a cube) and is on roll with board state b, so it must decide whether to redouble. The current state s consists of b together with the cube-ownership one-hot vector c = ( cube_centered , cube_own , cube_opp_own ) and the flag is_cube_action .Here c = (0 , 1, 0) (the agent owns the cube) and is_cube_action = 1 (the agent faces a cube decision). To 
+
+> 9As there is no stochastic element, the state and pseudo-state are identical and our model acts directly on the state.
+
+7Algorithm 1 PureTD 0-ply training for cube decisions Input: the encoded board board at a cube-offer decision, the cube-ownership binary indicators 
+
+cube_centered and cube_own (exactly one of which is 1), and the current evaluator model .
+
+Notation: a state concatenates the encoded board with a 4-tuple of binary cube features (⟨cube centered ⟩, ⟨cube owned by us ⟩, ⟨cube owned by opponent ⟩, ⟨is cube action ⟩), in that order; model (·)is a forward pass of the evaluator (equity from the mover’s view normalized by the cube’s value), which TD_update trains toward the target. 
+
+cube ← (cube_centered , cube_own , 0, 1) // current decision is a cube action 
+
+s ← concat( board , cube ) // current state 
+
+// Value of not doubling (cube unchanged; next is a checker decision) cube nd ← (cube_centered , cube_own , 0, 0) 
+
+Vno_double ← model (concat( board , cube nd )) // Value if we double and the opponent takes (opponent now owns the cube; stake doubles) cube dt ← (0 , 0, 1, 0) 
+
+Vtake ← 2 · model (concat( board , cube dt )) // If we double and the opponent passes, we win the current cube value (normalized to 1) 
+
+Vpass ← 1// The opponent takes or passes to minimize our equity 
+
+Vdouble ← min( Vtake , V pass )
+
+opp _passes ← (Vtake > V pass )// We pick the cube action that maximizes our equity under the Jacoby rule 
+
+if cube_centered = 1 and opp _passes then 
+
+cube _decision ← double_pass , Vtarget ← Vpass // Jacoby rule logic 
+
+else if Vdouble > V no_double then if opp _passes then 
+
+cube _decision ← double_pass , Vtarget ← Vpass 
+
+else 
+
+cube _decision ← double_take , Vtarget ← Vdouble 
+
+end if else 
+
+cube _decision ← no_double , Vtarget ← Vno_double 
+
+end if 
+
+// Trains model: TD update of the current state toward the chosen successor value 
+
+TD_update(input = s, target = Vtarget )
+
+if cube _decision = double_pass then 
+
+the game terminates and we win the current cube value 
+
+else 
+
+proceed to the checker-play decision for the same player and board 
+
+end if 
+
+make a decision, the agent evaluates the possible next states, each of which is either terminal or shares the same board state b. Not redoubling leads to a state sno-recube with c = (0 , 1, 0) and is_cube_action = 0. When redoubling, the on-roll player computes whether the opponent will take or pass, a decision that is 8s: cube decision       
+
+> agent owns cube
+> c=(0 ,1,0)
+> is_cube_action =1
+> sno-recube
+> (agent’s checker play)
+> c=(0 ,1,0)
+> is_cube_action =0
+> opp. take/drop
+> srecube
+> (opp. owns cube)
+> c=(0 ,0,1)
+> is_cube_action =0
+> terminal
+> agent wins cube value
+> no_double
+> offer_double
+> take drop
+> TD TD TD
+
+Figure 1: Example 1 as a sequence of MDP transitions. The agent is on roll and owns the cube (state 
+
+s), shown with its cube-ownership one-hot vector c and is_cube_action flag. no_double transitions directly to the agent’s checker play ( sno-recube ); offer_double hands the opponent a take/drop decision, which the on-roll agent computes analytically (drop iff 2 V (srecube ) > 1). A take leads to srecube (the opponent now owns the cube); a drop ends the game with the agent winning the current cube value. Solid arrows are state transitions; dashed arrows mark the TD update that backs the realized next-state value up to V (s). itself greedy with respect to the model, 10 and thereby identifies the corresponding next state from among the following: • Redoubling followed by a take leads to a state srecube with c = (0 , 0, 1) and is_cube_action = 0 (after the redouble the opponent owns the cube, and the agent is back to a checker decision). • Redoubling followed by a drop leads to a terminal state in which the agent wins the current cube value. Now, suppose the agent redoubles and the opponent takes; the state then transitions from s to srecube , and we store a TD update training V (s) toward 2 V (srecube ) (the stake doubles after a take). If instead the opponent drops, the state transitions to a terminal state in which the on-roll agent wins, again triggering a TD update for s. Figure 1 diagrams this worked example. 
+
+Example 2. Suppose the cube is centered and the agent on roll faces a cube decision: c = (1 , 0, 0) and 
+
+is_cube_action = 1. Suppose the agent chooses no_double . The state transitions to sno-double with the same board state, c = (1 , 0, 0), and is_cube_action = 0: the cube remains centered, and the agent now makes its checker play. Even though no offer was made, this is still a real MDP transition, and we generate a TD update training V (s) toward V (sno-double ). The cube-decision state and the subsequent checker-play state are distinct network inputs (where only the is_cube_action flag differs). Our treatment of cube decisions follows the same spirit as Lin (2020) but corrects a key conceptual flaw in its formulation. Lin generates a training sample for the cube decision when an offered cube is taken or dropped, but not for the no-double case: lacking an is_cube_action feature, Lin’s network cannot distinguish the cube-decision state from the resulting post-no-double checker-play state (Example 2), so training on a no-double transition would be a no-op. We instead generate a TD training sample for every cube-offer decision ( offer_double or no_double ) and add is_cube_action so the network can distinguish a cube-decision query from a checker-play query at the same board position. In an early implementation, similar to Lin, we omitted is_cube_action , forcing cube-decision and post-no-double states to share a value. Play was strong, but the agent failed to double in clear double/pass positions:    
+
+> 10 The opponent drops precisely when 2 V(srecube )>1.
+
+9the cube-decision value is exactly 1 (double, opponent passes), while the post-no-double value is the equity of continued play, typically much less than 1. The decision rule needs both, but a single shared estimate cannot represent them. For a full ablation study of our approach compared to Lin’s, see Section 4.5. 
+
+Action space. At cube-decision points (beginning of the side-to-move’s turn, provided the cube is centered or owned by the mover), legal actions are {no_double , offer_double }. Otherwise, legal actions are the usual checker-play moves. 
+
+Input features. As described in Sec. 3.1, the 196-feature board encoding is extended by three one-hot cube-ownership features and an is_cube_action flag, for a total input dimensionality of 200. 
+
+## 4 Experiments 
+
+4.1 Baselines and Metrics 
+
+Baselines. We compare against two open-source engines, to our knowledge the strongest available as of July 15, 2026 (see Sec. 2). Our primary baseline is GNU Backgammon (GNU Backgammon Developers, 2024a). For head-to-head play we run the gnubg binary as a separate process and drive an agent through its external-player socket interface, so every checker move and cube decision is produced by gnubg itself. Also included is Open Sage (Higgins, 2026), a recently released and actively developed engine. In the strength comparisons of Sec. 4.2, move pruning is disabled for both baselines at 1-ply, so every engine expands every legal move. We found pruning to have a very minor impact on results. Analysis settings and further details are listed in Appendix A. We report head-to-head strength as equity per game (mEq/game, in milli-equity units). 
+
+Metrics. The ideal metric for comparing backgammon bots is head-to-head play over many games. In the cubeful setting, we also include offline analysis of our model by XG and gnubg . XG’s metric is Performance Rating (PR) with internal analysis level XG++ (Dufaure de Citres, 2011a), and gnubg ’s metric is Error Rate 
+
+(mEMG) with 4-ply for the analysis level. Both of these offline methods compute an error rate, with lower scores better and 0 being best. For human reference, the Backgammon Masters Awarding Body (Backgammon Masters Awarding Body, 2014) awards its top titles by XG’s PR: a PR of 4 or lower earns “Grand Master” and a PR of 2 .5 or lower “Super Grand Master” (held by only two or three living players); play below a PR of roughly 2 is generally regarded as super-human. 
+
+XG++ Performance Rating. XG++ is eXtreme Gammon’s strongest standard analysis level; we use it to compute the Performance Rating, PR = 500 × total equity lost number of unforced decisions ,
+
+where equity lost is computed against the XG++ evaluation, a proprietary truncated-rollout method. Thus a PR of 1 .0 corresponds to an average loss of 0 .002 equity per decision and 0 is judged as perfect play. 
+
+gnubg Error Rate (mEMG). gnubg ’s Error Rate (mEMG) is an error rate much like XG’s PR: total equity lost divided by the number of decisions, expressed in milli-equity per decision, with equity lost computed using gnubg ’s 4-ply evaluation. An mEMG of 2 .0 thus corresponds to the same 0 .002 equity loss per decision as a PR of 1 .0. Additionally, gnubg counts decisions slightly differently than XG. 
+
+Confidence intervals. All reported intervals are 95%. Head-to-head equity, mEMG, and XG++ PR use game-level percentile bootstraps ( B = 10 ,000, except B = 100 ,000 for the XG++ PR analyses), and both players of a self-play game enter a resample together, since the two sides of the same game are not independent. The throughput intervals of Sec. 4.3 are not bootstraps. Each is a t-interval over five independent runs, because run-to-run variation exceeds the within-run sampling error (Appendix A). 10 4.2 Experimental Results 
+
+Cubeless money. Modern backgammon engines such as gnubg , Open Sage, BGBlitz (Berger, 2025), and, we believe, XG (Dufaure de Citres, 2011a) train a cubeless money evaluator (for money games without a doubling cube) that predicts a probability for each distinct game outcome, and achieve competitive play by combining it with run-time search and a heuristic based on Janowski’s formulas for the cube action. For a more level comparison of the evaluator alone, we also train such a model, which we call prob5 . Our prob5 model is distinct from our cubeful money model, and the two were trained independently. Cubeless results labeled PureTD use this prob5 model. The prob5 model uses the same 196-feature board encoding as our cubeful model and, following standard practice, has five probability outputs: P (win), P (win gammon), P (win backgammon), P (lose gammon), and 
+
+P (lose backgammon), from the side-to-move’s perspective. The five outputs are independent sigmoids. They are trained by the same TD-learning procedure as our cubeful model (Section 3.2) and can be viewed as separate MDPs that share the same transition dynamics but carry their own terminal rewards: 1 for the corresponding outcome and 0 otherwise. The scalar equity used for action selection, in both training and evaluation, is 
+
+E = 2 P (win) − 1 + P (win gammon) + P (win backgammon) − P (lose gammon) − P (lose backgammon) .
+
+At matched 0-ply our prob5 model is substantially stronger than both baselines (Table 2). PureTD’s advantage at 0-ply persists even when the baselines are given an extra ply of search. 
+
+Table 2: Cubeless-money strength. Our prob5 model (4 hidden layers, [512 ,512 ,256 ,128], 528k parameters) versus the baselines. Each row gives that engine’s head-to-head equity against our prob5 model at 0-ply, over 10 7 games (negative indicates a loss to our model). Brackets give 95% confidence intervals. Engine vs. PureTD 0-ply (mEq) 
+
+gnubg , 0-ply −46 .3 [ −47 .2, −45 .5] 
+
+gnubg , 1-ply −12 .8 [ −13 .6, −11 .9] Open Sage, 0-ply −39 .4 [ −40 .3, −38 .6] Open Sage, 1-ply −8.1 [ −9.0, −7.2] 
+
+Cubeful money. We now turn to our main model, which learns to play end-to-end with the doubling cube. In addition to head-to-head results we also perform offline evaluation of our model and the baselines with XG and gnubg analysis, using XG++ and 4-ply for the analysis levels respectively. The offline analysis was performed on self-play games (same engine playing both sides); however, we found it to be generally robust when the analysis was instead performed on games between separate (but strong) agents (Appendix C). All cubeful money games in this paper, in training and evaluation alike, use the Jacoby rule (Sec. 3.3). Finally, because equity is in principle unbounded, per-game equity was capped at ±128 in all head-to-head results in this paper. During play, a game occasionally reaches a complicated back game that neither engine understands, and both sides cube aggressively, leading to runaway cube values. Such games are extremely infrequent, roughly two per million, but have an outsized effect on the mean and variance. Note that in money play, once the cube has been turned, optimal play is the same regardless of the cube’s value. Capping the equity of these runaway games therefore does not conceal a major deficiency in play, except possibly in the complicated back games themselves. We examined a handful of such games involving PureTD, and in every case XG judged PureTD the better side, though both engines cubed aggressively as underdogs. Similar to the cubeless-money results, our cubeful model is substantially stronger than both baselines (Table 3) and remains stronger even when opponents are allowed a narrow search: searchless PureTD wins +19 .8mEq/game versus gnubg at 1-ply and +17 .4 versus Open Sage at 1-ply. 11 Table 3: Cubeful-money strength. Our best model (4 hidden layers, [512 ,512 ,256 ,256], 562k parameters) versus the baselines. The mEMG column uses 4 ,000 self-play games per row. The XG++ PR column uses 1,000. The last column is each engine’s head-to-head equity against our model at 0-ply (negative indicates a loss to our model) over 10 7 games. Engine mEMG XG++ PR vs. PureTD 0-ply (mEq) PureTD (ours), 0-ply 1.85 [1 .80 , 1.90] 0.94 [0 .89 , 0.99] —
+
+gnubg , 0-ply 3.81 [3 .72 , 3.90] 2.18 [2 .10 , 2.27] −78 .8 [ −80 .6, −77 .0] 
+
+gnubg , 1-ply 2.03 [1 .98 , 2.08] 1.21 [1 .15 , 1.27] −19 .8 [ −21 .7, −18 .0] Open Sage, 0-ply 3.93 [3 .84 , 4.02] 2.28 [2 .12 , 2.51] −81 .9 [ −83 .8, −80 .0] Open Sage, 1-ply 2.20 [2 .15 , 2.26] 1.28 [1 .20 , 1.39] −17 .4 [ −19 .4, −15 .5] 
+
+4.3 Computational Cost 
+
+We report raw evaluation throughput, measured on the CPU (GPUs were used during training but not for any results in this section). Note that our implementation was not optimized for speed and instead optimized for the strongest 0-ply model. We use the two benchmarks described below, reporting throughput for both on two machines, an AMD Zen 5 and an older AMD Zen 3 desktop. Appendix A details each engine’s evaluation path and the benchmark scripts that reproduce these numbers. 
+
+Self-play benchmark. Each engine is run on a single thread and generates games under self-play. We report decisions per unit time, so the measurement is decoupled from game length. 
+
+Fixed-position benchmark. Each engine is run on a single thread over the same fixed pool of 8 ,000 positions sampled from completed games. Open Sage does not currently implement efficient APIs for cubeful money play or for self-play, so we use the fastest paths it provides, but note that only its cubeless fixed-position measurement is truly representative of its evaluation cost (details in Appendix A). Furthermore, for cubeful play, the self-play benchmark should be favored for gnubg : during self-play, gnubg reuses computation between cube and checker decisions that share the same board state (in the same turn, for the player on roll). For these reasons, and to keep the tables uncluttered, we report the fixed-position benchmark for cubeless money and the self-play benchmark for cubeful money in the tables below and omit Open Sage from the cubeful table (Appendix B has tables with all benchmark numbers). Cost and strength by game type are reported together in Tables 4 (cubeless) and 5 (cubeful money). At 0-ply our code is 5–12 × slower than gnubg and 2.7–4.6 × slower than Open Sage’s efficient path. Part of the gap is due to our method using larger networks, and part is due to the fact that gnubg relies on optimized, hand-written code for network evaluation, whereas ours runs through a general-purpose PyTorch path. At 1-ply the comparison is further complicated by move pruning. Throughout this section the throughput entries use the default pruning settings chosen by each engine’s developers. Open Sage retains the top five moves within 0 .08 equity as ranked by its 0-ply evaluation, whereas gnubg ’s default pruning is looser (up to eight moves within 0 .16 equity), retaining about 60% more moves in practice. gnubg additionally uses dedicated pruning networks to select opponent replies. We found that pruning had a very minor impact on playing strength (Appendix A). Taken together, these results point to a favorable cost versus strength tradeoff for PureTD: our 0-ply network is stronger than both gnubg and Open Sage even when they are granted a 1-ply search, yet evaluates at least 2.5× faster than that search. 12 Table 4: Cubeless-money cost versus strength. Strength is each baseline’s head-to-head equity (mEq/game) against our PureTD 0-ply model. Cost is single-thread checker-decision throughput (decisions/s) under the fixed-position benchmark. At 1-ply the baselines use their developer-default move pruning, so the 1-ply head-to-head values differ slightly from those in Table 2. After each dec/s we provide the factor relative to PureTD (2 × means twice as fast as PureTD); confidence intervals for all throughput numbers appear in Appendix B.                         
+
+> Engine Depth Equity vs PureTD (mEq) dec/s (Zen 5) dec/s (Zen 3) PureTD 0-ply —5,992 2,360
+> gnubg 0-ply −46 .333 ,224 (5 .5×)19 ,784 (8 .4×)Open Sage 0-ply −39 .416 ,101 (2 .7×)10 ,948 (4 .6×)
+> gnubg 1-ply −13 .31,254 (0 .21 ×)767 (0 .33 ×)Open Sage 1-ply −7.91,042 (0 .17 ×)640 (0 .27 ×)
+
+Table 5: Money (cubeful) cost versus strength. Strength is gnubg ’s head-to-head equity (mEq/game) against our PureTD 0-ply model and XG++ PR. Cost is single-thread cubeful-decision throughput (decisions/s) under the self-play benchmark. At 1-ply gnubg uses its developer-default move pruning, so the 1-ply head-to-head and XG++ PR values differ slightly from the unpruned entries of Tables 3 and 6. Each dec/s entry is followed by the factor relative to PureTD, as in Table 4. Confidence intervals for these values appear in Tables 3 and 8 and in Appendix B.                     
+
+> Engine Depth Equity vs PureTD (mEq) XG++ PR decisions/s (Zen 5) decisions/s (Zen 3) PureTD (ours) 0-ply —0.94 8,391 2,988
+> gnubg 0-ply −78 .82.18 54 ,534 (6 .5×)35 ,074 (11 .7×)
+> gnubg 1-ply −18 .61.25 1,839 (0 .22 ×)1,151 (0 .39 ×)
+
+4.4 Effect of Search 
+
+Although the main goal of this paper is to examine RL techniques in the no-evaluation-search (0-ply) setting, it is natural to wonder how engines based on these models improve with search. Under matched 1-ply and 2-ply look-ahead, our money model’s offline error rate continues to fall as the search depth increases (Table 6), and at every matched depth it is lower than both baselines’, indicating that our networks are substantially stronger at the same search depth. As in our previous strength comparisons, the baselines’ 1-ply move pruning is disabled (see Appendix A for results that use pruning). For 2-ply, pruning is required to keep run times manageable, and we allow all methods to evaluate every legal move per position but use the default settings for pruning the opponent’s responses. For PureTD 2-ply, we apply 1-ply analysis to only the opponent’s top move as ranked by 0-ply. Head-to-head play is prohibitively slow at these depths, so this section relies on offline XG analysis rather than head-to-head equity. 
+
+Table 6: Effect of look-ahead depth on cubeful money playing strength. XG++ PR at matched search depth; 1 ,000 self-play games per cell, with 95% confidence intervals in brackets. Metric 0-ply 1-ply 2-ply Money, XG++ PR — PureTD 0.94 [0 .89 , 0.99] 0.46 [0 .43 , 0.50] 0.29 [0 .26 , 0.32] Money, XG++ PR — gnubg 2.18 [2 .10 , 2.27] 1.21 [1 .15 , 1.27] 0.56 [0 .52 , 0.60] Money, XG++ PR — Open Sage 2.28 [2 .12 , 2.51] 1.28 [1 .20 , 1.39] 0.43 [0 .40 , 0.45] 13 4.5 Cube-Handling Ablation 
+
+The main difference between our cube-handling formulation and prior work by Lin (2020) is the addition of a TD training sample for every cube-offer decision (including no_double ) and a corresponding is_cube_action 
+
+input feature for those decisions (Sec. 3.3). To understand the impact of these changes, we trained a variant of our cubeful money model with both additions removed, to apparent convergence. As shown in Table 7, in head-to-head play at matched 0-ply the full model wins decisively and nearly halves the XG++ PR (1 .70 to 0.94), with an especially large improvement to cube decisions. 
+
+Table 7: Cube-handling ablation. Our best cubeful money model versus a variant trained with Lin’s formulation. In offline metrics mEMG and XG++ PR, lower is better. Checker PR and Cube PR show how XG++ PR splits by decision type. The last column is head-to-head equity of Lin’s variant against PureTD at 0-ply (negative indicates a loss to PureTD).                         
+
+> Model mEMG XG++ PR Checker PR Cube PR vs. PureTD, 0-ply (mEq) PureTD 1.85 [1 .80 ,1.90] 0.94 [0 .89 ,0.99] 1.00 [0 .95 ,1.06] 0.60 [0 .49 ,0.73] —Lin-style ablation 3.05 [2 .95 ,3.15] 1.70 [1 .61 ,1.78] 1.60 [1 .53 ,1.69] 2.13 [1 .87 ,2.41] −46 .4 [ −48 .0,−44 .9]
+
+## 5 Limitations and Future Work 
+
+There are several natural directions for future work. First, we restrict attention to money games (cubeless and cubeful money) and do not evaluate on match play , where score-aware cube strategy and the much longer horizon to a terminal state pose additional challenges for an RL approach. Second, while the focus here has been on performance and capacity of the neural networks without evaluation-time search , a systematic study of the models with search is an important follow-up. Third, we do not yet explore the kind of deep learned-model planning used by AlphaZero and stochastic MuZero (Antonoglou et al., 2022), which combine a learned evaluator with substantial MCTS-style look-ahead and could plausibly push playing strength further still. 
+
+## 6 Conclusion 
+
+We presented PureTD, an open-source backgammon money-game engine trained using a pure RL formulation similar to Tesauro’s original TD-Gammon. With no look-ahead search, it achieves stronger play than our baselines, Open Sage and gnubg , with a one-step look-ahead search. Relative to prior work, our networks are substantially larger, are trained in batches rather than online, and learn cube action directly. 
+
+## Acknowledgments 
+
+I am grateful to Øystein Schønning-Johansen for extensive discussions, proofreading of the paper, and help identifying bugs in early versions of the code, to Frank Berger for valuable feedback on the project and early paper draft, and to Carsten Wenderdel (author of wildbg ) for discussions that shaped the supervised-learning settings, network topology, and approaches used here. Jacob Hilton’s OCaml implementation clarified the 1-ply amplified-equity idea, and gnubg , from the GNU Backgammon developers, served as the evaluation baseline throughout this work. Coding assistance was provided by Claude (Anthropic). 
+
+## References 
+
+Ioannis Antonoglou, Julian Schrittwieser, Sherjil Ozair, Thomas K. Hubert, and David Silver. Planning in stochastic environments with a learned model. In International Conference on Learning Representations (ICLR) , 2022. 14 Backgammon Galore. Backgammon glossary: Recube vig, 2024. https://bkgm.com/gloss/lookup.cgi? recube+vig .Backgammon Masters Awarding Body. Backgammon masters awarding body (BMAB). https://usbgf. org/results/awards-recognition/backgammon-masters-awarding-body-bmab/ , 2014. Accessed May 2026. Frank Berger. BGBlitz: Technical background. https://bgblitz.com/download/blog/Aachen_BGBlitz. pdf , 2025. Accessed April 2026. Tianqi Chen, Ian Goodfellow, and Jonathon Shlens. Net2Net: Accelerating learning via knowledge transfer. In International Conference on Learning Representations (ICLR) , 2016. arXiv:1511.05641. Xavier Dufaure de Citres. eXtreme Gammon. https://www.extremegammon.com/ , 2011a. Version 2; accessed April 2026. Xavier Dufaure de Citres. eXtreme Gammon 2 Help. https://www.extremegammon.com/extremegammon2. pdf , 2011b. Section “How eXtreme Gammon works”, p. 139; accessed August 2026. GNU Backgammon Developers. GNU Backgammon. https://www.gnu.org/software/gnubg/ , 2024a. Version 1.08.003; accessed April 2026. GNU Backgammon Developers. GNU Backgammon Manual. Section “Equities explained”; distributed with the GNU Backgammon 1.08.003 sources as doc/gnubgdb.xml , 2024b. Mark Higgins. Open Sage ( bgsage ): an open-source backgammon engine. https://github.com/markbgsage/ bgsage , 2026. Version 0.8.20260611 (commit e09bf9c , released June 11, 2026); accessed June 18, 2026. Jacob Hilton. Backgammon: a self-play reinforcement learning implementation in OCaml. https://github. com/jacobhilton/backgammon , 2020. Accessed April 2026. Rick Janowski. Take-points in money games. Das Backgammon Magazin and the Hoosier BG Club magazine, 1993. Analytic cube decision formulas based on live and dead action take points and the recube value. 
+
+https://bkgm.com/articles/Janowski/cubeformulae.pdf .Diederik P. Kingma and Jimmy Ba. Adam: A method for stochastic optimization. In International Conference on Learning Representations (ICLR) , 2015. arXiv:1412.6980. Andrew Lin. Learning cube strategy in backgammon with neural networks. In International Conference on Technologies and Applications of Artificial Intelligence (TAAI) , 2020. doi: 10.1109/TAAI51410.2020.00014. 
+
+https://ieeexplore.ieee.org/document/9382451/ .Lasse Hjorth Madsen. Janowski’s cube formulas: a practical review. https://lassehjorthmadsen.github. io/bganalyses/analyses/janowski.html , 2024. Accessed May 2026. Anian Ruoss, Grégoire Delétang, Sourabh Medapati, Jordi Grau-Moya, Li Kevin Wenliang, Elliot Catt, John Reid, Cannada A. Lewis, Joel Veness, and Tim Genewein. Amortized planning with large-scale transformers: A case study on chess. In Advances in Neural Information Processing Systems (NeurIPS) ,2024. arXiv:2402.04494. David Silver, Thomas Hubert, Julian Schrittwieser, Ioannis Antonoglou, Matthew Lai, Arthur Guez, Marc Lanctot, Laurent Sifre, Dharshan Kumaran, Thore Graepel, Timothy Lillicrap, Karen Simonyan, and Demis Hassabis. A general reinforcement learning algorithm that masters chess, shogi, and Go through self-play. Science , 362(6419):1140–1144, 2018. doi: 10.1126/science.aar6404. Richard S. Sutton and Andrew G. Barto. Reinforcement Learning: An Introduction . MIT Press, 2nd edition, 2018. Gerald Tesauro. Practical issues in temporal difference learning. Machine Learning , 8(3–4):257–277, 1992. doi: 10.1007/BF00992697. 15 Gerald Tesauro. Temporal difference learning and TD-Gammon. Communications of the ACM , 38(3):58–68, 1995. doi: 10.1145/203330.203343. Gerald Tesauro. Programming backgammon using self-teaching neural nets. Artificial Intelligence , 134(1–2): 181–199, 2002. doi: 10.1016/S0004-3702(01)00110-2. Carsten Wenderdel. wildbg: a modern neural-network backgammon engine. https://github.com/ carsten-wenderdel/wildbg , 2024. Accessed April 2026. 
+
+## A Reproducibility Details 
+
+Engine versions. The specific versions (the latest at the time of our experiments) we used were Open Sage v1.3.20260723 (commit a9576e8ab300e36969329e842962232883f7d90d ) and the GNU Backgammon program, version 1.08.003 (network weights md5 14184acc9c60ef67be0fad88548fd51a ). All mEMG error rates in this paper were computed with gnubg run via its command-line interface and analyzing at 4-ply. The exact commands used for all head-to-head and mEMG experiments are recorded in our repository, in 
+
+experiments/head_to_head and experiments/offline_analysis respectively. 
+
+gnubg configuration. Head-to-head games drive the unmodified gnubg 1.08.003 binary through its external-player interface. For an N -ply configuration, checker and cube evaluation are set to the same depth N . All other evaluation parameters are gnubg ’s shipped defaults: noise 0 .0 (deterministic evaluation), the two-sided bearoff database ( gnubg_ts0.bd ) loaded, and the default evaluation cache of 2 19 entries. When pruning is enabled (the cost results of Sec. 4.3), gnubg uses its pruning networks with the default “Normal” move filter (up to 8 moves within 0 .16 equity of the best); the strength results of Sec. 4.2 instead disable the pruning networks and use a keep-all move filter, as described under “1-ply move pruning” below. 
+
+Open Sage configuration. Head-to-head and benchmark runs use bgsage 1.3.20260723 (markbgsage/bgsage commit a9576e8 ). We use each of its two evaluation paths where it is native: 
+
+BgBotAnalyzer for cubeful play and best_move_index selection for cubeless. Its ply convention is offset from ours by one, so what we report as N -ply is Open Sage’s “( N +1)P” setting, and all other parameters are its shipped defaults. Its root move filter acts only where a deeper search follows, so at 0-ply it is inert. The cost results of Sec. 4.3 keep the shipped filter, which retains the top five moves within 0 .08 equity as ranked by the 0-ply evaluation. The 1-ply strength results of Sec. 4.2 set SAGE_UNPRUNED=1 , widening it to 1 ,000 moves within 10 .0 equity and effectively expanding every legal move. 
+
+XG++ PR computation. XG++ PR analyses use eXtreme Gammon’s per-game statistics export, which contains two rows per game (one per player) with that player’s equity lost and unforced-decision counts. The script tools/analyze_xg_results.py in our repository sums equity lost over all rows, divides by the total number of unforced decisions, and multiplies by 500 (Sec. 4.1). The 95% interval comes from resampling whole games (both players together) 100 ,000 times and taking the 2.5th and 97.5th percentiles. 
+
+1-ply move pruning. All head-to-head games and the mEMG and XG++ PR analyses reported in Sec. 4.2 use move pruning disabled, so at 1-ply every engine expands every legal move. The cost versus strength tables of Sec. 4.3 instead use each engine’s developer-default pruning (the baselines’ 1-ply head-to-head and XG++ PR entries of Tables 4 and 5 are re-measured with pruning enabled). Pruning has only a small effect on these results: with each engine’s default pruning enabled instead, every head-to-head result changed only slightly, and none of the four pruned-versus-unpruned contrasts is statistically significant. 
+
+Computational benchmark setup. All numbers are reproducible in our git repository (see 
+
+experiments/benchmarks/README.md for command lines and the gnubg build recipe). For the self-play benchmark, each engine plays against itself and we report total wall-time divided by the number of decisions. Rows costing under ∼100 ms/game use 600 games, and the two Open Sage cubeful rows use 200. Every timed region is preceded by a 3 s core-clock ramp, without which a cold core pays a 16 Table 8: Effect of the baselines’ 1-ply move filter. Each entry is the engine’s head-to-head equity (mEq/game) against PureTD 0-ply (negative indicates a loss to our model), with 95% confidence intervals, over 10 7 games per cell. Cubeful entries are capped ( ±128) means with Jacoby on. The last column gives each configuration’s cubeful XG++ Performance Rating (lower is better) from 1 ,000 self-play games.                                 
+
+> Engine 1-ply move filter Cubeless (mEq) Cubeful (mEq) Cubeful XG++ PR
+> gnubg default pruning −13 .3 [ −14 .1,−12 .4] −18 .6 [ −20 .5,−16 .7] 1.25 [1 .20 ,1.32]
+> gnubg unpruned −12 .8 [ −13 .6,−11 .9] −19 .8 [ −21 .7,−18 .0] 1.21 [1 .15 ,1.27] Open Sage default pruning −7.9 [ −8.8,−7.0] −16 .2 [ −18 .2,−14 .2] 1.29 [1 .22 ,1.38] Open Sage unpruned −8.1 [ −9.0,−7.2] −17 .4 [ −19 .4,−15 .5] 1.28 [1 .20 ,1.39]
+
+roughly fixed ∼0.4 s penalty. Every 250 games we reset gnubg ’s session record, its in-memory log of the games played, because otherwise an artificial per-game bookkeeping cost accrues over the course of the run. A single combined per-decision cost is comparable across engines because the cube-to-checker decision ratio spans 0.68–0 .75 across every engine and search depth we measure. Each engine runs its own production machinery. 
+
+gnubg plays inside its official binary, compiled from unmodified 1.08.003 sources with –disable-threads 
+
+(the stock threaded build waits on a ∼10 ms task-queue poll per evaluation, which would otherwise swamp the true evaluation cost). Open Sage plays through its own two paths: BgBotAnalyzer for cubeful play and 
+
+best_move_index selection for cubeless (Higgins, 2026). The fixed-position benchmark ( fixedpool_bench.py for the native engines, fixedpool_bench_gnubg.py for 
+
+gnubg ) times each engine’s production per-decision call over pools of recorded decision points committed with the repository: the cubeless rows replay a shared pool of 8 ,000 positions ( fixedpool_positions.json ), and the cubeful rows replay a shared pool of 10 ,000 checker and 6 ,000 cube-offer decision points (fixedpool_cubeful_positions.json ) recorded from one seeded production cubeful self-play pass. Every engine replays identical positions under identical per-position cube states. Among the cube-offer decisions, about half are redouble decisions, with the cube already owned at 2 or higher, matching the natural mix during self-play. For both benchmarks, to account for variance across CPU cores, all methods are timed on the same core. Each reported figure is the mean of five independent runs, with 95% t-intervals over those five. Run-to-run variation (median 0 .53% sd across both hosts, max 3 .3%) exceeds the within-run sampling error, so the interval is taken across runs rather than by resampling decisions or games within one. Under both benchmark methodologies, PureTD 0-ply’s combined decision throughput is at least 2 .5× that of any 1-ply method (the closest case is gnubg 1-ply on Zen 3, at 2 .60 ×). 
+
+## B Complete Benchmark Tables 
+
+Tables 9 and 10 report throughput under both benchmarks (self-play and fixed-position) for both game types on both machines. For cubeful play the fixed-position benchmark measures the two decision types separately (checker play and cube action), whereas self-play reports a single combined rate over all decisions. 17 Table 9: Cubeless-money throughput, both benchmarks. Single-thread checker-decision throughput (decisions/s). Each figure is the mean of five independent runs and bracketed entries are 95% t-intervals over those five runs. 
+
+Self-play dec/s Fixed-pos dec/s Engine Depth Zen 5 Zen 3 Zen 5 Zen 3 PureTD 0-ply 5,911 [5 ,892 , 5,929] 2,237 [2 ,230 , 2,244] 5,992 [5 ,907 , 6,077] 2,360 [2 ,349 , 2,370] 
+
+gnubg 0-ply 30 ,371 [29 ,827 , 30 ,915] 18 ,973 [18 ,530 , 19 ,417] 33 ,224 [33 ,056 , 33 ,393] 19 ,784 [19 ,588 , 19 ,980] Open Sage 0-ply 6,061 [6 ,008 , 6,114] 2,742 [2 ,727 , 2,758] 16 ,101 [15 ,855 , 16 ,347] 10 ,948 [10 ,887 , 11 ,009] 
+
+gnubg 1-ply 1,124 [1 ,101 , 1,146] 699 [690 , 709] 1,254 [1 ,247 , 1,260] 767 [760 , 774] Open Sage 1-ply 976 [962 , 991] 562 [560 , 564] 1,042 [1 ,025 , 1,060] 640 [635 , 645] 
+
+Table 10: Cubeful-money throughput, both benchmarks. Single-thread throughput (decisions/s). Self-play reports one combined rate over checker and cube decisions while the fixed-position benchmark reports the two decision types separately. Each figure is the mean of five independent runs and bracketed entries are 95% t-intervals over those five runs. Open Sage’s cubeful rows run through its analyzer ( BgBotAnalyzer ), far slower than its efficient cubeless path for both decision types as its cube-action entry point additionally reloads the evaluator on every call, explaining much of the large gap between the measured speeds of its cubeless and cubeful methods. Self-play dec/s Fixed-pos checker dec/s Fixed-pos cube dec/s Engine Depth Zen 5 Zen 3 Zen 5 Zen 3 Zen 5 Zen 3 PureTD 0-ply 8,391 [8 ,301 , 8,481] 2,988 [2 ,954 , 3,022] 6,245 [6 ,218 , 6,272] 2,424 [2 ,417 , 2,431] 18 ,730 [18 ,402 , 19 ,058] 4,955 [4 ,911 , 4,999]                                                     
+
+> gnubg 0-ply 54 ,534 [53 ,902 ,55 ,165] 35 ,074 [34 ,532 ,35 ,616] 31 ,693 [31 ,473 ,31 ,913] 19 ,234 [18 ,448 ,20 ,020] 350 ,294 [346 ,287 ,354 ,302] 206 ,643 [205 ,675 ,207 ,610] Open Sage 0-ply 199 .9 [199 .4,200 .5] 99 .5 [99 .2,99 .9] 1,368 [1 ,360 ,1,376] 543 [540 ,546] 89 .0 [88 .9,89 .2] 35 .4 [35 .2,35 .7]
+> gnubg 1-ply 1,839 [1 ,802 ,1,876] 1,151 [1 ,133 ,1,168] 1,344 [1 ,340 ,1,347] 831 [811 ,850] 3,861 [3 ,849 ,3,874] 2,421 [2 ,392 ,2,451] Open Sage 1-ply 51 .7 [51 .4,52 .1] 29 .4 [29 .4,29 .5] 42 .7 [42 .5,42 .9] 26 .0 [25 .9,26 .0] 67 .7 [67 .6,67 .7] 34 .3 [34 .3,34 .4]
+
+## C Offline Analysis on Mixed-Play Games 
+
+The offline XG++ PR analyses of Sec. 4.2 are computed from self-play games (same engine playing both sides). As a robustness check, we also analyzed 1 ,000 head-to-head games between our cubeful money model at 0-ply and gnubg at 1-ply (unpruned), scoring each engine’s decisions separately. Table 11 compares the resulting PRs with the self-play values of Table 3; the estimates agree within the confidence intervals. 
+
+Table 11: Offline analysis on mixed-play games (95% confidence intervals). Engine XG++ PR (self-play) XG++ PR (head-to-head) PureTD (ours), 0-ply 0.94 [0 .89 , 0.99] 0.98 [0 .90 , 1.05] 
+
+gnubg , 1-ply 1.21 [1 .15 , 1.27] 1.29 [1 .20 , 1.39] 
+
+## D Retraining the Released Models 
+
+The tables below record a full retraining run. The prob5 and cubeful retrained models share a common trunk through step 17 of Table 12: prob5 branches off there, while the cubeful model continues through steps 18–19 first. Throughout, ply identifies the training target (0-ply is the sampled backup and 1-ply is the exact Bellman backup, as defined in Sec. 3.2), episodes counts self-play games in millions, and the two learning-rate columns give the value at the start and end of the stage, with “const” meaning it was held fixed. In the architecture-change column, “wu n” marks a stage using an n-round warmup ramp. Figure 2 tracks the strength of the prob5 run of Table 13 as its stages accumulate. 18 Table 12: Shared base: DMP, then cubeless equity. Steps 1–15 train the double-match-point network through the progressive expansion of Sec. 3.2. Steps 16–19 use the DMP model to warm-start a cubeless equity model. 
+
+# Architecture Change Ply Ep. (M) Start LR End LR 1 [ ] → [80] 0 1.0 1e-3 const 2 width [80] → [150] 0 0.5 5e-5 const 3 depth [150] → [150 , 150] 0 0.5 5e-5 const 4 width [150 , 150] → [256 , 256] 0 1.0 5e-5 const 5 width [256 , 256] → [512 , 512] 0 1.0 5e-5 const 6 depth [512 , 512] → [512 , 512 , 256] 0 3.0 5e-5 5e-6 7 — 0 3.0 2.5e-5 2.5e-6 8a — 1 0.5 5e-5 2.5e-6 8b — 0 0.5 2.5e-5 2.5e-6 9 depth [512 , 512 , 256] → [512 , 512 , 256 , 256] (wu20) 0 3.0 5e-5 5e-6 10 — 0 5.0 1e-4 1e-5 11 — 1 0.5 1e-4 1e-5 12 — 0 0.5 1e-5 const 13 — 0 5.0 5e-5 5e-6 14 — 1 0.5 5e-5 5e-6 15 — 0 0.5 5e-6 const 16 DMP → cubeless equity head (wu20) 0 15 .0 5e-5 5e-6 17 — 1 1.0 1e-5 const 18 — 1 9.0 1e-5 1e-6 19 — 1 4.0 9e-6 7.38e-6 
+
+Table 13: prob5 cubeless model. Starts from the result of step 17 of Table 12 (a cubeless equity model). The initial stage copies the base’s first three hidden layers ( ≈ 495k of prob5’s 528k parameters) while the final hidden layer and the five-output probability head are initialized fresh. 
+
+# Architecture Change Ply Ep. (M) Start LR End LR 1 equity [512 , 512 , 256 , 256] → prob5 [512 , 512 , 256 , 128] (wu20) 0 5.0 1e-4 1e-5 2 — 1 1.0 1.6e-4 const 3 — 1 3.0 1.8e-4 6e-5 4 — 0 2.0 1e-6 const 5 — 1 3.0 1.8e-4 6e-5 6 — 0 2.0 1e-6 const 7 — 1 3.0 1.8e-4 6e-5 8 — 0 2.0 1e-6 const 9 — 1 3.0 1.8e-4 6e-5 10 — 0 2.0 1e-6 const 11 — 1 3.0 9e-5 3e-5 12 — 0 2.0 1e-6 const 13 — 1 3.0 9e-5 3e-5 14 — 0 2.0 1e-6 const 15 — 1 3.0 4.5e-5 1.5e-5 16 — 0 2.0 1e-6 const 17 — 1 15 .3 1.5e-4 1.5e-5 18 — 0 2.0 1e-6 const 19 — 1 10 .8 1.0e-4 1.0e-5 20 — 0 2.0 1e-6 const 21 — 1 7.8 9e-5 9e-6 22 — 0 2.0 1e-6 const 
+
+19 production prob5 model: 46 .3       
+
+> 50 60 70 80 90 100 110 120 10 15 20 25 30 35 40 45 50
+
+Cumulative self-play episodes (millions) Equity vs.  gnubg  0-ply (mEq/game) 
+
+Figure 2: Strength of prob5 during training. Head-to-head equity against gnubg at 0-ply is measured at ten checkpoints of the run in Table 13, with 95% confidence intervals (the first five checkpoints use 10 6 evaluation games and the rest 2 × 10 6). The horizontal axis counts all self-play episodes behind each checkpoint, including the ≈ 42M episodes of the shared base inherited from step 17 of Table 12. The single largest gain comes from stage 2, the first 1M episodes of 1-ply training, which is worth about +12 mEq/game. The dashed line and gray band mark the production prob5 model’s 46 .3 [45 .5, 47 .2] mEq/game against the same opponent (Table 2). 
+
+Table 14: Cubeful-money model. Starts from the result of step 19 of Table 12, a cubeless equity model. The initial stage widens the input layer from 196 to 200 features, the four added features (three cube-ownership indicators and is_cube_action ) being initialized fresh, while the hidden layers and the equity head are copied unchanged.                                                                                               
+
+> #Architecture Change Ply Ep. (M) Start LR End LR 1cubeless equity →cubeful, 196 →200 inputs (wu20) 02.01e-4 const 2—015 .06e-5 1.53e-5 3—08.05e-5 5e-7 4—12.51.8e-5 const 5—09.02e-6 const 6—18.01.234e-5 1e-6 7—09.02e-6 const 8—17.01.11e-5 9e-7 9—09.02e-6 const 10 — (wu30) 121 .01e-5 2e-7 11 — (wu20) 14.09e-6 const 12 — (wu20) 14.09e-6 const 13 — (wu20) 112 .51.8e-5 const 14 — (wu20) 113 .01.69e-5 const 15 — (wu20) 111 .51.69e-5 1.4e-6 16 — (wu20) 119 .01.606e-5 1.33e-6 17 — (wu20) 122 .51.4454e-5 1.197e-6
+
+20 production parity          
+
+> 60 80 100 120 140 160 180 200 220 240
+> −120
+> −100
+> −80
+> −60
+> −40
+> −20 0
+> Cumulative self-play episodes (millions) Equity vs. production (mEq/game)
+
+Figure 3: Strength of the cubeful retraining run. Head-to-head equity against the production cubeful model is measured over the course of the run in Table 14, with 95% confidence intervals; zero marks parity with the production model. As in Figure 2, the horizontal axis counts all self-play episodes behind each checkpoint, here including the ≈ 55M episodes of the DMP and cubeless-equity stages that precede the first cubeful episode. Evaluation precision is not uniform: the four points at or below 80M use 2 × 10 5 games (intervals of roughly ±13 mEq/game, directional only), most of the remainder use 10 6 games ( ±5.7), and the points at 190 .5M and 232M use 10 7 games ( ±1.8). The run reaches parity at 190 .5M and holds it thereafter, ending at +1 .5 [ −0.3, 3.2] after 232M episodes. 21

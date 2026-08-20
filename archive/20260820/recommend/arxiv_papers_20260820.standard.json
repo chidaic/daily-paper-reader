@@ -1,0 +1,374 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-20T20:23:10.461172+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 3,
+    "deep_cap": 6,
+    "deep_selected": 3,
+    "quick_candidates": 6,
+    "quick_skim_target": 11,
+    "quick_selected": 6
+  },
+  "deep_dive": [
+    {
+      "id": "2608.14982v1",
+      "source": "arxiv",
+      "title": "Do Geometry-Aware Positional Encodings Help Transformers in Spatial Imperfect-Information Games?",
+      "abstract": "Transformers applied to spatial imperfect-information games must represent map geometry while tracking hidden entities through time. We ask whether geometry-aware positional encodings improve these capabilities, without claiming a new positional encoding. We construct a four-level benchmark on a hexagonal naval pursuit game: controlled geometry and topology probes, an exact-Bayes hidden-target tracking task, offline policy imitation at 1k and 10k games, and 7,200 fixed-seed games against three legacy opponents. Across matched Transformer backbones, HexRoPE reduces exact-belief posterior cross-entropy relative to no positional encoding by 0.278 on D6-transformed test orbits and 0.329 on a larger map; both hierarchical-bootstrap confidence intervals exclude zero, and both Holm-adjusted p-values are below 0.001. At 1k games, HexRoPE improves policy action accuracy by 4.63 percentage points over no encoding and 2.05 points over rectangular relative bias; the gains shrink to 1.55 and 0.41 points at 10k games. However, HexRoPE does not improve aggregate gameplay win rate: its paired effect over no encoding is -1.56 percentage points (95% CI [-4.50, 1.17]). Rectangular relative bias is strongest on D6 belief consistency but fails sharply when extrapolating from radius 3 to radius 4, while graph bias provides only a small blocked-edge gain. The results show that geometric inductive bias improves belief estimation and data-efficient imitation, but those representation gains do not automatically produce stronger closed-loop play.",
+      "authors": [
+        "Wenji Fu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "stat.ML"
+      ],
+      "published": "2026-08-15T02:20:10+00:00",
+      "link": "https://arxiv.org/pdf/2608.14982v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Directly studies AI agents in spatial imperfect-information games with Transformers",
+      "llm_evidence_cn": "直接研究空间不完全信息博弈中基于Transformer的AI智能体",
+      "llm_evidence": "直接研究空间不完全信息博弈中基于Transformer的AI智能体",
+      "canonical_evidence": "直接研究空间不完全信息博弈中基于Transformer的AI智能体",
+      "llm_tldr_en": "Investigates geometry-aware positional encodings for Transformers in spatial imperfect-information games, showing HexRoPE improves hidden-target belief tracking and policy quality.",
+      "llm_tldr_cn": "空间不完全信息博弈中的Transformer需要同时处理地图几何与隐藏实体追踪，但常见位置编码未显式编码几何关系。论文在六边形追击博弈上构建四层基准，对比不同位置编码对精确贝叶斯信念追踪、离线策略模仿和定种子对抗的影响。结果显示HexRoPE能显著降低信念后验交叉熵，提升追踪与策略表现。这为博弈型AI智能体的架构设计提供了可借鉴的几何感知编码经验。",
+      "llm_tldr": "空间不完全信息博弈中的Transformer需要同时处理地图几何与隐藏实体追踪，但常见位置编码未显式编码几何关系。论文在六边形追击博弈上构建四层基准，对比不同位置编码对精确贝叶斯信念追踪、离线策略模仿和定种子对抗的影响。结果显示HexRoPE能显著降低信念后验交叉熵，提升追踪与策略表现。这为博弈型AI智能体的架构设计提供了可借鉴的几何感知编码经验。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.15146v1",
+      "source": "arxiv",
+      "title": "PureTD: Reinforcement Learning for Backgammon Money Games with No Evaluation-time Search",
+      "abstract": "We revisit Tesauro's TD-Gammon for backgammon money games in the setting of no evaluation-time search. Both checker play and cube action (use of the doubling cube) are learned from scratch via self-play reinforcement learning (RL), with minimal hand-coded logic and no expert features. In this setting, we demonstrate that pure self-play RL suffices to train models that reach near-state-of-the-art playing strength. Specifically, for cubeful money games, our search-free model evaluates faster and is substantially stronger than the open-source engines GNU Backgammon and Open Sage running a one-move (1-ply) look-ahead search.",
+      "authors": [
+        "Alexander L. Strehl"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-08-15T09:46:03+00:00",
+      "link": "https://arxiv.org/pdf/2608.15146v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Self-play RL trains game-playing agents for backgammon money games without evaluation-time search",
+      "llm_evidence_cn": "用自对弈强化学习训练西洋双陆棋对弈代理，无需评估时搜索",
+      "llm_evidence": "用自对弈强化学习训练西洋双陆棋对弈代理，无需评估时搜索",
+      "canonical_evidence": "用自对弈强化学习训练西洋双陆棋对弈代理，无需评估时搜索",
+      "llm_tldr_en": "PureTD revisits TD-Gammon, learning backgammon checker play and cube action from scratch via self-play RL with no search at evaluation time, reaching near state-of-the-art strength and beating 1-ply engines.",
+      "llm_tldr_cn": "在无评估期搜索条件下，纯自对弈强化学习能否训练出强西洋双陆棋代理是不确定的。本文重访TD-Gammon，从零开始通过自对弈RL同时学习棋子走法和倍数骰子使用，仅用极少的硬编码逻辑。实验表明无需专家特征即可达到接近当前最优对弈水平，且无搜索模型在评估速度和强度上超过GNU Backgammon与Open Sage的1-ply搜索版本，证明了纯自对弈RL在棋类游戏中的潜力。",
+      "llm_tldr": "在无评估期搜索条件下，纯自对弈强化学习能否训练出强西洋双陆棋代理是不确定的。本文重访TD-Gammon，从零开始通过自对弈RL同时学习棋子走法和倍数骰子使用，仅用极少的硬编码逻辑。实验表明无需专家特征即可达到接近当前最优对弈水平，且无搜索模型在评估速度和强度上超过GNU Backgammon与Open Sage的1-ply搜索版本，证明了纯自对弈RL在棋类游戏中的潜力。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2608.19197v1",
+      "source": "arxiv",
+      "title": "SPADE: Self-Play in Adaptive Synthetic Executable Environments",
+      "abstract": "Continuous self-improvement requires an ever-expanding pool of self-generated, diverse, adaptive goals. For language agents, existing training environment pools (hand-curated, statically synthesized, or frozen-verifier) keep the goal distribution fixed as the learner scales. We introduce SPADE (Self-Play in Adaptive Synthetic Executable Environments), a self-play RL framework in which a single LLM plays two roles: an Environment Designer that writes complete, long-horizon training environments as executable code with an OpenAI Gym-style reset()/step() interface, and a Reasoning Agent that learns to act in them. Each is a stateful, multi-turn environment (state transitions, reward functions, and verification code), so one interface spans reasoning problems and multi-step agentic tool use. The Reasoning Agent's regret is estimated using the gap between its reward with and without privileged hints; in optimizing this regret signal the Environment Designer learns to target environments at the edge of the agent's capabilities while keeping them feasible. Through extensive experimentation, we find several components critical to success: grounding the Environment Designer on documents sampled from a large pretraining corpus, and giving it an accumulated environment memory. Scaling to 30B-parameter models, SPADE improves over the strongest fixed-environment baseline by +5.3 on average across eight held-out math, science, code, and reasoning benchmarks, and lifts the tool-use setting by +5.7 on BFCL-v4 multi-turn and +13.9 on ACEBench-Agent; on the games setting, the margin over the strongest baseline grows with model scale. By making environment design itself a learnable component, SPADE takes a concrete step toward open-ended self-improvement.",
+      "authors": [
+        "Bo Liu",
+        "Simon Yu",
+        "Yiding Jiang",
+        "Ao Qu",
+        "Andrew Zhao",
+        "Zichen Liu",
+        "Junsu Kim",
+        "Zijian Zhou",
+        "Seungone Kim",
+        "Tongzheng Ren",
+        "Mickel Liu",
+        "Hanfei Yu",
+        "Zhaorun Chen",
+        "Weiyan Shi",
+        "Paul Pu Liang",
+        "Luke Zettlemoyer",
+        "Yejin Choi",
+        "Natasha Jaques"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-08-19T17:58:56+00:00",
+      "link": "https://arxiv.org/pdf/2608.19197v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Self-play RL framework with adaptive synthetic executable environments for agent training",
+      "llm_evidence_cn": "自适应合成可执行环境下的自博弈强化学习框架，面向智能体训练",
+      "llm_evidence": "自适应合成可执行环境下的自博弈强化学习框架，面向智能体训练",
+      "canonical_evidence": "自适应合成可执行环境下的自博弈强化学习框架，面向智能体训练",
+      "llm_tldr_en": "SPADE lets a single LLM act as both environment designer and reasoning agent, generating diverse executable Gym-style environments for self-play, enabling continuous improvement.",
+      "llm_tldr_cn": "静态或冻结的训练环境池无法随智能体能力提升而持续扩展目标分布。论文提出SPADE，让同一个大语言模型同时扮演环境设计者和推理智能体：设计者生成带有reset/step接口的可执行环境，智能体在其中学习；两者通过自博弈不断演化。该方法以统一的Gym风格接口覆盖多种推理任务，为语言智能体提供持续自适应且多样化的训练环境。这直接支持在可执行游戏类环境中训练AI智能体。",
+      "llm_tldr": "静态或冻结的训练环境池无法随智能体能力提升而持续扩展目标分布。论文提出SPADE，让同一个大语言模型同时扮演环境设计者和推理智能体：设计者生成带有reset/step接口的可执行环境，智能体在其中学习；两者通过自博弈不断演化。该方法以统一的Gym风格接口覆盖多种推理任务，为语言智能体提供持续自适应且多样化的训练环境。这直接支持在可执行游戏类环境中训练AI智能体。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2608.18069v1",
+      "source": "arxiv",
+      "title": "Revisiting the Intra-Team Communication Method to Elicit Level-k Reasoning in Beauty Contests and 11-20 Games",
+      "abstract": "How level-0 players behave and how they are perceived by higher-level players are central questions in the literature on level-k models of boundedly rational strategic reasoning. To study these twin questions, we apply the intra-team communication method developed by Burchardi and Penczynski (2014) to identify level-0 actions and beliefs in the canonical beauty contest game and in a variant of the 11-20 game of Goeree et al. (2018), in which behavior appears inconsistent with the standard level-k model. In the beauty contest game, we replicate Burchardi and Penczynski (2014)'s finding that elicited level-0 beliefs align with observed level-0 actions. In the variant of the 11-20 game, however, elicited level-0 beliefs and observed level-0 actions diverge, and both depart from the standard level-0 assumption, suggesting a complementary explanation for the behavioral pattern documented by Goeree et al. (2018).",
+      "authors": [
+        "Zitian Wang",
+        "Istiak Ahmed",
+        "Patarasate Unjitwattana",
+        "Emily Yunxi Xie",
+        "Meng-Jhang Fong",
+        "Po-Hsuan Lin"
+      ],
+      "primary_category": "econ.GN",
+      "categories": [
+        "econ.GN"
+      ],
+      "published": "2026-08-18T17:56:12+00:00",
+      "link": "https://arxiv.org/pdf/2608.18069v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "elicits level-k player actions and beliefs in strategic games for player behavior modeling",
+      "llm_evidence_cn": "在策略博弈中启发层级k玩家行为与信念，支持玩家行为模拟",
+      "llm_evidence": "在策略博弈中启发层级k玩家行为与信念，支持玩家行为模拟",
+      "canonical_evidence": "在策略博弈中启发层级k玩家行为与信念，支持玩家行为模拟",
+      "llm_tldr_en": "Revisits intra-team communication to identify level-0 behaviors and beliefs in beauty contests and 11-20 games, finding that elicited beliefs match observed actions in one game but diverge in another, challenging standard level-k models.",
+      "llm_tldr_cn": "层级k模型中的level-0行为难以直接观测，且在不同博弈中可能不一致。本文重新应用团队内通信方法，在选美竞赛和11-20博弈中启发玩家level-0行为与信念。结果显示选美竞赛中信念与行为一致，但11-20博弈变体中启发出的level-0信念与观测行为相矛盾，表明标准层级k模型可能低估了玩家推理的复杂性。该实证方法为玩家行为模拟中的层级推理建模提供了新证据。",
+      "llm_tldr": "层级k模型中的level-0行为难以直接观测，且在不同博弈中可能不一致。本文重新应用团队内通信方法，在选美竞赛和11-20博弈中启发玩家level-0行为与信念。结果显示选美竞赛中信念与行为一致，但11-20博弈变体中启发出的level-0信念与观测行为相矛盾，表明标准层级k模型可能低估了玩家推理的复杂性。该实证方法为玩家行为模拟中的层级推理建模提供了新证据。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "player behavior simulation techniques",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.13755v1",
+      "source": "arxiv",
+      "title": "Best Response Dynamics for Zero-Sum Dynamic Games with Partial-Asymmetric Information",
+      "abstract": "This work studies a class of zero-sum stochastic linear quadratic dynamic games (LQDGs) under partial and asymmetric information. Information asymmetry introduces fundamental challenges related to \\textit{belief representation} and \\textit{theory of mind}, where players must impute belief states and estimates of other players to inform their strategies. Existing work highlights the difficulty of applying dynamic programming-like decomposition approach to these problems. An alternative approach based on \\textit{best response dynamics} is proposed, which provides insights into belief representation and theory of mind challenges. Explicit expressions for each player's best response within the class of pure linear dynamic output feedback control strategies are derived, where the internal state dimension of each control is an integer multiple of the system state dimension. As players iteratively update their best responses, they form increasingly higher-order belief states, leading to infinite-dimensional internal states. However, numerical results reveal that the game's value converges after only a few iterations, suggesting that higher-order belief states provide vanishing benefit. This work further conducts numerical experiments to analyze the impact of asymmetric beliefs, belief orders, relative controllability and observability, and direct feed-through on a linear quadratic pursuit-evasion game's value.",
+      "authors": [
+        "Yuxiang Guan",
+        "Iman Shames",
+        "Tyler H. Summers"
+      ],
+      "primary_category": "math.OC",
+      "categories": [
+        "math.OC"
+      ],
+      "published": "2026-08-13T20:33:29+00:00",
+      "link": "https://arxiv.org/pdf/2608.13755v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Best response dynamics and belief representation in zero-sum dynamic games; relevant for game AI strategy",
+      "llm_evidence_cn": "零和动态博弈中的最佳响应动力学与信念表征；与游戏AI策略相关",
+      "llm_evidence": "零和动态博弈中的最佳响应动力学与信念表征；与游戏AI策略相关",
+      "canonical_evidence": "零和动态博弈中的最佳响应动力学与信念表征；与游戏AI策略相关",
+      "llm_tldr_en": "This work proposes best response dynamics for zero-sum stochastic linear quadratic dynamic games under partial-asymmetric information, providing explicit best-response expressions and insights into belief representation and theory of mind challenges in multi-player games.",
+      "llm_tldr_cn": "本文研究部分非对称信息下的一类零和随机线性二次型动态博弈，针对动态规划分解方法在多智能体场景中的困难，提出基于最佳响应动力学的求解思路。通过显式推导纯线性动态输出反馈类内的最佳响应表达式，为信念表征和心智理论挑战提供了分析视角。该工作可迁移到游戏AI中对对手建模与策略推理。",
+      "llm_tldr": "本文研究部分非对称信息下的一类零和随机线性二次型动态博弈，针对动态规划分解方法在多智能体场景中的困难，提出基于最佳响应动力学的求解思路。通过显式推导纯线性动态输出反馈类内的最佳响应表达式，为信念表征和心智理论挑战提供了分析视角。该工作可迁移到游戏AI中对对手建模与策略推理。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.18265v1",
+      "source": "arxiv",
+      "title": "How AI Prompts Can Teach Us About the Structure of Human Behavior",
+      "abstract": "We introduce a general, easy-to-implement AI-based method for studying the structure and complexity of human behavior. We assign a large language model a ``type vector'' and then prompt it to choose actions across settings in which we observe human choices. For instance, the type vector (2,4) becomes ``You are a player characterized by the following profile: 2 out of 5 in Altruism, 4 out of 5 in Risk Aversion,'' after which it is prompted to make choices. We vary the dimensions (e.g., Altruism, Fairness, Trust, $\\dots$) and values (e.g., 1--5) to minimize distance to human choices. Applying the method to 119,147 decisions made by 78,657 subjects from more than 35 countries across 10 classic economic game roles, we find that human behavior can be closely matched using three dimensions: Risk Aversion, Strategic Sophistication, and Trust. Moreover, the types needed to fit individuals across games cluster into fewer than a dozen groups, and can predict behavior in held-out games with different rules and available actions. The results suggest that behavior across diverse settings can be approximated by a low-dimensional, portable representation, supporting the possibility of general yet parsimonious theories across the behavioral sciences. More broadly, the method can provide insights into the structure of many human behaviors.",
+      "authors": [
+        "Matthew O. Jackson",
+        "Benjamin S. Manning",
+        "Yutong Xie",
+        "Walter Yuan",
+        "Qiaozhu Mei"
+      ],
+      "primary_category": "econ.TH",
+      "categories": [
+        "econ.TH",
+        "cs.AI"
+      ],
+      "published": "2026-08-18T19:30:59+00:00",
+      "link": "https://arxiv.org/pdf/2608.18265v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "LLM-based player profiling and behavior simulation in economic game roles",
+      "llm_evidence_cn": "基于LLM的玩家画像与行为模拟，覆盖经济博弈角色",
+      "llm_evidence": "基于LLM的玩家画像与行为模拟，覆盖经济博弈角色",
+      "canonical_evidence": "基于LLM的玩家画像与行为模拟，覆盖经济博弈角色",
+      "llm_tldr_en": "Proposes an AI-prompting method that assigns type vectors to LLMs to match human choices across 10 classic economic game roles, closely modeling human behavior and enabling player behavior simulation.",
+      "llm_tldr_cn": "针对如何刻画人类行为结构的问题，论文提出一种通用的AI提示方法：为大型语言模型赋予类型向量（如利他性、风险厌恶度），并让其在多种博弈场景中做出选择，通过与人类真实选择对比来调整维度取值。在来自35个国家、78657名被试、119147次决策的10个经典经济博弈角色上，该方法能够紧密拟合人类行为。该工作为用大模型模拟玩家行为提供了简便而有效的范式，可用于玩家行为仿真等场景。",
+      "llm_tldr": "针对如何刻画人类行为结构的问题，论文提出一种通用的AI提示方法：为大型语言模型赋予类型向量（如利他性、风险厌恶度），并让其在多种博弈场景中做出选择，通过与人类真实选择对比来调整维度取值。在来自35个国家、78657名被试、119147次决策的10个经典经济博弈角色上，该方法能够紧密拟合人类行为。该工作为用大模型模拟玩家行为提供了简便而有效的范式，可用于玩家行为仿真等场景。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "player behavior simulation techniques",
+      "matched_requirement_id": "req-4",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.16002v2",
+      "source": "arxiv",
+      "title": "From Sequence to Structure: Relational Uncertainty Propagation for LLM Agents",
+      "abstract": "Reliable uncertainty quantification (UQ) is essential for deploying large language model (LLM) agents in complex interactive environments. Existing UQ methods largely rely on local signals, such as token probabilities, predictive entropy, or per-step confidence, and therefore overlook the long-range dependencies through which errors accumulate across an execution trajectory. As a result, they may fail to identify agent failures whose causes originate several reasoning or interaction steps before the final answer. We propose RUPA (Relational Uncertainty Propagation for Agents), a trajectory-level UQ framework for LLM agents. RUPA represents an execution history as a directed trajectory graph in which reasoning states, tool interactions, and environment feedback are nodes connected by temporal and semantic dependency edges. It then propagates uncertainty over this graph to capture how execution risk accumulates and transfers across interaction steps. The propagated signal is combined with trajectory-level behavioral features and goal-alignment information to produce a confidence estimate for the full agent trajectory. We evaluate RUPA on representative agent benchmarks, including $τ$-2, Terminal-Bench-2, and GAIA, using 6 open-source LLMs spanning multiple model families. Experimental results show that RUPA consistently outperforms existing UQ methods by providing more accurate uncertainty estimates, enabling earlier failure detection, and improving uncertainty-guided agent execution across diverse agent tasks. These results demonstrate that explicitly modeling relational dependency is crucial to reliable UQ for long-horizon LLM agents, providing a practical foundation for trustworthy agent execution.",
+      "authors": [
+        "Zhengzhao Ma",
+        "Boxi Cao",
+        "Yaojie Lu",
+        "Hongyu Lin",
+        "Xianpei Han",
+        "Le Sun"
+      ],
+      "primary_category": "cs.CL",
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "published": "2026-08-17T01:40:14+00:00",
+      "link": "https://arxiv.org/pdf/2608.16002v2",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "trajectory-level uncertainty propagation for LLM agents in interactive environments",
+      "llm_evidence_cn": "面向交互环境中LLM智能体的轨迹级不确定性传播方法",
+      "llm_evidence": "面向交互环境中LLM智能体的轨迹级不确定性传播方法",
+      "canonical_evidence": "面向交互环境中LLM智能体的轨迹级不确定性传播方法",
+      "llm_tldr_en": "RUPA models an agent execution history as a directed trajectory graph and propagates uncertainty across reasoning states and tool interactions, enabling earlier and more accurate failure detection in interactive environments.",
+      "llm_tldr_cn": "现有LLM智能体的不确定性量化方法大多依赖token概率、预测熵或逐步置信度等局部信号，忽视了执行轨迹中跨步骤的长期依赖，因此难以识别早于最终答案的错误根源。为此，本文提出RUPA，这是一种轨迹级的不确定性量化框架，将执行历史建模为有向轨迹图，在推理状态与工具交互之间传播不确定性。实验表明，与局部UQ基线相比，RUPA能更早、更准确地识别智能体失败，显著提升复杂交互环境中LLM智能体的可靠性。该框架为可信任的LLM智能体部署提供了新的技术路径。",
+      "llm_tldr": "现有LLM智能体的不确定性量化方法大多依赖token概率、预测熵或逐步置信度等局部信号，忽视了执行轨迹中跨步骤的长期依赖，因此难以识别早于最终答案的错误根源。为此，本文提出RUPA，这是一种轨迹级的不确定性量化框架，将执行历史建模为有向轨迹图，在推理状态与工具交互之间传播不确定性。实验表明，与局部UQ基线相比，RUPA能更早、更准确地识别智能体失败，显著提升复杂交互环境中LLM智能体的可靠性。该框架为可信任的LLM智能体部署提供了新的技术路径。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.17959v1",
+      "source": "arxiv",
+      "title": "Towards Zero-Shot Task Transfer with Neurosymbolic World Models",
+      "abstract": "State-of-the-art model-based reinforcement learning methods learn neural world models that allow policy improvement by planning in a latent space, without assumptions on the structure of the underlying environment. While expressive, these models are generally task-dependent: they learn uninterpretable latent representations that are tied to the training task and thus hard to generalize to new tasks. In this work, we present a novel world model formulation where the reward prediction only depends on a subset of structured, symbolic components of the whole latent state. Decoupling observation reconstruction and reward prediction allows us to learn world models that can adapt zero-shot, i.e. without further environment interactions, to new reward functions defined over the same symbolic state space. We discuss the main advantages and challenges of learning these neurosymbolic world models and demonstrate the strong generalisation properties of our approach over purely neural methods.",
+      "authors": [
+        "Isidoro Tamassia",
+        "Lennert De Smet",
+        "Giuseppe Marra"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.LG"
+      ],
+      "published": "2026-08-18T16:12:40+00:00",
+      "link": "https://arxiv.org/pdf/2608.17959v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "neurosymbolic world models enabling zero-shot task transfer for RL agent training",
+      "llm_evidence_cn": "用于强化学习智能体训练的神经符号世界模型与零样本任务迁移",
+      "llm_evidence": "用于强化学习智能体训练的神经符号世界模型与零样本任务迁移",
+      "canonical_evidence": "用于强化学习智能体训练的神经符号世界模型与零样本任务迁移",
+      "llm_tldr_en": "Presents a neurosymbolic world model with reward prediction tied to structured symbolic latent components, decoupling observation reconstruction from reward prediction to enable zero-shot adaptation to new reward functions and improve generalizable agent training.",
+      "llm_tldr_cn": "现有基于模型的强化学习方法所学到的神经世界模型通常依赖具体任务，难以泛化到新任务。本文提出一种新的世界模型公式，将奖励预测仅关联到潜状态中结构化符号子集，从而把观测重建与奖励预测解耦。这样学习到的世界模型能够在不与环境交互的情况下零样本适应新的奖励函数。该方法为智能体在多任务环境中的训练提供了更通用的迁移能力。",
+      "llm_tldr": "现有基于模型的强化学习方法所学到的神经世界模型通常依赖具体任务，难以泛化到新任务。本文提出一种新的世界模型公式，将奖励预测仅关联到潜状态中结构化符号子集，从而把观测重建与奖励预测解耦。这样学习到的世界模型能够在不与环境交互的情况下零样本适应新的奖励函数。该方法为智能体在多任务环境中的训练提供了更通用的迁移能力。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.18682v1",
+      "source": "arxiv",
+      "title": "RTPO: Reverse-Turn Policy Optimization for Stabilizing Agentic RL Training",
+      "abstract": "Training multi-turn agentic workflows with reinforcement learning (RL) enables large language models to perform complex reasoning, use external tools, and conduct iterative search beyond single-turn settings. Yet multi-turn RL training remains highly unstable, often causing severe performance degradation as the number of turns increases. Through theoretical analysis, we identify three tightly coupled sources of instability: rollout-training context mismatch, weak turn-level credit assignment under sparse terminal rewards, and asynchronous policy drift when short and long trajectories are optimized under different policy versions. We show that these issues share a common structural origin in flattened trajectory optimization and address them through a unified reverse-turn formulation. We propose Reverse-Turn Policy Optimization (RTPO), which organizes multi-turn rollouts as sparse reverse trees and performs turn-level policy updates in temporal reverse order, aligning each decision with its downstream continuation. RTPO enables causally consistent turn-level credit assignment and on-policy continuation to control asynchronous drift. We provide theoretical guarantees showing that RTPO eliminates context mismatch and asynchronous drift under the proposed turn-level formulation, reduces credit bias, and converges to recursive optimality. Experiments on multi-turn agentic RL benchmarks show that RTPO improves upon trajectory- and turn-level baselines by 21.50% and 10.76%, respectively, highlighting its potential to support more stable training for tool-using agents.",
+      "authors": [
+        "Yugu Li",
+        "Jimmy Cao",
+        "Jianglin Qiao",
+        "Siyi Hu"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-08-19T08:33:01+00:00",
+      "link": "https://arxiv.org/pdf/2608.18682v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Proposes reverse-turn policy optimization to stabilize multi-turn RL for agentic workflows, applicable to game agent training",
+      "llm_evidence_cn": "提出逆转策略优化方法稳定多轮智能体RL训练，可适用于游戏智能体训练",
+      "llm_evidence": "提出逆转策略优化方法稳定多轮智能体RL训练，可适用于游戏智能体训练",
+      "canonical_evidence": "提出逆转策略优化方法稳定多轮智能体RL训练，可适用于游戏智能体训练",
+      "llm_tldr_en": "RTPO stabilizes multi-turn agentic RL by addressing rollout-training mismatch, weak turn-level credit assignment, and asynchronous policy drift through reverse-turn optimization.",
+      "llm_tldr_cn": "该论文针对多轮智能体强化学习训练的不稳定问题，从理论上识别了三个耦合来源：展开与训练上下文不匹配、稀疏奖励下回合级信用分配不足、长短轨迹间的策略异步漂移。提出逆转策略优化（RTPO）方法，通过统一视角优化长短轨迹来消除这些结构性问题。实验表明RTPO显著提升了多轮训练的稳定性和性能。该方法可直接用于训练需要多步决策的游戏AI智能体，强化其在复杂环境中的长期规划能力。",
+      "llm_tldr": "该论文针对多轮智能体强化学习训练的不稳定问题，从理论上识别了三个耦合来源：展开与训练上下文不匹配、稀疏奖励下回合级信用分配不足、长短轨迹间的策略异步漂移。提出逆转策略优化（RTPO）方法，通过统一视角优化长短轨迹来消除这些结构性问题。实验表明RTPO显著提升了多轮训练的稳定性和性能。该方法可直接用于训练需要多步决策的游戏AI智能体，强化其在复杂环境中的长期规划能力。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

@@ -1,0 +1,175 @@
+Title: Do Geometry-Aware Positional Encodings Help Transformers in Spatial Imperfect-Information Games?
+
+URL Source: https://arxiv.org/pdf/2608.14982v1
+
+Published Time: Tue, 18 Aug 2026 00:21:49 GMT
+
+Number of Pages: 7
+
+Markdown Content:
+# Do Geometry-Aware Positional Encodings Help Transformers in Spatial Imperfect-Information Games? 
+
+## Wenji Fu Research Institute of Economics and Management Southwestern University of Finance and Economics 
+
+## fuwenji61616@gmail.com 
+
+## August 2026 
+
+# Abstract 
+
+Transformers applied to spatial imperfect-information games must represent map geometry while tracking hidden entities through time. We ask whether geometry-aware positional encodings improve these capabilities, without claiming a new positional encoding. We construct a four-level benchmark on a hexagonal naval pursuit game: con-trolled geometry and topology probes, an exact-Bayes hidden-target tracking task, offline policy imitation at 1k and 10k games, and 7,200 fixed-seed games against three legacy opponents. Across matched Transformer backbones, HexRoPE reduces exact-belief posterior cross-entropy rela-tive to no positional encoding by 0.278 on D6-transformed test orbits and 0.329 on a larger map; both hierarchical-bootstrap confidence intervals exclude zero, and both Holm-adjusted p-values are below 0.001. At 1k games, HexRoPE improves policy action accuracy by 4.63 percentage points over no encoding and 2.05 points over rectangular rela-tive bias; the gains shrink to 1.55 and 0.41 points at 10k games. However, HexRoPE does not improve aggregate gameplay win rate: its paired effect over no encoding is 
+
+−1.56 points (95% CI [ −4.50 , 1.17]). Rectangular relative bias is strongest on D6 belief consistency but fails sharply when extrapolating from radius 3 to radius 4, while graph bias provides only a small blocked-edge gain. The results show that geometric inductive bias improves belief estima-tion and data-efficient imitation, but those representation gains do not automatically produce stronger closed-loop play. 
+
+# 1 Introduction 
+
+Spatial imperfect-information games combine two problems that Transformers do not solve merely by flattening a board into a token sequence. First, legal movement, search radius, and interception depend on direction, distance, and map topology. Second, the position of an opponent must be inferred from a history of positive and negative observations. A positional encoding may help the attention mechanism represent the former, yet it is unclear whether that advantage survives temporal belief tracking or changes actual play. Two-dimensional rotary encodings and graph-relative biases already provide plausible mechanisms for injecting spatial structure [12, 6, 9, 14]. Their evaluation, how-ever, is usually centered on vision or graph prediction. A game offers a useful stress test because it separates sev-eral notions often conflated as “spatial understanding”: recovering geometric relations, maintaining a calibrated posterior over a hidden target, imitating spatial actions, and winning under closed-loop distribution shift. We study these notions in a reproducible hex-map naval pursuit environment. Our aim is empirical rather than architectural novelty: we do not claim to invent HexRoPE. We compare matched Transformer backbones with no posi-tional encoding, rectangular relative bias, axial 2D RoPE, cube-coordinate HexRoPE, and HexRoPE with graph-distance bias. The core of the benchmark is an exact-belief task whose labels are computed by rule enumeration rather than by legacy AI actions. It therefore tests hidden-target tracking independently of policy imitation quality. Our contributions are: 
+
+• a four-level benchmark that separates hex geometry, blocked-edge topology, exact hidden-state belief tracking, policy imitation, and gameplay; 
+
+• an exact-Bayes dataset with IID, D6-transformed, larger-map, and blocked-edge test sets, including transform and probability-integrity tests; 
+
+• controlled 1k/10k policy experiments and 7,200 fixed-seed games with per-game outputs and hierarchical paired-bootstrap inference; and 
+
+• an empirical boundary: geometry-aware encodings im-prove beliefs and imitation, especially under low data, but do not reliably improve win rate. 
+
+# 2 Related Work 
+
+Spatial positional encoding. Relative position biases inject displacement-dependent terms into attention logits and are widely used in vision Transformers [13, 8]. RoPE-ViT adapts rotary embeddings to images, while LieRE 1arXiv:2608.14982v1 [cs.LG] 15 Aug 2026 casts rotary encoding through group representations [6, 9]. More recent multidirectional and hexagonal variants fur-ther motivate testing coordinates beyond a rectangular axis decomposition [7, 4]. We treat these as existing mecha-nisms and study their behavior in an imperfect-information decision setting. 
+
+Graph structure and factorized attention. 
+
+Graphormer and GRPE use shortest-path or rela-tion information as attention biases [14, 10]; comparative studies show that the usefulness of graph positional encodings depends on the task [3, 5]. This motivates separating continuous hex geometry from blocked-edge topology. Our policy and belief models factor spatial and temporal attention, following the broad efficiency pattern of video Transformers [2, 1]. 
+
+# 3 Benchmark 
+
+## 3.1 Game Setting 
+
+The environment is a research-oriented digital adaptation of Michael Smith’s board wargame Sink the Bismarck! , orig-inally published by World Wide Wargames (3W) in 1992. Its principal board and rules reference is the Japanese edi-tion published by Kokusai-Tsushin in Command Magazine Japan no. 19 [11]. The software formalizes and modifies parts of the game for simulation and machine-learning experiments; it is an independent, unofficial research im-plementation. The game is a two-player naval pursuit game on an irregular hex map. The German side attempts to escape or score objectives; the British side searches for and intercepts hidden German ships. A policy observes only side-visible information. Its tensor history has shape [ T, C, H, W ], and legal actions include map-targeted movement and search as well as special actions. Play lasts at most 18 turns. The German ships move while hidden (Bismarck moves up to two sea edges when undamaged and one when damaged), attack convoys on sea-route cells for stochastic victory points (VP), and may reveal their location through radio interception. British ships move up to three reachable sea edges; co-location reveals German ships, while the carrier Ark Royal may search one adjacent cell once per turn. A revealed co-location can trigger combat, whose dice resolve damage and sinking. Germany wins immediately at 6 VP, or by reaching Brest while ahead on VP; Britain wins by sinking Bismarck or preventing a German victory through turn 18. These asymmetric movement, search, and victory rules make the hidden location strategically relevant. The game is used as a controlled scientific instrument, not as a claim of broad game-playing generality. 
+
+## 3.2 Geometry and Topology Probes 
+
+The canonical probe enumerates all 1,521 query–target pairs on the 39-cell irregular game map and predicts di-rection, hex distance, and blocked-edge BFS distance. A second probe uses all 1,369 pairs on a regular radius-3 hexagon; splits are assigned by D6 orbit so transformed copies cannot cross train/test boundaries. Seven encodings are trained for five seeds with a shared 236k parameter backbone. These probes diagnose direct access to spatial relations, but do not by themselves establish hidden-state reasoning. 
+
+## 3.3 Exact-Belief Benchmark 
+
+We generate hidden-target trajectories under a known legal random-walk transition, including a stay action. At step 
+
+t, the observer receives the last sighting, elapsed time, legal search region, and either a successful or failed noisy search. The label is the exact posterior, not a sampled target or legacy-policy action. For transition matrix P and observation likelihood L(ot | x), enumeration computes ¯bt(x) = X
+
+> x′
+
+P (x | x′)bt−1(x′), (1) 
+
+bt(x) = L(ot | x)¯bt(x)
+
+P 
+
+> y
+
+L(ot | y)¯bt(y) . (2) Every posterior is checked to sum to one. This benchmark isolates the pursuit mechanic rather than replaying every game rule. Its hidden target starts from an observed cell, takes one uniformly sampled legal neighboring-or-stay transition per step, and is detected with probability 0.7 when it lies in the searched center-plus-neighbors region. A success collapses the posterior to the observed target cell; a failure downweights every searched cell by likelihood 0.3 before normalization. Convoy com-bat, VP, and multiple ships are intentionally excluded, so performance can be attributed to spatial transition and negative-evidence tracking. Training contains 10,000 radius-3 episodes, with 1,000 development episodes. Test sets contain 2,000 IID radius-3 episodes, 500 independent radius-3 base episodes expanded into 6,000 full D6-orbit examples, 2,000 radius-4 episodes, and 2,000 blocked-edge episodes. Base episode identifiers are disjoint across splits. This protocol tests transform consistency on unseen trajectories, not generalization to a subset of group elements withheld during training. D6 transformations act jointly on maps, observations, hidden positions, and posteriors; applying the inverse must recover the original tensors within floating-point tolerance. We report posterior cross-entropy (CE), KL divergence, multiclass Brier score, top-k posterior mass, expected hex-distance error, 15-bin expected calibration error, and D6 consistency. For a transform g, consistency is measured by JS  f (x), g −1f (gx ) , (3) averaged over transformed copies of the same episode. 
+
+## 3.4 Policy Imitation and Gameplay 
+
+The clean policy dataset was regenerated after an observer-causality fix. The 10k set contains 10,000 games and 22,112,926 action records; the low-data set contains 1,000 games and approximately 211k records. Labels are exe-cuted actions from a reproducible pool of state-machine, evolved, scripted, and random policies, not expert or hu-man demonstrations. Splits are isolated by game, prevent-ing trajectory leakage. For gameplay, each of four 10k policy modes and all three training seeds plays 100 games as each side against random, V11 state-machine, and Yanfu scripted opponents. All policies share initial game seeds within a matchup, yielding 4 × 3 × 2 × 3 × 100 = 7 ,200 games. We record win rate, VP difference, turns, detection turn, search coverage and repetition, search dispersion, British crowding, German route diversity, direct-F7 movement, and stay rate. 
+
+# 4 Models and Protocol 
+
+Encodings. None provides no spatial position. Rec-tRel combines learned row/column absolute embed-dings with an attention-logit bias indexed by rectan-gular row/column displacement. AxialRoPE rotates disjoint query/key subspaces using two coordinate axes. 
+
+HexRoPE instead uses the three dependent cube coor-dinates ( q, r, s ) with q + r + s = 0, distributing rotations across those projections. HexRoPE+Graph addition-ally learns a bias indexed by graph distance and edge availability. Invalid cells are masked in every model. 
+
+Belief model. The exact-belief tracker uses eight ob-servation frames, hidden dimension 96, three factorized spatial/temporal blocks, four heads, FFN dimension 192, and a 61-cell posterior head. All five encodings use the same training budget: 15 epochs, batch size 64, AdamW, and three seeds. Graph features are dynamic inputs; target posterior and true hidden position never enter the model input. 
+
+Policy model. Grid v4 uses history length 8, four fac-torized blocks, six heads, dimension 192, FFN dimension 512, dropout 0.1, invalid-cell masking, and legal-action context. The model has approximately 2.02M parameters. All modes use three epochs, batch size 128, AdamW at 10 −4, 2,000 warmup steps followed by cosine decay, mixed precision, value-loss weight 0.25, win-auxiliary weight 0.15, and entropy weight 0.005. 
+
+Inference. Policy metrics are exported per validation game using the identical game-level split for each training seed. We report action accuracy and CE, value MAE, and Brier score of the sigmoid-transformed shared value/win scalar. For principal comparisons, a hierarchical paired bootstrap first resamples training seeds and then paired games or episodes. We use 5,000 replicates and report 95% percentile intervals. Holm correction is applied to the preregistered HexRoPE–None and HexRoPE–RectRel primary families. Graph-bias comparisons and gameplay are explicitly exploratory. 
+
+# 5 Results 
+
+## 5.1 Controlled Spatial Probes 
+
+On the canonical irregular map, five-seed HexRoPE ob-tains 0.984 direction and 0.977 hex-distance accuracy, while graph bias is strongest on blocked-edge BFS distance (0.927 accuracy and 0.074 MAE). On the regular D6-orbit split, HexRoPE reaches 1.000 direction and 0.996 hex-distance accuracy. The no-position model remains near chance on distance in both probes. Thus cube-coordinate rota-tion exposes regular hex geometry, whereas explicit graph relations better represent removed edges. 
+
+## 5.2 Exact Beliefs 
+
+Figure 1 and Table 1 show that all spatial encodings out-perform no encoding. Relative to None, HexRoPE reduces CE by 0.278 on D6 and 0.329 on radius-4; hierarchical 95% CIs are [ −0.300 , −0.251] and [ −0.361 , −0.283], respec-tively, with Holm-adjusted p < 0.001. This supports the claim that position-aware attention improves hidden-target posterior estimation beyond imitation labels. The comparison among spatial encodings is more nu-anced. RectRel has the lowest D6 consistency error (0.0047 versus HexRoPE’s 0.0095) and slightly lower D6 CE; HexRoPE minus RectRel is 0.013 CE, CI [0 .001 , 0.035]. Yet RectRel catastrophically extrapolates to radius 4 (CE 11.008): its radius-4 outer coordinates were never updated during radius-3 training. Coordinate-based RoPE variants remain between 2.096 and 2.200. AxialRoPE is best among the tested RoPE forms on this particular larger-map split. Consequently, our evidence supports coordinate-based ex-trapolation, but not a universal ranking of HexRoPE above all 2D encodings. Graph bias yields a small blocked-edge improve-ment over HexRoPE: CE changes by −0.00147, CI [−0.00202 , −0.00083], and expected-distance error by 
+
+−0.00349, CI [ −0.00536 , −0.00189]. Top-1 and Brier inter-vals include zero. Topology therefore appears complemen-tary, but the effect is modest in this benchmark. Figure 2 makes the distributional difference concrete. In episode iid test 001256 , a sighting is followed by a failed search. The exact update leaves seven reachable cells, with three leading modes of probability 0.238. The seed-averaged HexRoPE variants and RectRel recover this shape almost exactly, whereas None assigns substantial mass to cells on the wrong side of the last sighting. This is a post hoc illustrative example with its selection criterion disclosed, not additional statistical evidence. 3Table 1: Exact-belief tracking (three-seed means). Lower is better for CE, KL, and D6 JS; higher is better for top-1. 
+
+IID radius-3 D6 transforms radius-4 OOD blocked Encoding CE ↓ KL ↓ CE ↓ Top-1 ↑ JS ↓ CE ↓ KL ↓ CE ↓
+
+None 2.095 0.245 2.247 0.362 0.0172 2.529 0.471 2.203 RectRel 1.856 0.005 1.956 0.381 0.0047 11.008 8.949 1.858 AxialRoPE 1.853 0.003 1.949 0.378 0.0033 2.096 0.038 1.855 
+
+HexRoPE 1.853 0.003 1.969 0.380 0.0095 2.200 0.141 1.852 HexRoPE+Graph 1.853 0.002 1.962 0.372 0.0074 2.177 0.118 1.850 IID r3 D6 orbit radius-4 blocked edge 0.0 0.5 1.0 1.5 2.0 2.5 3.0 Posterior cross-entropy (lower is better) 
+
+> RectRel = 11.01 (clipped) None RectRel AxialRoPE HexRoPE HexRoPE+Graph
+
+Figure 1: Exact-belief posterior CE. RectRel’s radius-4 value is clipped for readability and annotated with its true value. Table 2: Offline policy imitation at two data scales. Means are over three training seeds. 
+
+1k games 10k games Encoding Acc. ↑ CE ↓ Acc. ↑ CE ↓
+
+None 0.379 1.888 0.464 1.574 RectRel 0.405 1.910 0.475 1.541 
+
+HexRoPE 0.425 1.794 0.479 1.521 
+
+## 5.3 Data-Efficient Policy Imitation 
+
+At 1k games, HexRoPE improves action accuracy over None by 0.0463 (95% CI [0 .0353 , 0.0579]) and over RectRel by 0.0205 ([0 .0123 , 0.0292]). At 10k games, the effects remain positive but shrink to 0.0155 ([0 .0135 , 0.0177]) and 0.00407 ([0 .00289 , 0.00535]). All four primary accuracy tests remain significant after Holm correction. Figure 3 therefore supports a low-data benefit rather than a full scaling-law claim. Policy CE follows the same direction. Value MAE is not consistently improved at 1k, and HexRoPE’s 1k Brier score is slightly worse than None by 0.00313 ([0 .00157 , 0.00465]). At 10k, its Brier score is lower by 0.00091. The shared value/win head should thus not be used as evidence for a robust calibration advantage. 
+
+## 5.4 Closed-Loop Gameplay 
+
+Offline improvements do not translate into a reliable aggregate win-rate gain. Across matched game seeds, HexRoPE minus None is −0.0156 in win rate, with 95% CI [ −0.0450 , 0.0117]. HexRoPE minus RectRel is 
+
+−0.0228 ([ −0.0550 , 0.00722]), and HexRoPE+Graph mi-nus HexRoPE is −0.0050 ([ −0.0311 , 0.0206]). All intervals cross zero. The aggregate result hides matchup dependence. HexRoPE is stronger than None as Germany against V11 (0.727 versus 0.670), but weaker as Britain against Yanfu (0.337 versus 0.457). It reduces search repetition relative to RectRel by 0.051 ([ −0.0978 , −0.0157]), yet does not sig-nificantly increase search dispersion and slightly increases British crowding relative to None. These behaviors are consistent with the observed failure mode of concentrating search assets near recent information. Positional represen-tation alone does not supply strategic diversity, opponent adaptation, or long-horizon credit. 4Table 3: Fixed-seed gameplay win rates. Each cell pools 300 games from three training seeds; gameplay is exploratory. 
+
+German policy British policy Encoding Random V11 Yanfu Random V11 Yanfu None 0.897 0.670 0.543 0.717 0.777 0.457 RectRel 0.910 0.700 0.610 0.727 0.657 0.500 HexRoPE 0.910 0.727 0.550 0.723 0.720 0.337 HexRoPE+Graph 0.910 0.760 0.513 0.723 0.690 0.340 Exact Bayes None CE=3.77 RectRel CE=1.78 HexRoPE CE=1.78 HexRoPE+Graph CE=1.78   
+
+> 0.00 0.05 0.10 0.15 0.20
+> Posterior probability Red outline: final failed-search region Cyan ring: last sighting Star: hidden target
+
+Figure 2: Exact-Belief case study after a failed search. Predictions average three training seeds and share one color scale. Red outlines mark the final searched region, the cyan ring marks the preceding sighting, and the star marks the hidden target used only for evaluation. The post hoc selection criterion required a non-degenerate posterior, a final failed search, and HexRoPE CE at least 0.7 below None. 1k games 10k games 0.36 0.38 0.40 0.42 0.44 0.46 0.48 0.50 Validation action accuracy 
+
+> None RectRel HexRoPE
+
+Figure 3: Action imitation accuracy at 1k and 10k games. Each point averages three training seeds; the two points are not presented as a scaling law. 
+
+# 6 Discussion 
+
+The four evidence levels answer different questions. Ge-ometry probes establish that the attention mechanism can recover direction and distance. Exact-belief tracking shows that this access improves posterior prediction when the labels come from known dynamics rather than an old AI. Policy imitation shows a larger benefit under lower data. Gameplay then supplies the missing boundary: the resulting policy is not reliably stronger in closed loop. The most defensible interpretation is therefore not “HexRoPE solves spatial games.” It is that explicit ge-ometric structure reduces the representational and sample burden of spatial prediction, while topology needs a sep-arate bias and strategy needs additional learning signals. The sharp radius-4 failure of the learned absolute compo-nents in RectRel also cautions against evaluating only on fixed-size boards. Conversely, RectRel’s strong D6 consis-tency cautions against treating cube-coordinate RoPE as automatically equivariant to physical rotations and reflec-tions. For future game-cognition architectures, the present models provide a controlled Transformer baseline. Apromising next step is to expose exact or learned beliefs to an action-consequence module and train expected-utility or counterfactual objectives. That change targets the gap observed here between representing where the hidden tar-get may be and choosing a strategically useful action under that uncertainty. 
+
+# 7 Limitations 
+
+The benchmark uses one game and small hex maps, so external validity remains limited. Exact-belief dynamics are intentionally controlled and simpler than the full game. Policy labels come from legacy AIs rather than humans, experts, or a solved policy; imitation accuracy measures fidelity to that pool. Fixed seeds align initial randomness, but model actions alter later states, so paired gameplay does not imply identical state trajectories. Only three training seeds are available for the expensive policy and gameplay studies, making the training-seed hierarchy more informative than a naive game-level sample size. Finally, 5G/Rand G/V11 G/Yanfu B/Rand B/V11 B/Yanfu 0.0 0.2 0.4 0.6 0.8 1.0 Win rate 
+
+> None RectRel HexRoPE HexRoPE+Graph
+
+Figure 4: Win rates over 300 games per architecture–side–opponent cell. Dashed line marks 50%. G/B denote the side controlled by the learned policy. HexRoPE is an evaluated prior method family, not a nov-elty claim, and the recent 2026 preprints should be updated if their archival metadata changes. 
+
+# 8 Reproducibility 
+
+The exact-belief aggregate SHA-256 begins with 
+
+b3927015cab6d7df ; the complete value is recorded in deeplearn/data/paper1_exact_belief/dataset_ manifest.json . Each split manifest stores episode and map identifiers, transform, generation seed, legal mask, posterior, and file hash. Every evaluator emits per-game or per-episode JSON. Formal commands, checkpoints, hard-ware metadata, and live state are stored beside results. The main entry points are generate belief benchmark.py ,
+
+run paper1 belief matrix.py ,
+
+run paper1 policy matrix.py ,
+
+evaluate policy checkpoints.py ,
+
+run paper1 gameplay matrix.py , and 
+
+build paper1 artifacts.py . All runners skip completed tasks and enforce a 5.5-hour launch budget. 
+
+# 9 Conclusion 
+
+Geometry-aware positional encodings help Transformers estimate exact beliefs and imitate spatial policies, with the largest policy gain under low data. Their benefits are conditional: the tested rectangular absolute-plus-relative encoding is strong in-distribution but fragile across map size, graph bias adds only a small topology gain, and better representations do not reliably improve win rate. This separation between representation, belief, imitation, and play is the central empirical result and a foundation for testing explicit game-cognition modules. 
+
+# Acknowledgments 
+
+The author gratefully acknowledges game designer Michael Smith, whose board wargame Sink the Bismarck! pro-vides the foundation for the pursuit setting and core game mechanics studied here, and Kokusai-Tsushin Co., Ltd., publisher of the Japanese Command Magazine edition used as the principal board and rules reference. This research implementation is independent and unofficial; all software modifications, experimental abstractions, and errors are the author’s own. 
+
+# References 
+
+[1] Anurag Arnab et al. Vivit: A video vision trans-former. In International Conference on Computer Vision , 2021. [2] Gedas Bertasius, Heng Wang, and Lorenzo Torresani. Is space-time attention all you need for video under-standing? In International Conference on Machine Learning , 2021. [3] Mitchell Black, Zhengchao Wan, Gal Mishne, Amir Nayyeri, and Yusu Wang. Comparing graph trans-formers via positional encodings, 2024. [4] Keunho Byeon and Jin Tae Kwak. Hexst: Hexagonal shifted-window transformer for spatial transcriptomics gene expression prediction, 2026. [5] Florian Groetschla, Jiaqing Xie, and Roger Watten-hofer. Benchmarking positional encodings for gnns and graph transformers, 2024. 6[6] Byeongho Heo, Song Park, Dongyoon Han, and Sang-doo Yun. Rotary position embedding for vision trans-former. In European Conference on Computer Vision ,2024. [7] Haoyu Liu et al. Spiral rope: Rotate your rotary positional embeddings in the 2d plane, 2026. [8] Ze Liu et al. Swin transformer: Hierarchical vision transformer using shifted windows. In International Conference on Computer Vision , 2021. [9] Sophie Ostmeier, Brian Axelrod, Maya Varma, Michael E. Moseley, Akshay Chaudhari, and Curtis Langlotz. Liere: Lie rotational positional encodings, 2024. [10] Wonpyo Park et al. Grpe: Relative positional encod-ing for graph transformer, 2022. [11] Michael Smith. Sink the bismarck! Board wargame published by World Wide Wargames (3W), 1992. Japanese edition published by Kokusai-Tsushin in Command Magazine Japan, no. 19, 1998; the project map reference bears a 2009 Kokusai Tsushin copyright notice. [12] Jianlin Su, Murtadha Ahmed, Yu Lu, Shengfeng Pan, Wen Bo, and Yunfeng Liu. Roformer: Enhanced transformer with rotary position embedding. Neuro-computing , 568:127063, 2024. [13] Kan Wu et al. Rethinking and improving relative posi-tion encoding for vision transformer. In International Conference on Computer Vision , 2021. [14] Chengxuan Ying, Tianle Cai, Shengjie Luo, Shuxin Zheng, Guolin Ke, Di He, Yanming Shen, and Tie-Yan Liu. Do transformers really perform bad for graph representation? In Advances in Neural Information Processing Systems , 2021. 7

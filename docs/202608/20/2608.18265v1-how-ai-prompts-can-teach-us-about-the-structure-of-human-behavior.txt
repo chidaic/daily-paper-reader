@@ -1,0 +1,763 @@
+Title: How AI Prompts Can Teach Us About the Structure of Human Behavior
+
+URL Source: https://arxiv.org/pdf/2608.18265v1
+
+Published Time: Thu, 20 Aug 2026 00:08:33 GMT
+
+Number of Pages: 37
+
+Markdown Content:
+# How AI Prompts Can Teach Us About the Structure of Human Behavior ∗
+
+Matthew O. Jackson †
+
+Stanford & Sante Fe Institute Benjamin S. Manning †
+
+MIT Yutong Xie †
+
+Michigan Walter Yuan Moblab Qiaozhu Mei Michigan August 20, 2026 
+
+Abstract 
+
+We introduce a general, easy-to-implement AI-based method for studying the structure and complexity of human behavior. We assign a large language model a “type vector” and then prompt it to choose actions across settings in which we observe human choices. For instance, the type vector (2, 4)
+
+becomes “You are a player characterized by the following profile: 2 out of 5 in Altruism, 4 out of 5 in Risk Aversion,” after which it is prompted to make choices. We vary the dimensions (e.g., Altruism, Fairness, Trust, . . . ) and values (e.g., 1–5) to minimize distance to human choices. Applying the method to 119,147 decisions made by 78,657 subjects from more than 35 countries across 10 classic economic game roles, we find that human behavior can be closely matched using three dimensions: Risk Aversion, Strategic Sophistication, and Trust. Moreover, the types needed to fit individuals across games cluster into fewer than a dozen groups, and can predict behavior in held-out games with different rules and available actions. The results suggest that behavior across diverse settings can be approximated by a low-dimensional, portable representation, supporting the possibility of general yet parsimonious theories across the behavioral sciences. More broadly, the method can provide insights into the structure of many human behaviors. 
+
+> ∗
+
+Corresponding author: Jackson. In preparing this paper, the authors utilized generative AI models as tools in their main analysis and and to copyedit. Competing interest statement: W.Y. is the Chief Executive Officer (CEO) of MobLab. M.O.J. is the Chief Scientific Advisor of MobLab and Q.M. is a Scientific Advisor to MobLab, positions with no compensation but with ownership stakes. B.S.M. is an advisor to and has an ownership stake in Expected Parrot. Y.X. has no competing interests. 
+
+> †
+
+Indicates co-first authors, ordered alphabetically. 
+
+1arXiv:2608.18265v1 [econ.TH] 18 Aug 2026 1 Introduction 
+
+Humans are heterogeneous in preferences and behaviors, and are motivated beyond the selfish attitudes of classic Homo-Economicus. Not only do humans vary in terms of preferences, attitudes towards risk, and strategic sophistication (Holt and Laury, 2002; Nagel, 1995; Camerer, Ho, and Chong, 2004), but they are also swayed to varying degrees by social aspects such as altruism, fairness, and trust (Charness and Rabin, 2002; Andreoni and Miller, 2002; Berg, Dickhaut, and McCabe, 1995). A plethora of theories from the social sciences explain various behaviors, especially those that deviate from fully sophisticated and self-interested individuals (Camerer, 2003; Kahneman, 1979; Laibson, 1997). Such theories are typically designed to explain a particular feature of human behavior, like the role of fairness in bargaining and how it justifies rejection of positive offers in an ultimatum game (Fehr and Schmidt, 1999; Bolton and Ockenfels, 2000), or how conscientiousness (one of psychology’s “Big 5”) relates to educational attainment (Becker et al., 2012). This menagerie of setting-specific theories raises fundamental questions: is human behavior high-dimensional, or can just a few characteristics jointly account for choices across environments? And whatever this space may be, how are people distributed within it? Do people span the space broadly or cluster into a few recurring types? We introduce a tractable, portable, and easy-to-implement technique that uses Large Language Models (LLMs) to estimate the dimensionality of human behavior, answer these questions, and explore human types more generally. A growing literature shows that LLMs can be prompted to imitate human behavior with high fidelity across a wide range of settings (Horton, Filippas, and Manning, 2023; Xie et al., 2025; Jackson et al., 2025; Akata et al., 2025; Manning and Horton, 2026; Ashokkumar et al., 2026). Our method uses such “AI simulations” but imposes a particular structure on the prompts. For example, we can prompt an LLM with instructions saying that it is a “level 𝑥 1 out of 5 in Altruism.” We can then ask it what actions it would choose in a series of different scenarios—like a dictator or trust game. As 𝑥 1 varies, the LLM generates different behaviors in a given scenario or set of scenarios. We can similarly use Risk Aversion, or combine multiple characteristic keywords by prompting the LLM that it is an “ 𝑥 1 out of 5 in Altruism,” a “ 𝑥 2 out of 5 in Risk Aversion,” and so forth. The resulting profile (𝑥 1, 𝑥 2) represents a type as a vector of intensities for the characteristics. This lets us describe people as types in a common numeric space that is easy to analyze, while using the flexibility of LLMs to translate the same type into behavior across very different settings. Researchers can construct vectors using any collection of characteristics drawn from economics, psychology, or other theories of behavior, and then use the LLM to translate those descriptions into behavior across different settings and to explore the behavior of any population. In the empirical portion of this paper, we build types using five keywords that figure prominently in behavioral economics: Altruism, Fairness, Risk Aversion, Strategic Sophistication, and Trust. We apply the method to ten classic economic game roles. These roles exhibit substantial heterogeneity in human behavior and span a variety of prominent behavioral theories. We measure how closely the actions chosen by the LLM when assigned different types match human behavior across the games as we vary the profiles (𝑥 1, 𝑥 2, . . . ). We vary the profiles both in the numeric values in the entries and in the set of keywords included—that is, the content and dimensionality of the vectors (up to five dimensions). In this way, our method enables us to estimate an upper bound on the number of dimensions needed to closely approximate human behavior across the game-roles we study. For example, if varying a simple three-dimensional prompt—like one where the key words are Altruism, Fairness, and Trust, each varying on a scale of 1-5—can match individual humans well across the ten settings, then, regardless of the content of those prompts, it means that individual humans can be approximated and predicted across a 2variety of situations, with just a simple three-dimensional type. Part of our contribution is to provide evidence that such an upper bound is credible. Our analysis proceeds on a dataset of decisions from 119,147 made by 78,657 participants across more than 35 countries who played various combinations of the ten game roles. First, we analyze how well we can match the distribution of human behaviors within each game role by varying the prompts with our five primary dimensions. The distribution fits across the games are generally extremely tight. We also find intuitive patterns between which prompts are most valuable in matching behaviors and how that varies across games. For instance, as one should expect, Risk Aversion plays a key role in matching behavior in both the bomb game (used to assess risk preferences) and the trust game (in which a player’s payoff depends on the reciprocity of their partner), among others. In fact, Risk Aversion alone does fairly well at matching behaviors in several games. Altruism also does well at matching behavior when the other player’s payoff depends on a given subject’s behavior. Ultimately, we find that human behavior can be closely matched using just three dimensions: Risk Aversion, Strategic Sophistication, and Trust. Beyond matching distributions of humans playing each game role, we then match individual humans across game roles. The challenge is not just to match the marginal distribution of behavior in each game, but to match the joint distribution across games. We do so on a subset of 9,269 from 1,734 subjects who played at least five game roles. This presents an additional challenge: a subject’s behaviors across multiple games must be matched with one type vector. There is substantial heterogeneity in the number of dimensions needed to approximate individual subjects in our data. Some can be well-matched with just one or two dimensions, and others require more. When we examine the clustering of the more than a thousand individual type vectors, they break into fewer than a dozen distinct clusters. For example, some participants are both highly strategic and risk-seeking, others are highly risk-averse and fair, but we do not observe clusters that are both highly risk-averse and highly strategic. We also perform an additional out-of-distribution analysis to understand whether individual types generalize to new settings. We withhold a subject’s play in a given game, assign them a best-fitting economic keyword type vector based on their play in the other games, and then see how closely the play induced by that type on the held-out game matches the subject’s actual play. We thus benchmark how well our types match a subject against how well one could potentially match them using the full set of dimensions. We give the benchmarks full in-distribution capabilities, building Machine Learning (ML) models that predict a subject’s behavior in one game role from all their plays across all other game roles. Compared to this benchmark, our out-of-distribution type assignments match almost all subjects well. A key feature of our method is its flexibility. Researchers can construct type vectors based on any social science theory, and then use the LLM to translate those types into behavior across different settings. To illustrate, we compare the performance of our five economic dimensions with that of psychology’s Big 5 personality traits, along with various atheoretical keywords as a benchmark. The economic characteristics perform best in our analysis, but our main object of interest is the dimensionality of the resulting type space rather than the particular words used to construct it. And although the particular dimensions that perform best are substantively informative, the broader result does not depend on interpreting them literally. A different or better-chosen set of characteristics might approximate the same behavior even better or use fewer dimensions. Thus our estimates provide an upper bound for the settings we study. From complexity theory, we know that combinations of a few dimensions can produce complex patterns (Krakauer, 2024), and so our results do not suggest that human behavior is simple. Rather, it can be well-mimicked with a low-dimensional model, at least across the ten game roles we study. Given that the behavioral literature has largely progressed with theories of specific behaviors in particular scenarios, this provides further empirical motivation for building meta-theories with only a few moving 3parts. Our contribution is both to provide evidence for this possibility and to introduce a general method for developing and analyzing representations of behavior across settings. 
+
+Related Literature Fudenberg (2006) argues that behavioral economics should produce more unified explanations that apply across a wider range of phenomena. In this direction, Dean and Ortoleva (2019) study relationships among eleven economic behaviors to assess whether they can be explained by a parsimonious model of choice. Bruhin, Fehr, and Schunk (2019) show that social behavior can be characterized by a small number of stable preference types that predict behavior across games. Most related to our work in terms of motivation is Chapman et al. (2023), who examined correlations across 21 questions and, via a principal component analysis, found that the first 6 components capture much of the variation. Similarly, Stango and Zinman (2023) measure a broad set of behavioral tendencies and summarize them using a small number of common factors. Our results echo the findings that human behavior across settings has a low-dimensional structure, but we arrive at this conclusion using a very different methodology, which thus adds a layer of robustness to the finding. Moreover, as we show, our method has additional benefits and can be particularly useful in out-of-distributional analyses. A related thread of research in psychology studies the many ways in which people differ using a few dimensions. For example, psychology’s Big 5 personality traits (Costa and McCrae, 1992). Relatedly, Becker et al. (2012) and Jagelka (2024) study the relationship between economic preferences and the Big 5. Our comparison between economically derived dimensions and the Big 5 is similarly motivated. We emphasize that our technique is different from and complementary to such previous dimension analyses, and provides a different insight from methods like principal component analysis, factor analysis, LASSO, and other statistical and ML methods. While such approaches provide statistical taxonomies of observed behaviors, we construct types that can generate behavior across (arbitrary) settings—anything that can be described in natural language Thus, our technique is completely portable and does not need to be tailored to the details of any out-of-sample setting. As Manning and Horton (2026) highlight, because both the type and the setting are described in natural language, the same representation can be applied without redesign to environments with different action spaces, rules, payoffs, or player structures. Our method also connects to a growing literature on AI simulations or “digital twins” (Argyle et al., 2023; Aher, Arriaga, and Kalai, 2023; Park et al., 2023; Kim and Lee, 2023; Park et al., 2024; Lippert et al., 2024; Yeykelis et al., 2024; Kozlowski, Kwon, and Evans, 2024; Manning, Zhu, and Horton, 2024; Qian et al., 2026). That research studies whether LLMs can be prompted to reproduce the behavior of human populations or particular individuals, as well as the conditions under which such simulations are reliable (Chen et al., 2023; Ross, Kim, and Lo, 2024; Abdurahman et al., 2024; Anthis et al., 2025; Kozlowski and Evans, 2025; Hullman et al., 2026; Peng et al., 2026). We instead use LLMs as a tool for measuring and analyzing the structure and underlying complexity of human behavior. From that simulation literature, our analysis builds most directly on Xie et al. (2025), which used much longer prompts to study human motivations. Here, we reduce those prompts to vectors of single-word characteristics whose intensities can be systematically varied, and use them to study how many dimensions are needed to approximate human behavior. 
+
+# 2 Fitting type vectors to human behavior with AI prompts 
+
+Our approach represents “types” as vectors over a set of behavioral characteristics. A researcher begins by specifying a set of characteristics that they hypothesize will produce variations in behavior as those characteristics are varied. These characteristics can be drawn from economics, psychology, or any other 4theories of human behavior. A type vector assigns an intensity to each characteristic. An LLM is then given a description of the vector in words, which, coupled with descriptions of settings (e.g., games, surveys, etc.), produces predictions for this type across those settings. By examining the behaviors induced as we change the number of characteristics included in the type vector, we can ask how many dimensions are needed to closely approximate the behavior of human populations, as well as individual people, across any given collection of settings of interest. Importantly, this also allows us to represent individuals with potentially meaningful types. To make this concrete, suppose that we want to match the behavior of a human subject by using Altruism and Risk Aversion. We assign each characteristic a level from 1 to 5, so that the vector (2, 4)
+
+describes a person who is a 2 out of 5 in Altruism and a 4 out of 5 in Risk Aversion. Figure 1 shows how this vector becomes a prompt, which can be paired with various descriptions of settings and questions about choices of behaviors to be made. We supply the vector-based prompt, the setting, and a question about a choice, and the LLM responds with a behavior. Thus, for each type vector and setting, this method generates a prediction. Because such prompts operate entirely in natural language, one can apply any description of a type and setting and generate behaviors. This could include economic games, the focus of our paper, or other scenarios.        
+
+> Type: 𝑥 =(2,4)System Prompt
+> You are a player characterized by the following profile (each dimension is measured on a Likert scale, where 1 is the lowest level and 5 is the highest).
+> •Altruism: 2 out of 5,
+> •Risk Aversion: 4 out of 5.
+
++
+
+
+
+> Type responds to settings (one-at-a-time):
+> Setting: Dictator Game
+> You are splitting a pot of money be-tween yourself and another. . .
+> or
+> Setting: Trust Game
+> You are deciding how much money to send to another person. . .
+> or
+> Setting: Beauty Contest
+> You are choosing a number to be closest to. . .
+
+...
+
+Figure 1: A type vector becomes the system portion of a prompt, which is then paired with the instructions for one setting at a time. For example, the two-dimensional type 𝑥 = (2, 4) over (Altruism , Risk Aversion )
+
+can be paired with any setting that can be described in words, generating a separate response in each. More generally, suppose that a researcher begins with 𝐷 candidate characteristics and selects 𝑘 ≤ 𝐷 
+
+of them for a particular representation. Each selected characteristic is assigned a level on an ordered scale, and the resulting 𝑘 -dimensional type is a vector 𝑥 = (𝑥 1, . . . , 𝑥 𝑘 ). Each characteristic is measured on an 𝐿 -point Likert scale. With 𝐿 possible levels, a fixed set of 𝑘 characteristics defines 𝐿 𝑘 possible type vectors. In our implementation, 𝐿 = 5, so a 𝑘 -dimensional representation contains 5 𝑘 possible types. In addition, we can build lower-dimensional vectors by using only a subset of the characteristics with a smaller 𝑘 . By varying the number of characteristics 𝑘 , we can measure the number of dimensions needed to match human behavior for a particular set of keyword characteristics. 53 Game roles, data, and candidate dimensions 
+
+In this section, we introduce the game roles, the human dataset, and the candidate dimensions we study. We also discuss the interpretation of the type space. 
+
+3.1 Game roles and data 
+
+Our data include human responses from eight classic games from the behavioral economics literature: a Bomb Risk game, a Commons Game, a Cournot Game, a Dictator Game, an Investment Game, Keynes’ Beauty Contest Game, a Public Goods Game, and an Ultimatum Game. For two of the games—the Ultimatum and Investment games—we examine behavior in two different roles. These are the Proposer and Responder for the Ultimatum Game, and the Investor and Banker for the Investment Game. This gives us ten distinct game roles in which to analyze behavior. For each of the ten game roles, we have human data from the MobLab Classroom economics experiment platform, which consists of 78,657 subjects from more than 35 countries, spanning multiple years. The full instructions for each game are provided in Appendix A.2, and additional details about the human-playing data appear in Appendix B. The top row of Figure 3 shows the distributions of human play across the ten different game roles. We observe substantial heterogeneity in human play as well as spikes in the distributions. The distributions include, but differ from, both the Nash equilibrium action and the play that maximizes the total sum of the players’ payoffs. 
+
+3.2 Candidate Dimensions 
+
+The five characteristics that we focus on in this paper are: Altruism (A), Fairness (F), Risk Aversion (R), Strategic Sophistication (S), and Trust (T). These were derived from a list of keywords that figured prominently in Xie et al. (2025) and are well-studied in the behavioral economics literature. In Section 6, we also consider what happens when alternative characteristics are used instead, like placebos and psychology’s Big-5 personality traits. Our prompts follow the exact format of Figure 1. For each type vector, we provide GPT-4.1 with a system prompt based on that type vector, followed by a user prompt based on the game instructions used to generate the human subject data. Appendix A gives the exact prompts along with the model versions, collection dates, inference settings, response counts, and extraction procedure. Varying the 5 Likert levels of these five dimensions generates a collection of 𝐿 𝑘 = 55 = 3, 125 behavioral type vectors. Lower-dimensional type spaces ( 𝑘 ∈ { 1, 2, 3, 4}) are constructed by including only a subset of the characteristics. For each game role, the LLM then maps a type vector and the game instructions into a choice in the game. Figure 2 illustrates how each characteristic affects behavior when varied as a single dimension type prompt in isolation. That is, we prompt the LLM with only that characteristic and elicit its choice in each game for each of the five Likert values. To make responses comparable across games, we normalize the choices as a percentage of each game’s action range. Effects differ systematically across games. In some games, the LLM’s choice varies in response to each of the five dimensions, while in other games the choices vary in response to only some of them. In general, choices vary in expected ways. For example, Altruism has little effect in the Bomb, Beauty Contest, and Cournot games, but substantially affects behavior in the Dictator, Banker, and Public Goods games. Strategic Sophistication, in contrast, does not impact choices for the proposer and responder roles, but generates monotonically decreasing choices for the Beauty Contest. 6050 100 Dictator Proposer Responder Investor Banker Public Goods Bomb Beauty Contest Cournot                                                 
+
+> Altruism Commons
+> 050 100
+> Trust
+> 050 100
+> Risk Aversion
+> 050 100
+> Fairness
+> 12345050 100
+> 123451234512345123451234512345123451234512345
+> Strategic Sophistication Likert level Mean choice (% of action range)
+
+Figure 2: For each game role, we show mean behavior as the Likert level of each behavioral characteristic dimension is varied in isolation (one-dimensional types). Choices, the 𝑦 -axis, are expressed as a percentage of each game’s action range. The horizontal black line provides a reference to help visualize the variation across scales. Our main analysis uses GPT-4.1, but nothing in the method is specific to this model. Appendix C repeats the one-dimensional exercise using GPT-5.6 Terra, GPT-5.6 Luna, Claude Sonnet 5, and DeepSeek V4 Pro. The characteristic-by-game relationships remain intuitive across models. For example, Altruism consistently affects giving and investment, while Strategic Sophistication consistently lowers choices in the Beauty Contest. More generally, each alternative model’s 50 keyword-by-game correlations are highly correlated with the corresponding GPT-4.1 correlations, with 𝑟 ranging from 0.83 to 0.88 (see Figure A1). 
+
+3.3 The dimensionality of the type space 
+
+Before moving to our empirical analysis, we briefly discuss how to interpret the types our method produces. When we use a 𝑘 −dimensional vector with five potential levels on each characteristic, this results in a Type space of 5 𝑘 . The human data lives in a space that has 100 10 potential action profiles (10 games with 100 percentage-point levels in the action space). With 𝑘 = 3, for instance, 5 3 = 125 is much lower-dimensional than 100 10 , which alleviates concerns of simple overfitting. Nonetheless, 125 types is a lot of potential types. If the LLM arbitrarily interprets types, a three-dimensional type vector could index 125 unrelated patterns of behavior. Nearby points in the type space would not necessarily generate similar behavior, allowing the 125 types to approximate substantial human heterogeneity without forming a coherent low-dimensional space. Because LLMs are highly nonlinear, counting prompted dimensions alone does not rule out this possibility. 1
+
+This concern is allayed by the patterns we see in Figure 2. First, the patterns are fairly continuous: changing the prompted intensity generally does not produce abrupt changes in behavior. Second, the relationships are typically either flat or approximately monotonic (if not linear). Some exhibit a reversal, 
+
+> 1
+
+See Vafa et al. (2024) for examples of LLMs with structured implied world models. 
+
+7but generally no more than one. In Appendix D we extend this exercise to two-dimensional type vectors by varying one characteristic while holding a second characteristic fixed at each of its five levels. Even in this larger type space, the relationships generally remain smooth, often roughly linear, and either flat or approximately monotonic. These patterns would not lead to arbitrary placement of points throughout a space, but indicate that nearby type vectors generally produce similar behavior. 
+
+# 4 Matching Distributions of Human Play 
+
+Our first analysis studies how well different combinations and numbers of dimensions generate the range of human behavior observed within each game. For each number of dimensions from one through five, we consider every possible subset of that size from our five economic characteristics. For every subset and game, we choose mixture weights over the resulting types to minimize the normalized Wasserstein distance between the AI and human distributions. We fit the mixture weights separately for each game. For each number of dimensions, we identify the single subset of characteristics with the lowest average normalized Wasserstein distance across the ten game roles. Figure 3 shows the distributions generated by these best subsets, along with the empirical distribution of human play and the distribution generated by the default prompt, which contains no type vector. Moving down the rows, we see that the default prompt generally produces choices concentrated on one or two points and fails to reproduce the heterogeneity in human play. Even with one-dimensional types, however, the LLM distributions are substantially closer to the human distributions. With three dimensions, the generated distributions largely overlap with the human distributions in most games, and adding fourth and fifth dimensions produces smaller additional improvements. The left panel of Figure 4 quantifies these patterns. It plots the normalized Wasserstein distance between the elicited distribution and the human distribution for each game. The first point on the 𝑥 -axis shows the fit under the default prompt, and moving to the right shows the fit with increasing numbers of dimensions using the combinations listed in the right-hand margin of Figure 3. The patterns in the left panel are consistent with the observations from Figure 3. The largest improvements occur within the first three dimensions. Moving from the default prompt to Risk Aversion alone substantially reduces the distance for every game. Adding Strategic Sophistication and then Trust produces further improvements. The fourth and fifth dimensions provide much smaller additional gains for all game roles other than the Proposer. In sum, Risk Aversion, Strategic Sophistication, and Trust reproduce much of the distributional heterogeneity across games. In Figure 4, the ten smaller plots on the right allow each game to use its own best combination of characteristics. The letters above each point identify this combination. For example, the 𝐹 above the one-dimensional point in the Dictator panel indicates that Fairness provides the best one-dimensional fit for that game. The dashed line and band in each smaller plot show the distance between random samples of 1,000 human choices and the full human distribution. They therefore provide a benchmark for the distance produced by sampling error alone. The best single dimensions are often intuitive: Fairness fits the Dictator and Responder roles best, Risk Aversion for the Investor, and Strategic Sophistication for the Beauty Contest. Individual roles are often well-matched by only two dimensions, bringing the simulated distribution within the sampling error of the humans’. This makes sense because behavior within each game is unique. The Beauty Contest remains the clearest exception, although the five-dimensional type reduces its distance by 84% relative to the default. And using Strategic Sophistication in isolation can improve the fit. This indicates that dimensions interact, so adding dimensions is not always beneficial. 80                                           
+
+> Dictator 0
+> Proposer 00
+> Responder 0100
+> Investor 0
+> Banker 0100
+> Public Goods 50 50
+> Bomb 01
+> Beauty Contest 53 40
+> Cournot 83 50
+> Human (all choices)
+> Commons
+> LLM default
+> Single dimension (R) 2 dimensions (R,S) 3 dimensions (T,R,S) 4 dimensions (A,T,R,S)
+> 050 100 050 100 050 100 050 100 050 100 050 100 050 100 050 100 050 100 050 100
+> 5 dimensions (All)
+> Choice (% of each game's action range) Density
+> Human distribution Nash Total-payoff maximizing
+
+Figure 3: Distributions of human and AI play across the ten game roles. Choices are expressed as a percentage of each game’s action range. The top row shows the distribution of human choices, and the black outline repeats the human distribution in each subsequent panel. The solid red and dashed green lines in the first row indicate the Nash and total-payoff-maximizing actions, respectively. The second row shows choices under the default system prompt without specifying a type. The remaining rows show 1,000 choices drawn from the best-fitting mixture of type-vector prompts using one through five dimensions. For each number of dimensions, the type vector on the right is the combination with the lowest mean normalized Wasserstein distance across all ten game roles and is used in every column. For example, the two-dimensional row uses Risk Aversion and Strategic Sophistication (𝑅, 𝑆 ), the pair with the lowest average normalized distance across games. 
+
+# 5 Matching an individual human’s behaviors across settings 
+
+We now use our method to understand the structure of individual human behavior. In Section 4, we fitted separate mixture weights for each game role to match the distribution of human choices within that role. Here, we assign each individual a single type to match that individual’s choices in every game role that the individual played. Essentially, we are now fitting the joint distribution over plays in all game roles rather than the marginal distribution for each game role separately. For this analysis, we use 9,269 decisions made by 1,734 individuals who played at least five game roles. We first examine how matching quality changes with the number of dimensions, and then study how the fitted types vary across individuals and predict held-out choices. 9LLM default 1(R) 2(R,S) 3(T,R,S) 4(A,T,R,S) 5(All)                                                                      
+
+> 12510 20 50
+> Wasserstein distance to human distribution
+> D=LLM default A=Altruism T=Trust R=Risk Aversion F=Fairness S=Strategic Sophistication D12345
+> 12510 20 50
+> Dictator
+> FAFARFATRFAll
+> D12345
+> Proposer
+> TARATFATFSAll
+> D12345
+> Responder
+> FTFTFSTRFSAll
+> D12345
+> Investor
+> RRSTRSATRFAll
+> D12345
+> Banker
+> AARATRATFSAll
+> D12345
+> 12510 20 50
+> Public Goods
+> ATFATFATFSAll
+> D12345
+> Bomb
+> TRSARFTRFSAll human human benchmark
+> D12345
+> Beauty Contest
+> SFSRFSARFSAll
+> D12345
+> Cournot
+> RRFTRSATFSAll
+> D12345
+> Commons
+> RTRATRATRSAll
+> Number and combination of dimensions
+> Best shared combination across all games Best combination per game
+
+Figure 4: The left plot shows the Wasserstein distance between simulated and human play averaged across game role and, by number of prompt dimensions, while the right plots show it for each game individually. The dashed line and band in each game-role plot give the benchmark distance between 1,000 random draws of humans and the full human data ( ±1 s.e.). For each game role and each 𝑘 , mixture weights over the 5 𝐾 type vectors are fit to minimize the distance to the human distribution. Each point is the distance between 1,000 draws from the fitted mixture and the full human data, normalized by the game’s action range, averaged over 10 runs ( ±1 s.e.). The point labeled 𝐷 is generated by the default prompt without a type vector. In the left plot, each dimension 𝑘 uses the keyword combination with the lowest mean distance across all ten game roles. In the right plots, each game role uses its own best combination at each 𝑘 , annotated beside each point. 
+
+5.1 Dimensions needed to match individuals 
+
+For each individual, we find the single type that best matches the individual’s choices across all game roles they played. We do this separately for one- through five-dimensional type vectors. For each candidate type and game role, we calculate the mean absolute difference between the individual’s observed choice and ten LLM choices generated by the type’s prompt, divided by the game’s action range. We measure the type’s matching error for that individual as the average of these game-level distances across the roles the individual played. For each number of dimensions, we select the type with the lowest matching error. For example, a matching error of 𝜀 = 0.10 means that the choices generated by the matched type differ from the individual’s observed choices by 10% of each game’s action range on average. Figure 5 summarizes the individual fits by the number of dimensions. The left panel shows that most of the improvement comes from the first three dimensions. Moving from the default prompt to a one-dimensional type reduces the median matching error from 0 .288 to 0 .132. As with matching entire distributions in Section 4, the fit flattens after three dimensions. Notably, when matching subjects across games, four dimensions are actually better than five. The right panel of Figure 5 reports, for error thresholds 𝜀 ∈ { .025 , . 05 , . 075 , . 1, . 15 , . 2}, the proportion of subjects who can be matched by a 𝑘 -dimensional type with error no larger than 𝜀 . The key takeaway is 10 LLM default 1 2 3 4 5    
+
+> Number of dimensions ( k)
+> 0.00 0.05 0.10 0.15 0.20 0.25
+> Median best  k-dimensional matching error LLM default 12345
+> Number of dimensions ( k)
+> 020 40 60 80 100
+> % of players with best
+> k-dimensional matching error
+> = 0.200
+> = 0.150
+> = 0.100
+> = 0.075
+> = 0.050
+> = 0.025
+
+Figure 5: Number of dimensions needed to match 𝑁 = 1, 734 individual human players who played at least five game roles. The left plot shows the best matching distance versus type dimensionality. The right plot shows the proportion of players who can be matched by a 𝑘 -dimensional prompt with a matching error no larger than 𝜀 . Each curve corresponds to a matching error threshold 𝜀 .that the population is heterogeneous in how well individuals fit and how many dimensions it takes. 
+
+5.2 Human heterogeneity and the distribution of types 
+
+Having fit type vectors to each human subject, we can analyze whether there are patterns in the type space. That is, whether humans cluster into a few tight groups that have fairly similar types, or spread more uniformly across the space. To do so, we take each participant’s best-fitting five-dimensional type vector and use UMAP, a nonlinear dimension-reduction method (McInnes et al., 2018), to construct a two-dimensional projection of the type vectors. The left panel of Figure 6 shows this projection, while the right panel reports the smallest number of dimensions needed to match each subject with an error no larger than 𝜀 = 0.1. Although people could hypothetically occupy the full space, they cluster around a small set of type vectors. We see distinctly different types across the clusters. For instance, the Risk-Averse and Fair types have an average vector of ( 𝐴 = 2.9, 𝑇 = 2.8, 𝑅 = 4.0, 𝐹 = 4.3, 𝑆 = 2.8), which is average for most dimensions, but high on Risk Aversion and Fairness. The largest “Moderate” cluster is close to the middle of the 1-5 range on all dimensions. Clusters on the left side, including “Strategic Risk-Seekers” and “Non-Strategic and Fair” types, are generally more risk-loving ( 𝑅 ≤ 2.0), emphasizing fairness ( 𝐹 = 5.0and 𝐹 = 4.7) and low trust ( 𝑇 ≤ 1.9). The right panel shows heterogeneity in how many dimensions are needed to fit different subjects. Of the 1,734 subjects, 30 are matched by the default prompt within 𝜀 = 0.1, 447 require one dimension, and so on. The remaining 448 cannot be matched at this threshold. Among the subjects who can be matched, nearly 70% are matched by a type with no more than two dimensions. So while subjects cluster into fewer than a dozen distinct groups, they are heterogeneous in how many dimensions are needed to fit them well. 
+
+5.3 Out-of-distribution prediction 
+
+Matching a subject’s behaviors across game roles does not establish that the inferred best-fitting type predicts the subject’s behavior in new settings. We therefore examine whether a type inferred only from some subset of games predicts that subject’s behavior in another game on which the type is not estimated. 2
+
+> 2
+
+Here, “out of distribution” refers to prediction from our type assignments across game roles that were not used to derive the type. We do not claim the held-out games are absent from the LLM’s training corpus or that performance will generalize. 
+
+11 20 10 0 10 20 30 40           
+
+> UMAP-1
+> 5
+> 0510 15 20 25
+> UMAP-2
+> Moderate (N=692) A3.2 T3.2 R2.3 F2.7 S3.1
+> Risk Averse and Fair (N=310)
+> A2.9 T2.8 R4.0 F4.3 S2.8
+> Selfish (N=103) A1.5 T3.0 R3.0 F3.9 S3.0
+> Strategic Risk Seekers (N=68)
+> A2.1 T1.2 R1.0 F4.7 S3.9
+> Non Strategic and Fair (N=58)
+> A2.3 T1.9 R2.0 F5.0 S2.2
+> 0200 400
+> Players matched (N)
+> K=0 (Default) K=1 K=2 K=3 K=4 K=5 None
+> N=30 N=447 N=418 N=251 N=125 N=15 N=448
+> Dimensionality (smallest Kwith best matching error )
+
+Figure 6: Two-dimensional UMAP projections of the best-fitting individual human type vectors. Each dot is a human player represented by a 5-dimensional type vector on a 5-point Likert scale. Vectors are projected by UMAP. Color 𝑘 indicates the minimal prompt dimensionality to match this player within the error threshold 𝜀 = 0.1. “None” means no prompt can match this player within the error threshold. Only players who have played five or more games are shown ( 𝑁 = 1, 734). For visual clarity, we add Gaussian random noise ( 𝜎 = 0.5) to UMAP coordinates. We do the following leave-one-game-out exercise for each possible subset of the five dimensional types (including all five). We take each game in turn as the held-out game. For every subject who played that game and at least four others, we find the type that best matches their choices in those other games. This becomes the subject’s estimated type for that set of dimensions. We then use the median of the ten choices generated by that type in the held-out game to predict the subject’s choice in the held-out game, and measure the absolute difference between the predicted and actual choices, normalized by the range of possible choices in the game. If several types fit equally well, we average their held-out prediction errors. This held-out-game exercise would be difficult to implement with traditional dimensionality-reduction methods. Principal components and factor analysis estimate latent structure among the outcomes included in the estimation data, but predicting behavior in a new setting requires either data from that setting or a dimension-specific model specifying how the latent factors map into choices. Because the LLM operates in natural language, the inferred type can be applied to a held-out game even when its environment and action space differ from those of the games used to estimate it. To put our out-of-distribution predictions to a demanding test, we compare them with a benchmark designed to extract as much predictive power as possible from the observed human choices. For each held-out game, we estimate a histogram-based gradient-boosted tree (HistGBT) (Ke et al., 2017) that uses each subject’s choices in the other games to predict their choice in the held-out game. We evaluate the model using five-fold cross-validation across subjects, so a subject’s own held-out choice is never 
+
+See Ludwig, Mullainathan, and Rambachan (2026) for the assumptions needed to attach broader econometric guarantees to LLM-based predictions. 
+
+12 Sample Weighted Avg.                
+
+> (N= 9269) Cournot (N= 31) Responder (N= 1441) Proposer (N= 1441) Beauty Contest (N= 1087) Dictator (N= 1251) Banker (N= 335) Bomb (N= 1291) Commons (N= 194) Public Goods (N= 664) Investor (N= 1534)
+> 1.0 1.5 2.0 2.5
+> Held-out game prediction error relative to ML benchmark (HistGBT)
+> k=1
+> k=4 k=4
+> k=5 k=1
+> k=1
+> k=2
+> k=2 k=1 k=1
+> Parity with Info Advantaged ML
+> Uniform random guess Random human draw Best type vector
+
+Figure 7: Held-out-game prediction error relative to an ML model (HistGBT). For each game, each point reports the mean absolute error (which is measured as a share of the game’s action range), divided by the corresponding HistGBT error. The dashed line at one marks parity with HistGBT, and lower values indicate lower prediction error. The green point for each game reports the best-performing type-based prediction, with its label indicating the corresponding dimensionality 𝑘 The sample-weighted average is the subject-game-weighted mean errors divided by the ML counterparts. The 𝑁 beneath each game is its number of subjects and decisions; beneath the average, it is the total number of subject-game observations. The red x’s report the expected error from a uniform random guess, while the open black circle reports the expected error from a randomly selected human choice. Error bars report ±1 s.e. for the type-based mean error divided by the HistGBT mean. used to generate that subject’s prediction. These ML predictions are out of sample with respect to the subject but in distribution with respect to the particular game. It uses the choices of other subjects in the held-out game to estimate how behavior in the other games predicts behavior in that game. In contrast, our type-based prediction estimates the subject’s type from the other games and then applies that type out of distribution to the held-out game. Thus, the ML benchmark (HistGBT) has the informational advantage of being explicitly trained directly on human behavior in the game it predicts. Figure 7 compares the lowest type-based prediction error, a uniform random guess, and a randomly drawn human choice, all with HistGBT for each game. Appendix Figure A12 reports results for the selected combination at each dimensionality and the absolute ML error for each game. The best-performing types produce substantially lower errors than either reference prediction, and approach the information-advantaged ML benchmark. Taking the best dimensionality for each game, the sample-weighted error is 1.11 times the HistGBT error, compared with 1.43 for a random human draw and 1.73 for a uniform random guess. Across games, the lowest type-based error ranges from .94 to 1.24 times the HistGBT error. The point estimates are slightly lower than HistGBT for Bomb and Cournot, although the Cournot estimate is imprecise because only 31 subjects played that game. In seven of the ten games, one or two dimensions provide the best fit. 13 6 Alternative types 
+
+Although our explorations and analyses so far have focused on prominent economic keywords, our approach is not limited to economics. Our technique also lets us compare how different keywords affect the fit. We test two additional sets of keywords in matching individual play across the ten game roles. The first set is five prominent keywords from psychology-based theories: the “OCEAN” Big 5 personality traits. These are Openness, Conscientiousness, Extraversion, Agreeableness, and Neuroticism. The traits are designed to capture different aspects of human features that can influence behavior, and so represent a natural comparison (Costa and McCrae, 1992; Becker et al., 2012; Jagelka, 2024) We also explore the performance of atheoretical or “placebo” keywords. They are atheoretical in the sense that no plausible relationship between these keywords and the way that we should expect humans to play in any of the game roles. We make up 5 dimensions that seem completely unrelated to any of the game roles. These are: Preference for the color orange, Amount of milk in coffee, Interest in cloud shapes, Enjoyment of the sound of rain, and Fondness for the smell of old books. Our analysis proceeds by repeating the individual matching exercise in Section 5.1 separately for the economic, Big 5, and placebo keywords. Each keyword takes three Likert values, from 1 to 3. 3 For every number of dimensions 𝑘 from one through five, we evaluate every combination of 𝑘 keywords in each set. Each combination generates 3 𝐾 prompt types, and we simulate each type ten times in every game. For each keyword set and 𝑘 , we select the combination with the lowest median matching error across subjects who played at least five games. Figure 8 compares how well each of three keyword sets—the five economic keywords, the Big 5 personality traits, and the placebos—matches individual subjects. The horizontal axis reports the number of dimensions, while the vertical axis reports the median matching error across subjects. For each set and number of dimensions, the figure shows the type that produces the lowest median matching error. Moving from the default prompt to the best one-dimensional keyword substantially improves the fit for all three sets of keywords. Even a placebo keyword can help because varying its level induces some behavioral variation, giving the matching procedure possible choices with which to match subjects. The benefit of adding placebo dimensions, however, quickly diminishes. The best one-dimensional fit comes from the Big 5’s Agreeableness. One possible interpretation is that Agreeableness is a broad characteristic that combines elements of several of the economic characteristics, including Altruism, Fairness, and Trust. From two through five dimensions, however, the economic keywords provide the best fit. Indeed, four economic dimensions fit slightly better than all five Big 5 characteristics. The particular words therefore matter, and they matter in intuitive ways. This comparison does not establish that our five economic keywords are the best possible set. They achieve most of their reduction in matching error with three dimensions, after which the curve becomes flatter. For example, another set of keywords might produce a more sharply declining curve and achieve the same fit with only two dimensions, or might not flatten out. Given how much matching error has already been eliminated, however, even the best possible curve is limited in how much further it can reduce the error. Our ML benchmark suggests that the potential further reduction in error is likely not more than another quarter of the remaining error. 
+
+> 3We use three rather than five Likert values because the full combination was prohibitively expensive to repeat on additional sets. Appendix E shows five-point results for five economic dimensions, up to three dimensions for the Big 5, and one placebo dimension.
+
+14 0 1 2 3 4 5Number of dimensions 0.00 0.05 0.10 0.15 0.20 0.25 Median matching distance (best combination)    
+
+> TT,F T,F,S T,R,F,S All
+> AA,N E,A,N O,C,A,N All
+> Coffee Coffee,Rain Coffee, Clouds,Rain Coffee,Clouds, Rain,Books All
+> Default Econ Big Five Placebo
+
+Figure 8: Median matching distance across subjects by number of dimensions, for the five economic keywords, the Big-5 OCEAN personality traits, and the placebo keywords, all on a 3-level Likert scale. For each number of dimensions 𝑘 , a point reports the combination of 𝑘 characteristics from that set with the lowest median matching distance across subjects, where each subject is matched by their best-fitting type vector within that combination. The label beside each point names the winning combination by the initial letters of its characteristics. 
+
+# 7 Discussion 
+
+We began with two related questions: how many dimensions are needed to describe human behavior across settings, and how are people distributed in the resulting space? Our findings suggest that just a few dimensions generate the substantial heterogeneity we observe within and across games, and the types we identify cluster tightly into distinct groups. Our broader contribution is a method that makes questions like these empirically tractable across settings and theories. The types generated by our method are not merely statistical summaries of observed choices. Once a subject’s type is estimated, the same prompt can generate predictions for that subject in any setting described in natural language. The method therefore allows researchers to compare candidate dimensions and to examine whether types estimated in one set of settings predict behavior in another. A separate and equally important question concerns the literal interpretation of the keywords themselves. Because an LLM is a black box, changing the component vector value of a characteristic from, say, 3 to 4, may not be affecting the inner workings of the model in ways that correspond to the human notion of that characteristic. Furthermore, it could be changing several features internally at once (Gui and Toubia, 2023). If so, a nominally low-dimensional type space could still produce a complex and effectively unstructured set of behaviors. The smooth and generally monotonic effects of the dimensions across games, together with the concentration of subjects around a limited number of types, alleviate this concern. The dimensions we identify therefore appear to reflect meaningful structure in the behavior generated by the prompts rather than simply the number of values used to label them. Moreover, even if what the model reads as “Altruism” is something else, the type still reproduces the play—as in factor analysis, the count is identified, but the rotation need not be. We make no claim that keywords we study should be interpreted as a test of a particular theory of 15 human behavior. Still, the fact that theoretically motivated keywords work, and that their relationship to the games seems to match up with existing theories, suggests that reading the dimensions literally is not unreasonable. Indeed, an exciting avenue of future research might explore whether this method can be used to evaluate new theories by proposing new dimensions and evaluating which can “best” approximate human responses with the fewest components. Another important avenue for future work is how well types transfer beyond the game roles used to estimate them. Our leave-one-game-out exercise shows that types inferred from some games can generalize out of distribution well in our specific context. Fortunately, the generality of our method makes such questions testable. The same empirical exercises we perform here can be repeated with new dimensions, new populations, and settings that differ substantially from the economic games studied here. Doing so can show where types remain stable, where additional dimensions are needed, and where types inferred in one domain cease to predict behavior in another, and how populations and settings differ in terms of what theories might apply. 
+
+# References 
+
+Abdurahman, Suhaib, Mohammad Atari, Farzan Karimi-Malekabadi, Mona J Xue, Jackson Trager, Peter S Park, Preni Golazizian, Ali Omrani, and Morteza Dehghani. 2024. “Perils and opportunities in using large language models in psychological research.” PNAS nexus 3 (7):245. Aher, Gati V, Rosa I Arriaga, and Adam Tauman Kalai. 2023. “Using large language models to simulate multiple humans and replicate human subject studies.” In International Conference on Machine Learning . PMLR, 337–371. Akata, Elif, Lion Schulz, Julian Coda-Forno, Seong Joon Oh, Matthias Bethge, and Eric Schulz. 2025. “Playing repeated games with large language models.” Nature Human Behaviour 9 (7):1380–1390. Andreoni, James. 1995. “Cooperation in Public-Goods Experiments: Kindness or Confusion?” American Economic Review 85 (4):891–904. Andreoni, James and John Miller. 2002. “Giving according to GARP: An experimental test of the consistency of preferences for altruism.” Econometrica 70 (2):737–753. Anthis, Jacy Reese, Ryan Liu, Sean M Richardson, Austin C Kozlowski, Bernard Koch, Erik Brynjolfsson, James Evans, and Michael S Bernstein. 2025. “Position: Llm social simulations are a promising research method.” In Forty-second International Conference on Machine Learning Position Paper Track .Argyle, Lisa P, Ethan C Busby, Nancy Fulda, Joshua R Gubler, Christopher Rytting, and David Wingate. 2023. “Out of one, many: Using language models to simulate human samples.” Political Analysis 
+
+31 (3):337–351. Ashokkumar, Ashwini, Luke Hewitt, Isaias Ghezae, and Robb Willer. 2026. “Large language models can predict the results of social science experiments.” Nature :1–8. Becker, Anke, Thomas Deckers, Thomas Dohmen, Armin Falk, and Fabian Kosse. 2012. “The Relationship between Economic Preferences and Psychological Personality Measures.” Annual Review of Economics 
+
+4:453–478. Berg, Joyce, John Dickhaut, and Kevin McCabe. 1995. “Trust, reciprocity, and social history.” Games and Economic Behavior 10 (1):122–142. 16 Bolton, Gary E and Axel Ockenfels. 2000. “ERC: A theory of equity, reciprocity, and competition.” 
+
+American economic review 91 (1):166–193. Bruhin, Adrian, Ernst Fehr, and Daniel Schunk. 2019. “The Many Faces of Human Sociality: Uncovering the Distribution and Stability of Social Preferences.” Journal of the European Economic Association 
+
+17 (4):1025–1069. Camerer, Colin F. 2003. Behavioral game theory: Experiments in strategic interaction . Princeton university press. Camerer, Colin F, Teck-Hua Ho, and Juin-Kuan Chong. 2004. “A cognitive hierarchy model of games.” 
+
+The Quarterly Journal of Economics 119 (3):861–898. Chapman, Jonathan, Mark Dean, Pietro Ortoleva, Erik Snowberg, and Colin F. Camerer. 2023. “Econo-graphics.” Journal of Political Economy Microeconomics 1 (1):115–161. Charness, Gary and Matthew Rabin. 2002. “Understanding social preferences with simple tests.” The quarterly journal of economics 117 (3):817–869. Chen, Yiting, Tracy Xiao Liu, You Shan, and Songfa Zhong. 2023. “The emergence of economic rationality of GPT.” Proceedings of the National Academy of Sciences 120 (51):e2316205120. Costa, Paul T. and Robert R. McCrae. 1992. Revised NEO Personality Inventory (NEO PI-R) and NEO Five-Factor Inventory (NEO-FFI) . Odessa, FL: Psychological Assessment Resources. Cournot, Augustin. 1838. Recherches sur les principes math´ ematiques de la th´ eorie des richesses . Paris: L. Hachette. Crosetto, Paolo and Antonio Filippin. 2013. “The “Bomb” Risk Elicitation Task.” Journal of Risk and Uncertainty 47 (1):31–65. Dean, Mark and Pietro Ortoleva. 2019. “The Empirical Relationship between Nonstandard Economic Behaviors.” Proceedings of the National Academy of Sciences 116 (33):16262–16267. Fehr, Ernst and Klaus M Schmidt. 1999. “A theory of fairness, competition, and cooperation.” The quarterly journal of economics 114 (3):817–868. Forsythe, Robert, Joel L. Horowitz, N. E. Savin, and Martin Sefton. 1994. “Fairness in Simple Bargaining Experiments.” Games and Economic Behavior 6 (3):347–369. Fudenberg, Drew. 2006. “Advancing Beyond Advances in Behavioral Economics.” Journal of Economic Literature 44 (3):694–711. Gui, George and Olivier Toubia. 2023. “The challenge of using LLMs to simulate human behavior: A causal inference perspective.” arXiv preprint arXiv:2312.15524 .G¨ uth, Werner, Rolf Schmittberger, and Bernd Schwarze. 1982. “An experimental analysis of ultimatum bargaining.” Journal of Economic Behavior & Organization 3 (4):367–388. Holt, Charles A. and Susan K. Laury. 2002. “Risk Aversion and Incentive Effects.” American Economic Review 92 (5):1644–1655. Horton, John J, Apostolos Filippas, and Benjamin S Manning. 2023. “Large Language Models as Simulated Economic Agents: What Can We Learn from Homo Silicus?” Working Paper 31122, National Bureau of Economic Research. URL http://www.nber.org/papers/w31122 .17 Huck, Steffen, Hans-Theo Normann, and J¨ org Oechssler. 1999. “Learning in Cournot Oligopoly—An Experiment.” The Economic Journal 109 (454):C80–C95. Hullman, Jessica, David Broska, Huaman Sun, and Aaron Shaw. 2026. “This human study did not involve human subjects: Validating LLM simulations as behavioral evidence.” URL https: //arxiv.org/abs/2602.15785 .Jackson, Matthew O, Qiaozhu Me, Stephanie W Wang, Yutong Xie, Walter Yuan, Seth Benzell, Erik Brynjolfsson, Colin F Camerer, James Evans, Brian Jabarian et al. 2025. “Ai behavioral science.” 
+
+arXiv preprint arXiv:2509.13323 .Jagelka, Tom´ aˇ s. 2024. “Are Economists’ Preferences Psychologists’ Personality Traits? A Structural Approach.” Journal of Political Economy 132 (3):910–970. Kahneman, Daniel. 1979. “Prospect theory: An analysis of decisions under risk.” Econometrica 47:278. Ke, Guolin, Qi Meng, Thomas Finley, Taifeng Wang, Wei Chen, Weidong Ma, Qiwei Ye, and Tie-Yan Liu. 2017. “Lightgbm: A highly efficient gradient boosting decision tree.” Advances in neural information processing systems 30. Keynes, John Maynard. 1936. The General Theory of Employment, Interest and Money . London: Macmillan. Kim, Junsol and Byungkyu Lee. 2023. “Ai-augmented surveys: Leveraging large language models and surveys for opinion prediction.” arXiv preprint arXiv:2305.09620 .Kozlowski, Austin C and James Evans. 2025. “Simulating Subjects: The Promise and Peril of AI Stand-ins for Social Agents and Interactions.” URL osf.io/preprints/socarxiv/vp3j2_v3 .Kozlowski, Austin C, Hyunku Kwon, and James A Evans. 2024. “In silico sociology: forecasting COVID-19 polarization with large language models.” arXiv preprint arXiv:2407.11190 .Krakauer, David C. 2024. “The complex world.” Santa Fe Institute Press, Santa Fe, NM .Laibson, David. 1997. “Golden eggs and hyperbolic discounting.” The Quarterly Journal of Economics 
+
+112 (2):443–478. Lippert, Steffen, Anna Dreber, Magnus Johannesson, Warren Tierney, Wilson Cyrus-Lai, Eric Luis Uhlmann, Emotion Expression Collaboration, and Thomas Pfeiffer. 2024. “Can large language models help predict results from a complex behavioural science study?” Royal Society Open Science 
+
+11 (9):240682. Lloyd, William Forster. 1833. Two Lectures on the Checks to Population: Delivered Before the University of Oxford, in Michaelmas Term 1832 . Oxford: S. Collingwood. Ludwig, Jens, Sendhil Mullainathan, and Ashesh Rambachan. 2026. “Large Language Models: An Applied Econometric Framework.” Annual Review of Economics 18. Forthcoming. NBER Working Paper 33344. Manning, Benjamin S. and John J. Horton. 2026. “General Social Agents.” URL http://www.nber. org/papers/w34937 .Manning, Benjamin S, Kehang Zhu, and John J Horton. 2024. “Automated social science: Language models as scientist and subjects.” Tech. rep., National Bureau of Economic Research. McInnes, Leland, John Healy, Nathaniel Saul, and Lukas Großberger. 2018. “UMAP: Uniform Manifold Approximation and Projection.” Journal of Open Source Software 3 (29):861. 18 Nagel, Rosemarie. 1995. “Unraveling in guessing games: An experimental study.” The American Economic Review 85 (5):1313–1326. Park, Joon Sung, Joseph O’Brien, , Carrie Jun Cai, Meredith Ringel Morris, Percy Liang, and Michael S. Bernstein. 2023. “Generative Agents: Interactive Simulacra of Human Behavior.” UIST ’23: Proceedings of the 36th Annual ACM Symposium on User Interface Software and Technology .Park, Joon Sung, Carolyn Q Zou, Aaron Shaw, Benjamin Mako Hill, Carrie Cai, Meredith Ringel Morris, Robb Willer, Percy Liang, and Michael S Bernstein. 2024. “Generative agent simulations of 1,000 people.” arXiv preprint arXiv:2411.10109 .Peng, Tianyi, George Gui, Melanie Brucks, Daniel J. Merlau, Grace Jiarui Fan, Malek Ben Sliman, Eric J. Johnson, Abdullah Althenayyan, Silvia Bellezza, Dante Donati, Hortense Fong, Elizabeth Friedman, Ariana Guevara, Mohamed Hussein, Kinshuk Jerath, Bruce Kogut, Akshit Kumar, Kristen Lane, Hannah Li, Vicki Morwitz, Oded Netzer, Patryk Perkowski, and Olivier Toubia. 2026. “Digital Twins as Funhouse Mirrors: Five Key Distortions.” URL https://arxiv.org/abs/2509.19088 .Qian, Crystal, Kehang Zhu, John Horton, Benjamin Manning, Vivian Tsai, James Wexler, and Nithum Thain. 2026. “Strategic Tradeoffs Between Humans and AI in Multi-Agent Bargaining.” URL 
+
+https://doi.org/10.1145/3742413.3789078 .Ross, Jillian, Yoon Kim, and Andrew W Lo. 2024. “Llm economicus? mapping the behavioral biases of llms via utility theory.” arXiv preprint arXiv:2408.02784 .Samuelson, Paul A. 1954. “The Pure Theory of Public Expenditure.” The Review of Economics and Statistics 36 (4):387–389. Stango, Victor and Jonathan Zinman. 2023. “We Are All Behavioural, More or Less: A Taxonomy of Consumer Decision-Making.” The Review of Economic Studies 90 (3):1470–1498. Vafa, Keyon, Justin Y Chen, Ashesh Rambachan, Jon Kleinberg, and Sendhil Mullainathan. 2024. “Evaluating the World Model Implicit in a Generative Model.” In Neural Information Processing Systems .Walker, James M., Roy Gardner, and Elinor Ostrom. 1990. “Rent Dissipation in a Limited-Access Common-Pool Resource: Experimental Evidence.” Journal of Environmental Economics and Management 19 (3):203–211. Xie, Yutong, Qiaozhu Mei, Walter Yuan, and Matthew O Jackson. 2025. “Using large language models to categorize strategic situations and decipher motivations behind human behaviors.” Proceedings of the National Academy of Sciences 122 (35):e2512075122. Yeykelis, Leo, Kaavya Pichai, James J Cummings, and Byron Reeves. 2024. “Using Large Language Models to Create AI Personas for Replication, Generalization and Prediction of Media Effects: An Empirical Test of 133 Published Experimental Research Findings.” arXiv preprint arXiv:2408.16073 .19 Supplemental Appendix for “How AI Prompts Can Teach Us About the Structure of Human Behavior” by Jackson, Manning, Xie, Yuan, and Mei. 
+
+# A AI Prompts and Game Instructions 
+
+Sections 2 and 3 describe how we pair each type vector with the instructions for a game role. Here, we give the exact prompts used to generate the AI choices. We also describe the LLMs and data pipeline used to generate our data. 
+
+A.1 Type-vector and Default Prompts 
+
+Each elicitation pairs one prompt with the instructions for one game role. The type-vector or default prompt occupies the system role, and the game instructions occupy the user role. Our main analysis uses 
+
+gpt-4.1 through the Azure Batch deployment 4 and collects ten valid responses (i.e., responses that can be parsed into choices within the action range specified by game instructions) for every pairing of a prompt and game role. We use the default API hyperparameters and do not specify temperature, top-𝑝 ,or penalty parameters. For a type vector with 𝑘 characteristics measured on a scale with 𝐿 Likert levels, we construct the prompt by inserting the selected characteristic names and values, along with the number of scale levels 𝐿 ,into the following template. 
+
+> Type-vector prompt template
+
+You are a player characterized by the following profile (each dimension is measured on a Likert scale, where 1 is the lowest level and [L] is the highest level): 
+
+• [Dimension 1 ]: [Value 1 ] out of [L]
+
+... 
+
+• [Dimension K ]: [Value K ] out of [L]
+
+For example, the type vector (2, 4) over Altruism and Risk Aversion produces the following prompt when 𝐿 = 5.      
+
+> Type-vector prompt for (𝐴, 𝑅 )=(2,4)
+
+You are a player characterized by the following profile (each dimension is measured on a Likert scale, where 1 is the lowest level and 5 is the highest level): 
+
+• Altruism: 2 out of 5 
+
+• Risk Aversion: 4 out of 5  
+
+> 4Azure OpenAI batch deployments: https://learn.microsoft.com/en-us/azure/foundry/openai/how-to/ batch , retrieved on Aug 17, 2026.
+
+1The default system prompt uses the exact text shown below and the same game instructions. 
+
+> Default prompt
+
+You are a helpful assistant. 
+
+Characteristics. The five economic characteristics used in our main analysis are Altruism, Trust, Risk Aversion, Fairness, and Strategic Sophistication. For comparison, we also use the Big 5 personality characteristics: Openness, Conscientiousness, Extraversion, Agreeableness, and Neuroticism. The placebo characteristics are Preference for the color orange, Amount of milk in coffee, Interest in cloud shapes, Enjoyment of the sound of rain, and Fondness for the smell of old books. 
+
+A.2 Game Instructions 
+
+The boxes below reproduce exactly the game instructions supplied for each game role. The wording, capitalization, punctuation, and paragraph breaks are unchanged. The games are based on standard dictator and ultimatum games (G¨ uth, Schmittberger, and Schwarze, 1982; Forsythe et al., 1994), the trust game (Berg, Dickhaut, and McCabe, 1995), the public-goods game (Samuelson, 1954; Andreoni, 1995), the Bomb Risk Elicitation Task (Crosetto and Filippin, 2013), the beauty-contest game (Nagel, 1995; Keynes, 1936), experimental Cournot competition (Cournot, 1838; Huck, Normann, and Oechssler, 1999), and the common-pool-resource game (Lloyd, 1833; Walker, Gardner, and Ostrom, 1990). 
+
+> Dictator
+
+You are paired with another player. Your role is to decide how to divide $100 and the other player simply receives your choice. How would you like to divide the money? Please give only one concrete choice and highlight the amount you give to the other player in [] (such as [$x]). 
+
+> Ultimatum game: Proposer role
+
+This is a two-player game. You are the Proposer, and the other player is the Responder. As the proposer, you propose how to divide $100 and the Responder chooses either Accept or Reject. If accepted, the two of you will earn as described by the accepted proposal accordingly. If rejected, then both of you will earn $0. How much would you like to propose to give to the Responder? Please give only one concrete choice, and highlight the amount with [] (such as [$x]). 2Ultimatum game: Responder role 
+
+This is a two-player game. You are the Responder, and the other player is the Proposer. The proposer proposes how to divide $100 and you, as the Responder, choose either Accept or Reject. If accepted, the two of you will earn as described by the accepted proposal accordingly. If rejected, then both of you will earn $0. As the Responder, what is the minimal amount in the proposal that you would accept? Please give only one concrete choice, and highlight the amount with [] (such as [$x]). 
+
+> Trust game: Investor role
+
+This is a two-player game. You are an Investor and the other player is a Banker. You have $100 to invest and you choose how much of your money to invest with the Banker. The amount you choose to invest will grow by 3x with the Banker. For example, if you invest $10, it will grow to $30 with the Banker. The Banker then decides how much of the money ($0-$30) to return to you, the Investor. How much of the $100 would you like to invest with the Banker? Please give only one concrete choice, and highlight the number with [] (such as [$x]). 
+
+> Trust game: Banker role
+
+This is a two-player game. You are a Banker and the other player is an Investor, and the goal for each player is to earn more. The Investor chooses how much of the money (up to $100) to invest with you. The amount the Investor invests will generate a 2x return with you (the current value of investment becomes 3x). To settle the investment, as the Banker, you get to decide how much of this total amount to return to the Investor and the rest will be kept as your profit. For example, you can choose to return $0 (therefore the investor will lose their investment), or you can return the entire 3x (initial investment + 2x profit) to the investor, or you can return any amount in between. Now, if the investor has invested $50 with you and the current value became $150, how much of the $150 would you like to return to the Investor? Please give only one concrete choice, and highlight the number with [] (such as [$x]). 3Public Goods 
+
+In this public good game, you and 3 others will choose how much to contribute towards a water cleaning project. Each of you gets $20 per round to contribute between $0 and $20. The project has a 50% return rate. Your payoff relies on both your and others’ contributions. Everyone benefits from the group’s total contribution. Your payoff in each round equals the amount you didn’t contribute (endowment - contribution) plus everyone’s benefit (total contributions * 50% return rate). Here are two examples to calculate your payoff. Example one: You contributed $12; total group contributions were $20 Your Payoff = ($20-$12) + $20*50% = $18 Example two: You contributed $12; total group contributions were $30 Your Payoff = ($20-$12) + $30*50% = $23 We will play a total of 3 rounds, in the first round, how much of the $20 would you like to contribute? Please give a concrete number and highlight it with [] (e.g., [x]). 
+
+> Bomb
+
+There are 100 boxes, and one bomb has been randomly placed in 1 of 100 boxes. You can choose to open 0-100 boxes at the same time. If none of the boxes you open has the bomb, you earn points that are equal to the number of boxes you open. If one of the boxes you open has the bomb, you earn zero points. How many boxes would you open? Please give one concrete number and highlight it with [] (such as [x]). 
+
+> Beauty Contest
+
+This is a number-guessing game where you will play with a number of other players. Each player chooses an integer between 0 and 100 which is hidden from other players. The player who chooses a number that is closest to 2/3 of the average wins the game. For example, if the average of the guesses is 60 and if you guess 40, i.e. 2/3 of 60, you win the game. What number would you like to guess? Please give a concrete number and highlight it with [] (e.g., [x]). 4Cournot 
+
+This is a market game where you and 1 other oil producer compete. Each of you simultaneously chooses how many barrels of oil to produce, from 0 to 15 barrels. You pay a production cost of $6 for each barrel you produce, and this cost is the same for both producers. The market price per barrel depends on the total production of both producers: the price equals 30 minus the total number of barrels produced. Your profit equals the number of barrels you produce multiplied by (market price -$6). For example, suppose you produce 10 barrels and the other producer produces 9 barrels, and the resulting market price is $11 per barrel. Then your profit is 10 * ($11 - $6) = $50, and the other producer’s profit is 9 * ($11 - $6) = $45. How many barrels would you like to produce? Please give one concrete number and highlight it with [] (such as [x]). 
+
+> Commons
+
+This is a fishing game where you and 4 other players share a common fishing ground. Each of you simultaneously chooses how many hours to fish, from 0 to 48 hours. Your revenue per hour of fishing depends on the total hours fished by the whole group: the more hours fished in total, the lower the revenue per hour. Specifically, the revenue per hour equals (48 * 5) minus the total hours fished by all five players, that is, 240 minus the group’s total hours. Your payoff equals the number of hours you fish multiplied by the revenue per hour. For example, if you fish 24 hours and the other four players fish 84 hours in total, the revenue per hour is 240 - 108 = $132, so your payoff is 24 * $132 = $3,168. How many hours would you like to fish? Please give one concrete number and highlight it with [] (such as [x]). 
+
+A.3 Data Generation and Extraction 
+
+Table A1 summarizes every model-generated dataset used in the paper. All responses for the main analyses were generated by gpt-4.1 , snapshot gpt-4.1-2025-04-14 , through the Azure Batch deployment. We retained the model’s default sampling parameters and did not specify temperature, top-𝑝 , penalties, or output-token limits. The model-robustness analysis additionally queried four LLMs: gpt-5.6-terra , gpt-5.6-luna ,
+
+DeepSeek-V4-Pro , and claude-sonnet-5 . For these models, we disabled reasoning to match gpt-4.1 
+
+and otherwise retained each provider’s default inference settings. The Claude API required a maximum output length, which we set to 4,096 tokens. Each model received the same prompts and game instructions as in the corresponding gpt-4.1 collections. We extracted numeric choices from the raw replies using a fixed pipeline applied to every collection. A regular expression first identified an unambiguous bracketed numeric choice, which is the output format required in game instructions (Appendix A.2). Replies that this rule could not resolve were read separately by gpt-4.1-nano and gpt-5.6-luna using the same game-specific extraction prompt. 5Dataset Player model Responses Collected Default prompt gpt-4.1 100 2026-03-04 to 2026-08-04 Economic keywords, 𝑘 =1–5, five-level gpt-4.1 777,696 2026-06-26 to 2026-07-23 Economic keywords, 5-dim grid, three-level gpt-4.1 24,303 2026-07-21 Economic keywords, 𝑘 =1–4, three-level gpt-4.1 78,000 2026-08-13 Big Five, 𝑘 =1–3, five-level gpt-4.1 152,515 2026-06-26 to 2026-06-30 Big Five, 5-dim grid, three-level gpt-4.1 24,300 2026-06-09 Big Five, 𝑘 =1–4, three-level gpt-4.1 78,000 2026-08-13 Placebo keywords, single, five-level gpt-4.1 7,516 2026-08-04 Positive placebo, 𝑘 =1–5, three-level gpt-4.1 102,302 2026-08-13 Generalizability, four models, five-level Four models 14,035 2026-08-04 to 2026-08-05 
+
+Table A1: Provenance of the model-generated datasets used in the paper. All GPT-4.1 rows use snapshot 
+
+gpt-4.1-2025-04-14 . Response counts include all API replies recorded in each collection, including replacement calls used to complete cells with invalid responses. Date ranges indicate collections completed in multiple stages. The generalizability row pools four models: gpt-5.6-terra , gpt-5.6-luna ,
+
+DeepSeek-V4-Pro , and claude-sonnet-5 ; its GPT-4.1 comparison reuses the corresponding main-analysis data. When the two readers agreed, we accepted their value; every disagreement was adjudicated by hand. The fallback readers were used for 54,757 replies, or 4.3% of the responses reported in Table A1. A reply entered the analytic data only if its API stop signal indicated completion and the extracted choice fell within the game’s action range. Incomplete or out-of-range replies were excluded and replaced. 6B Human-playing Data 
+
+Our human benchmark comes from MobLab, an online platform on which instructors run economic games with their classes. We use 78,657 who together contributed 119,147 across ten game roles. Each subject contributes at most one choice per game. The data span 4,875 sessions run between 2014 and 2026. Sessions are mostly classroom cohorts, so subjects are predominantly university students. Table A2 reports the per-game statistics. 
+
+Game Action space Subjects Mean SD Median Sessions Years Dictator [0, 100 ] 10,335 25.7 21.7 25.0 722 2015–2023 Proposer [0, 100 ] 5,291 44.1 20.0 49.0 189 2016–2022 Responder [0, 100 ] 5,291 34.9 20.3 40.0 188 2016–2022 Investor [0, 100 ] 16,830 42.0 36.1 30.0 1,207 2016–2023 Banker [0, 150 ] 1,570 59.4 39.5 54.5 694 2016–2023 Public Goods [0, 20 ] 18,046 8.9 5.8 9.0 701 2016–2023 Bomb [0, 100 ] 23,629 45.4 24.7 49.0 620 2015–2023 Beauty Contest [0, 100 ] 31,793 32.2 22.6 28.0 1,116 2015–2023 Cournot [0, 15 ] 5,023 8.5 3.2 8.0 191 2023–2026 Commons [0, 48 ] 1,339 20.1 14.0 20.0 77 2014–2026 All games 119,147 4,875 2014–2026 
+
+Table A2: Statistics of human play data by game. Subject counts are also choice counts: each subject contributes at most one choice per game. Table A3 gives the distribution of how many games are played by the subjects. Our individual-level analysis uses subjects who played at least five games, a cohort of 1,734 and who made 9,269 choices. No subject played more than eight of the ten games. 
+
+Exactly 𝑚 games At least 𝑚 games Games played 𝑚 Subjects Choices Subjects Choices 1 55,022 55,022 78,657 119,147 2 14,197 28,394 23,635 64,125 3 4,354 13,062 9,438 35,731 4 3,350 13,400 5,084 22,669 5 1,210 6,050 1,734 9,269 6 453 2,718 524 3,219 7 67 469 71 501 8 4 32 4 32 
+
+Table A3: Statistics of subjects by number of games played. Right-hand columns are cumulative. Population-level analyses use all 119,147 choices; the individual-level analysis uses the ≥ 5 cohort. 7C Model Robustness 
+
+Throughout the main analysis, we use gpt-4.1 . The method is, however, LLM-agnostic: The same type of prompts and game instructions can be given to any LLM. If the dimensions capture general features of human behavior rather than relationships specific to gpt-4.1 , we would expect their directional effects to be similar across models. Repeating the full analysis for every LLM would be costly. We therefore repeat the one-dimensional ex-ercise underlying Figure 2 using models that differ in capability and developer: gpt-4.1 , gpt-5.6-terra ,
+
+gpt-5.6-luna , DeepSeek-V4-Pro , and claude-sonnet-5 . For each model, we vary each economic characteristic from 1 to 5 and generate ten choices at every level in every game. Figures A2–A6 show the resulting level-by-level relationships. We then calculate the Spearman correlation between the prompted level and the resulting choices for each characteristic, game, and model. Figure A1 summarizes these correlations across models. The gold shading identifies panels in which at least four models fall into the same category: significantly positive, significantly negative, or not statistically distinguishable from zero. The 𝑟 values shown beside the alternative models in the legend report the Pearson correlation between that model’s 50 keyword-by-game Spearman correlations and the corresponding correlations for gpt-4.1 .The dimensions have similar effects across the five models. The correlation-of-correlations for the alternative models compared to gpt-4.1 are high, ranging from 𝑟 = 0.83 to 𝑟 = 0.88. Furthermore, in 37 of the 50 keyword-by-game comparisons, at least four models have significantly positive correlations, significantly negative correlations, or correlations that are not statistically distinguishable from zero. For Altruism, Trust, Risk Aversion, and Fairness, this is true in 35 of the 40 comparisons. The agreement is especially clear where the characteristics have large and intuitive effects. For example, higher Altruism increases giving or investment in the Dictator, Investor, Banker, and Public Goods games across all five models, while having little effect in the Bomb game. Together, these comparisons show agreement both panel by panel and in the overall pattern of effects across characteristics and games. Strategic Sophistication is the main exception, with mostly unshaded panels. However, in the Beauty Contest, where it should matter most, its effect is strongly negative and consistent across models. And elsewhere its relationships tend to be weaker than many of those observed in other panels. 81                  
+
+> 01Dictator Proposer Responder Investor Banker Public Goods Bomb Beauty Contest Cournot Altruism Commons
+> 1
+> 01
+> Trust
+> 1
+> 01
+> Risk Aversion
+> 1
+> 01
+> Fairness
+> 1
+> 01
+> Strategic Sophistication
+> Spearman correlation (Likert level vs. choice, % of action range)
+> gpt-4.1 gpt-5.6-terra (r = 0.84) gpt-5.6-luna (r = 0.83) claude-sonnet-5 (r = 0.87) DeepSeek-V4-Pro (r = 0.88) 4 of 5 models agree (sign or 0)
+
+Figure A1: This figure reports effects of the economic keywords across LLMs. Rows report the five economic keywords, and columns report the ten game roles. Within each panel, bars report the Spearman correlation between the keyword’s Likert level and choices for the LLMs: gpt-4.1 ,
+
+gpt-5.6-terra , gpt-5.6-luna , DeepSeek-V4-Pro , and claude-sonnet-5 . Correlations pool the ten choices generated at each of five Likert levels, for approximately 50 observations per bar, and choices are expressed as a percentage of each game’s action range. Error bars report bootstrap 95% confidence intervals. A correlation is reported as zero without an error bar when a model’s choices do not vary. Gold shading indicates that at least four models have significantly positive correlations, significantly negative correlations, or correlations whose confidence intervals include zero. The 𝑟 values shown in parentheses beside each alternative model in the legend report correlation-of-correlations between that model’s 50 keyword-by-game Spearman correlations and the corresponding correlations for gpt-4.1 .9050 100 Dictator Proposer Responder Investor Banker Public Goods Bomb Beauty Contest Cournot                                                 
+
+> gpt 4.1 Commons
+> 050 100
+> gpt 5.6 terra
+> 050 100
+> gpt 5.6 luna
+> 050 100
+> claude sonnet 5
+> 12345050 100
+> 123451234512345123451234512345123451234512345
+> DeepSeek V4 Pro
+
+Altruism 
+
+> Likert level Mean choice (% of action range)
+
+Figure A2: This figure reports behavior induced by a single Altruism dimension across LLMs from different developers. Rows are: Terra, GPT-5.6 Luna, Claude Sonnet 5, and DeepSeek V4 Pro Columns report the ten game roles. Points show the mean choice as Altruism varies from 1 to 5, expressed as a percentage of each game’s action range, and error bars show ±1 standard error across ten responses at each level. The gray horizontal line marks the midpoint of the action range. 050 100 Dictator Proposer Responder Investor Banker Public Goods Bomb Beauty Contest Cournot                                                 
+
+> gpt 4.1 Commons
+> 050 100
+> gpt 5.6 terra
+> 050 100
+> gpt 5.6 luna
+> 050 100
+> claude sonnet 5
+> 12345050 100
+> 123451234512345123451234512345123451234512345
+> DeepSeek V4 Pro
+
+Fairness 
+
+> Likert level Mean choice (% of action range)
+
+Figure A3: This figure reports behavior induced by a single Fairness dimension across LLMs from different developers. Rows are: Terra, GPT-5.6 Luna, Claude Sonnet 5, and DeepSeek V4 Pro Columns report the ten game roles. Points show the mean choice as Fairness varies from 1 to 5, expressed as a percentage of each game’s action range, and error bars show ±1 standard error across ten responses at each level. The gray horizontal line marks the midpoint of the action range. 10 050 100 Dictator Proposer Responder Investor Banker Public Goods Bomb Beauty Contest Cournot                                                 
+
+> gpt 4.1 Commons
+> 050 100
+> gpt 5.6 terra
+> 050 100
+> gpt 5.6 luna
+> 050 100
+> claude sonnet 5
+> 12345050 100
+> 123451234512345123451234512345123451234512345
+> DeepSeek V4 Pro
+
+Risk Aversion 
+
+> Likert level Mean choice (% of action range)
+
+Figure A4: This figure reports behavior induced by a single Risk Aversion dimension across LLMs from different developers. Rows are: Terra, GPT-5.6 Luna, Claude Sonnet 5, and DeepSeek V4 Pro Columns report the ten game roles. Points show the mean choice as Risk Aversion varies from 1 to 5, expressed as a percentage of each game’s action range, and error bars show ±1 standard error across ten responses at each level. The gray horizontal line marks the midpoint of the action range. 050 100 Dictator Proposer Responder Investor Banker Public Goods Bomb Beauty Contest Cournot                                                 
+
+> gpt 4.1 Commons
+> 050 100
+> gpt 5.6 terra
+> 050 100
+> gpt 5.6 luna
+> 050 100
+> claude sonnet 5
+> 12345050 100
+> 123451234512345123451234512345123451234512345
+> DeepSeek V4 Pro
+
+Strategic Sophistication 
+
+> Likert level Mean choice (% of action range)
+
+Figure A5: This figure reports behavior induced by a single Strategic Sophistication dimension across LLMs from different developers. Rows are: Terra, GPT-5.6 Luna, Claude Sonnet 5, and DeepSeek V4 Pro Columns report the ten game roles. Points show the mean choice as Fairness varies from 1 to 5, expressed as a percentage of each game’s action range, and error bars show ±1 standard error across ten responses at each level. The gray horizontal line marks the midpoint of the action range. 11 050 100 Dictator Proposer Responder Investor Banker Public Goods Bomb Beauty Contest Cournot                                                 
+
+> gpt 4.1 Commons
+> 050 100
+> gpt 5.6 terra
+> 050 100
+> gpt 5.6 luna
+> 050 100
+> claude sonnet 5
+> 12345050 100
+> 123451234512345123451234512345123451234512345
+> DeepSeek V4 Pro
+
+Trust 
+
+> Likert level Mean choice (% of action range)
+
+Figure A6: This figure reports behavior induced by a single Trust dimension across LLMs from different developers. Rows are: Terra, GPT-5.6 Luna, Claude Sonnet 5, and DeepSeek V4 Pro Columns report the ten game roles. Points show the mean choice as Trust varies from 1 to 5, expressed as a percentage of each game’s action range, and error bars show ±1 standard error across ten responses at each level. The gray horizontal line marks the midpoint of the action range. 12 D Behavior induced by two-dimensional type vectors 
+
+The figures below examine every two-characteristic combination among the five economic characteristics. Each figure treats one characteristic as the focal characteristic, which varies from 1 to 5 along the 𝑥 -axis. The columns report the ten game roles, and the rows report the other four characteristics. Within each row, the colored lines hold the second characteristic fixed at each of its five levels. The dashed gray line shows behavior when the focal characteristic appears alone in a one-dimensional type vector. 050 100 Dictator Proposer Responder Investor Banker Public Goods Bomb Beauty Contest Cournot                                                      
+
+> Trust Strategic Sophistication Commons
+> 050 100
+> Risk Aversion
+> 050 100
+> Fairness
+> 12345050 100
+> 123451234512345123451234512345123451234512345
+> Strategic Sophistication Altruism level Mean choice (% of action range)
+> Level of the second characteristic (row) 12345Altruism alone
+
+Figure A7: This figure shows behavior as Altruism varies within two-dimensional type vectors. The 
+
+𝑥 -axis varies Altruism from 1 to 5. Each row pairs Altruism with the second characteristic named at left, and the colored lines hold the level of that characteristic fixed from 1 to 5. The dashed gray line shows behavior when Altruism appears alone in a one-dimensional type vector. Each column reports a game role. Points show the mean choice as a percentage of the game’s action range, and shaded bands show ±1standard error across ten responses. 13 050 100 Dictator Proposer Responder Investor Banker Public Goods Bomb Beauty Contest Cournot                                                      
+
+> Altruism Strategic Sophistication Commons
+> 050 100
+> Risk Aversion
+> 050 100
+> Fairness
+> 12345050 100
+> 123451234512345123451234512345123451234512345
+> Strategic Sophistication Trust level Mean choice (% of action range)
+> Level of the second characteristic (row) 12345Trust alone
+
+Figure A8: This figure shows behavior as Trust varies within two-dimensional type vectors. The 𝑥 -axis varies Trust from 1 to 5. Each row pairs Altruism with the second characteristic named at left, and the colored lines hold the level of that characteristic fixed from 1 to 5. The dashed gray line shows behavior when Trust appears alone in a one-dimensional type vector. Each column reports a game role. Points show the mean choice as a percentage of the game’s action range, and shaded bands show ±1 standard error across ten responses. 050 100 Dictator Proposer Responder Investor Banker Public Goods Bomb Beauty Contest Cournot                                                      
+
+> Altruism Strategic Sophistication Commons
+> 050 100
+> Trust
+> 050 100
+> Fairness
+> 12345050 100
+> 123451234512345123451234512345123451234512345
+> Strategic Sophistication Risk Aversion level Mean choice (% of action range)
+> Level of the second characteristic (row) 12345Risk Aversion alone
+
+Figure A9: This figure shows behavior as Risk Aversion varies within two-dimensional type vectors. The 𝑥 -axis varies Risk Aversion from 1 to 5. Each row pairs Altruism with the second characteristic named at left, and the colored lines hold the level of that characteristic fixed from 1 to 5. The dashed gray line shows behavior when Risk Aversion appears alone in a one-dimensional type vector. Each column reports a game role. Points show the mean choice as a percentage of the game’s action range, and shaded bands show ±1 standard error across ten responses. 14 050 100 Dictator Proposer Responder Investor Banker Public Goods Bomb Beauty Contest Cournot                                                      
+
+> Altruism Strategic Sophistication Commons
+> 050 100
+> Trust
+> 050 100
+> Risk Aversion
+> 12345050 100
+> 123451234512345123451234512345123451234512345
+> Strategic Sophistication Fairness level Mean choice (% of action range)
+> Level of the second characteristic (row) 12345Fairness alone
+
+Figure A10: This figure shows behavior as Fairness varies within two-dimensional type vectors. The 
+
+𝑥 -axis varies Fairness from 1 to 5. Each row pairs Altruism with the second characteristic named at left, and the colored lines hold the level of that characteristic fixed from 1 to 5. The dashed gray line shows behavior when Fairness appears alone in a one-dimensional type vector. Each column reports a game role. Points show the mean choice as a percentage of the game’s action range, and shaded bands show ±1standard error across ten responses. 050 100 Dictator Proposer Responder Investor Banker Public Goods Bomb Beauty Contest Cournot                                                      
+
+> Altruism Strategic Sophistication Commons
+> 050 100
+> Trust
+> 050 100
+> Risk Aversion
+> 12345050 100
+> 123451234512345123451234512345123451234512345
+> Fairness Strategic Sophistication level Mean choice (% of action range)
+> Level of the second characteristic (row) 12345Strategic Sophistication alone
+
+Figure A11: This figure shows behavior as Strategic Sophistication varies within two-dimensional type vectors. The 𝑥 -axis varies Strategic Sophistication from 1 to 5. Each row pairs Altruism with the second characteristic named at left, and the colored lines hold the level of that characteristic fixed from 1 to 5. The dashed gray line shows behavior when Strategic Sophistication appears alone in a one-dimensional type vector. Each column reports a game role. Points show the mean choice as a percentage of the game’s action range, and shaded bands show ±1 standard error across ten responses. 15 E Additional Figures Weighted Avg. (9269, 0.19) Dictator (1251, 0.19) Proposer (1441, 0.11) Responder (1441, 0.12) Investor (1534, 0.32) Banker (335, 0.19) Public Goods (664, 0.26) Bomb (1291, 0.19) Beauty Contest (1087, 0.18) Cournot (31, 0.10) Commons (194, 0.22) Uniform random guess Random human draw Single dimension (S) 2 dimensions (A,F) 3 dimensions (A,T,F) 4 dimensions (A,T,F,S) 5 dimensions (All) 1.73 1.88       
+
+> ±0.02
+> 2.52
+> ±0.02
+> 2.54
+> ±0.02
+> 1.22
+> ±0.01
+> 1.69
+> ±0.03
+> 1.37
+> ±0.02
+> 1.65
+> ±0.01
+> 1.90
+> ±0.01
+> 2.70
+> ±0.08
+> 1.51
+> ±0.03
+> 1.43 1.29
+> ±0.01
+> 1.71
+> ±0.02
+> 1.74
+> ±0.02
+> 1.30
+> ±0.01
+> 1.51
+> ±0.02
+> 1.34
+> ±0.02
+> 1.46
+> ±0.01
+> 1.45
+> ±0.01
+> 1.98
+> ±0.11
+> 1.47
+> ±0.04
+> 1.24 1.06
+> ±0.02
+> 1.57
+> ±0.03
+> 1.83
+> ±0.03
+> 1.13
+> ±0.02
+> 1.18
+> ±0.05
+> 1.14
+> ±0.04
+> 1.09
+> ±0.02
+> 1.20
+> ±0.03
+> 0.94
+> ±0.20
+> 1.36
+> ±0.06
+> 1.27 1.16
+> ±0.03
+> 1.52
+> ±0.04
+> 1.53
+> ±0.04
+> 1.32
+> ±0.02
+> 1.40
+> ±0.06
+> 1.32
+> ±0.04
+> 0.97
+> ±0.02
+> 1.19
+> ±0.03
+> 1.13
+> ±0.22
+> 1.16
+> ±0.06
+> 1.26 1.24
+> ±0.03
+> 1.51
+> ±0.04
+> 1.26
+> ±0.03
+> 1.28
+> ±0.03
+> 1.49
+> ±0.06
+> 1.33
+> ±0.04
+> 1.07
+> ±0.03
+> 1.10
+> ±0.03
+> 1.08
+> ±0.20
+> 1.22
+> ±0.06
+> 1.31 1.24
+> ±0.03
+> 1.24
+> ±0.04
+> 1.24
+> ±0.03
+> 1.38
+> ±0.03
+> 1.42
+> ±0.06
+> 1.41
+> ±0.04
+> 1.35
+> ±0.03
+> 1.12
+> ±0.03
+> 1.21
+> ±0.21
+> 1.28
+> ±0.07
+> 1.35 1.25
+> ±0.03
+> 1.29
+> ±0.04
+> 1.28
+> ±0.03
+> 1.36
+> ±0.03
+> 1.51
+> ±0.06
+> 1.38
+> ±0.04
+> 1.68
+> ±0.03
+> 1.09
+> ±0.03
+> 1.30
+> ±0.24
+> 1.31
+> ±0.07
+> (N, ML MAE)
+
+Figure A12: Held-out-game prediction error relative to HistGBT. Each row reports, for a given number of dimensions, the combination with the lowest sample-weighted mean held-out error across games. These combinations are selected using the same held-out results summarized in the figure. For each subject and held-out game, the subject’s type is estimated without using their choice in that game. The type-based prediction is the median of the ten choices generated by the matched type in the held-out game. When several types fit equally well, their held-out prediction errors are averaged. HistGBT predicts the held-out choice from the subject’s choices in the other games and is evaluated using five-fold cross-validation across subjects. Each cell reports the mean type-based error divided by the mean HistGBT error. All errors are mean absolute errors measured as a share of the game’s action range. Column headers report 
+
+(𝑁, ML MAE ): the number of subjects who played the game and the mean HistGBT error, which is the denominator of every ratio in that column. Note that for the Weighted average, 𝑁 is the number of decisions. The uniform-random row reports the expected error from predicting a uniformly random value on the game’s action range. The random-human row reports the expected error from using a randomly selected human’s choice as the prediction. The highlighted cell identifies the lowest relative error among the five type rows in each column. Numbers following ± report the standard error of the corresponding mean error divided by the HistGBT mean error. 16 0 1 2 3 4 5Number of dimensions 0.00 0.05 0.10 0.15 0.20 0.25 Median matching distance (best combination)   
+
+> ST,F A,T,F A,T,F,S All
+> EO,A O,A,N Rain
+> Default Econ Big Five Placebo
+
+Figure A13: The comparison of Figure A13 repeated on a 5-level Likert scale. Median matching distance across subjects by number of dimensions, for the five economic characteristics, the Big-5 OCEAN personality traits, and the placebo keywords, all on a 5-level Likert scale. For each number of dimensions 
+
+𝑘 , each point reports the combination of 𝑘 characteristics from that set with the lowest median matching distance across subjects, where each subject is matched by their best-fitting type vector within that combination. The label beside each point names the winning combination by the initial letters of its characteristics. The figure is incomplete because of limited funds to trace out the full curves for the placebo and Big 5. 050 100 Dictator Proposer Responder Investor Banker Public Goods Bomb Beauty Contest Cournot                             
+
+> Altruism Commons
+> 050 100
+> Trust
+> 050 100
+> Risk Aversion
+> 050 100
+> Fairness
+> 123050 100
+> 123123123123123123123123123
+> Strategic Sophistication Likert level Mean choice (% of action range)
+
+Figure A14: This figure reports behavior induced by the five economic key words on a 3-level Likert scale. Each row varies one placebo keyword from 1 to 3, and each column reports a game role. Points show the mean choice as a percentage of the game’s action range, and error bars show ±1 standard error across ten responses at each level. The gray horizontal line marks the midpoint of the action range. 17 050 100 Dictator Proposer Responder Investor Banker Public Goods Bomb Beauty Contest Cournot 
+
+Openness Commons 
+
+> 050 100
+
+Conscientiousness 
+
+> 050 100
+
+Extraversion 
+
+> 050 100
+
+Agreeableness                             
+
+> 123050 100
+> 123123123123123123123123123
+
+Neuroticism Likert level Mean choice (% of action range) Figure A15: This figure reports behavior induced by the big 5 psychology key words on a 3-level Likert scale. Each row varies one placebo keyword from 1 to 3, and each column reports a game role. Points show the mean choice as a percentage of the game’s action range, and error bars show ±1 standard error across ten responses at each level. The gray horizontal line marks the midpoint of the action range. 050 100 Dictator Proposer Responder Investor Banker Public Goods Bomb Beauty Contest Cournot 
+
+> Preference for the color orange
+
+Commons                             
+
+> 050 100
+> Amount of milk in coffee 050 100
+> Interest in cloud shapes 050 100
+> Enjoyment of the sound of rain 123050 100
+> 123123123123123123123123123
+> Fondness for the smell of old books
+
+Placebo positive (L3) univariate K=1 sweep 
+
+Likert level Mean choice (% of action range) 
+
+Figure A16: This figure reports Behavior induced by placebo keywords. Each row varies one placebo keyword from 1 to 5, and each column reports a game role. Points show the mean choice as a percentage of the game’s action range, and error bars show ±1 standard error across ten responses at each level. The gray horizontal line marks the midpoint of the action range. 18

@@ -6,47 +6,49 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-08-19
-- 运行时间：2026-08-19 20:23:54 UTC
+- 最新运行日期：2026-08-20
+- 运行时间：2026-08-20 20:34:24 UTC
 - 运行状态：成功
 - 本次总论文数：9
-- 精读区：2
-- 速读区：7
+- 精读区：3
+- 速读区：6
 
 ### 今日简报（AI）
-今日精读2篇、速读7篇，聚焦机器人格斗博弈与强化学习时序推理。最值得关注的是《RoboStriker》的潜空间战略博弈（9.0分）和《Chronocooked》的隐式时间间隔基准（8.0分）。建议普通读者优先浏览这两篇，理解自主智能体在对抗与计时任务中的新突破。
-- 详情：[/202608/19/README](/202608/19/README)
+今日聚焦9篇AI博弈与决策研究，精读两篇高分论文及六篇速读。  
+最值得关注：几何感知位置编码助力空间不完美信息游戏，以及无需评估期搜索的PureTD强化学习双陆棋方法。  
+建议从这两篇切入，看AI如何应对信息缺失与复杂策略场景。
+- 详情：[/202608/20/README](/202608/20/README)
 
 ### 精读区论文标签
-1. [RoboStriker: Latent-Space Strategic Games for Autonomous Humanoid Boxing](/202608/19/2608.16195v1-robostriker-latent-space-strategic-games-for-autonomous-humanoid-boxing)  
+1. [Do Geometry-Aware Positional Encodings Help Transformers in Spatial Imperfect-Information Games?](/202608/20/2608.14982v1-do-geometry-aware-positional-encodings-help-transformers-in-spatial-imperfect-information-games)  
    标签：评分：9.0/10、query:player-ai
-   evidence：通过潜在空间多智能体RL训练AI代理进行拳击博弈
-2. [Chronocooked: A Benchmark for Implicit Interval Timing in Reinforcement Learning Agents](/202608/19/2608.16666v1-chronocooked-a-benchmark-for-implicit-interval-timing-in-reinforcement-learning-agents)  
+   evidence：直接研究空间不完全信息博弈中基于Transformer的AI智能体
+2. [PureTD: Reinforcement Learning for Backgammon Money Games with No Evaluation-time Search](/202608/20/2608.15146v1-puretd-reinforcement-learning-for-backgammon-money-games-with-no-evaluation-time-search)  
+   标签：评分：9.0/10、query:player-ai
+   evidence：用自对弈强化学习训练西洋双陆棋对弈代理，无需评估时搜索
+3. [SPADE: Self-Play in Adaptive Synthetic Executable Environments](/202608/20/2608.19197v1-spade-self-play-in-adaptive-synthetic-executable-environments)  
    标签：评分：8.0/10、query:player-ai
-   evidence：在受Overcooked启发的烹饪环境中对RL智能体进行基准测试
+   evidence：自适应合成可执行环境下的自博弈强化学习框架，面向智能体训练
 
 ### 速读区论文标签
-1. [Q-Learning With World Models](/202608/19/2608.17163v1-q-learning-with-world-models)  
+1. [Revisiting the Intra-Team Communication Method to Elicit Level-k Reasoning in Beauty Contests and 11-20 Games](/202608/20/2608.18069v1-revisiting-the-intra-team-communication-method-to-elicit-level-k-reasoning-in-beauty-contests-and-11-20-games)  
    标签：评分：7.0/10、query:player-ai
-   evidence：世界模型与Q学习结合，是可用于游戏环境等复杂场景的Agent训练通用方法。
-2. [Content Based Video Narration of Gameplay with Vision Language Models](/202608/19/2608.14016v1-content-based-video-narration-of-gameplay-with-vision-language-models)  
+   evidence：在策略博弈中启发层级k玩家行为与信念，支持玩家行为模拟
+2. [How AI Prompts Can Teach Us About the Structure of Human Behavior](/202608/20/2608.18265v1-how-ai-prompts-can-teach-us-about-the-structure-of-human-behavior)  
+   标签：评分：7.0/10、query:player-ai
+   evidence：基于LLM的玩家画像与行为模拟，覆盖经济博弈角色
+3. [Best Response Dynamics for Zero-Sum Dynamic Games with Partial-Asymmetric Information](/202608/20/2608.13755v1-best-response-dynamics-for-zero-sum-dynamic-games-with-partial-asymmetric-information)  
    标签：评分：6.0/10、query:player-ai
-   evidence：利用AI对游戏视频进行解说，属于游戏人工智能应用
-3. [Watermarked Game Solving via Perturbed Regret Minimization](/202608/19/2608.14977v1-watermarked-game-solving-via-perturbed-regret-minimization)  
+   evidence：零和动态博弈中的最佳响应动力学与信念表征；与游戏AI策略相关
+4. [From Sequence to Structure: Relational Uncertainty Propagation for LLM Agents](/202608/20/2608.16002v2-from-sequence-to-structure-relational-uncertainty-propagation-for-llm-agents)  
    标签：评分：6.0/10、query:player-ai
-   evidence：针对不完美信息游戏智能体的水印技术
-4. [Evo-Harness: Context-to-Harness Skill Compilation for Self-Evolving Agents](/202608/19/2608.15071v1-evo-harness-context-to-harness-skill-compilation-for-self-evolving-agents)  
+   evidence：面向交互环境中LLM智能体的轨迹级不确定性传播方法
+5. [Towards Zero-Shot Task Transfer with Neurosymbolic World Models](/202608/20/2608.17959v1-towards-zero-shot-task-transfer-with-neurosymbolic-world-models)  
    标签：评分：6.0/10、query:player-ai
-   evidence：面向智能体自我进化的学习方法，可应用于游戏智能体训练
-5. [From Sequence to Structure: Relational Uncertainty Propagation for LLM Agents](/202608/19/2608.16002v1-from-sequence-to-structure-relational-uncertainty-propagation-for-llm-agents)  
+   evidence：用于强化学习智能体训练的神经符号世界模型与零样本任务迁移
+6. [RTPO: Reverse-Turn Policy Optimization for Stabilizing Agentic RL Training](/202608/20/2608.18682v1-rtpo-reverse-turn-policy-optimization-for-stabilizing-agentic-rl-training)  
    标签：评分：6.0/10、query:player-ai
-   evidence：面向复杂环境中LLM智能体的不确定性传播框架
-6. [PlanPO: Group Planning-Aware Policy Optimization for Multi-Turn Agentic LLMs](/202608/19/2608.17289v1-planpo-group-planning-aware-policy-optimization-for-multi-turn-agentic-llms)  
-   标签：评分：6.0/10、query:player-ai
-   evidence：面向多轮智能体LLM的策略优化训练方法，可应用于游戏环境
-7. [Procedural Content Metageneration via Program Search and Continual Abstraction Discovery](/202608/19/2608.17947v1-procedural-content-metageneration-via-program-search-and-continual-abstraction-discovery)  
-   标签：评分：6.0/10、query:player-ai
-   evidence：LLM驱动的游戏程序化内容生成
+   evidence：提出逆转策略优化方法稳定多轮智能体RL训练，可适用于游戏智能体训练
 
 
 <div class="dpr-home-promo-card">
