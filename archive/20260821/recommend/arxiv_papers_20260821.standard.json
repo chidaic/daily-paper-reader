@@ -1,0 +1,113 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-21T20:19:04.215000+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 2,
+    "quick_skim_target": 11,
+    "quick_selected": 2
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2608.13622v1",
+      "source": "arxiv",
+      "title": "ARC: Fair Relative Advantage Comparison in Open-Ended Real-World Interaction",
+      "abstract": "Open-ended real-world interaction admits multiple valid behaviors: an agent may answer directly, ask for clarification, provide progress updates, or confirm before acting. This flexibility breaks a core assumption behind group-based RL: rollouts compared within a group are no longer guaranteed to be behaviorally comparable. As a result, reward-model preferences over interaction style can distort relative advantages and steer optimization toward reward-preferred behaviors rather than context-appropriate ones. We formalize this as a \\textit{reward fairness problem} and propose \\textbf{ARC} (Advantage Regularization via Conditioning), a training recipe that restores fairer relative comparison through strategy-conditioned rollout grouping, together with hybrid rewards and entropy regularization. We study ARC in our proposed \\inter, a novel paradigm for responsive, steerable, and execution-aware user-agent interaction that decouples user-visible communication from latent reasoning and tool use. \\inter\\ also provides the annotation and distillation pipeline for constructing \\inter-86K, our strategy-annotated training corpus for supervised and RL training. Empirically, ARC substantially strengthens the core $τ/τ^2$ tool-use benchmarks, while \\inter\\ reduces time-to-first-token from 4.91s to 1.27s relative to a think-style baseline. Together, these results suggest that a central bottleneck in open-ended interactive learning is not only how agents are rewarded, but whether their behaviors are compared fairly in the first place. The ARC implementation and \\inter-86K training data will be released.",
+      "authors": [
+        "Yongqi Tong",
+        "Tan Li Hui Faith",
+        "Choy Zhen Wen Marcus",
+        "Zhou Jin",
+        "Kewei Fu",
+        "Jiang-Ming Yang",
+        "Jianshe Li",
+        "Xin Zhang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CL"
+      ],
+      "published": "2026-08-13T01:51:53+00:00",
+      "link": "https://arxiv.org/pdf/2608.13622v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "RL training recipe for agentic models in open-ended interactive tasks applicable to games",
+      "llm_evidence_cn": "面向开放世界交互智能体的强化学习训练方案，适用于游戏智能体训练",
+      "llm_evidence": "面向开放世界交互智能体的强化学习训练方案，适用于游戏智能体训练",
+      "canonical_evidence": "面向开放世界交互智能体的强化学习训练方案，适用于游戏智能体训练",
+      "llm_tldr_en": "ARC restores fair relative advantage comparison in group-based RL by conditioning rollout grouping on strategy, preventing reward-model style bias in open-ended interactions.",
+      "llm_tldr_cn": "开放世界交互中同一行为可以有多种合理形态，导致组内轨迹不可比，奖励模型偏好会扭曲相对优势。论文将该问题形式化为奖励公平性问题，提出ARC训练方案，通过策略条件化分组和优势正则化恢复公平的相对比较。该方法适用于游戏等开放式环境中智能体的强化学习训练，避免模型被风格偏好误导。实验验证其能产生更符合情境的行为。",
+      "llm_tldr": "开放世界交互中同一行为可以有多种合理形态，导致组内轨迹不可比，奖励模型偏好会扭曲相对优势。论文将该问题形式化为奖励公平性问题，提出ARC训练方案，通过策略条件化分组和优势正则化恢复公平的相对比较。该方法适用于游戏等开放式环境中智能体的强化学习训练，避免模型被风格偏好误导。实验验证其能产生更符合情境的行为。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.19880v1",
+      "source": "arxiv",
+      "title": "EnvHarness: Awakening Static Worlds for Agent Learning",
+      "abstract": "LLM agents learn by interacting with environments, yet these environments are hand-built and static: blind to an agent's weaknesses, and quickly left behind as it improves. While recent environment generation methods attempt to address this, they require domain-specific pipelines, rely on expensive or unreliable verifiers, and still produce static environments. To alleviate the engineering burden of rebuilding environments from scratch, we propose Environment Harness (EnvHarness), a programmable layer of plug-in components that wraps a static environment to reshape its behavior without modifying the underlying logic. Operating through standard interfaces, EnvHarness applies across diverse domains while ensuring every reshaped environment retains its original verifier. To automate this process, we introduce EnvRigger, which treats the target policy as a black box, observing its execution trajectories to synthesize EnvHarness components targeting diagnosed flaws, and validating them via fresh rollouts. Across five benchmarks in four domains, EnvHarness outperforms both original environments and domain-specific environment generation pipelines, achieving up to a 9.0-point improvement on held-out instances with 9.8% fewer execution steps. Furthermore, EnvHarness provides a superior optimization signal for reinforcement learning, enabling continuous, targeted co-evolution of the policy and its environment.",
+      "authors": [
+        "Chengsong Huang",
+        "Zifeng Wang",
+        "Rujun Han",
+        "Jun Yan",
+        "Yanfei Chen",
+        "Zoey CuiZhu",
+        "Ke Jiang",
+        "Peng Xia",
+        "Han Yu",
+        "Yufan Zhuang",
+        "Yifei Ming",
+        "Jiaqi Pan",
+        "Bhavana Dalvi Mishra",
+        "Jiaxin Huang",
+        "Burak Gokturk",
+        "Tomas Pfister",
+        "Chen-Yu Lee"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI",
+        "cs.CL",
+        "cs.LG"
+      ],
+      "published": "2026-08-20T10:42:06+00:00",
+      "link": "https://arxiv.org/pdf/2608.19880v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "reshaping static environments for agent learning",
+      "llm_evidence_cn": "为代理学习重塑静态环境",
+      "llm_evidence": "为代理学习重塑静态环境",
+      "canonical_evidence": "为代理学习重塑静态环境",
+      "llm_tldr_en": "EnvHarness is a programmable plugin layer that reshapes static environments for LLM agents, preserving verifiers and enabling adaptive training across domains.",
+      "llm_tldr_cn": "针对LLM代理环境静态且无法自适应的问题，本文提出EnvHarness，一种可编程的插件层，在不修改底层逻辑的前提下包装并重塑静态环境。它通过标准接口跨领域适用，并确保重塑后的环境保留原始验证器。该机制能够为代理学习动态调整环境难度与内容，对游戏中智能体训练具有应用价值。",
+      "llm_tldr": "针对LLM代理环境静态且无法自适应的问题，本文提出EnvHarness，一种可编程的插件层，在不修改底层逻辑的前提下包装并重塑静态环境。它通过标准接口跨领域适用，并确保重塑后的环境保留原始验证器。该机制能够为代理学习动态调整环境难度与内容，对游戏中智能体训练具有应用价值。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}

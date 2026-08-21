@@ -1,0 +1,39 @@
+{
+  "label": "2026-08-21",
+  "date": "2026-08-21",
+  "generated_at": "2026-08-21T20:21:22",
+  "count": 2,
+  "papers": [
+    {
+      "paper_id": "202608/21/2608.13622v1-arc-fair-relative-advantage-comparison-in-open-ended-real-world-interaction",
+      "section": "quick",
+      "title_en": "ARC: Fair Relative Advantage Comparison in Open-Ended Real-World Interaction",
+      "authors": "Yongqi Tong, Tan Li Hui Faith, Choy Zhen Wen Marcus, Zhou Jin, Kewei Fu, Jiang-Ming Yang, Jianshe Li, Xin Zhang",
+      "date": "2026-08-13",
+      "pdf": "https://arxiv.org/pdf/2608.13622v1",
+      "score": "6.0",
+      "evidence": "面向开放世界交互智能体的强化学习训练方案，适用于游戏智能体训练",
+      "tldr": "开放世界真实交互中，一个智能体可以回答、澄清、更新进度或先确认，这种灵活性破坏了群组RL中rollout行为可比的假设。奖励模型对交互风格的偏好因此会污染相对优势估计，使优化偏向奖励偏好的行为而非上下文合适的行为，构成奖励公平性问题。为此提出ARC，用策略条件化rollout分组、混合奖励和熵正则化恢复公平比较；同时提出Inter，解耦用户可见通信与潜在推理/工具使用，并提供86K策略标注语料。ARC在τ/τ²工具基准上显著提升，Inter将首响应延迟从4.91s降到1.27s。这表明开放交互学习的关键瓶颈不是如何奖励，而是如何公平比较行为。",
+      "tags": "query:player-ai",
+      "abstract_en": "Open-ended real-world interaction admits multiple valid behaviors: an agent may answer directly, ask for clarification, provide progress updates, or confirm before acting. This flexibility breaks a core assumption behind group-based RL: rollouts compared within a group are no longer guaranteed to be behaviorally comparable. As a result, reward-model preferences over interaction style can distort relative advantages and steer optimization toward reward-preferred behaviors rather than context-appropriate ones. We formalize this as a \\textit{reward fairness problem} and propose \\textbf{ARC} (Advantage Regularization via Conditioning), a training recipe that restores fairer relative comparison through strategy-conditioned rollout grouping, together with hybrid rewards and entropy regularization. We study ARC in our proposed \\inter, a novel paradigm for responsive, steerable, and execution-aware user-agent interaction that decouples user-visible communication from latent reasoning and tool use. \\inter\\ also provides the annotation and distillation pipeline for constructing \\inter-86K, our strategy-annotated training corpus for supervised and RL training. Empirically, ARC substantially strengthens the core $τ/τ^2$ tool-use benchmarks, while \\inter\\ reduces time-to-first-token from 4.91s to 1.27s relative to a think-style baseline. Together, these results suggest that a central bottleneck in open-ended interactive learning is not only how agents are rewarded, but whether their behaviors are compared fairly in the first place. The ARC implementation and \\inter-86K training data will be released.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/21/2608.19880v1-envharness-awakening-static-worlds-for-agent-learning",
+      "section": "quick",
+      "title_en": "EnvHarness: Awakening Static Worlds for Agent Learning",
+      "authors": "Chengsong Huang, Zifeng Wang, Rujun Han, Jun Yan, Yanfei Chen, Zoey CuiZhu, Ke Jiang, Peng Xia, Han Yu, Yufan Zhuang, Yifei Ming, Jiaqi Pan, Bhavana Dalvi Mishra, Jiaxin Huang, Burak Gokturk, Tomas Pfister, Chen-Yu Lee",
+      "date": "2026-08-20",
+      "pdf": "https://arxiv.org/pdf/2608.19880v1",
+      "score": "6.0",
+      "evidence": "为代理学习重塑静态环境",
+      "tldr": "LLM智能体在静态环境中学习，环境盲于弱点且随能力提升而过时。现有生成方法依赖专用管道和昂贵验证器，仍产出静态环境。为此提出EnvHarness，可编程插件层包装静态环境以重塑行为，保留原始验证器；EnvRigger将策略视为黑盒，观察轨迹合成组件并验证。在四领域五基准上，较原始环境和专用管道最高提升9.0分，步骤减少9.8%，为强化学习提供更优信号。",
+      "tags": "query:player-ai",
+      "abstract_en": "LLM agents learn by interacting with environments, yet these environments are hand-built and static: blind to an agent's weaknesses, and quickly left behind as it improves. While recent environment generation methods attempt to address this, they require domain-specific pipelines, rely on expensive or unreliable verifiers, and still produce static environments. To alleviate the engineering burden of rebuilding environments from scratch, we propose Environment Harness (EnvHarness), a programmable layer of plug-in components that wraps a static environment to reshape its behavior without modifying the underlying logic. Operating through standard interfaces, EnvHarness applies across diverse domains while ensuring every reshaped environment retains its original verifier. To automate this process, we introduce EnvRigger, which treats the target policy as a black box, observing its execution trajectories to synthesize EnvHarness components targeting diagnosed flaws, and validating them via fresh rollouts. Across five benchmarks in four domains, EnvHarness outperforms both original environments and domain-specific environment generation pipelines, achieving up to a 9.0-point improvement on held-out instances with 9.8% fewer execution steps. Furthermore, EnvHarness provides a superior optimization signal for reinforcement learning, enabling continuous, targeted co-evolution of the policy and its environment.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}
