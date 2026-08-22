@@ -1,0 +1,69 @@
+{
+  "label": "2026-08-22",
+  "date": "2026-08-22",
+  "generated_at": "2026-08-22T19:30:44",
+  "count": 4,
+  "papers": [
+    {
+      "paper_id": "202608/22/2608.19842v1-sapo-single-rollout-autoregressive-policy-optimization-for-agentic-reinforcement-learning",
+      "section": "quick",
+      "title_en": "SAPO: Single-Rollout Autoregressive Policy Optimization for Agentic Reinforcement Learning",
+      "authors": "Dayang Liang, Lang Feng, Bo An, Yunlong Liu",
+      "date": "2026-08-20",
+      "pdf": "https://arxiv.org/pdf/2608.19842v1",
+      "score": "7.0",
+      "evidence": "面向智能体RL的单次自回归策略优化；直接改进游戏等长程交互环境中AI智能体的训练",
+      "tldr": "现有critic-free的群体相对方法虽避免PPO内存开销，但缺乏显式价值泛化与时间信用分配，长程复杂任务中优势估计易塌缩且采样预算昂贵。SAPO提出共享自回归骨干的轻量框架，在不同因果边界联合预测策略与价值，独立优化PPO及on-policy SARSA，并引入轨迹级GAE与批归一化。在ALFWorld和WebShop上，SAPO平均较PPO和GRPO提升15.1和12.1个百分点，无需单独critic，每次迭代运行时降低33.2%。该工作为智能体RL提供了更高效稳定的单次采样范式。",
+      "tags": "query:player-ai",
+      "abstract_en": "Agentic reinforcement learning (RL) has become a critical stage in the post-training of large language models. Existing critic-free, group-relative methods estimate policy advantages from multiple rollouts, avoiding the substantial memory overhead of conventional proximal policy optimization (PPO) and achieving strong performance on long-horizon interactive tasks. Despite their success, recent studies revealed three limitations: (1) Lack explicit value generalization and effective temporal credit assignment; (2) Suffer from potential advantage collapse in long-horizon complex tasks; (3) Require a costly trade-off between sampling budget and policy performance. In this work, we propose Single-rollout Autoregressive Policy Optimization (SAPO), a low-memory and compute-efficient framework in which the policy and value functions share a single autoregressive backbone. SAPO exploits the autoregressive structure of LLMs to produce policy and value predictions at distinct causal boundaries with shared parameters, while independently optimizing the PPO objectives and auxiliary on-policy SARSA objectives. To robustly estimate the contribution of each turn, we further introduce a trajectory-level generalized advantage estimator that combines lambda-returns with batch normalization. Experiments across ALFWorld and WebShop with Qwen2.5-1.5B/7B show that SAPO trains stably and outperforms PPO and GRPO by mean +15.1 and +12.1 percentage points, respectively, while eliminating the memory cost of a separate critic model and reducing per-iteration runtime by 33.2% over PPO.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/22/2608.14380v1-agentrewind-recoverable-execution-for-long-horizon-llm-agents",
+      "section": "quick",
+      "title_en": "AgentRewind: Recoverable Execution for Long-Horizon LLM Agents",
+      "authors": "Yu Zhuang, Kefei Chen, Yitong Duan, Shuxin Zheng, Jian Li, Xu-Yao Zhang",
+      "date": "2026-08-14",
+      "pdf": "https://arxiv.org/pdf/2608.14380v1",
+      "score": "6.0",
+      "evidence": "面向长时程LLM智能体的运行时恢复框架，支持在游戏等交互环境中从错误中恢复",
+      "tldr": "长程LLM代理任务中，早期错误会通过上下文和环境状态传播且难以逆转，现有方法缺乏恢复机制。AgentRewind 记录代理上下文与环境的对齐检查点，使代理能回退到之前状态并利用先前尝试的信息重新执行。在包含多需求工程任务的 MettleBench 基准上，该方法在多个模型和策略下显著提高了任务成功率和平均检查点完成进度，为长程代理提供了有效的运行时容错恢复能力。",
+      "tags": "query:player-ai",
+      "abstract_en": "Many real-world tasks require LLM agents to interact with their environments over long execution horizons. Errors that occur early in execution may propagate through both the agent context and environment state, and their effects may be difficult to reverse through subsequent actions. Existing methods mainly seek to reduce such errors through plan refinement and safety checks but provide little support after errors occur. To enable recovery during long-horizon execution, we present AgentRewind, a runtime recovery framework that records aligned checkpoints of the agent context and controlled environment, allowing agents to return to an earlier state and resume execution with information from previous attempts. We also construct MettleBench, a benchmark for evaluating task completion and partial progress on long-horizon engineering assignments containing a series of related requirements. Experiments across tasks, multiple models, execution strategies, and agent harnesses show that AgentRewind improves task success rate and average checklist progress over the compared baselines.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/22/2608.18067v1-planning-against-learning-in-rank-1-games",
+      "section": "quick",
+      "title_en": "Planning Against Learning in Rank-1 Games",
+      "authors": "William Overman",
+      "date": "2026-08-18",
+      "pdf": "https://arxiv.org/pdf/2608.18067v1",
+      "score": "6.0",
+      "evidence": "AI代理在重复博弈中针对学习对手进行规划，直接关联游戏AI。",
+      "tldr": "学习算法在重复博弈中易被对手预判并操纵，战略规划问题因此重要。已有零和博弈中可高效求解，一般和博弈困难。本文研究秩一博弈，均衡虽易计算，但针对复制动态学习者的最优规划在常数策略限制下仍为NP-hard；从均匀初始状态、有界支付与多项式时域出发，该困难性依然成立。同时刻画若干可解特例，说明秩一博弈已体现均衡计算与学习规划的复杂度鸿沟。",
+      "tags": "query:player-ai",
+      "abstract_en": "Learning algorithms are often used to make decisions in repeated multi-agent environments. When another player understands how a learner adapts from past experience, that player can plan strategically across rounds to influence the learner's future behavior. Recent work shows that optimizing against Replicator Dynamics, the continuous-time analogue of Multiplicative Weights Update, is tractable in zero-sum games but can be hard in unrestricted general-sum games. We study the first structured class beyond zero sum: bimatrix games satisfying $\\text{rank}(A+B)=1$, for which Nash equilibria can be computed in polynomial time.   Our main result shows that this equilibrium tractability does not extend to planning against learning dynamics. Unless $\\mathsf{P}=\\mathsf{NP}$, approximating the optimizer's optimal continuous-time reward within a fixed additive constant is NP-hard even when $\\text{rank}(A+B)=1$, the learner starts from the uniform state, and the optimizer is restricted to constant strategies. The hardness persists for bounded payoff matrices and polynomially bounded horizons. We complement this result with structural characterizations of several tractable special cases. Thus rank-one games already separate efficient equilibrium computation from strategic planning against a learning opponent.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "paper_id": "202608/22/2608.18840v1-beyond-placement-and-articulation-usage-driven-code-scenes-for-embodied-interaction",
+      "section": "quick",
+      "title_en": "Beyond Placement and Articulation: Usage-Driven Code Scenes for Embodied Interaction",
+      "authors": "Zijian Xiao, Zipeng Ye, Jinkun Hao, Xiong Yang, Yuchen Xie, Ran Yi",
+      "date": "2026-08-19",
+      "pdf": "https://arxiv.org/pdf/2608.18840v1",
+      "score": "6.0",
+      "evidence": "面向具身AI的代码化场景生成，支持仿真中的策略学习，可用于构造AI智能体训练环境",
+      "tldr": "室内场景合成对具身AI至关重要，但现有代码生成方法仅关注视觉构建和物体级关节，未建模功能使用。为此提出RoomWright，一种用法驱动的智能体化框架，以代码表示3D场景，通过锚点任务中心推理物体affordance，并将交互编译为触发-条件-效果规则以捕获因果依赖，同时用标注驱动的方向引导解决操作物方向歧义。实验表明场景可执行、可编辑且仿真就绪，为具身AI与策略学习提供交互环境。",
+      "tags": "query:player-ai",
+      "abstract_en": "Indoor scene synthesis provides essential environments for embodied AI, robotic manipulation, and simulation-based policy learning. Recent code-based scene generation methods produce editable and extensible environments, yet they remain focused on visual construction and object-level articulation, leaving the functional usage of scenes largely unmodeled. To address this problem, we present RoomWright, an agentic usage-driven framework for generating 3D scenes represented entirely as code for embodied interaction. RoomWright performs usage-driven object reasoning, which treats each anchor as a task centre and admits task-required objects and their affordances. A code agent further enables multi-part interaction by compiling each interaction into a trigger, condition, effect rule that updates structured object states, capturing causal dependencies across objects. Moreover, since manipuland orientation is ambiguous and hard to recover from pixels, RoomWright alleviates this via annotation-informed usage-guided orientation. Extensive experiments demonstrate the effectiveness of our method. The resulting scenes are executable, editable, and simulation-ready, providing interactive environments for embodied AI and policy learning.",
+      "source": "arxiv",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "errors": []
+}

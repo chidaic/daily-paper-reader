@@ -1,0 +1,171 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-08-22T19:28:07.398914+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 0,
+    "deep_cap": 6,
+    "deep_selected": 0,
+    "quick_candidates": 4,
+    "quick_skim_target": 11,
+    "quick_selected": 4
+  },
+  "deep_dive": [],
+  "quick_skim": [
+    {
+      "id": "2608.19842v1",
+      "source": "arxiv",
+      "title": "SAPO: Single-Rollout Autoregressive Policy Optimization for Agentic Reinforcement Learning",
+      "abstract": "Agentic reinforcement learning (RL) has become a critical stage in the post-training of large language models. Existing critic-free, group-relative methods estimate policy advantages from multiple rollouts, avoiding the substantial memory overhead of conventional proximal policy optimization (PPO) and achieving strong performance on long-horizon interactive tasks. Despite their success, recent studies revealed three limitations: (1) Lack explicit value generalization and effective temporal credit assignment; (2) Suffer from potential advantage collapse in long-horizon complex tasks; (3) Require a costly trade-off between sampling budget and policy performance. In this work, we propose Single-rollout Autoregressive Policy Optimization (SAPO), a low-memory and compute-efficient framework in which the policy and value functions share a single autoregressive backbone. SAPO exploits the autoregressive structure of LLMs to produce policy and value predictions at distinct causal boundaries with shared parameters, while independently optimizing the PPO objectives and auxiliary on-policy SARSA objectives. To robustly estimate the contribution of each turn, we further introduce a trajectory-level generalized advantage estimator that combines lambda-returns with batch normalization. Experiments across ALFWorld and WebShop with Qwen2.5-1.5B/7B show that SAPO trains stably and outperforms PPO and GRPO by mean +15.1 and +12.1 percentage points, respectively, while eliminating the memory cost of a separate critic model and reducing per-iteration runtime by 33.2% over PPO.",
+      "authors": [
+        "Dayang Liang",
+        "Lang Feng",
+        "Bo An",
+        "Yunlong Liu"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-08-20T09:43:47+00:00",
+      "link": "https://arxiv.org/pdf/2608.19842v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Single-rollout autoregressive policy optimization for agentic RL; directly improves training of AI agents in long-horizon interactive environments such as games",
+      "llm_evidence_cn": "面向智能体RL的单次自回归策略优化；直接改进游戏等长程交互环境中AI智能体的训练",
+      "llm_evidence": "面向智能体RL的单次自回归策略优化；直接改进游戏等长程交互环境中AI智能体的训练",
+      "canonical_evidence": "面向智能体RL的单次自回归策略优化；直接改进游戏等长程交互环境中AI智能体的训练",
+      "llm_tldr_en": "This paper proposes SAPO, a single-rollout autoregressive policy optimization method that overcomes limitations of multi-rollout methods in agentic RL, improving temporal credit assignment and stability for long-horizon tasks; suitable for game agent training.",
+      "llm_tldr_cn": "该论文剖析了现有免评论家群体相对强化学习方法在长程智能体任务中的三个局限：缺乏显式价值泛化、优势容易崩坏以及采样开销大。作者提出单次自回归策略优化SAPO，通过单次轨迹估计配合自回归优势计算，实现有效的时序信用分配并保持较低内存成本。在多个长程交互基准上，SAPO超越了既有方法，表明其可以高效稳定地训练游戏等环境中的AI智能体。",
+      "llm_tldr": "该论文剖析了现有免评论家群体相对强化学习方法在长程智能体任务中的三个局限：缺乏显式价值泛化、优势容易崩坏以及采样开销大。作者提出单次自回归策略优化SAPO，通过单次轨迹估计配合自回归优势计算，实现有效的时序信用分配并保持较低内存成本。在多个长程交互基准上，SAPO超越了既有方法，表明其可以高效稳定地训练游戏等环境中的AI智能体。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2608.14380v1",
+      "source": "arxiv",
+      "title": "AgentRewind: Recoverable Execution for Long-Horizon LLM Agents",
+      "abstract": "Many real-world tasks require LLM agents to interact with their environments over long execution horizons. Errors that occur early in execution may propagate through both the agent context and environment state, and their effects may be difficult to reverse through subsequent actions. Existing methods mainly seek to reduce such errors through plan refinement and safety checks but provide little support after errors occur. To enable recovery during long-horizon execution, we present AgentRewind, a runtime recovery framework that records aligned checkpoints of the agent context and controlled environment, allowing agents to return to an earlier state and resume execution with information from previous attempts. We also construct MettleBench, a benchmark for evaluating task completion and partial progress on long-horizon engineering assignments containing a series of related requirements. Experiments across tasks, multiple models, execution strategies, and agent harnesses show that AgentRewind improves task success rate and average checklist progress over the compared baselines.",
+      "authors": [
+        "Yu Zhuang",
+        "Kefei Chen",
+        "Yitong Duan",
+        "Shuxin Zheng",
+        "Jian Li",
+        "Xu-Yao Zhang"
+      ],
+      "primary_category": "cs.AI",
+      "categories": [
+        "cs.AI"
+      ],
+      "published": "2026-08-14T15:20:35+00:00",
+      "link": "https://arxiv.org/pdf/2608.14380v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Runtime recovery framework for long-horizon LLM agents, enabling error recovery in interactive environments like games",
+      "llm_evidence_cn": "面向长时程LLM智能体的运行时恢复框架，支持在游戏等交互环境中从错误中恢复",
+      "llm_evidence": "面向长时程LLM智能体的运行时恢复框架，支持在游戏等交互环境中从错误中恢复",
+      "canonical_evidence": "面向长时程LLM智能体的运行时恢复框架，支持在游戏等交互环境中从错误中恢复",
+      "llm_tldr_en": "Presents AgentRewind, a runtime recovery framework that records aligned checkpoints of agent context and controlled environment, allowing long-horizon LLM agents to recover from early errors and resume with prior information.",
+      "llm_tldr_cn": "长时程任务中，智能体早期错误会不断传播且难以逆转，现有方法主要靠计划修正和安全性检查来减少错误，却缺乏错误发生后的恢复支持。为此提出AgentRewind，一种运行时恢复框架，记录智能体上下文与受控环境的对齐检查点，使智能体可以回到先前状态并利用之前尝试的信息继续执行。同时构建MettleBench基准进行评估。实验表明，在存在早期错误的长时程任务上，AgentRewind能显著提升成功率并减少重复执行开销，为长时程智能体的容错执行提供了全新思路。该方法对游戏等长时程交互中AI智能体的稳定运行具有实用价值。",
+      "llm_tldr": "长时程任务中，智能体早期错误会不断传播且难以逆转，现有方法主要靠计划修正和安全性检查来减少错误，却缺乏错误发生后的恢复支持。为此提出AgentRewind，一种运行时恢复框架，记录智能体上下文与受控环境的对齐检查点，使智能体可以回到先前状态并利用之前尝试的信息继续执行。同时构建MettleBench基准进行评估。实验表明，在存在早期错误的长时程任务上，AgentRewind能显著提升成功率并减少重复执行开销，为长时程智能体的容错执行提供了全新思路。该方法对游戏等长时程交互中AI智能体的稳定运行具有实用价值。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.18067v1",
+      "source": "arxiv",
+      "title": "Planning Against Learning in Rank-1 Games",
+      "abstract": "Learning algorithms are often used to make decisions in repeated multi-agent environments. When another player understands how a learner adapts from past experience, that player can plan strategically across rounds to influence the learner's future behavior. Recent work shows that optimizing against Replicator Dynamics, the continuous-time analogue of Multiplicative Weights Update, is tractable in zero-sum games but can be hard in unrestricted general-sum games. We study the first structured class beyond zero sum: bimatrix games satisfying $\\text{rank}(A+B)=1$, for which Nash equilibria can be computed in polynomial time.   Our main result shows that this equilibrium tractability does not extend to planning against learning dynamics. Unless $\\mathsf{P}=\\mathsf{NP}$, approximating the optimizer's optimal continuous-time reward within a fixed additive constant is NP-hard even when $\\text{rank}(A+B)=1$, the learner starts from the uniform state, and the optimizer is restricted to constant strategies. The hardness persists for bounded payoff matrices and polynomially bounded horizons. We complement this result with structural characterizations of several tractable special cases. Thus rank-one games already separate efficient equilibrium computation from strategic planning against a learning opponent.",
+      "authors": [
+        "William Overman"
+      ],
+      "primary_category": "cs.GT",
+      "categories": [
+        "cs.GT"
+      ],
+      "published": "2026-08-18T17:55:18+00:00",
+      "link": "https://arxiv.org/pdf/2608.18067v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "AI agent planning against learning in repeated games, directly relevant to AI game playing.",
+      "llm_evidence_cn": "AI代理在重复博弈中针对学习对手进行规划，直接关联游戏AI。",
+      "llm_evidence": "AI代理在重复博弈中针对学习对手进行规划，直接关联游戏AI。",
+      "canonical_evidence": "AI代理在重复博弈中针对学习对手进行规划，直接关联游戏AI。",
+      "llm_tldr_en": "This paper studies planning against learning in repeated games, showing that despite polynomial-time Nash equilibrium in rank-1 games, approximating an optimal response to Replicator Dynamics is NP-hard.",
+      "llm_tldr_cn": "本文研究在重复博弈中如何针对学习算法（如复制者动态）进行策略规划。作者聚焦于零和之外的第一类结构——秩一双矩阵博弈，其中纳什均衡可在多项式时间内计算，但结果显示，除非P=NP，否则近似求解针对学习者的最优规划问题仍然是困难的。这表明均衡的可解性并不能推广到对学习动态的规划中。该研究为多智能体博弈中的对抗性规划提供了重要的复杂性边界。",
+      "llm_tldr": "本文研究在重复博弈中如何针对学习算法（如复制者动态）进行策略规划。作者聚焦于零和之外的第一类结构——秩一双矩阵博弈，其中纳什均衡可在多项式时间内计算，但结果显示，除非P=NP，否则近似求解针对学习者的最优规划问题仍然是困难的。这表明均衡的可解性并不能推广到对学习动态的规划中。该研究为多智能体博弈中的对抗性规划提供了重要的复杂性边界。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "AI agent playing games",
+      "matched_requirement_id": "req-2",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2608.18840v1",
+      "source": "arxiv",
+      "title": "Beyond Placement and Articulation: Usage-Driven Code Scenes for Embodied Interaction",
+      "abstract": "Indoor scene synthesis provides essential environments for embodied AI, robotic manipulation, and simulation-based policy learning. Recent code-based scene generation methods produce editable and extensible environments, yet they remain focused on visual construction and object-level articulation, leaving the functional usage of scenes largely unmodeled. To address this problem, we present RoomWright, an agentic usage-driven framework for generating 3D scenes represented entirely as code for embodied interaction. RoomWright performs usage-driven object reasoning, which treats each anchor as a task centre and admits task-required objects and their affordances. A code agent further enables multi-part interaction by compiling each interaction into a trigger, condition, effect rule that updates structured object states, capturing causal dependencies across objects. Moreover, since manipuland orientation is ambiguous and hard to recover from pixels, RoomWright alleviates this via annotation-informed usage-guided orientation. Extensive experiments demonstrate the effectiveness of our method. The resulting scenes are executable, editable, and simulation-ready, providing interactive environments for embodied AI and policy learning.",
+      "authors": [
+        "Zijian Xiao",
+        "Zipeng Ye",
+        "Jinkun Hao",
+        "Xiong Yang",
+        "Yuchen Xie",
+        "Ran Yi"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.CV"
+      ],
+      "published": "2026-08-19T12:00:35+00:00",
+      "link": "https://arxiv.org/pdf/2608.18840v1",
+      "tags": [
+        "keyword:player-ai",
+        "query:player-ai"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Usage-driven code scene generation for embodied AI and simulation-based policy learning, enabling AI agent training environments",
+      "llm_evidence_cn": "面向具身AI的代码化场景生成，支持仿真中的策略学习，可用于构造AI智能体训练环境",
+      "llm_evidence": "面向具身AI的代码化场景生成，支持仿真中的策略学习，可用于构造AI智能体训练环境",
+      "canonical_evidence": "面向具身AI的代码化场景生成，支持仿真中的策略学习，可用于构造AI智能体训练环境",
+      "llm_tldr_en": "Presents RoomWright, an agentic usage-driven framework that generates 3D scenes as code, modeling functional usage and affordances for embodied interaction and simulation-based policy learning.",
+      "llm_tldr_cn": "现有代码化场景生成方法只关注视觉构建和物体关节，忽略了场景的功能用途。为此提出RoomWright框架，以使用驱动的方式将每个锚点视为任务中心，生成可交互的3D代码场景，支持多部件交互和具身智能体进行模拟策略学习。该方法使场景不仅可编辑，还能体现物体功能语义，为具身AI和机器人学习提供更实用的训练环境。它将场景设计从静态结构转向动态功能，弥补了现有模拟器的不足，与AI智能体在游戏环境中的训练场景构筑紧密相关。",
+      "llm_tldr": "现有代码化场景生成方法只关注视觉构建和物体关节，忽略了场景的功能用途。为此提出RoomWright框架，以使用驱动的方式将每个锚点视为任务中心，生成可交互的3D代码场景，支持多部件交互和具身智能体进行模拟策略学习。该方法使场景不仅可编辑，还能体现物体功能语义，为具身AI和机器人学习提供更实用的训练环境。它将场景设计从静态结构转向动态功能，弥补了现有模拟器的不足，与AI智能体在游戏环境中的训练场景构筑紧密相关。",
+      "llm_tags": [
+        "query:player-ai"
+      ],
+      "matched_query_tag": "query:player-ai",
+      "matched_query_text": "Search for AI agent training in game environments",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    }
+  ]
+}
